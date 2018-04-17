@@ -2,6 +2,9 @@ server:
   port: 3051
 
 spring:
+  output:
+    ansi:
+      enabled: always
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.jdbc.Driver
@@ -17,8 +20,10 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
-  cache:
-    type: redis
-    expiration: 4500
-  redis:
-    host: 172.16.10.195
+microx:
+  redisson:
+    server-mode: single
+    addresses: 172.16.10.195:6379
+logging:
+  level:
+    root: debug

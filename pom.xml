@@ -80,12 +80,9 @@
 
 		<!-- cache -->
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-cache</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis</artifactId>
+			<groupId>com.leon.microx.common</groupId>
+			<artifactId>redisson-spring-boot-starter</artifactId>
+			<version>20180323</version>
 		</dependency>
 
 		<dependency>
