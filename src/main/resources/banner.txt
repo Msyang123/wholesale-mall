@@ -7,6 +7,6 @@ ${AnsiColor.BRIGHT_GREEN}
   \:\__\     /:/  /   \:\__\    \::/  /   \/__/
    \/__/     \/__/     \/__/     \/__/
 ${AnsiColor.BRIGHT_RED}
-Application Name: app-user-service
+Application Name: wholesale-mall
 Spring Boot Version: ${spring-boot.version}
 =====0110110001101000011010010110111101110100=====

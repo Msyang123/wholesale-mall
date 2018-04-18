@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.user.mapper.UserMapper">
+
+    <insert id="insert" parameterType="com.lhiot.mall.wholesale.user.vo.User" useGeneratedKeys="true">
+        INSERT INTO t_wm_user (id, name, age, sex) VALUES (#{id}, #{name}, #{age}, #{sex})
+    </insert>
+
+    <update id="update" parameterType="com.lhiot.mall.wholesale.user.vo.User">
+        UPDATE t_wm_user SET id = #{id}
+        <if test="name != null and name != ''">
+            , name = #{name}
+        </if>
+        <if test="age != 0">
+            , age = #{age}
+        </if>
+        <if test="sex != null">
+            , sex = #{sex}
+        </if>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="remove" parameterType="long">
+        DELETE FROM t_wm_user WHERE id = #{0}
+    </delete>
+
+    <select id="select" parameterType="long" resultType="com.lhiot.mall.wholesale.user.vo.User">
+        SELECT * FROM t_wm_user WHERE id = #{0}
+    </select>
+
+    <select id="search" parameterType="map" resultType="com.lhiot.mall.wholesale.user.vo.User">
+        SELECT * FROM t_wm_user WHERE 1 = 1
+        <if test="ids != null">
+            AND id IN
+            <foreach collection="ids" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="likeName != null and likeName != ''">
+            AND name LIKE CONCAT('%', #{likeName}, '%')
+        </if>
+    </select>
+</mapper>
