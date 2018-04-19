@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="t_whs_goods_price_region">
+	<sql id="goodsPriceRegionColumn">
+		id ,goods_standard_id as goodsStandardId, price, standard_des as standardDes,
+		min_quantity as minQuantity, max_quantity as maxQuantity, reorder
+	</sql>
+	
+	<!-- lynn后台管理 新增2018/4/19 -->
+	<insert id="create" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion">
+		insert into t_whs_goods_price_region(
+			<trim suffixOverrides=",">
+				<if test="goodsStandardId != null and goodsStandardId != ''">goods_standard_id,</if>
+				<if test="price != null and price != ''">price,</if>
+				<if test="standardDes != null and standardDes != ''">standard_des,</if>
+				<if test="minQuantity != null and minQuantity != ''">minQuantity,</if>
+				<if test="maxQuantity != null and maxQuantity != ''">max_quantity,</if>
+				<if test="reorder != null and reorder != ''">reorder,</if>
+			</trim>
+		)
+		values(
+			<trim suffixOverrides=",">
+				<if test="goodsStandardId != null and goodsStandardId != ''">goods_standard_id=#{goodsStandardId},</if>
+				<if test="price != null and price != ''">price=#{price},</if>
+				<if test="standardDes != null and standardDes != ''">standard_des=#{standardDes},</if>
+				<if test="minQuantity != null and minQuantity != ''">minQuantity=#{minQuantity},</if>
+				<if test="maxQuantity != null and maxQuantity != ''">max_quantity=#{maxQuantity},</if>
+				<if test="reorder != null and reorder != ''">reorder=#{reorder},</if>
+			</trim>
+		)
+	</insert>
+	
+	<!-- lynn后台管理 删除2018/4/19 -->
+	<delete id="delete" parameterType="java.util.List">
+		delete from t_whs_goods_price_region where id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- lynn后台管理 修改2018/4/19 -->
+	<update id="update" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion">
+		update t_whs_goods_price_region
+		<trim suffix="set" suffixOverrides=",">
+			<if test="goodsStandardId != null and goodsStandardId != ''">goods_standard_id = #{goodsStandardId},</if>
+			<if test="price != null and price != ''">price = #{price},</if>
+			<if test="standardDes != null and standardDes != ''">standard_des = #{standardDes},</if>
+			<if test="minQuantity != null and minQuantity != ''">minQuantity = #{minQuantity},</if>
+			<if test="maxQuantity != null and maxQuantity != ''">max_quantity = #{maxQuantity},</if>
+			<if test="reorder != null and reorder != ''">reorder = #{reorder},</if>
+		</trim>
+		where id = #{id}
+	</update>
+	
+	<!-- lynn后台管理 根据id查询2018/4/19 -->
+	<select id="findById" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion">
+		select <include refid="goodsPriceRegionColumn"/> from t_whs_goods_price_region where id = #{0}
+	</select>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQueryCount" parameterType="map" resultType="Integer">
+		select count(id) from t_whs_goods_price_region
+		<trim prefix="where" prefixOverrides="and">
+			<if test="minPrice != null and minPrice != ''">
+				and price &gt;= #{minPrice}
+			</if>
+			<if test="maxPrice != null and maxPrice != ''">
+				and price &lt;= #{maxPrice},
+			</if>
+		</trim>
+	</select>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQuery" parameterType="map" resultType="map">
+		select <include refid="goodsPriceRegionColumn"/> from t_whs_goods_price_region
+		<trim prefix="where" prefixOverrides="and">
+			<if test="minPrice != null and minPrice != ''">
+				and price &gt;= #{minPrice}
+			</if>
+			<if test="maxPrice != null and maxPrice != ''">
+				and price &lt;= #{maxPrice},
+			</if>
+		</trim>
+		<include refid="common.pager"></include>
+	</select>
+</mapper>

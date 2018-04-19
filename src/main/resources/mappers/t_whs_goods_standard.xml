@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="t_whs_goods_standard">
+
+	<sql id="goodsStandardColumn">
+		t1.id ,t1.goods_id as goodsId, t1.bar_code as barCode,t1.weight,t1.unit_code as unitCode,
+		t1.standard, t1.price, t1.if_vaild as ifVaild,t1.hd_sku_id as hdSkuId, t1.standard_desc as standardDesc
+	</sql>
+	
+	<sql id="goodsColumn">
+		t2.id,t1.goods_code as goodsCode,t2.goods_name as goodsName,t2.category_id as categoryId,
+		t2.goods_image as goodsImage,t2.base_bar as baseBar,t2.base_unit as baseUnit,t2.stock_limit as stockLimit,
+		t2.goods_des as goodsDes,t2.goods_images as goodsImages,t2.other_image as otherImage
+	</sql>
+	
+	<sql id="unitColumn">
+		t3.unit_code as GoodsUnitCode,t3.unit_name as GoodsUnitName
+	</sql>
+	
+	<sql id="categoryColumn">
+		t4.category_name as categoryName
+	</sql>
+	
+	<!-- lynn 2018/4/19根据商品id查询商品 -->
+	<select id="findById" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
+		select <include refid="goodsStandardColumn"/>, <include refid="goodsColumn"/>,<include refid="unitColumn"/>,
+		<include refid="categoryColumn"/>
+		from t_whs_goods_standard t1
+		left join t_whs_goods t2 on t1.goods_id = t2.id
+		left join t_whs_goods_unit t3 on t1.unit_code = t3.id
+		left join t_whs_goods_category t4 on t2.category_id = t4.id
+		where id = #{0}
+	</select>
+	
+	<!-- lynn 2018/4/19根据根据关键词查询商品详情 -->
+	<select id="findByKeywords" parameterType="map" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
+		select <include refid="goodsStandardColumn"/>, <include refid="goodsColumn"/>,<include refid="unitColumn"/>,
+		<include refid="categoryColumn"/>
+		from t_whs_goods_standard t1
+		left join t_whs_goods t2 on t1.goods_id = t2.id
+		left join t_whs_goods_unit t3 on t1.unit_code = t3.id
+		left join t_whs_goods_category t4 on t2.category_id = t4.id
+		left jion t_whs_goods_keywords t5 on t1.id = t5.mapping_id
+		<trim prefix="where" prefixOverrides="and">
+			<if test="keyword != null and keyword != ''">
+				and t5.keyword like CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="kwType != null and kwType != ''">
+				and t5.kw_type =#{keyword}
+			</if>
+		</trim>
+	</select>
+	
+	<!-- lynn 2018/4/19根据商品id 新增商品 -->
+	<insert id="create" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
+		insert into t_whs_goods(
+			<trim suffixOverrides=",">
+				<if test="goodsId != null and goodsId != ''">goods_id,</if>
+				<if test="barCode != null and barCode != ''">bar_code,</if>
+				<if test="weight != null and weight != ''">weight,</if>
+				<if test="unitCode != null and unitCode != ''">unit_code,</if>
+				<if test="standard != null and standard != ''">standard,</if>
+				<if test="price != null and price != ''">price,</if>
+				<if test="ifVaild != null and ifVaild != ''">if_vaild,</if>
+				<if test="hdSkuId != null and hdSkuId != ''">hd_sku_id,</if>
+				<if test="standardDesc != null and standardDesc != ''">standard_desc,</if>
+			</trim>
+		)
+		values(
+			<trim suffixOverrides=",">
+				<if test="goodsId != null and goodsId != ''">#{goodsId},</if>
+				<if test="barCode != null and barCode != ''">#{barCode},</if>
+				<if test="weight != null and weight != ''">#{weight},</if>
+				<if test="unitCode != null and unitCode != ''">#{unitCode},</if>
+				<if test="standard != null and standard != ''">#{standard},</if>
+				<if test="price != null and price != ''">#{price},</if>
+				<if test="ifVaild != null and ifVaild != ''">#{ifVaild},</if>
+				<if test="hdSkuId != null and hdSkuId != ''">#{hdSkuId},</if>
+				<if test="standardDesc != null and standardDesc != ''">#{standardDesc},</if>
+			</trim>
+		)
+	</insert>
+	
+	<!-- lynn 2018/4/19根据商品id 修改商品 -->
+	<update id="update" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
+		update t_whs_goods_standard
+		<trim prefix="set" suffixOverrides=",">
+			<if test="goodsId != null and goodsId != ''">goods_id=#{goodsId},</if>
+			<if test="barCode != null and barCode != ''">bar_code=#{barCode},</if>
+			<if test="weight != null and weight != ''">weight=#{weight},</if>
+			<if test="unitCode != null and unitCode != ''">unit_code=#{unitCode},</if>
+			<if test="standard != null and standard != ''">standard=#{standard},</if>
+			<if test="price != null and price != ''">price=#{price},</if>
+			<if test="ifVaild != null and ifVaild != ''">if_vaild=#{ifVaild},</if>
+			<if test="hdSkuId != null and hdSkuId != ''">hd_sku_id=#{hdSkuId},</if>
+			<if test="standardDesc != null and standardDesc != ''">standard_desc=#{standardDesc},</if>
+		</trim>
+		where id = #{id}
+	</update>
+	
+	<!-- lynn 2018/4/19根据商品id 删除商品 -->
+	<delete id="delete" parameterType="java.util.List">
+		delete from t_whs_goods_standard where id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQueryCount" parameterType="map" resultType="Integer">
+		select count(id) from t_whs_goods_standard t1
+		left join t_whs_goods t2 on t1.goods_id = t2.id
+		left join t_whs_goods_unit t3 on t1.unit_code = t3.id
+		left join t_whs_goods_category t4 on t2.category_id = t4.id
+		<trim prefix="where" prefixOverrides="and">
+			<if test="barCode != null and barCode != ''">and t1.bar_code=#{goodsCode}</if>
+			<if test="goodsName != null and goodsName != ''">and t2.goods_name like CONCAT('%',#{goodsName},'%')</if>
+			<if test="ifVaild != null and ifVaild != ''">and t1.if_vaild = #{ifVaild}</if>
+			<if test="minPrice != null and minPrice != ''">and t1.price &gt;= #{minPrice}</if>
+			<if test="maxPrice != null and maxPrice != ''">and t1.price &lt;= #{maxPrice}</if>
+		</trim>
+	</select>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQuery" parameterType="map" resultType="map">
+		select <include refid="goodsStandardColumn"/>, <include refid="goodsColumn"/>,<include refid="unitColumn"/>,
+		<include refid="categoryColumn"/>
+		from t_whs_goods_standard t1
+		left join t_whs_goods t2 on t1.goods_id = t2.id
+		left join t_whs_goods_unit t3 on t1.unit_code = t3.id
+		left join t_whs_goods_category t4 on t2.category_id = t4.id
+		<trim prefix="where" prefixOverrides="and">
+			<if test="barCode != null and barCode != ''">and t1.bar_code=#{goodsCode}</if>
+			<if test="goodsName != null and goodsName != ''">and t2.goods_name like CONCAT('%',#{goodsName},'%')</if>
+			<if test="ifVaild != null and ifVaild != ''">and t1.if_vaild = #{ifVaild}</if>
+			<if test="minPrice != null and minPrice != ''">and t1.price &gt;= #{minPrice}</if>
+			<if test="maxPrice != null and maxPrice != ''">and t1.price &lt;= #{maxPrice}</if>
+		</trim>
+		<include refid="common.pager"></include>
+	</select>
+</mapper>
