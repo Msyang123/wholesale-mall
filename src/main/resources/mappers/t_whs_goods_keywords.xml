@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="t_whs_goods_keywords">
+	<sql id="goodsKeywordsColumn">
+		id,keyword,hot_search as hotSearch,kw_type as kwType,mapping_id as mappingId
+	</sql>
+	
+	<!-- lynn后台管理 新增2018/4/19 -->
+	<insert id="create" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsKeywords">
+		insert into t_whs_goods_keywords(
+			<trim suffixOverrides=",">
+				<if test="keyword != null and keyword != ''">keyword,</if>
+				<if test="hotSearch != null and hotSearch != ''">hot_search,</if>
+				<if test="kwType != null and kwType != ''">kw_type,</if>
+				<if test="mappingId != null and mappingId != ''">mapping_id,</if>
+			</trim>
+		)
+		values(
+			<trim suffixOverrides=",">
+				<if test="keyword != null and keyword != ''">#{keyword},</if>
+				<if test="hotSearch != null and hotSearch != ''">#{hotSearch},</if>
+				<if test="kwType != null and kwType != ''">#{kwType},</if>
+				<if test="mappingId != null and mappingId != ''">#{mappingId},</if>
+			</trim>
+		)
+	</insert>
+	
+	<!-- lynn后台管理 删除2018/4/19 -->
+	<delete id="delete" parameterType="java.util.List">
+		delete from t_whs_goods_keywords where id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- lynn后台管理 修改2018/4/19 -->
+	<update id="update" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsKeywords">
+		update t_whs_goods_keywords
+		<trim suffix="set" suffixOverrides=",">
+			<if test="keyword != null and keyword != ''">keyword=#{keyword},</if>
+			<if test="hotSearch != null and hotSearch != ''">hot_search=#{hotSearch},</if>
+			<if test="kwType != null and kwType != ''">kw_type=#{kwType},</if>
+			<if test="mappingId != null and mappingId != ''">mapping_id=#{mappingId},</if>
+		</trim>
+		where id = #{id}
+	</update>
+	
+	<!-- lynn后台管理 根据id查询2018/4/19 -->
+	<select id="findById" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsKeywords">
+		select <include refid="goodsKeywordsColumn"/> from t_whs_goods_keywords where id = #{0}
+	</select>
+	
+	<!-- lynn后台管理 查询所有用作下拉框2018/4/19 -->
+	<select id="findAll" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsKeywords">
+		select <include refid="goodsKeywordsColumn"/> from t_whs_goods_keywords
+	</select>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQueryCount" parameterType="map" resultType="Integer">
+		select count(id) from t_whs_goods_keywords
+		<trim prefix="where" prefixOverrides="and">
+			<if test="hotSearch != null and hotSearch != ''">
+				and hot_search = #{hotSearch}
+			</if>
+			<if test="kw_type != null and kw_type != ''">
+				and kw_type = #{kwType}
+			</if>
+			<if test="keyword != null and keyword != ''">
+				and keyword like CONCAT('%',#{keyword},'%')
+			</if>
+		</trim>
+	</select>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQuery" parameterType="map" resultType="map">
+		select <include refid="goodsKeywordsColumn"/> from t_whs_goods_keywords
+		<trim prefix="where" prefixOverrides="and">
+			<if test="hotSearch != null and hotSearch != ''">
+				and hot_search = #{hotSearch}
+			</if>
+			<if test="kw_type != null and kw_type != ''">
+				and kw_type = #{kwType}
+			</if>
+			<if test="keyword != null and keyword != ''">
+				and keyword like CONCAT('%',#{keyword},'%')
+			</if>
+		</trim>
+		<include refid="common.pager"></include>
+	</select>
+</mapper>

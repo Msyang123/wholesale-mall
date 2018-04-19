@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="t_whs_goods_category">
+	<sql id="categoryColumn">
+		id,parent_id as parentId,category_name as categoryName
+	</sql>
+	
+	<!-- lynn后台管理 新增2018/4/19 -->
+	<insert id="create" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
+		insert into t_whs_goods_category(
+			<trim suffixOverrides=",">
+				<if test="parentId != null and parentId != ''">parent_id,</if>
+				<if test="categoryName != null and categoryName != ''">category_name,</if>
+			</trim>
+		)
+		values(
+			<trim suffixOverrides=",">
+				<if test="parentId != null and parentId != ''">#{parentId},</if>
+				<if test="categoryName != null and categoryName != ''">#{categoryName},</if>
+			</trim>
+		)
+	</insert>
+	
+	<!-- lynn后台管理 删除2018/4/19 -->
+	<delete id="delete" parameterType="java.util.List">
+		delete from t_whs_goods_category where id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- lynn后台管理 修改2018/4/19 -->
+	<update id="update" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
+		update t_whs_goods_category
+		<trim suffix="set" suffixOverrides=",">
+			<if test="categoryName != null and categoryName != ''">
+				category_name = #{categoryName},
+			</if>
+			<if test="unitName != null and unitName != ''">
+				parent_id = #{parentId},
+			</if>
+		</trim>
+		where id = #{id}
+	</update>
+	
+	<!-- lynn后台管理 根据id查询2018/4/19 -->
+	<select id="findById" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
+		select <include refid="categoryColumn"/> from t_whs_goods_category where id = #{0}
+	</select>
+	
+	<!-- lynn后台管理 查询所有用作下拉框2018/4/19 -->
+	<select id="findAll" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
+		select <include refid="categoryColumn"/> from t_whs_goods_category
+	</select>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQueryCount" parameterType="map" resultType="Integer">
+		select count(id) from t_whs_goods_category
+		<trim prefix="where" prefixOverrides="and">
+			<if test="parentId != null and parentId != ''">
+				and parent_id = #{parentId}
+			</if>
+			<if test="categoryName != null and categoryName != ''">
+				and category_name like CONCAT('%',#{categoryName},'%')
+			</if>
+		</trim>
+	</select>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQuery" parameterType="map" resultType="map">
+		select <include refid="categoryColumn"/> from t_whs_goods_category
+		<trim prefix="where" prefixOverrides="and">
+			<if test="parentId != null and parentId != ''">
+				and parent_id = #{parentId}
+			</if>
+			<if test="categoryName != null and categoryName != ''">
+				and category_name like CONCAT('%',#{categoryName},'%')
+			</if>
+		</trim>
+		<include refid="common.pager"></include>
+	</select>
+</mapper>

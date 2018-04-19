@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="t_whs_goods">
+	<sql id="goodsColumn">
+		t1.id,t1.goods_code as goodsCode,t1.goods_name as goodsName,t1.category_id as categoryId,
+		t1.goods_image as goodsImage,t1.base_bar as baseBar,t1.base_unit as baseUnit,t1.stock_limit as stockLimit,
+		t1.goods_des as goodsDes,t1.goods_images as goodsImages,t1.other_image as otherImage
+	</sql>
+	
+	<sql id="unitColumn">
+		t2.unit_code as baseUnitCode,t2.unit_name as baseUnitName
+	</sql>
+	
+	<sql id="categoryColumn">
+		t3.category_name as categoryName
+	</sql>
+	
+	<!-- lynn 2018/4/19根据商品id查询商品 -->
+	<select id="findById" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.Goods">
+		select <include refid="goodsColumn"/>, <include refid="unitColumn"/>,<include refid="categoryColumn"/>
+		from t_whs_goods t1
+		left join t_whs_goods_unit t2 on t1.base_unit = t2.id
+		left join t_whs_goods_category t3 on t1.category_id = t3.id
+		where id = #{0}
+	</select>
+	
+	<!-- lynn 2018/4/19根据商品id 新增商品 -->
+	<insert id="create" parameterType="com.lhiot.mall.wholesale.goods.domain.Goods">
+		insert into t_whs_goods(
+			<trim suffixOverrides=",">
+				<if test="goodsCode != null and goodsCode != ''">goods_code,</if>
+				<if test="goodsName != null and goodsName != ''">goods_name,</if>
+				<if test="categoryId != null and categoryId != ''">category_id,</if>
+				<if test="goodsImage != null and goodsImage != ''">goods_image,</if>
+				<if test="baseBar != null and baseBar != ''">base_bar,</if>
+				<if test="baseUnit != null and baseUnit != ''">base_unit,</if>
+				<if test="stockLimit != null and stockLimit != ''">stock_limit,</if>
+				<if test="goodsDes != null and goodsDes != ''">goods_des,</if>
+				<if test="goodsImages != null and goodsImages != ''">goods_images,</if>
+				<if test="otherImage != null and otherImage != ''">other_image,</if>
+			</trim>
+		)
+		values(
+			<trim suffixOverrides=",">
+				<if test="goodsCode != null and goodsCode != ''">#{goodsCode},</if>
+				<if test="goodsName != null and goodsName != ''">#{goodsName},</if>
+				<if test="categoryId != null and categoryId != ''">#{categoryId},</if>
+				<if test="goodsImage != null and goodsImage != ''">#{goodsImage},</if>
+				<if test="baseBar != null and baseBar != ''">#{baseBar},</if>
+				<if test="baseUnit != null and baseUnit != ''">#{baseUnit},</if>
+				<if test="stockLimit != null and stockLimit != ''">#{stockLimit},</if>
+				<if test="goodsDes != null and goodsDes != ''">#{goodsDes},</if>
+				<if test="goodsImages != null and goodsImages != ''">#{goodsImages},</if>
+				<if test="otherImage != null and otherImage != ''">#{otherImage},</if>
+			</trim>
+		)
+	</insert>
+	
+	<!-- lynn 2018/4/19根据商品id 修改商品 -->
+	<update id="update" parameterType="com.lhiot.mall.wholesale.goods.domain.Goods">
+		update t_whs_goods
+		<trim prefix="set" suffixOverrides=",">
+			<if test="goodsCode != null and goodsCode != ''">goods_code=#{goodsCode},</if>
+			<if test="goodsName != null and goodsName != ''">goods_name=#{goodsName},</if>
+			<if test="categoryId != null and categoryId != ''">category_id=#{categoryId},</if>
+			<if test="goodsImage != null and goodsImage != ''">goods_image=#{goodsImage},</if>
+			<if test="baseBar != null and baseBar != ''">base_bar=#{baseBar},</if>
+			<if test="baseUnit != null and baseUnit != ''">base_unit=#{baseUnit},</if>
+			<if test="stockLimit != null and stockLimit != ''">stock_limit=#{stockLimit},</if>
+			<if test="goodsDes != null and goodsDes != ''">goods_des=#{goodsDes},</if>
+			<if test="goodsImages != null and goodsImages != ''">goods_images=#{goodsImages},</if>
+			<if test="otherImage != null and otherImage != ''">other_image=#{otherImage},</if>
+		</trim>
+		where id = #{id}
+	</update>
+	
+	<!-- lynn 2018/4/19根据商品id 删除商品 -->
+	<delete id="delete" parameterType="java.util.List">
+		delete from t_whs_goods where id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQueryCount" parameterType="map" resultType="Integer">
+		select count(id) from t_whs_goods t1
+		left join t_whs_goods_unit t2 on t1.base_unit = t2.id
+		left join t_whs_goods_category t3 on t1.category_id = t3.id
+		<trim prefix="where" prefixOverrides="and">
+			<if test="goodsCode != null and goodsCode != ''">and goods_code=#{goodsCode}</if>
+			<if test="goodsName != null and goodsName != ''">and goods_name like CONCAT('%',#{goodsName},'%')</if>
+		</trim>
+	</select>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQuery" parameterType="map" resultType="map">
+		select <include refid="goodsColumn"/>, <include refid="unitColumn"/>,<include refid="categoryColumn"/>
+		from t_whs_goods t1
+		left join t_whs_goods_unit t2 on t1.base_unit = t2.id
+		left join t_whs_goods_category t3 on t1.category_id = t3.id
+		<trim prefix="where" prefixOverrides="and">
+			<if test="goodsCode != null and goodsCode != ''">and goods_code=#{goodsCode}</if>
+			<if test="goodsName != null and goodsName != ''">and goods_name like CONCAT('%',#{goodsName},'%')</if>
+		</trim>
+		<include refid="common.pager"></include>
+	</select>
+</mapper>
