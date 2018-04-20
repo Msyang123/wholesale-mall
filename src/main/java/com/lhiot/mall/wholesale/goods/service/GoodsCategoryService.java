@@ -4,20 +4,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.lhiot.mall.wholesale.goods.mapper.GoodsMapper;
+import com.lhiot.mall.wholesale.goods.mapper.GoodsCategoryMapper;
 
-/**GoodsService
+/**
  * 商品中心
  * @author yj
  *
  */
 @Service
 @Transactional
-public class GoodsService {
+public class GoodsCategoryService {
 	
-	private final GoodsMapper goodsMapper;
+	private final GoodsCategoryMapper goodsCategoryMapper;
+	
 	@Autowired
-	public GoodsService(GoodsMapper goodsMapper){
-		this.goodsMapper = goodsMapper;
+	public GoodsCategoryService(GoodsCategoryMapper goodsCategoryMapper){
+		this.goodsCategoryMapper = goodsCategoryMapper;
 	}
+	
+	
 }

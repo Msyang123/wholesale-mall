@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.lhiot.mall.wholesale.goods.mapper.GoodsMapper;
+import com.lhiot.mall.wholesale.goods.mapper.GoodsKeywordsMapper;
 
 /**GoodsService
  * 商品中心
@@ -13,11 +13,11 @@ import com.lhiot.mall.wholesale.goods.mapper.GoodsMapper;
  */
 @Service
 @Transactional
-public class GoodsService {
+public class GoodsKeywordService {
 	
-	private final GoodsMapper goodsMapper;
+	private final GoodsKeywordsMapper goodsKeywordsMapper;
 	@Autowired
-	public GoodsService(GoodsMapper goodsMapper){
-		this.goodsMapper = goodsMapper;
+	public GoodsKeywordService(GoodsKeywordsMapper goodsKeywordsMapper){
+		this.goodsKeywordsMapper = goodsKeywordsMapper;
 	}
 }
