@@ -5,9 +5,11 @@ import com.leon.microx.common.wrapper.PageObject;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @ApiModel(description = "商品单位分页查询的参数")
+@NoArgsConstructor
 public class GoodsStandardGirdParam extends PageObject {
 	
 	@ApiModelProperty(notes="商品编码",dataType="Long")

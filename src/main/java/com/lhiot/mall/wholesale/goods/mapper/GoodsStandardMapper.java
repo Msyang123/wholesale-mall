@@ -1,11 +1,11 @@
 package com.lhiot.mall.wholesale.goods.mapper;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
+import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam;
 
 @Mapper
 public interface GoodsStandardMapper {
@@ -14,14 +14,14 @@ public interface GoodsStandardMapper {
 
     int update(GoodsStandard GoodsStandard);
 
-    void removeInbatch(long id);
+    void removeInbatch(List<Long> id);
 
     GoodsStandard select(long id);
 
     List<GoodsStandard> fuzzySearch(String name);
     
     //分页查询分类
-    List<GoodsStandard> pageQuery(Map<String,Object> map);
+    List<GoodsStandard> pageQuery(GoodsStandardGirdParam param);
     //查询分类的总记录数
-    int pageQueryCount(Map<String,Object> map);
+    int pageQueryCount(GoodsStandardGirdParam param);
 }

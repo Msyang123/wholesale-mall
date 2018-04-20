@@ -9,4 +9,11 @@
 		</if>
 			LIMIT #{START}, #{ROWS} 
 	</sql>
+	
+	<sql id="pagerByPage">
+        <if test="SIDX != null and SIDX != ''">
+			ORDER BY  ${SIDX} ${SORD}
+		</if>
+			LIMIT ((#{START} -1)*#{ROWS}) , #{ROWS} 
+	</sql>
 </mapper>

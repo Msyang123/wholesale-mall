@@ -1,11 +1,11 @@
 package com.lhiot.mall.wholesale.goods.mapper;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
 import com.lhiot.mall.wholesale.goods.domain.GoodsUnit;
+import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsUnitGridParam;
 
 @Mapper
 public interface GoodsUnitMapper {
@@ -14,16 +14,18 @@ public interface GoodsUnitMapper {
 
     int update(GoodsUnit goodsUnit);
 
-    void removeInbatch(long id);
+    void removeInbatch(List<Long> id);
 
     GoodsUnit select(long id);
     
-    GoodsUnit findByCode(Long code);
+    GoodsUnit findByCode(String code);
 
-    List<GoodsUnit> search(Map<String, Object> where);
+    List<GoodsUnit> search();
+    
+    int tryAdd(GoodsUnit goodsUnit);
     
     //分页查询分类
-    List<GoodsUnit> pageQuery(Map<String,Object> map);
+    List<GoodsUnit> pageQuery(GoodsUnitGridParam goodsUnitGridParam);
     //查询分类的总记录数
-    int pageQueryCount(Map<String,Object> map);
+    int pageQueryCount(GoodsUnitGridParam goodsUnitGridParam);
 }

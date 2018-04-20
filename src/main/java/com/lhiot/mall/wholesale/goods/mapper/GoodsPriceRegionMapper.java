@@ -1,11 +1,11 @@
 package com.lhiot.mall.wholesale.goods.mapper;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
 import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
+import com.lhiot.mall.wholesale.goods.domain.girdparam.PriceRegionGirdParam;
 
 @Mapper
 public interface GoodsPriceRegionMapper {
@@ -19,7 +19,7 @@ public interface GoodsPriceRegionMapper {
     GoodsPriceRegion select(long id);
     
     //分页查询分类
-    List<GoodsPriceRegion> pageQuery(Map<String,Object> map);
+    List<GoodsPriceRegion> pageQuery(PriceRegionGirdParam param);
     //查询分类的总记录数
-    int pageQueryCount(Map<String,Object> map);
+    int pageQueryCount(PriceRegionGirdParam param);
 }

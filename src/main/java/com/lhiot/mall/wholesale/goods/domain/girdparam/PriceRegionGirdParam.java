@@ -5,8 +5,10 @@ import com.leon.microx.common.wrapper.PageObject;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @ApiModel(description = "商品价格区间分页查询的参数")
 public class PriceRegionGirdParam extends PageObject {
 
