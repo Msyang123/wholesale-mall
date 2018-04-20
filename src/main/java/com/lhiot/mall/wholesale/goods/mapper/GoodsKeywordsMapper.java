@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.lhiot.mall.wholesale.goods.domain.GoodsKeywords;
+import com.lhiot.mall.wholesale.goods.domain.girdparam.KeywordsGirdParam;
 
 @Mapper
 public interface GoodsKeywordsMapper {
@@ -20,7 +21,7 @@ public interface GoodsKeywordsMapper {
 
     List<GoodsKeywords> search();
     
-    List<GoodsKeywords> pageQuery(Map<String,Object> map);
+    List<GoodsKeywords> pageQuery(KeywordsGirdParam param);
     
-    int pageQueryCount(Map<String,Object> map);
+    int pageQueryCount(KeywordsGirdParam param);
 }

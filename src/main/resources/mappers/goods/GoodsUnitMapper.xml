@@ -6,7 +6,7 @@
 	</sql>
 	
 	<!-- lynn后台管理 新增2018/4/19 -->
-	<insert id="insert" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsUnit">
+	<insert id="insert" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsUnit" useGeneratedKeys="true">
 		insert into t_whs_goods_unit(
 			<trim suffixOverrides=",">
 				<if test="unitCode != null and unitCode != ''">unit_code,</if>
@@ -32,7 +32,7 @@
 	<!-- lynn后台管理 修改2018/4/19 -->
 	<update id="update" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsUnit">
 		update t_whs_goods_unit
-		<trim suffix="set" suffixOverrides=",">
+		<trim prefix="set" suffixOverrides=",">
 			<if test="unitCode != null and unitCode != ''">
 				unit_code = #{unitCode},
 			</if>
@@ -49,7 +49,7 @@
 	</select>
 	
 	<!-- lynn后台管理 根据unitCode查询2018/4/19 -->
-	<select id="findByCode" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsUnit">
+	<select id="findByCode" parameterType="String" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsUnit">
 		select <include refid="goodsUnitColumn"/> from t_whs_goods_unit where unit_code = #{0}
 	</select>
 	
@@ -59,7 +59,8 @@
 	</select>
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
-	<select id="pageQueryCount" parameterType="map" resultType="Integer">
+	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsUnitGridParam" 
+			resultType="Integer">
 		select count(id) from t_whs_goods_unit
 		<trim prefix="where" prefixOverrides="and">
 			<if test="unitCode != null and unitCode != ''">
@@ -72,7 +73,8 @@
 	</select>
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
-	<select id="pageQuery" parameterType="map" resultType="map">
+	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsUnitGridParam" 
+		resultType="com.lhiot.mall.wholesale.goods.domain.GoodsUnit">
 		select <include refid="goodsUnitColumn"/> from t_whs_goods_unit
 		<trim prefix="where" prefixOverrides="and">
 			<if test="unitCode != null and unitCode != ''">
@@ -82,6 +84,6 @@
 				and unit_name = #{unitName},
 			</if>
 		</trim>
-		<include refid="common.pager"></include>
+		<include refid="common.pagerByPage"></include>
 	</select>
 </mapper>

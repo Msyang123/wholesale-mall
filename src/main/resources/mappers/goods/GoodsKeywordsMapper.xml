@@ -56,7 +56,7 @@
 	</select>
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
-	<select id="pageQueryCount" parameterType="map" resultType="Integer">
+	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.goods.domain.girdparam.KeywordsGirdParam" resultType="Integer">
 		select count(id) from t_whs_goods_keywords
 		<trim prefix="where" prefixOverrides="and">
 			<if test="hotSearch != null and hotSearch != ''">
@@ -72,7 +72,7 @@
 	</select>
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
-	<select id="pageQuery" parameterType="map" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsKeywords">
+	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.goods.domain.girdparam.KeywordsGirdParam" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsKeywords">
 		select <include refid="goodsKeywordsColumn"/> from t_whs_goods_keywords
 		<trim prefix="where" prefixOverrides="and">
 			<if test="hotSearch != null and hotSearch != ''">

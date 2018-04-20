@@ -54,7 +54,7 @@
 	</select>
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
-	<select id="pageQueryCount" parameterType="map" resultType="Integer">
+	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsCategoryGirdParam" resultType="Integer">
 		select count(id) from t_whs_goods_category
 		<trim prefix="where" prefixOverrides="and">
 			<if test="parentId != null and parentId != ''">
@@ -67,7 +67,8 @@
 	</select>
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
-	<select id="pageQuery" parameterType="map" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
+	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsCategoryGirdParam" 
+		resultType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
 		select <include refid="categoryColumn"/> from t_whs_goods_category
 		<trim prefix="where" prefixOverrides="and">
 			<if test="parentId != null and parentId != ''">
