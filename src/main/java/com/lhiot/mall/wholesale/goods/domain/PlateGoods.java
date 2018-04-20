@@ -10,13 +10,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PlateGoods {
 
-	@ApiModelProperty(notes="版块ID",dataType="Long")
+	@ApiModelProperty(notes="ID",dataType="Long")
 	private Long id;
 	
-	@ApiModelProperty(notes="版块名称",dataType="String")
-	private String plateName;
+	@ApiModelProperty(notes="版块id",dataType="Long")
+	private Long plateId;
 	
-	@ApiModelProperty(notes="版块图片",dataType="String")
-	private String plateImage;
+	@ApiModelProperty(notes="商品规格id,逗号分割",dataType="String")
+	private String goodsStandardIds;
 	
+	@ApiModelProperty(notes="商品规格id",dataType="Long")
+	private Long goodsStandardId;
 }

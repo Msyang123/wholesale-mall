@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.goods.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,33 +12,44 @@ import org.springframework.transaction.annotation.Transactional;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.util.StringUtils;
-import com.lhiot.mall.wholesale.goods.domain.GoodsUnit;
-import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsUnitGridParam;
-import com.lhiot.mall.wholesale.goods.mapper.GoodsUnitMapper;
+import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
+import com.lhiot.mall.wholesale.goods.domain.PlateGoods;
+import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam;
+import com.lhiot.mall.wholesale.goods.mapper.PlateGoodsMapper;
 
 /**GoodsUnitService
  * 商品中心
- * @author yj
+ * @author lynn
  *
  */
 @Service
 @Transactional
-public class GoodsUnitService {
+public class PlateGoodsService {
 	
-	private final GoodsUnitMapper goodsUnitMapper;
+	private final PlateGoodsMapper plateGoodsMapper;
 	
 	@Autowired
-	public GoodsUnitService(GoodsUnitMapper goodsUnitMapper){
-		this.goodsUnitMapper = goodsUnitMapper;
+	public PlateGoodsService(PlateGoodsMapper plateGoodsMapper){
+		this.plateGoodsMapper = plateGoodsMapper;
 	}
 	
 	/**
-	 * 新增单位
+	 * 新增版块商品
 	 * @param goodsUnit
 	 * @return
 	 */
-	public boolean create(GoodsUnit goodsUnit){
-		return goodsUnitMapper.insert(goodsUnit)>0;
+	public boolean create(PlateGoods param){
+		String[] standardIds = param.getGoodsStandardIds().split(",");
+		Long plateId = param.getId();
+		PlateGoods plateGoods = null;
+		List<PlateGoods> list = new ArrayList<>();
+		for(String str : standardIds){
+			plateGoods = new PlateGoods();
+			plateGoods.setPlateId(plateId);
+			plateGoods.setGoodsStandardId(Long.parseLong(str));
+			list.add(plateGoods);
+		}
+		return plateGoodsMapper.insertInbatch(list)>0;
 	}
 	
 	/**
@@ -50,42 +62,24 @@ public class GoodsUnitService {
 		}
 		List<Long> list = Arrays.asList(ids.split(",")).stream()
 								.map(id -> Long.parseLong(id.trim())).collect(Collectors.toList());
-		goodsUnitMapper.removeInbatch(list);
+		plateGoodsMapper.removeInbatch(list);
 	}
 	
 	/**
-	 * 修改商品单位
-	 * @param goodsUnit
-	 * @return
-	 */
-	public boolean update(GoodsUnit goodsUnit){
-		return goodsUnitMapper.update(goodsUnit)>0;
-	}
-	
-	/**
-	 * 根据id查询商品单位
+	 * 根据id查询商品版块商品
 	 * @param id
 	 * @return
 	 */
-	public GoodsUnit goodsUnit(Long id){
-		return goodsUnitMapper.select(id);
+	public GoodsStandard goodsUnit(Long id){
+		return plateGoodsMapper.select(id);
 	}
 	
 	/**
-	 * 查询所有的商品单位
+	 * 查询所有的商品版块商品
 	 * @return
 	 */
-	public List<GoodsUnit> search(){
-		return goodsUnitMapper.search();
-	}
-	
-	/**
-	 * 
-	 * @param code
-	 * @return
-	 */
-	public GoodsUnit findByCode(String code){
-		return goodsUnitMapper.findByCode(code);
+	public List<GoodsStandard> search(){
+		return plateGoodsMapper.search();
 	}
 	
 	/**
@@ -93,8 +87,8 @@ public class GoodsUnitService {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public ArrayObject<PageObject> pageQuery(GoodsUnitGridParam param){
-		int count = goodsUnitMapper.pageQueryCount(param);
+	public ArrayObject<PageObject> pageQuery(GoodsStandardGirdParam param){
+		int count = plateGoodsMapper.pageQueryCount(param);
 		int page = param.getPage();
 		int rows = param.getRows();
 		//起始行
@@ -105,7 +99,7 @@ public class GoodsUnitService {
 			param.setPage(1);
 			param.setStart(0);
 		}
-		List<GoodsUnit> goodsUnits = goodsUnitMapper.pageQuery(param);
+		List<GoodsStandard> goodsUnits = plateGoodsMapper.pageQuery(param);
 		PageObject obj = new PageObject();
 		obj.setPage(param.getPage());
 		obj.setRows(param.getRows());

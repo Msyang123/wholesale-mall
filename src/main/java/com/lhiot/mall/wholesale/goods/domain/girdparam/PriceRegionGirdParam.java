@@ -17,4 +17,7 @@ public class PriceRegionGirdParam extends PageObject {
 	
 	@ApiModelProperty(notes="商品单位名称",dataType="Integer")
 	private Integer maxPrice;
+	
+	@ApiModelProperty(notes="商品单位名称",dataType="Integer")
+	private Integer start;
 }

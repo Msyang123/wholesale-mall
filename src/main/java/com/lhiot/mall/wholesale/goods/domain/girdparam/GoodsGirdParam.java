@@ -23,4 +23,7 @@ public class GoodsGirdParam extends PageObject {
 	
 	@ApiModelProperty(notes="商品版块id",dataType="Long")
 	private Long plateId;
+	
+	@ApiModelProperty(notes="商品单位名称",dataType="Integer")
+	private Integer start;
 }
