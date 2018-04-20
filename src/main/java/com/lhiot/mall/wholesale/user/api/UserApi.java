@@ -1,9 +1,9 @@
 package com.lhiot.mall.wholesale.user.api;
 
-import com.leon.microx.common.wrapper.TipsObject;
-import com.lhiot.mall.wholesale.user.vo.User;
-import com.lhiot.mall.wholesale.user.vo.SearchUser;
+import com.leon.microx.common.wrapper.ResultObject;
 import com.lhiot.mall.wholesale.user.service.UserService;
+import com.lhiot.mall.wholesale.user.vo.SearchUser;
+import com.lhiot.mall.wholesale.user.vo.User;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,7 @@ public class UserApi {
         if (userService.save(user)) {
             return ResponseEntity.created(URI.create("/user/" + user.getId())).body(user);
         }
-        return ResponseEntity.badRequest().body(TipsObject.of("添加失败"));
+        return ResponseEntity.badRequest().body(ResultObject.of("添加失败"));
     }
 
     @PutMapping("/user/{id}")
@@ -42,7 +42,7 @@ public class UserApi {
         if (userService.save(user)) {
             return ResponseEntity.ok(user);
         }
-        return ResponseEntity.badRequest().body(TipsObject.of("修改失败"));
+        return ResponseEntity.badRequest().body(ResultObject.of("修改失败"));
     }
 
     @DeleteMapping("/user/{id}")
