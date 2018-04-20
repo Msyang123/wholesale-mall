@@ -14,7 +14,6 @@ import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.PriceRegionGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.GoodsPriceRegionMapper;
-import com.lhiot.mall.wholesale.util.PageUtil;
 
 /**GoodsPriceRegionService
  * 商品中心
@@ -76,10 +75,26 @@ public class GoodsPriceRegionService {
 	 * 分页查询
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public ArrayObject<PageObject> pageQuery(PriceRegionGirdParam param){
 		int count = goodsPriceRegionMapper.pageQueryCount(param);
+		int page = param.getPage();
+		int rows = param.getRows();
+		//起始行
+		param.setStart((page-1)*rows);
+		//总记录数
+		int totalPages = (count%rows==0?count/rows:count/rows+1);
+		if(totalPages < page){
+			param.setPage(1);
+			param.setStart(0);
+		}
 		List<GoodsPriceRegion> goods = goodsPriceRegionMapper.pageQuery(param);
-		return PageUtil.query(param, count, goods);
+		PageObject obj = new PageObject();
+		obj.setPage(param.getPage());
+		obj.setRows(param.getRows());
+		obj.setSidx(param.getSidx());
+		obj.setSord(param.getSord());
+		return ArrayObject.of(goods, obj);
 	}
 	
 }

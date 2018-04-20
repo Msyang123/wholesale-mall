@@ -21,6 +21,9 @@ public class GoodsStandardGirdParam extends PageObject {
 	@ApiModelProperty(notes="是否上架 ",dataType="Boolean")
 	private Boolean ifVaild;
 	
+	@ApiModelProperty(notes="商品单位名称",dataType="Integer")
+	private Integer start;
+	
 	@ApiModelProperty(notes="商品名称",dataType="String")
 	private String goodsName;
 	

@@ -11,32 +11,33 @@ import org.springframework.transaction.annotation.Transactional;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.util.StringUtils;
-import com.lhiot.mall.wholesale.goods.domain.Goods;
-import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
-import com.lhiot.mall.wholesale.goods.mapper.GoodsMapper;
+import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
+import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam;
+import com.lhiot.mall.wholesale.goods.mapper.PlateCategoryMapper;
 
-/**GoodsService
+/**PlateCategoryService
  * 商品中心
- * @author yj
+ * @author lynn
  *
  */
 @Service
 @Transactional
-public class GoodsService {
+public class PlateCategoryService {
 	
-	private final GoodsMapper goodsMapper;
+	private final PlateCategoryMapper plateCategoryMapper;
+	
 	@Autowired
-	public GoodsService(GoodsMapper goodsMapper){
-		this.goodsMapper = goodsMapper;
+	public PlateCategoryService(PlateCategoryMapper plateCategoryMapper){
+		this.plateCategoryMapper = plateCategoryMapper;
 	}
 	
 	/**
-	 * 新增商品
-	 * @param goodsUnit
+	 * 新增版块
+	 * @param PlateCategory
 	 * @return
 	 */
-	public boolean create(Goods goods){
-		return goodsMapper.insert(goods)>0;
+	public boolean create(PlateCategory plateCategory){
+		return plateCategoryMapper.insert(plateCategory)>0;
 	}
 	
 	/**
@@ -49,33 +50,42 @@ public class GoodsService {
 		}
 		List<Long> list = Arrays.asList(ids.split(",")).stream()
 								.map(id -> Long.parseLong(id.trim())).collect(Collectors.toList());
-		goodsMapper.removeInbatch(list);
+		plateCategoryMapper.removeInbatch(list);
 	}
 	
 	/**
-	 * 修改商品
-	 * @param goodsUnit
+	 * 修改商品版块
+	 * @param PlateCategory
 	 * @return
 	 */
-	public boolean update(Goods goods){
-		return goodsMapper.update(goods)>0;
+	public boolean update(PlateCategory plateCategory){
+		return plateCategoryMapper.update(plateCategory)>0;
 	}
 	
 	/**
-	 * 根据id查询商品信息
+	 * 根据id查询商品版块
 	 * @param id
 	 * @return
 	 */
-	public Goods goods(Long id){
-		return goodsMapper.select(id);
+	public PlateCategory plateCategory(Long id){
+		return plateCategoryMapper.select(id);
+	}
+	
+	/**
+	 * 查询所有的商品版块
+	 * @return
+	 */
+	public List<PlateCategory> search(){
+		return plateCategoryMapper.search();
 	}
 	
 	/**
 	 * 分页查询
 	 * @return
 	 */
-	public ArrayObject<PageObject> pageQuery(GoodsGirdParam param){
-		int count = goodsMapper.pageQueryCount(param);
+	@SuppressWarnings("unchecked")
+	public ArrayObject<PageObject> pageQuery(GoodsStandardGirdParam param){
+		int count = plateCategoryMapper.pageQueryCount();
 		int page = param.getPage();
 		int rows = param.getRows();
 		//起始行
@@ -86,12 +96,12 @@ public class GoodsService {
 			param.setPage(1);
 			param.setStart(0);
 		}
-		List<Goods> goods = goodsMapper.pageQuery(param);
+		List<PlateCategory> PlateCategorys = plateCategoryMapper.pageQuery(param);
 		PageObject obj = new PageObject();
 		obj.setPage(param.getPage());
 		obj.setRows(param.getRows());
 		obj.setSidx(param.getSidx());
 		obj.setSord(param.getSord());
-		return ArrayObject.of(goods, obj);
+		return ArrayObject.of(PlateCategorys, obj);
 	}
 }

@@ -53,7 +53,7 @@
 	</select>
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
-	<select id="pageQueryCount" parameterType="map" resultType="Integer">
+	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam" resultType="Integer">
 		select count(id) 
 		from t_whs_plate_goods t4
 		left join t_whs_goods_standard t1 on t4.goods_standard_id = t1.id
@@ -70,7 +70,8 @@
 	</select>
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
-	<select id="pageQuery" parameterType="map" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
+	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam" 
+		resultType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
 		select <include refid="goodsStandardColumn"/>, <include refid="goodsColumn"/>,<include refid="unitColumn"/> 
 		from t_whs_plate_goods t4
 		left join t_whs_goods_standard t1 on t4.goods_standard_id = t1.id

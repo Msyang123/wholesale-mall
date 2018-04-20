@@ -12,9 +12,9 @@ import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
+import com.lhiot.mall.wholesale.goods.domain.GoodsUnit;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.GoodsStandardMapper;
-import com.lhiot.mall.wholesale.util.PageUtil;
 
 /**GoodsService
  * 商品中心
@@ -84,9 +84,25 @@ public class GoodsStandardService {
 	 * 分页查询
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public ArrayObject<PageObject> pageQuery(GoodsStandardGirdParam param){
 		int count = goodsStandardMapper.pageQueryCount(param);
+		int page = param.getPage();
+		int rows = param.getRows();
+		//起始行
+		param.setStart((page-1)*rows);
+		//总记录数
+		int totalPages = (count%rows==0?count/rows:count/rows+1);
+		if(totalPages < page){
+			param.setPage(1);
+			param.setStart(0);
+		}
 		List<GoodsStandard> goods = goodsStandardMapper.pageQuery(param);
-		return PageUtil.query(param, count, goods);
+		PageObject obj = new PageObject();
+		obj.setPage(param.getPage());
+		obj.setRows(param.getRows());
+		obj.setSidx(param.getSidx());
+		obj.setSord(param.getSord());
+		return ArrayObject.of(goods, obj);
 	}
 }

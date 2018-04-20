@@ -67,7 +67,7 @@
 				and unit_code = #{unitCode}
 			</if>
 			<if test="unitName != null and unitName != ''">
-				and unit_name = #{unitName},
+				and unit_name = #{unitName}
 			</if>
 		</trim>
 	</select>
@@ -81,9 +81,9 @@
 				and unit_code = #{unitCode}
 			</if>
 			<if test="unitName != null and unitName != ''">
-				and unit_name = #{unitName},
+				and unit_name = #{unitName}
 			</if>
 		</trim>
-		<include refid="common.pagerByPage"></include>
+		<include refid="common.pager"></include>
 	</select>
 </mapper>

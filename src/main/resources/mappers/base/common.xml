@@ -4,16 +4,9 @@
 	<!-- 公共执行语句 -->
 	<!-- 分页后面的 -->
 	<sql id="pager">
-        <if test="SIDX != null and SIDX != ''">
-			ORDER BY  ${SIDX} ${SORD}
+        <if test="sidx != null and sidx != ''">
+			ORDER BY  ${sidx} ${sord}
 		</if>
-			LIMIT #{START}, #{ROWS} 
-	</sql>
-	
-	<sql id="pagerByPage">
-        <if test="SIDX != null and SIDX != ''">
-			ORDER BY  ${SIDX} ${SORD}
-		</if>
-			LIMIT ((#{START} -1)*#{ROWS}) , #{ROWS} 
+			LIMIT #{start}, #{rows} 
 	</sql>
 </mapper>
