@@ -73,6 +73,17 @@
 			<artifactId>mybatis-spring-boot-starter</artifactId>
 			<version>LATEST</version>
 		</dependency>
+		<!--<dependency>-->
+			<!--<groupId>com.baomidou</groupId>-->
+			<!--<artifactId>mybatis-plus-boot-starter</artifactId>-->
+			<!--<version>LATEST</version>-->
+			<!--<exclusions>-->
+				<!--<exclusion>-->
+					<!--<artifactId>tomcat-jdbc</artifactId>-->
+					<!--<groupId>org.apache.tomcat</groupId>-->
+				<!--</exclusion>-->
+			<!--</exclusions>-->
+		<!--</dependency>-->
 
 		<!-- swagger -->
 		<dependency>
