@@ -5,9 +5,11 @@ import java.math.BigDecimal;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @ApiModel
+@NoArgsConstructor
 public class GoodsStandard {
 
 	@ApiModelProperty(notes="商品规格ID",dataType="Long")

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="t_whs_goods_standard">
+<mapper namespace="com.lhiot.mall.wholesale.goods.mapper.GoodsStandardMapper">
 
 	<sql id="goodsStandardColumn">
 		t1.id ,t1.goods_id as goodsId, t1.bar_code as barCode,t1.weight,t1.unit_code as unitCode,
@@ -22,7 +22,7 @@
 	</sql>
 	
 	<!-- lynn 2018/4/19根据商品id查询商品 -->
-	<select id="findById" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
+	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
 		select <include refid="goodsStandardColumn"/>, <include refid="goodsColumn"/>,<include refid="unitColumn"/>,
 		<include refid="categoryColumn"/>
 		from t_whs_goods_standard t1
@@ -33,7 +33,7 @@
 	</select>
 	
 	<!-- lynn 2018/4/19根据根据关键词查询商品详情 -->
-	<select id="findByKeywords" parameterType="map" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
+	<select id="fuzzySearch" parameterType="map" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
 		select <include refid="goodsStandardColumn"/>, <include refid="goodsColumn"/>,<include refid="unitColumn"/>,
 		<include refid="categoryColumn"/>
 		from t_whs_goods_standard t1
@@ -52,7 +52,7 @@
 	</select>
 	
 	<!-- lynn 2018/4/19根据商品id 新增商品 -->
-	<insert id="create" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
+	<insert id="insert" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
 		insert into t_whs_goods(
 			<trim suffixOverrides=",">
 				<if test="goodsId != null and goodsId != ''">goods_id,</if>
@@ -99,7 +99,7 @@
 	</update>
 	
 	<!-- lynn 2018/4/19根据商品id 删除商品 -->
-	<delete id="delete" parameterType="java.util.List">
+	<delete id="removeInbatch" parameterType="java.util.List">
 		delete from t_whs_goods_standard where id in
 		<foreach collection="list" item = "item" open="(" separator="," close=")">
 			#{item}

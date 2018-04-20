@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="t_whs_goods_price_region">
+<mapper namespace="com.lhiot.mall.wholesale.goods.mapper.GoodsPriceRegionMapper">
 	<sql id="goodsPriceRegionColumn">
 		id ,goods_standard_id as goodsStandardId, price, standard_des as standardDes,
 		min_quantity as minQuantity, max_quantity as maxQuantity, reorder
 	</sql>
 	
 	<!-- lynn后台管理 新增2018/4/19 -->
-	<insert id="create" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion">
+	<insert id="insert" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion">
 		insert into t_whs_goods_price_region(
 			<trim suffixOverrides=",">
 				<if test="goodsStandardId != null and goodsStandardId != ''">goods_standard_id,</if>
@@ -31,7 +31,7 @@
 	</insert>
 	
 	<!-- lynn后台管理 删除2018/4/19 -->
-	<delete id="delete" parameterType="java.util.List">
+	<delete id="removeInbatch" parameterType="java.util.List">
 		delete from t_whs_goods_price_region where id in
 		<foreach collection="list" item = "item" open="(" separator="," close=")">
 			#{item}
@@ -53,7 +53,7 @@
 	</update>
 	
 	<!-- lynn后台管理 根据id查询2018/4/19 -->
-	<select id="findById" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion">
+	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion">
 		select <include refid="goodsPriceRegionColumn"/> from t_whs_goods_price_region where id = #{0}
 	</select>
 	

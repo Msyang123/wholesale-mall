@@ -3,9 +3,11 @@ package com.lhiot.mall.wholesale.goods.domain;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @ApiModel
+@NoArgsConstructor
 public class GoodsKeywords {
 
 	@ApiModelProperty(notes="ID",dataType="Long")
