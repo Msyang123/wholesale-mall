@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.demandgoods.mapper.DemandGoodsMapper">
+	<sql id="demandGoodsColumn">
+		t1.id as id,t1.goods_brand as goodsBrand,t1.goods_name as goodsName,t1.goods_standard as goodsStandard,
+		t1.reference_price as referencePrice,t1.supplier as supplier,t1.comments as comments
+	</sql>
+
+	<sql id="userColumn">
+		t2.shop_name as shopName,t2.nickname as nickname,t2.phone as phone
+	</sql>
+
+	<insert id="insert" parameterType="com.lhiot.mall.wholesale.demandgoods.vo.DemandGoods" useGeneratedKeys="true">
+		INSERT INTO t_whs_demand_goods (id, goods_name, goods_brand, goods_standard, supplier, reference_price, comments, contact_way, create_time, user_id)
+		VALUES (#{id}, #{goodsName}, #{goodsBrand}, #{goodsStandard}, #{supplier}, #{referencePrice}, #{comments}, #{contactWay}, #{cereate_time}, #{userId})
+	</insert>
+
+	<delete id="remove" parameterType="long">
+		DELETE FROM t_whs_demand_goods WHERE id = #{0}
+	</delete>
+
+
+	<update id="update" parameterType="com.lhiot.mall.wholesale.demandgoods.vo.DemandGoods">
+		UPDATE t_whs_demand_goods set id = #{id}
+		<if test="goodsName != null and goodsName != ''">
+			,goods_name = #{goodsName}
+		</if>
+		<if test="userId != 0">
+			,user_id = #{userId}
+		</if>
+		WHERE id = #{id}
+	</update>
+
+	<select id="select" parameterType="long" resultType="com.lhiot.mall.wholesale.demandgoods.vo.DemandGoods">
+		SELECT <include refid="demandGoodsColumn"/>,<include refid="userColumn"/>
+		FROM t_whs_demand_goods t1
+		LEFT JOIN t_whs_user t2 on t1.user_id = t2.id
+		WHERE t1.id = #{id}
+	</select>
+
+	<select id="search" parameterType="map" resultType="com.lhiot.mall.wholesale.demandgoods.vo.DemandGoods">
+		SELECT <include refid="demandGoodsColumn"/>,<include refid="userColumn"/>
+		FROM t_whs_demand_goods t1
+		LEFT JOIN t_whs_user t2 on t1.user_id = t2.id
+		WHERE 1 = 1
+		<if test="userName != null and userName != ''">
+			AND t2.user_name LIKE CONCAT('%', #{userName}, '%')
+		</if>
+		<if test="phone != null and phone != ''">
+			AND t2.phone LIKE CONCAT('%', #{phone}, '%')
+		</if>
+	</select>
+</mapper>

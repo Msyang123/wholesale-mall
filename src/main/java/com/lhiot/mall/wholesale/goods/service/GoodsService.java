@@ -94,4 +94,8 @@ public class GoodsService {
 		obj.setSord(param.getSord());
 		return ArrayObject.of(goods, obj);
 	}
+
+	public List<DemandGoods> demandGoods(long id) {
+		return sqlSession.selectList("t_whs_demands_goods.findById");
+	}
 }
