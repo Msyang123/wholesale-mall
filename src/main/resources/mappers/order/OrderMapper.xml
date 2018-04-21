@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.order.mapper.OrderMapper">
+	<sql id="orderColumn">
+		t1.id as id,t1.order_code as orderCode,t1.user_id as userId,t1.salesman_id as salesmanId,
+		t1.order_total as orderTotal,t1.order_create_time as orderCreateTime,t1.order_status as orderStatus,
+		t1.order_coupon as orderCoupon,t1.order_discount_fee as orderDiscountFee,t1.order_need_fee as orderNeedFee,
+		t1.hd_status as hdStatus,t1.delivery_time as deliveryTime,t1.delivery_fee as deliveryFee,
+		t1.remarks as remarks,t1.order_type as orderType,t1.pay_status as payStatus,
+		t1.delivery_address as deliveryAddress,receive_time as receiveTime
+	</sql>
+
+	<sql id="userColumn">
+		t2.shop_name as shopName,t2.nickname as nickname,t2.phone as phone,t2.user_name as userName,t2.address_detail as addressDetail
+	</sql>
+
+	<sql id="orderGoodsColumn">
+		t3.quanity as quanity
+	</sql>
+
+	<sql id="goodsColumn">
+		t4.goods_name as goodsName,t4.goods_images as goodsImages
+	</sql>
+
+	<insert id="insert" parameterType="com.lhiot.mall.wholesale.order.vo.Order" useGeneratedKeys="true">
+		INSERT INTO t_whs_order (id, order_code, user_id, salesman_id, order_create_time, order_status, order_coupon, order_discount_fee, order_need_fee,
+		 hd_status, delivery_time, delivery_fee, remarks, order_type, pay_type, delivery_address, receive_time)
+		VALUES (#{id}, #{orderCode}, #{userId}, #{salesmanId}, #{orderCreateTime}, #{orderStatus}, #{orderCoupon}, #{orderDiscountFee}, #{orderNeedFee},
+		#{hdStatus}, #{deliveryTime}, #{deliveryFee}, #{remarks}, #{orderType}, #{deliveryAddress}, #{receiveTime}},
+	</insert>
+
+	<delete id="remove" parameterType="long">
+		DELETE FROM t_whs_order WHERE id = #{0}
+	</delete>
+
+
+	<update id="update" parameterType="com.lhiot.mall.wholesale.order.vo.Order">
+		UPDATE t_whs_order set id = #{id}
+		<if test="remarks != null and remarks != ''">
+			,remarks = #{remarks}
+		</if>
+		<if test="orderStatus != 0">
+			,order_status = 6
+		</if>
+		<if test="deliveryFee != 0">
+			,delivery_fee = delivery_fee - #{deliveryFee}
+		</if>
+		WHERE id = #{id}
+	</update>
+
+	<select id="select" parameterType="long" resultType="com.lhiot.mall.wholesale.order.vo.Order">
+		SELECT <include refid="orderColumn"/>,<include refid="userColumn"/>,<include refid="orderGoodsColumn"/>,<include refid="goodsColumn"/>
+		FROM t_whs_order t1
+		LEFT JOIN t_whs_user t2 on t1.user_id = t2.id
+		LEFT JOIN t_whs_order_goods t3 on t1.id = t3.order_id
+		LEFT JOIN t_whs_goods t4 on  t3.goods_standard_id = t4.goods_code
+		WHERE t1.id = #{id}
+	</select>
+
+	<select id="search" parameterType="map" resultType="com.lhiot.mall.wholesale.order.vo.Order">
+		SELECT <include refid="orderColumn"/>,<include refid="userColumn"/>
+		FROM t_whs_order t1
+		LEFT JOIN t_whs_user t2 on t1.user_id = t2.id
+		WHERE 1 = 1
+		<if test="orderCode != null and orderCode != ''">
+			AND t1.order_code LIKE CONCAT('%', #{orderCode}, '%')
+		</if>
+		<if test="phone != null and phone != ''">
+			AND t2.phone LIKE CONCAT('%', #{phone}, '%')
+		</if>
+		<if test="orderStatus != null and orderStatus != ''">
+			AND t1.order_status = #{orderStatus}
+		</if>
+		<if test="orderType != null and orderType != ''">
+			AND t1.order_type = #{orderType}
+		</if>
+		<if test="payStatus != null and payStatus != ''">
+			AND t1.pay_status = #{payStatus}
+		</if>
+		<if test="createTimeBegin != null and createTimeBegin != ''">
+			AND t1.order_create_time &gt;= #{createTimeBegin}
+		</if>
+		<if test="createTimeEnd != null and createTimeEnd != ''">
+			AND t1.order_create_time &lt;= #{createTimeEnd}
+		</if>
+	</select>
+
+
+</mapper>

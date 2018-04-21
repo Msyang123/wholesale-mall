@@ -26,4 +26,8 @@ public class GoodsService {
 	public List<GoodsUnit> tet(){
 		return sqlSession.selectList("t_whs_goods_unit.findAll");
 	}
+
+	public List<DemandGoods> demandGoods(long id) {
+		return sqlSession.selectList("t_whs_demands_goods.findById");
+	}
 }
