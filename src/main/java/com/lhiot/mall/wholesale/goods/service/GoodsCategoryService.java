@@ -112,6 +112,7 @@ public class GoodsCategoryService {
 			categoryTree.setId(g.getId());
 			categoryTree.setPId(g.getParentId());
 			categoryTree.setName(g.getCategoryName());
+			categoryTree.setClassCode(g.getCategoryCode());
 			categoryTree.setParentClassName(g.getParentCategoryName());
 			categoryTree.setIsParent(g.getParentId().toString().equals("0")?true:false);
 			categoryTree.setLevel(g.getLevels());

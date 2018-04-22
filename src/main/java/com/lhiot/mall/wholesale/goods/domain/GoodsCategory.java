@@ -19,6 +19,9 @@ public class GoodsCategory {
 	@ApiModelProperty(notes="分类名称",dataType="String")
 	private String categoryName;
 	
+	@ApiModelProperty(notes="分类编码",dataType="String")
+	private String categoryCode;
+	
 	@ApiModelProperty(notes="父分类名称",dataType="String")
 	private String parentCategoryName;
 	

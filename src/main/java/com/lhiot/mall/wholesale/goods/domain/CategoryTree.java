@@ -31,4 +31,7 @@ public class CategoryTree {
 	@ApiModelProperty(notes="等级",dataType="Integer")
 	private Integer level;
 	
+	@ApiModelProperty(notes="等级",dataType="String")
+	private String classCode;
+	
 }
