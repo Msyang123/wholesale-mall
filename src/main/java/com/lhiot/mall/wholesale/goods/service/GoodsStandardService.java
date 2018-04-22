@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
 import com.lhiot.mall.wholesale.goods.domain.GoodsUnit;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam;
@@ -84,8 +85,7 @@ public class GoodsStandardService {
 	 * 分页查询
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	public ArrayObject<PageObject> pageQuery(GoodsStandardGirdParam param){
+	public PageQueryObject pageQuery(GoodsStandardGirdParam param){
 		int count = goodsStandardMapper.pageQueryCount(param);
 		int page = param.getPage();
 		int rows = param.getRows();
@@ -98,11 +98,11 @@ public class GoodsStandardService {
 			param.setStart(0);
 		}
 		List<GoodsStandard> goods = goodsStandardMapper.pageQuery(param);
-		PageObject obj = new PageObject();
-		obj.setPage(param.getPage());
-		obj.setRows(param.getRows());
-		obj.setSidx(param.getSidx());
-		obj.setSord(param.getSord());
-		return ArrayObject.of(goods, obj);
+		PageQueryObject result = new PageQueryObject();
+		result.setRows(goods);
+		result.setPage(page);
+		result.setRecords(rows);
+		result.setTotal(count);
+		return result;
 	}
 }

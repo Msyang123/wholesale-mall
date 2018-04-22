@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
 import com.lhiot.mall.wholesale.goods.domain.PlateGoods;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam;
@@ -95,8 +96,7 @@ public class PlateGoodsService {
 	 * 分页查询
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	public ArrayObject<PageObject> pageQuery(GoodsStandardGirdParam param){
+	public PageQueryObject pageQuery(GoodsStandardGirdParam param){
 		int count = plateGoodsMapper.pageQueryCount(param);
 		int page = param.getPage();
 		int rows = param.getRows();
@@ -105,15 +105,16 @@ public class PlateGoodsService {
 		//总记录数
 		int totalPages = (count%rows==0?count/rows:count/rows+1);
 		if(totalPages < page){
-			param.setPage(1);
+			page = 1;
+			param.setPage(page);
 			param.setStart(0);
 		}
 		List<GoodsStandard> goodsUnits = plateGoodsMapper.pageQuery(param);
-		PageObject obj = new PageObject();
-		obj.setPage(param.getPage());
-		obj.setRows(param.getRows());
-		obj.setSidx(param.getSidx());
-		obj.setSord(param.getSord());
-		return ArrayObject.of(goodsUnits, obj);
+		PageQueryObject result = new PageQueryObject();
+		result.setRows(goodsUnits);
+		result.setPage(page);
+		result.setRecords(rows);
+		result.setTotal(count);
+		return result;
 	}
 }

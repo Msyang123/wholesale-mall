@@ -3,16 +3,29 @@ package com.lhiot.mall.wholesale.goods.api;
 import java.net.URI;
 import java.util.List;
 
-import com.lhiot.mall.wholesale.goods.domain.*;
-import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.common.wrapper.ResultObject;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.goods.domain.Goods;
+import com.lhiot.mall.wholesale.goods.domain.GoodsDetailResult;
+import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
+import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
+import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
+import com.lhiot.mall.wholesale.goods.domain.InventoryResult;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
+import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 import com.lhiot.mall.wholesale.goods.service.GoodsService;
 
 import io.swagger.annotations.Api;
@@ -69,7 +82,7 @@ public class GoodsApi {
     
     @PostMapping("/goods/gird")
     @ApiOperation(value = "新建一个查询，分页查询商品", response = ArrayObject.class)
-    public ResponseEntity<ArrayObject<PageObject>> grid(@RequestBody(required = true) GoodsGirdParam param) {
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) GoodsGirdParam param) {
         return ResponseEntity.ok(goodsService.pageQuery(param));
     }
 

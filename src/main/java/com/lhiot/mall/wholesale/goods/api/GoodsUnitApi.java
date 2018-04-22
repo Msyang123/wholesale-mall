@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.common.wrapper.ResultObject;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.GoodsUnit;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsUnitGridParam;
 import com.lhiot.mall.wholesale.goods.service.GoodsUnitService;
@@ -78,7 +78,7 @@ public class GoodsUnitApi {
     
     @PostMapping("/goodsunit/gird")
     @ApiOperation(value = "新建一个查询，分页查询商品单位", response = ArrayObject.class)
-    public ResponseEntity<ArrayObject<PageObject>> grid(@RequestBody(required = true) GoodsUnitGridParam param) {
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) GoodsUnitGridParam param) {
         return ResponseEntity.ok(goodsUnitService.pageQuery(param));
     }
 }
