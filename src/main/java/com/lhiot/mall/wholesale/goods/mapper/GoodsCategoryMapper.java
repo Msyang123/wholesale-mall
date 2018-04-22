@@ -20,6 +20,8 @@ public interface GoodsCategoryMapper {
 
     List<GoodsCategory> search();
     
+    List<GoodsCategory> findTree();
+    
     //分页查询分类
     List<GoodsCategory> pageQuery(GoodsCategoryGirdParam map);
     //查询分类的总记录数

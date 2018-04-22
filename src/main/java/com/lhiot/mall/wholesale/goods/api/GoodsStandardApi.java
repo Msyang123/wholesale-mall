@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.common.wrapper.ResultObject;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam;
 import com.lhiot.mall.wholesale.goods.service.GoodsStandardService;
@@ -79,7 +79,7 @@ public class GoodsStandardApi {
     
     @PostMapping("/goodsstandard/gird")
     @ApiOperation(value = "新建一个查询，分页查询商品规格", response = ArrayObject.class)
-    public ResponseEntity<ArrayObject<PageObject>> grid(@RequestBody(required = true) GoodsStandardGirdParam param) {
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) GoodsStandardGirdParam param) {
         return ResponseEntity.ok(GoodsStandardService.pageQuery(param));
     }
 }

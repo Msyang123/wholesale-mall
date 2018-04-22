@@ -14,8 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.common.wrapper.ResultObject;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.goods.domain.CategoryTree;
 import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsCategoryGirdParam;
 import com.lhiot.mall.wholesale.goods.service.GoodsCategoryService;
@@ -49,7 +50,7 @@ public class GoodsCategoryApi {
     
     @PutMapping("/goodscategory/{id}")
     @ApiOperation(value = "根据ID修改商品分类", response = GoodsCategory.class)
-    public ResponseEntity<?> modify(@PathVariable("id") Long id, GoodsCategory goodsCategory) {
+    public ResponseEntity<?> modify(@PathVariable("id") Long id, @RequestBody GoodsCategory goodsCategory) {
         if (goodsCategoryService.update(goodsCategory)) {
             return ResponseEntity.ok(goodsCategory);
         }
@@ -71,7 +72,14 @@ public class GoodsCategoryApi {
     
     @PostMapping("/goodscategory/gird")
     @ApiOperation(value = "新建一个查询，分页查询商品分类", response = ArrayObject.class)
-    public ResponseEntity<ArrayObject<PageObject>> grid(@RequestBody(required = true) GoodsCategoryGirdParam param) {
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) GoodsCategoryGirdParam param) {
         return ResponseEntity.ok(goodsCategoryService.pageQuery(param));
+    }
+    
+    @SuppressWarnings("unchecked")
+	@GetMapping("/goodscategory/tree")
+    @ApiOperation(value = "查询商品版块树结构", response = ArrayObject.class)
+    public ResponseEntity<ArrayObject<CategoryTree>> tree() {
+        return ResponseEntity.ok(ArrayObject.of(goodsCategoryService.tree()));
     }
 }

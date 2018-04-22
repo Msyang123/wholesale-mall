@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.GoodsMapper;
@@ -76,7 +77,7 @@ public class GoodsService {
 	 * 分页查询
 	 * @return
 	 */
-	public ArrayObject<PageObject> pageQuery(GoodsGirdParam param){
+	public PageQueryObject pageQuery(GoodsGirdParam param){
 		int count = goodsMapper.pageQueryCount(param);
 		int page = param.getPage();
 		int rows = param.getRows();
@@ -85,16 +86,17 @@ public class GoodsService {
 		//总记录数
 		int totalPages = (count%rows==0?count/rows:count/rows+1);
 		if(totalPages < page){
-			param.setPage(1);
+			page = 1;
+			param.setPage(page);
 			param.setStart(0);
 		}
 		List<Goods> goods = goodsMapper.pageQuery(param);
-		PageObject obj = new PageObject();
-		obj.setPage(param.getPage());
-		obj.setRows(param.getRows());
-		obj.setSidx(param.getSidx());
-		obj.setSord(param.getSord());
-		return ArrayObject.of(goods, obj);
+		PageQueryObject result = new PageQueryObject();
+		result.setRows(goods);
+		result.setPage(page);
+		result.setRecords(rows);
+		result.setTotal(count);
+		return result;
 	}
 
 

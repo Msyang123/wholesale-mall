@@ -11,13 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.GoodsUnit;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsUnitGridParam;
 import com.lhiot.mall.wholesale.goods.mapper.GoodsUnitMapper;
 
 /**GoodsUnitService
  * 商品中心
- * @author yj
+ * @author lynn
  *
  */
 @Service
@@ -93,7 +94,7 @@ public class GoodsUnitService {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public ArrayObject<PageObject> pageQuery(GoodsUnitGridParam param){
+	public PageQueryObject pageQuery(GoodsUnitGridParam param){
 		int count = goodsUnitMapper.pageQueryCount(param);
 		int page = param.getPage();
 		int rows = param.getRows();
@@ -102,15 +103,16 @@ public class GoodsUnitService {
 		//总记录数
 		int totalPages = (count%rows==0?count/rows:count/rows+1);
 		if(totalPages < page){
-			param.setPage(1);
+			page = 1;
+			param.setPage(page);
 			param.setStart(0);
 		}
 		List<GoodsUnit> goodsUnits = goodsUnitMapper.pageQuery(param);
-		PageObject obj = new PageObject();
-		obj.setPage(param.getPage());
-		obj.setRows(param.getRows());
-		obj.setSidx(param.getSidx());
-		obj.setSord(param.getSord());
-		return ArrayObject.of(goodsUnits, obj);
+		PageQueryObject result = new PageQueryObject();
+		result.setRows(goodsUnits);
+		result.setPage(page);
+		result.setRecords(rows);
+		result.setTotal(count);
+		return result;
 	}
 }

@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.common.wrapper.ResultObject;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.PriceRegionGirdParam;
 import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
@@ -71,7 +71,7 @@ public class GoodsPriceRegionApi {
     
     @PostMapping("/priceregion/gird")
     @ApiOperation(value = "新建一个查询，分页查询价格区间", response = ArrayObject.class)
-    public ResponseEntity<ArrayObject<PageObject>> grid(@RequestBody(required = true) PriceRegionGirdParam param) {
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) PriceRegionGirdParam param) {
         return ResponseEntity.ok(goodsPriceRegionService.pageQuery(param));
     }
 }
