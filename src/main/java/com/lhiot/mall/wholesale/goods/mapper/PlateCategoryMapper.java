@@ -16,8 +16,10 @@ public interface PlateCategoryMapper {
     void removeInbatch(List<Long> ids);
 
     PlateCategory select(long id);
-
+    
     List<PlateCategory> search();
+    
+    List<PlateCategory> findTree();
     
     //分页查询分类
     List<PlateCategory> pageQuery(GoodsStandardGirdParam param);

@@ -87,4 +87,9 @@
 		</trim>
 		<include refid="common.pager"></include>
 	</select>
+	
+	<!-- updatelynn 修改商品版块  -->
+	<update id="update" parameterType="com.lhiot.mall.wholesale.goods.domain.PlateGoods">
+		update t_whs_plate_goods set plate_id = #{plateId} where id = #{id}
+	</update>
 </mapper>

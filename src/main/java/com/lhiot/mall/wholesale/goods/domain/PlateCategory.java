@@ -10,15 +10,25 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PlateCategory {
 
-	@ApiModelProperty(notes="ID",dataType="Long")
+	@ApiModelProperty(notes="id",dataType="Long")
 	private Long id;
 	
-	@ApiModelProperty(notes="版块ID",dataType="Long")
-	private Long plateId;
+	@ApiModelProperty(notes="商品规格id",dataType="Long")
+	private Long parentId;
 	
-	@ApiModelProperty(notes="商品规格id",dataType="String")
-	private String goodsStandardId;
+	@ApiModelProperty(notes="版块名称",dataType="String")
+	private String plateName;
+	
+	@ApiModelProperty(notes="版块图片",dataType="String")
+	private String plateImage;
 	
 	@ApiModelProperty(notes="排序",dataType="Integer")
 	private Integer rank;
+	
+	@ApiModelProperty(notes="父分类名称",dataType="String")
+	private String parentPlateNameName;
+	
+	@ApiModelProperty(notes="等级",dataType="Integer")
+	private Integer levels;
 }
+

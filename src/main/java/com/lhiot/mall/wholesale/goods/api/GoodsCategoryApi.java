@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.common.wrapper.ResultObject;
+import com.lhiot.mall.wholesale.goods.domain.CategoryTree;
 import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsCategoryGirdParam;
 import com.lhiot.mall.wholesale.goods.service.GoodsCategoryService;
@@ -73,5 +74,12 @@ public class GoodsCategoryApi {
     @ApiOperation(value = "新建一个查询，分页查询商品分类", response = ArrayObject.class)
     public ResponseEntity<ArrayObject<PageObject>> grid(@RequestBody(required = true) GoodsCategoryGirdParam param) {
         return ResponseEntity.ok(goodsCategoryService.pageQuery(param));
+    }
+    
+    @SuppressWarnings("unchecked")
+	@PostMapping("/goodscategory/tree")
+    @ApiOperation(value = "查询商品版块树结构", response = ArrayObject.class)
+    public ResponseEntity<ArrayObject<CategoryTree>> tree() {
+        return ResponseEntity.ok(ArrayObject.of(goodsCategoryService.tree()));
     }
 }

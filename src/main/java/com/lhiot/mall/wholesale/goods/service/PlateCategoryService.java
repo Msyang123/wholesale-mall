@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.goods.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.goods.domain.CategoryTree;
+import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
 import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.PlateCategoryMapper;
@@ -103,5 +106,26 @@ public class PlateCategoryService {
 		obj.setSidx(param.getSidx());
 		obj.setSord(param.getSord());
 		return ArrayObject.of(PlateCategorys, obj);
+	}
+	
+	/**
+	 * 获取版块分类的树结构
+	 * @return
+	 */
+	public List<CategoryTree> tree(){
+		List<CategoryTree> result = new ArrayList<>();
+		List<PlateCategory> list = plateCategoryMapper.findTree();
+		CategoryTree categoryTree = null;
+		for(PlateCategory p : list){
+			categoryTree = new CategoryTree();
+			categoryTree.setId(p.getId());
+			categoryTree.setPId(p.getParentId());
+			categoryTree.setName(p.getPlateName());
+			categoryTree.setParentClassName(p.getParentPlateNameName());
+			categoryTree.setIsParent(p.getParentId().toString().equals("0")?true:false);
+			categoryTree.setLevel(p.getLevels());
+			result.add(categoryTree);
+		}
+		return result;
 	}
 }

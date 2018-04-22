@@ -17,7 +17,7 @@ import com.lhiot.mall.wholesale.goods.mapper.GoodsUnitMapper;
 
 /**GoodsUnitService
  * 商品中心
- * @author yj
+ * @author lynn
  *
  */
 @Service

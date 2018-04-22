@@ -66,11 +66,20 @@ public class PlateGoodsService {
 	}
 	
 	/**
+	 * 修改商品版块
+	 * @param plateGoods
+	 * @return
+	 */
+	public boolean updatePlate(PlateGoods plateGoods){
+		return plateGoodsMapper.update(plateGoods)>0;
+	}
+	
+	/**
 	 * 根据id查询商品版块商品
 	 * @param id
 	 * @return
 	 */
-	public GoodsStandard goodsUnit(Long id){
+	public GoodsStandard plateGoods(Long id){
 		return plateGoodsMapper.select(id);
 	}
 	

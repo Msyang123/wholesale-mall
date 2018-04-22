@@ -1,6 +1,8 @@
 package com.lhiot.mall.wholesale.goods.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,14 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.PageObject;
-import com.leon.microx.util.StringUtils;
+import com.leon.microx.util.StringUtils;import com.lhiot.mall.wholesale.goods.domain.CategoryTree;
 import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsCategoryGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.GoodsCategoryMapper;
 
 /**
  * 商品中心
- * @author yj
+ * @author lynn
  *
  */
 @Service
@@ -95,5 +97,26 @@ public class GoodsCategoryService {
 		obj.setSidx(param.getSidx());
 		obj.setSord(param.getSord());
 		return ArrayObject.of(goods, obj);
+	}
+	
+	/**
+	 * 获取分类的树结构
+	 * @return
+	 */
+	public List<CategoryTree> tree(){
+		List<CategoryTree> result = new ArrayList<>();
+		List<GoodsCategory> list = goodsCategoryMapper.findTree();
+		CategoryTree categoryTree = null;
+		for(GoodsCategory g : list){
+			categoryTree = new CategoryTree();
+			categoryTree.setId(g.getId());
+			categoryTree.setPId(g.getParentId());
+			categoryTree.setName(g.getCategoryName());
+			categoryTree.setParentClassName(g.getParentCategoryName());
+			categoryTree.setIsParent(g.getParentId().toString().equals("0")?true:false);
+			categoryTree.setLevel(g.getLevels());
+			result.add(categoryTree);
+		}
+		return result;
 	}
 }

@@ -80,4 +80,26 @@
 		</trim>
 		<include refid="common.pager"></include>
 	</select>
+	
+	<!-- lynn 查找分类树 -->
+	<select id="findTree" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
+		SELECT 
+			id,
+			category_name as categoryName,
+			parent_id as parentId,
+			(SELECT category_name FROM t_whs_goods_category WHERE id=src.parent_id) AS parentClassName,
+			levels 
+		FROM (
+			SELECT id,category_name,parent_id,
+			@le:= IF (parent_id = 0 ,0, IF( LOCATE( CONCAT('|',parent_id,':'),@pathlevel) > 0 , 
+			SUBSTRING_INDEX( SUBSTRING_INDEX(@pathlevel,CONCAT('|',parent_id,':'),-1),'|',1) +1,@le+1) ) levels, 
+			@pathlevel:= CONCAT(@pathlevel,'|',category_name,':', @le ,'|') pathlevel, 
+			@pathnodes:= IF( parent_id =0,',0', CONCAT_WS(',',IF( LOCATE( CONCAT('|',parent_id,':'),@pathall) > 0 , 
+			SUBSTRING_INDEX( SUBSTRING_INDEX(@pathall,CONCAT('|',parent_id,':'),-1),'|',1),@pathnodes ) ,parent_id ) )paths,
+			@pathall:=CONCAT(@pathall,'|',category_name,':', @pathnodes ,'|') pathall 
+			FROM t_whs_goods_category, (SELECT @le:=0,@pathlevel:='', @pathall:='',@pathnodes:='') vv
+			ORDER BY parent_id,category_name
+		) src
+		ORDER BY parent_id
+	</select>
 </mapper>
