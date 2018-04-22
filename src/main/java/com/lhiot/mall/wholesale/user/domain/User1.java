@@ -1,4 +1,4 @@
-package com.lhiot.mall.wholesale.user.vo;
+package com.lhiot.mall.wholesale.user.domain;
 
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
@@ -9,7 +9,7 @@ import lombok.ToString;
 @ToString
 @ApiModel
 @NoArgsConstructor
-public class User {
+public class User1 {
 
     private long id;
 

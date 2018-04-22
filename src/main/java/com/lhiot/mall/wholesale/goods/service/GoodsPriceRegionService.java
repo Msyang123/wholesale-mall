@@ -96,5 +96,10 @@ public class GoodsPriceRegionService {
 		obj.setSord(param.getSord());
 		return ArrayObject.of(goods, obj);
 	}
+
+
+	public List<GoodsPriceRegion> selectPriceRegion(long goodsStandardId){
+		return goodsPriceRegionMapper.selectPriceRegion(goodsStandardId);
+	}
 	
 }

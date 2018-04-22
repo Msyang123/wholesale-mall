@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.user.mapper.SalesUserMapper">
+
+    <select id="selectRelation" parameterType="map" resultType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation">
+        SELECT * FROM T_WHS_SALESUSER_RELATION
+        <trim prefix="where" prefixOverrides="and">
+            <if test="id !=null and id !=''">
+                SALESMAN_ID = #{id}
+            </if>
+            <if test="isCheck !=null and isCheck !='' and isCheck ==2">
+                and is_check =2
+            </if>
+            <if test="isCheck !=null and isCheck !='' and isCheck ==1">
+                and is_check in(1,0)
+            </if>
+        </trim>
+        <include refid="common.pager"/>
+    </select>
+
+    <!--<select id="selectCheck" parameterType="map" resultType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation">
+        SELECT * FROM T_WHS_SALESUSER_RELATION
+        <trim prefix="where" prefixOverrides="and">
+            <if test="id != null and id !=''">
+                SALESMAN_ID = #{id}
+            </if>
+            and is_check in(1,0) <include refid="common.pager"/>
+        </trim>
+    </select>-->
+
+    <update id="updateUserSaleReletionship" parameterType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation">
+        UPDATE t_whs_salesuser_relation set  is_check = #{isCheck}
+        where user_id=#{userId}
+    </update>
+
+</mapper>
