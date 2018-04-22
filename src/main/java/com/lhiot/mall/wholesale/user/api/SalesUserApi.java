@@ -1,22 +1,28 @@
 package com.lhiot.mall.wholesale.user.api;
 
-import com.leon.microx.common.wrapper.TipsObject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.validation.constraints.NotNull;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.leon.microx.util.ImmutableMap;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 @Api
 @Slf4j
@@ -49,7 +55,7 @@ public class SalesUserApi {
         return ResponseEntity.ok(userService.search(ids));
     }
 
-    @PutMapping("/salesuser/check")
+/*    @PutMapping("/salesuser/check")
     @ApiOperation(value = "业务员审核商户")
     public ResponseEntity modify(@RequestParam Integer user_id, @RequestParam Integer is_check) {
         SalesUserRelation relation=new SalesUserRelation();
@@ -63,6 +69,6 @@ public class SalesUserApi {
             return ResponseEntity.ok(TipsObject.of("操作成功"));
         }
         return ResponseEntity.badRequest().body(TipsObject.of("操作失败"));
-    }
+    }*/
 
 }
