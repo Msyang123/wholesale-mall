@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.goods.domain;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -56,5 +57,8 @@ public class GoodsStandard {
 	
 	@ApiModelProperty(notes="商品规格单位名称",dataType="String")
 	private String goodsUnitName;
+
+	@ApiModelProperty(notes="商品价格区间",dataType="List")
+	private List<GoodsPriceRegion> goodsPriceRegionList;
 	
 }

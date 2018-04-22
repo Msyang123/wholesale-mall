@@ -22,4 +22,6 @@ public interface GoodsPriceRegionMapper {
     List<GoodsPriceRegion> pageQuery(PriceRegionGirdParam param);
     //查询分类的总记录数
     int pageQueryCount(PriceRegionGirdParam param);
+
+    List<GoodsPriceRegion> selectPriceRegion(long goodsStandardId);
 }
