@@ -81,5 +81,10 @@ public class GoodsPriceRegionService {
 		List<GoodsPriceRegion> goods = goodsPriceRegionMapper.pageQuery(param);
 		return PageUtil.query(param, count, goods);
 	}
+
+
+	public List<GoodsPriceRegion> selectPriceRegion(long goodsStandardId){
+		return goodsPriceRegionMapper.selectPriceRegion(goodsStandardId);
+	}
 	
 }

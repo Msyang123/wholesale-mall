@@ -1,4 +1,4 @@
-package com.lhiot.mall.wholesale.user.vo;
+package com.lhiot.mall.wholesale.user.domain;
 
 import io.swagger.annotations.ApiModel;
 import lombok.Data;

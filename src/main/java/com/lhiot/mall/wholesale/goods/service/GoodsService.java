@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
+import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,5 +81,22 @@ public class GoodsService {
 		int count = goodsMapper.pageQueryCount(param);
 		List<Goods> goods = goodsMapper.pageQuery(param);
 		return PageUtil.query(param, count, goods);
+	}
+
+
+	public GoodsInfo goodsInfo(long id){
+		return goodsMapper.goodsInfo(id);
+	}
+
+	public GoodsFlashsale goodsFlashsale(long goodsStandardId){
+		return goodsMapper.goodsFlashsale(goodsStandardId);
+	}
+
+	public List<GoodsInfo> inventoryList(long userId){
+		return goodsMapper.inventoryList(userId);
+	}
+
+	public List<GoodsInfo> recommendList(long plateId){
+		return goodsMapper.inventoryList(plateId);
 	}
 }

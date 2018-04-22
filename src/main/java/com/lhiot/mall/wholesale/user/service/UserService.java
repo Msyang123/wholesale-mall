@@ -1,10 +1,9 @@
 package com.lhiot.mall.wholesale.user.service;
 
-import com.leon.microx.util.BeanUtils;
 import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import com.lhiot.mall.wholesale.user.mapper.UserMapper;
-import com.lhiot.mall.wholesale.user.vo.SearchUser;
-import com.lhiot.mall.wholesale.user.vo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,30 +18,52 @@ public class UserService {
 
     private final UserMapper userMapper;
 
+
     @Autowired
-    public UserService(UserMapper userMapper, SnowflakeId snowflakeId) {
-        this.userMapper = userMapper;
+    public UserService(SnowflakeId snowflakeId, UserMapper userMapper) {
         this.snowflakeId = snowflakeId;
+        this.userMapper = userMapper;
     }
 
-    public boolean save(User user) {
-        if (user.getId() > 0) {
-            return userMapper.update(user) > 0;
-        } else {
-            user.setId(snowflakeId.longId());
-            return userMapper.insert(user) > 0;
+
+    public List<User> search(List ids) {
+        return userMapper.search(ids);
+    }
+
+    public int updateUserStatus(long id) {
+        return userMapper.updateUserStatus(id);
+    }
+
+    public User user(long id){
+        return userMapper.user(id);
+    }
+
+    public boolean updateUser(User user){
+        return userMapper.updateUser(user)>0;
+    }
+
+    public boolean saveOrUpdateAddress(UserAddress userAddress){
+        if (userAddress.getId()>0){
+            return userMapper.updateAddress(userAddress)>0;
+        }else {
+            return userMapper.insertAddress(userAddress)>0;
         }
     }
 
-    public void delete(long id) {
-        userMapper.remove(id);
+    public List<UserAddress> searchAddressList(long userId){
+        return userMapper.searchAddressList(userId);
     }
 
-    public User user(long id) {
-        return userMapper.select(id);
+    public UserAddress userAddress(long id){
+        return userMapper.userAddress(id);
     }
 
-    public List<User> users(SearchUser param) {
-        return userMapper.search(BeanUtils.toMap(param));
+    public void deleteAddress(long id){
+        userMapper.deleteAddress(id);
     }
+
+    public int updateDefaultAddress(){
+        return userMapper.updateDefaultAddress();
+    }
+
 }

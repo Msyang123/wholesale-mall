@@ -1,9 +1,10 @@
 package com.lhiot.mall.wholesale.user.api;
 
-import com.leon.microx.common.wrapper.ResultObject;
+import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import com.lhiot.mall.wholesale.user.service.UserService;
-import com.lhiot.mall.wholesale.user.vo.SearchUser;
-import com.lhiot.mall.wholesale.user.vo.User;
+import com.lhiot.mall.wholesale.user.domain.SearchUser;
+import com.lhiot.mall.wholesale.user.domain.User1;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.List;
 
@@ -26,41 +28,55 @@ public class UserApi {
         this.userService = userService;
     }
 
-    @PostMapping("/user")
-    @ApiOperation(value = "添加用户", response = User.class)
-    public ResponseEntity add(@RequestBody User user) {
-        if (userService.save(user)) {
-            return ResponseEntity.created(URI.create("/user/" + user.getId())).body(user);
-        }
-        return ResponseEntity.badRequest().body(ResultObject.of("添加失败"));
-    }
-
-    @PutMapping("/user/{id}")
-    @ApiOperation(value = "根据ID修改用户信息", response = User.class)
-    public ResponseEntity modify(@PathVariable("id") Long id, @RequestBody User user) {
-        user.setId(id);
-        if (userService.save(user)) {
-            return ResponseEntity.ok(user);
-        }
-        return ResponseEntity.badRequest().body(ResultObject.of("修改失败"));
-    }
-
-    @DeleteMapping("/user/{id}")
-    @ApiOperation(value = "根据ID删除一个用户")
-    public ResponseEntity delete(@PathVariable("id") Long id) {
-        userService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/user/{id}")
-    @ApiOperation(value = "根据ID查询一个用户信息", response = User.class)
-    public ResponseEntity<User> user(@PathVariable("id") Long id) {
+    @GetMapping("/userInfo/{id}")
+    @ApiOperation(value = "查询个人信息")
+    public ResponseEntity<User> selectUserInfo(@PathVariable @NotNull long id) {
         return ResponseEntity.ok(userService.user(id));
     }
 
-    @PostMapping("/user/search")
-    @ApiOperation(value = "新建一个查询，用于返回用户列表", response = User.class, responseContainer = "List")
-    public ResponseEntity<List<User>> search(@RequestBody(required = false) SearchUser param) {
-        return ResponseEntity.ok(userService.users(param));
+    @PutMapping("/userInfo/update")
+    @ApiOperation(value = "修改个人信息")
+    public ResponseEntity updateUser(@RequestBody User user){
+        if (userService.updateUser(user)){
+            return ResponseEntity.ok().body("修改完成");
+        }
+        return ResponseEntity.badRequest().body("修改失败");
     }
+
+    @PostMapping("/queryAddressList/{userId}")
+    @ApiOperation(value = "我的地址列表")
+    public ResponseEntity<List<UserAddress>> queryAddressList(@PathVariable @NotNull long userId){
+        return ResponseEntity.ok(userService.searchAddressList(userId));
+    }
+
+    @GetMapping("/queryAddress/{id}")
+    @ApiOperation(value = "根据ID查询地址详情")
+    public ResponseEntity<UserAddress> queryAddress(@PathVariable @NotNull long id) {
+        return ResponseEntity.ok(userService.userAddress(id));
+    }
+
+    @PostMapping("/saveAddress")
+    @ApiOperation(value = "新增/修改地址")
+    public ResponseEntity addAddress(@RequestBody UserAddress userAddress){
+        if (userService.searchAddressList(userAddress.getUserId()).isEmpty()){
+            userAddress.setIsDefault(0);//如果只有第一条数据则为默认地址
+        }else{
+            if(userAddress.getIsDefault()==0){
+                userService.updateDefaultAddress();
+            }
+        }
+        if (userService.saveOrUpdateAddress(userAddress)){
+            return ResponseEntity.ok().body("添加完成");
+        }
+        return ResponseEntity.badRequest().body("添加失败");
+    }
+
+    @DeleteMapping("/deleteAddress/{id}")
+    @ApiOperation(value = "根据ID删除地址")
+    public ResponseEntity delete(@PathVariable("id") Long id) {
+        userService.deleteAddress(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
 }
