@@ -102,7 +102,7 @@ public class GoodsStandardService {
 		result.setRows(goods);
 		result.setPage(page);
 		result.setRecords(rows);
-		result.setTotal(count);
+		result.setTotal(totalPages);
 		return result;
 	}
 }

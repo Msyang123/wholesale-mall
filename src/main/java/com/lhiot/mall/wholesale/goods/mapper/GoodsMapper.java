@@ -3,11 +3,11 @@ package com.lhiot.mall.wholesale.goods.mapper;
 import java.util.List;
 import java.util.Map;
 
-import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
-import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.lhiot.mall.wholesale.goods.domain.Goods;
+import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
+import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
 
 @Mapper
@@ -22,6 +22,8 @@ public interface GoodsMapper {
     Goods select(long id);
 
     List<Goods> search(Map<String, Object> where);
+    
+    List<Goods> searchByCategory(List<Long> list);
     
     //分页查询分类
     List<Goods> pageQuery(GoodsGirdParam param);

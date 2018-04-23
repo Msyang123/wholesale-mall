@@ -106,7 +106,7 @@ public class PlateCategoryService {
 		result.setRows(plateCategorys);
 		result.setPage(page);
 		result.setRecords(rows);
-		result.setTotal(count);
+		result.setTotal(totalPages);
 		return result;
 	}
 	

@@ -4,17 +4,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
-import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.Goods;
+import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
+import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.GoodsMapper;
 
@@ -95,7 +93,7 @@ public class GoodsService {
 		result.setRows(goods);
 		result.setPage(page);
 		result.setRecords(rows);
-		result.setTotal(count);
+		result.setTotal(totalPages);
 		return result;
 	}
 
@@ -114,5 +112,14 @@ public class GoodsService {
 
 	public List<GoodsInfo> recommendList(long plateId){
 		return goodsMapper.inventoryList(plateId);
+	}
+	
+	/**
+	 * 根据商品分类id批量查询商品
+	 * @param list
+	 * @return
+	 */
+	public List<Goods> findGoodsByCategory(List<Long> list){
+		return goodsMapper.searchByCategory(list);
 	}
 }

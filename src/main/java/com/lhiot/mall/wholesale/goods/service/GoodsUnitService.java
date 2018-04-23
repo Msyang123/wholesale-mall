@@ -112,7 +112,7 @@ public class GoodsUnitService {
 		result.setRows(goodsUnits);
 		result.setPage(page);
 		result.setRecords(rows);
-		result.setTotal(count);
+		result.setTotal(totalPages);
 		return result;
 	}
 }
