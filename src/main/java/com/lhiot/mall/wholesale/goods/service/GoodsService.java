@@ -2,6 +2,7 @@ package com.lhiot.mall.wholesale.goods.service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.Goods;
+import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
 import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
 import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
@@ -121,5 +123,33 @@ public class GoodsService {
 	 */
 	public List<Goods> findGoodsByCategory(List<Long> list){
 		return goodsMapper.searchByCategory(list);
+	}
+	
+	/**
+	 * 查询编码是否重复，进而判断是否可以进行修改和增加操作
+	 * @param goodsCategory
+	 * @return true允许操作，false 不允许操作
+	 */
+	public boolean allowOperation(Goods goods){
+		boolean success = true;
+		List<Goods> gcs = goodsMapper.searchByCode(goods.getGoodsCode());
+		Long id = goods.getId();
+		//如果不存在重复的编码
+		if(gcs.isEmpty()){
+			return success;
+		}
+		//存在重复的编码,则判断是否为本身
+		if(null == id){
+			success = false;
+			return success;
+		}
+		for(Goods gc : gcs){
+			Long categoryId = gc.getId();
+			if(!Objects.equals(categoryId, id)){
+				success = false;
+				break;
+			}
+		}
+		return success;
 	}
 }

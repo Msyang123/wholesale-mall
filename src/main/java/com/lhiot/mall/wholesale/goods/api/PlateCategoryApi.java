@@ -19,7 +19,7 @@ import com.leon.microx.common.wrapper.ResultObject;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.CategoryTree;
 import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
-import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam;
+import com.lhiot.mall.wholesale.goods.domain.girdparam.PlateGirdParam;
 import com.lhiot.mall.wholesale.goods.service.PlateCategoryService;
 
 import io.swagger.annotations.Api;
@@ -79,14 +79,20 @@ public class PlateCategoryApi {
     
     @PostMapping("/platecategory/gird")
     @ApiOperation(value = "新建一个查询，分页查询商品版块", response = ArrayObject.class)
-    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) GoodsStandardGirdParam param) {
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) PlateGirdParam param) {
         return ResponseEntity.ok(plateCategoryService.pageQuery(param));
     }
     
     @SuppressWarnings("unchecked")
 	@GetMapping("/platecategory/tree")
-    @ApiOperation(value = "查询商品分类的树结构", response = ArrayObject.class)
+    @ApiOperation(value = "查询商品版块的树结构", response = ArrayObject.class)
     public ResponseEntity<ArrayObject<CategoryTree>> grid() {
         return ResponseEntity.ok(ArrayObject.of(plateCategoryService.tree()));
+    }
+    
+	@GetMapping("/platecategory/trydelete/{ids}")
+    @ApiOperation(value = "查询商品版块是否可以被删除")
+    public ResponseEntity<String> tryOperation(@PathVariable("ids") String ids) {
+        return ResponseEntity.ok(plateCategoryService.canDelete(ids));
     }
 }

@@ -25,6 +25,7 @@ public interface GoodsMapper {
     
     List<Goods> searchByCategory(List<Long> list);
     
+    List<Goods> searchByCode(String goodsCode);
     //分页查询分类
     List<Goods> pageQuery(GoodsGirdParam param);
     //查询分类的总记录数
