@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.leon.microx.common.wrapper.ArrayObject;
@@ -78,8 +79,20 @@ public class GoodsCategoryApi {
     
     @SuppressWarnings("unchecked")
 	@GetMapping("/goodscategory/tree")
-    @ApiOperation(value = "查询商品版块树结构", response = ArrayObject.class)
+    @ApiOperation(value = "查询商品分类树结构", response = ArrayObject.class)
     public ResponseEntity<ArrayObject<CategoryTree>> tree() {
         return ResponseEntity.ok(ArrayObject.of(goodsCategoryService.tree()));
+    }
+    
+	@GetMapping("/goodscategory/trydelete/{ids}")
+    @ApiOperation(value = "查询商品分类是否可以被删除")
+    public ResponseEntity<String> tryOperation(@PathVariable("ids") String ids) {
+        return ResponseEntity.ok(goodsCategoryService.canDelete(ids));
+    }
+	
+	@PostMapping("/goodscategory/tryoperation")
+    @ApiOperation(value = "查询商品分类是否可以被修改或新增")
+    public ResponseEntity<Boolean> tryoperation(@RequestBody(required = true) GoodsCategory goodsCategory) {
+        return ResponseEntity.ok(goodsCategoryService.allowOperation(goodsCategory));
     }
 }
