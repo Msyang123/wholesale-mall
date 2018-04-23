@@ -7,7 +7,7 @@
 	</sql>
 	
 	<sql id="goodsColumn">
-		t2.id,t1.goods_code as goodsCode,t2.goods_name as goodsName,t2.category_id as categoryId,
+		t2.goods_code as goodsCode,t2.goods_name as goodsName,t2.category_id as categoryId,
 		t2.goods_image as goodsImage,t2.base_bar as baseBar,t2.base_unit as baseUnit,t2.stock_limit as stockLimit,
 		t2.goods_des as goodsDes,t2.goods_images as goodsImages,t2.other_image as otherImage
 	</sql>

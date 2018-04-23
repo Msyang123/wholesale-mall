@@ -27,7 +27,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Api(description = "商品版块商品")
+@Api(description = "版块商品")
 @RestController
 @RequestMapping
 public class PlateGoodsApi {
