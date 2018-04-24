@@ -15,6 +15,9 @@ public class PlateGirdParam extends PageObject {
 	@ApiModelProperty(notes="版块名称",dataType="String")
 	private String plateName;
 	
+	@ApiModelProperty(notes="版块名称",dataType="Long")
+	private Long parentId;
+	
 	@ApiModelProperty(notes="分页查询起始页",dataType="Integer")
 	private Integer start;
 }
