@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.ResultObject;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
 import com.lhiot.mall.wholesale.goods.domain.GoodsUnit;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsUnitGridParam;
 import com.lhiot.mall.wholesale.goods.service.GoodsUnitService;
@@ -50,7 +51,7 @@ public class GoodsUnitApi {
     
     @PutMapping("/goodsunit/{id}")
     @ApiOperation(value = "根据ID修改商品单位", response = GoodsUnit.class)
-    public ResponseEntity<?> modify(@PathVariable("id") Long id, GoodsUnit goodsUnit) {
+    public ResponseEntity<?> modify(@PathVariable("id") Long id, @RequestBody GoodsUnit goodsUnit) {
         if (goodsUnitService.update(goodsUnit)) {
             return ResponseEntity.ok(goodsUnit);
         }
@@ -71,14 +72,26 @@ public class GoodsUnitApi {
     }
 
     @GetMapping("/goodsunit/search")
-    @ApiOperation(value = "新建一个查询，查询所有商品单位", response = GoodsUnit.class, responseContainer = "List")
+    @ApiOperation(value = "查询所有商品单位", response = GoodsUnit.class, responseContainer = "List")
     public ResponseEntity<List<GoodsUnit>> search() {
         return ResponseEntity.ok(goodsUnitService.search());
     }
     
     @PostMapping("/goodsunit/gird")
-    @ApiOperation(value = "新建一个查询，分页查询商品单位", response = ArrayObject.class)
+    @ApiOperation(value = "新建一个查询，分页查询商品单位", response = PageQueryObject.class)
     public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) GoodsUnitGridParam param) {
         return ResponseEntity.ok(goodsUnitService.pageQuery(param));
+    }
+    
+	@GetMapping("/goodsunit/trydelete/{ids}")
+    @ApiOperation(value = "查询单位是否可以被删除")
+    public ResponseEntity<String> tryOperation(@PathVariable("ids") String ids) {
+        return ResponseEntity.ok(goodsUnitService.canDelete(ids));
+    }
+	
+	@PostMapping("/goodsunit/tryoperation")
+    @ApiOperation(value = "查询单位是否可以被修改或新增")
+    public ResponseEntity<Boolean> tryoperation(@RequestBody(required = true) GoodsUnit goodsUnit) {
+        return ResponseEntity.ok(goodsUnitService.allowOperation(goodsUnit));
     }
 }
