@@ -89,7 +89,7 @@
 		<dependency>
 			<groupId>com.leon.microx.common</groupId>
 			<artifactId>swagger-spring-boot-starter</artifactId>
-			<version>20180323</version>
+			<version>20180422</version>
 		</dependency>
 
 		<dependency>
