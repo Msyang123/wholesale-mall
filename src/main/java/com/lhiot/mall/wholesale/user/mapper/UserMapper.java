@@ -28,9 +28,7 @@ public interface UserMapper {
 
     void deleteAddress(long id);
 
-    int updateDefaultAddress();
-
-    int register(User user);
+    int updateDefaultAddress(long userId);
 
     int insertRelation(SalesUserRelation salesUserRelation);
 }
