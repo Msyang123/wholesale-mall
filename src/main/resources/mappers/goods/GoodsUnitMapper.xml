@@ -86,4 +86,19 @@
 		</trim>
 		<include refid="common.pager"></include>
 	</select>
+	
+	<!-- lynn 从商品规格和商品表中查询使用中的单位 -->
+	<select id="searchFromGoods" resultType="Long">
+		SELECT base_unit FROM t_whs_goods 
+		UNION
+		SELECT unit_code as base_unit FROM t_whs_goods_standard
+	</select>
+	
+	<!-- lynn 批量查询商品 -->
+	<select id="searchInbatch" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsUnit">
+		select <include refid="goodsUnitColumn"/> from t_whs_goods_unit where id in
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
 </mapper>
