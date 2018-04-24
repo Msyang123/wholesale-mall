@@ -1,10 +1,12 @@
 package com.lhiot.mall.wholesale.user.api;
 
+import com.leon.microx.common.wrapper.ResultObject;
+import com.lhiot.mall.wholesale.user.domain.SalesUser;
+import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.domain.UserAddress;
+import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
-import com.lhiot.mall.wholesale.user.domain.SearchUser;
-import com.lhiot.mall.wholesale.user.domain.User1;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
-import java.net.URI;
 import java.util.List;
 
 @Api
@@ -23,9 +24,12 @@ public class UserApi {
 
     private final UserService userService;
 
+    private final SalesUserService salesUserService;
+
     @Autowired
-    public UserApi(UserService userService) {
+    public UserApi(UserService userService, SalesUserService salesUserService) {
         this.userService = userService;
+        this.salesUserService = salesUserService;
     }
 
     @GetMapping("/userInfo/{id}")
@@ -78,5 +82,39 @@ public class UserApi {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/register")
+    @ApiOperation(value = "用户注册")
+    public ResponseEntity register(@RequestBody User user,@RequestParam String code){
+        ResponseEntity responseEntity=null;
+        if (user == null) {
+            responseEntity = ResponseEntity.ok().body(ResultObject.of("添加完成"));
+        }else {
+            SalesUser salesUser = salesUserService.searchSalesUserCode(code);
+            if (salesUser==null){
+                responseEntity = ResponseEntity.ok().body(ResultObject.of("不是有效的业务员"));
+            }else{
+                if (userService.register(user)>0){
+                    SalesUserRelation salesUserRelation = new SalesUserRelation();
+                    salesUserRelation.setUserId(user.getId());
+                    salesUserRelation.setSalesmanId(salesUser.getId());
+                    salesUserRelation.setIsCheck(2);
+                    if (salesUserService.insertRelation(salesUserRelation)>0){
+                        responseEntity = ResponseEntity.ok().body(ResultObject.of("注册审核提交成功"));
+                    }else{
+                        responseEntity = ResponseEntity.ok().body(ResultObject.of("注册审核提交失败"));
+                    }
+                }else{
+                    responseEntity = ResponseEntity.ok().body(ResultObject.of("不是有效的用户"));
+                }
+            }
+        }
+        return responseEntity;
+    }
+
+    @GetMapping("/isSeller/{id}")
+    @ApiOperation(value = "查询是否是审核通过的商户")
+    public ResponseEntity<SalesUserRelation> isSeller(@PathVariable @NotNull long userId) {
+        return ResponseEntity.ok(salesUserService.isSeller(userId));
+    }
 
 }

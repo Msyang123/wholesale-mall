@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.user.mapper;
 
+import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import org.apache.ibatis.annotations.Mapper;
@@ -28,4 +29,8 @@ public interface UserMapper {
     void deleteAddress(long id);
 
     int updateDefaultAddress();
+
+    int register(User user);
+
+    int insertRelation(SalesUserRelation salesUserRelation);
 }

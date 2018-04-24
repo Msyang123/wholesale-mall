@@ -66,4 +66,8 @@ public class UserService {
         return userMapper.updateDefaultAddress();
     }
 
+    public int register(User user){
+        return userMapper.register(user);
+    }
+
 }
