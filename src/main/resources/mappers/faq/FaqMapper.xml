@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.faq.mapper.FaqMapper">
+
+    <select id="searchFaqCategory"  resultType="com.lhiot.mall.wholesale.faq.domain.FaqCategory">
+        select * from t_whs_faq_category
+    </select>
+
+    <select id="searchFaq"  parameterType="long" resultType="com.lhiot.mall.wholesale.faq.domain.Faq">
+        select * from t_whs_faq where faq_category_id=#{0}
+    </select>
+
+</mapper>

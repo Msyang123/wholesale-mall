@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
+import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,20 +56,10 @@ public class SalesUserApi {
         return ResponseEntity.ok(userService.search(ids));
     }
 
-/*    @PutMapping("/salesuser/check")
-    @ApiOperation(value = "业务员审核商户")
-    public ResponseEntity modify(@RequestParam Integer user_id, @RequestParam Integer is_check) {
-        SalesUserRelation relation=new SalesUserRelation();
-        relation.setUserId(user_id);
-        relation.setIsCheck(is_check);
-        if (salesUserService.updateUserSaleReletionship(relation)>0){
-            //如果是不通过，商户的会员状态则不需要改 0未通过 1通过
-            if (is_check==1){
-                userService.updateUserStatus(user_id);
-            }
-            return ResponseEntity.ok(TipsObject.of("操作成功"));
-        }
-        return ResponseEntity.badRequest().body(TipsObject.of("操作失败"));
-    }*/
 
+    @GetMapping("/salesUser/{id}")
+    @ApiOperation(value = "查询业务员信息")
+    public ResponseEntity<SalesUser> salesUser(@PathVariable @NotNull long id) {
+        return ResponseEntity.ok(salesUserService.searchSalesUser(id));
+    }
 }

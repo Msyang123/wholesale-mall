@@ -116,4 +116,29 @@
         WHERE is_default = 0
     </update>
 
+    <update id="register" parameterType="com.lhiot.mall.wholesale.user.domain.User">
+        UPDATE t_whs_user
+        <trim prefix="set" prefixOverrides=",">
+            <if test="shopName !=null and shopName !=''">
+                ,shop_name=#{shopName}
+            </if>
+            <if test="userName !=null and userName !=''">
+                ,user_name=#{userName}
+            </if>
+            <if test="phone !=null and phone !=''">
+                ,phone=#{phone}
+            </if>
+            <if test="addressDetail !=null and addressDetail !=''">
+                ,address_detail=#{addressDetail}
+            </if>
+            <if test="city !=null and city !=''">
+                ,city=#{city}
+            </if>
+        </trim>
+        where id=#{id}
+    </update>
+
+
+
+
 </mapper>

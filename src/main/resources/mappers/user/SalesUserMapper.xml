@@ -18,19 +18,37 @@
         <include refid="common.pager"/>
     </select>
 
-    <!--<select id="selectCheck" parameterType="map" resultType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation">
-        SELECT * FROM T_WHS_SALESUSER_RELATION
-        <trim prefix="where" prefixOverrides="and">
-            <if test="id != null and id !=''">
-                SALESMAN_ID = #{id}
-            </if>
-            and is_check in(1,0) <include refid="common.pager"/>
-        </trim>
-    </select>-->
+    <select id="searchSalesUserCode" parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
+        select * from t_whs_salesuser where invite_code=#{0}
+    </select>
 
-    <update id="updateUserSaleReletionship" parameterType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation">
+    <update id="updateUserSaleRelationship" parameterType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation">
         UPDATE t_whs_salesuser_relation set  is_check = #{isCheck}
         where user_id=#{userId}
     </update>
+
+    <!-- 添加一条商户与业务员关联未审核的数据 -->
+    <insert id="insertRelation" parameterType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation">
+        insert into t_whs_salesuser_relation(
+        <trim suffixOverrides=",">
+            <if test="id != null and id != ''">id,</if>
+            <if test="userId != null and userId != ''">user_id,</if>
+            <if test="salesmanId != null and salesmanId != ''">salesman_id,</if>
+            <if test="isCheck != null and isCheck != ''">is_check,</if>
+        </trim>
+        )
+        values(
+        <trim suffixOverrides=",">
+            <if test="id != null and id != ''">#{id},</if>
+            <if test="userId != null and userId != ''">#{userId},</if>
+            <if test="salesmanId != null and salesmanId != ''">#{salesmanId},</if>
+            <if test="isCheck != null and isCheck != ''">#{isCheck},</if>
+        </trim>
+        )
+    </insert>
+    
+    <select id="isSeller" parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation" >
+        select * from t_whs_salesuser_relation where user_id=#{id}
+    </select>
 
 </mapper>
