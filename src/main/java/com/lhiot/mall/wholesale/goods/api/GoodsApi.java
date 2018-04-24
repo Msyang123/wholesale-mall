@@ -61,7 +61,7 @@ public class GoodsApi {
     
     @PutMapping("/goods/{id}")
     @ApiOperation(value = "根据ID修改商品", response = Goods.class)
-    public ResponseEntity<?> modify(@PathVariable("id") Long id, Goods goods) {
+    public ResponseEntity<?> modify(@PathVariable("id") Long id, @RequestBody Goods goods) {
         if (goodsService.update(goods)) {
             return ResponseEntity.ok(goods);
         }
