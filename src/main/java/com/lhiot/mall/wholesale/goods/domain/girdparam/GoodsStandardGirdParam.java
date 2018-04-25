@@ -35,4 +35,7 @@ public class GoodsStandardGirdParam extends PageObject {
 	
 	@ApiModelProperty(notes="商品最高价格",dataType="Integer")
 	private Integer maxPrice;
+	
+	@ApiModelProperty(notes="版块di",dataType="Long")
+	private Long plateId;
 }
