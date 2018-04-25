@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.user.mapper;
 
+import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import org.apache.ibatis.annotations.Mapper;
@@ -10,6 +11,8 @@ import java.util.List;
 public interface UserMapper {
 
     List<User> search(List ids);
+
+    List<User> search(String userName);
 
     int updateUserStatus(long id);
 
@@ -27,5 +30,10 @@ public interface UserMapper {
 
     void deleteAddress(long id);
 
-    int updateDefaultAddress();
+    int updateDefaultAddress(long userId);
+
+    int insertRelation(SalesUserRelation salesUserRelation);
+
+
+
 }

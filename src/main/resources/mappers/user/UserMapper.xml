@@ -37,6 +37,9 @@
             <if test="addressDetail !=null and addressDetail !=''">
                 ,address_detail=#{addressDetail}
             </if>
+            <if test="phone !=null and phone !=''">
+                ,phone=#{phone}
+            </if>
             <if test="registerTime !=null and registerTime !=''">
                 ,register_time=#{registerTime}
             </if>
@@ -45,10 +48,9 @@
     </update>
 
     <!-- 新增地址 -->
-    <insert id="insertAddress" parameterType="com.lhiot.mall.wholesale.user.domain.UserAddress">
+    <insert id="insertAddress" parameterType="com.lhiot.mall.wholesale.user.domain.UserAddress" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
         insert into t_whs_user_address(
         <trim suffixOverrides=",">
-            <if test="id != null and sex != ''">id,</if>
             <if test="sex != null and sex != ''">sex,</if>
             <if test="phone != null and phone != ''">phone,</if>
             <if test="addressArea != null and addressArea != ''">address_area,</if>
@@ -59,7 +61,6 @@
         )
         values(
         <trim suffixOverrides=",">
-            <if test="id != null and id != ''">#{id},</if>
             <if test="sex != null and sex != ''">#{sex},</if>
             <if test="phone != null and phone != ''">#{phone},</if>
             <if test="addressArea != null and addressArea != ''">#{addressArea},</if>
@@ -113,7 +114,7 @@
 
     <update id="updateDefaultAddress" parameterType="long">
         UPDATE t_whs_user_address SET is_default = 1
-        WHERE is_default = 0
+        WHERE is_default = 0 and user_id = #{0}
     </update>
 
 </mapper>
