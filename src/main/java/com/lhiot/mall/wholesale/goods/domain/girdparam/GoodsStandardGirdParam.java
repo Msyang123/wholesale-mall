@@ -18,8 +18,8 @@ public class GoodsStandardGirdParam extends PageObject {
 	@ApiModelProperty(notes="商品条码",dataType="String")
 	private String barCode;
 	
-	@ApiModelProperty(notes="是否上架 ",dataType="Boolean")
-	private Boolean ifVaild;
+	@ApiModelProperty(notes="是否上架 ",dataType="Integer")
+	private Integer ifVaild;
 	
 	@ApiModelProperty(notes="商品单位名称",dataType="Integer")
 	private Integer start;
@@ -29,4 +29,10 @@ public class GoodsStandardGirdParam extends PageObject {
 	
 	@ApiModelProperty(notes="商品分类名称",dataType="String")
 	private String categoryName;
+	
+	@ApiModelProperty(notes="商品最低价格",dataType="Integer")
+	private Integer minPrice;
+	
+	@ApiModelProperty(notes="商品最高价格",dataType="Integer")
+	private Integer maxPrice;
 }
