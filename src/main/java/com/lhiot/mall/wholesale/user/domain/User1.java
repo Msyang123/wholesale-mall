@@ -22,4 +22,5 @@ public class User1 {
     public enum Sex {
         MALE, FEMALE
     }
+    private String nickname;
 }

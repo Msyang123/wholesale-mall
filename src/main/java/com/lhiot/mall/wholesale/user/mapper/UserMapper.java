@@ -12,6 +12,8 @@ public interface UserMapper {
 
     List<User> search(List ids);
 
+    List<User> search(String userName);
+
     int updateUserStatus(long id);
 
     User user(long id);
@@ -31,4 +33,7 @@ public interface UserMapper {
     int updateDefaultAddress(long userId);
 
     int insertRelation(SalesUserRelation salesUserRelation);
+
+
+
 }

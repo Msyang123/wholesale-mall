@@ -30,14 +30,22 @@ wholesale-mall:
     worker-id: 1
     data-center-id: 1
 
-# 注册中心配置
-eureka:
-  instance:
-    prefer-ip-address: true
-    status-page-url-path: /swagger-ui.html
-  client:
-    service-url:
-      defaultZone: ${EUREKA_REPLICAS_LIST:http://172.16.10.196:1111/eureka}
+food-see:
+  payment:
+    charset: UTF-8
+    we-chat-oauth:
+      app-id: wx8521acbe400f89e3
+      app-secret: 5176ebed12516da3cabb3a4d0e6d3ad6
+      app-redirect-uri: https://online.food-see.com/wholesale-mall/user/weixin/authorize
+    we-chat-pay:
+      partner-id: 1497940112
+      partner-key: aZ2J68OrUnvkNtTdSasGLBnGRjceHRS2
+      pkcs12: classpath:apiclient_cert.p12
+      timeout-express: 6
+      recharge-notify-url: https://online.food-see.com/wholesale-mall/wechat/recharge/notify
+      order-notify-url: https://online.food-see.com/wholesale-mall/wechat/order/notify
+      payunit: 100
+      proxy: nginx
 
 microx:
   swagger:
