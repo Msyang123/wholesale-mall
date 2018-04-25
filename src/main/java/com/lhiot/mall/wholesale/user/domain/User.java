@@ -54,6 +54,9 @@ public class User {
     @JsonProperty("profile_photo")
     private String profilePhoto;
 
+    @JsonProperty("supplier")
+    private String supplier;
+
     @JsonProperty("START")
     private int START;
 

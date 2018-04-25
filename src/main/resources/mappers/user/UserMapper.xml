@@ -3,7 +3,7 @@
 <mapper namespace="com.lhiot.mall.wholesale.user.mapper.UserMapper">
 
     <sql id="userInfo">
-        shop_name,user_name,city,address_detail,register_time
+        id,phone,shop_name,user_name,city,address_detail,register_time
     </sql>
 
     <select id="search"  parameterType="java.util.List" resultType="map">
@@ -115,5 +115,17 @@
         UPDATE t_whs_user_address SET is_default = 1
         WHERE is_default = 0
     </update>
+
+
+    <!-- lynn后台管理 根据手机号，用户名分页查询2018/4/19 -->
+    <select id="pageQuery" parameterType="com.lhiot.mall.wholesale.demand.domain.gridparam.DemandGoodsGridParam"
+            resultType="com.lhiot.mall.wholesale.user.domain.User">
+        select <include refid="userInfo"/>
+        from t_whs_user
+        <trim prefix="where" prefixOverrides="and">
+            <if test="namePhone != null and namePhone != ''">and user_name like CONCAT('%',#{namePhone},'%') or phone like CONCAT('%',#{namePhone},'%')</if>
+        </trim>
+        <include refid="common.pager"></include>
+    </select>
 
 </mapper>

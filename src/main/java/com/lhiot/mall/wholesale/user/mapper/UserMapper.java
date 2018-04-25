@@ -1,5 +1,8 @@
 package com.lhiot.mall.wholesale.user.mapper;
 
+import com.lhiot.mall.wholesale.demand.domain.DemandGoods;
+import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
+import com.lhiot.mall.wholesale.demand.domain.gridparam.DemandGoodsGridParam;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import org.apache.ibatis.annotations.Mapper;
@@ -28,4 +31,7 @@ public interface UserMapper {
     void deleteAddress(long id);
 
     int updateDefaultAddress();
+
+    //根据用户id或用户名分页查询用户信息
+    List<User> pageQuery(DemandGoodsGridParam param);
 }

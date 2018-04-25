@@ -78,5 +78,4 @@ public class UserApi {
         return ResponseEntity.noContent().build();
     }
 
-
 }
