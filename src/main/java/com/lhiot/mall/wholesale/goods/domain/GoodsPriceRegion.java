@@ -33,4 +33,13 @@ public class GoodsPriceRegion {
 	
 	@ApiModelProperty(notes="排序",dataType="Integer")
 	private Integer reorder;
+	
+	@ApiModelProperty(notes="商品名称",dataType="String")
+	private String goodsName;
+	
+	@ApiModelProperty(notes="商品规格",dataType="String")
+	private String standard;
+	
+	@ApiModelProperty(notes="商品单位",dataType="String")
+	private String goodsUnit;
 }
