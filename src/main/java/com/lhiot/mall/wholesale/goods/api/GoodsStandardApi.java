@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.common.wrapper.ResultObject;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam;
 import com.lhiot.mall.wholesale.goods.service.GoodsStandardService;
@@ -40,7 +40,7 @@ public class GoodsStandardApi {
 	}
 	
     @PostMapping("/goodsstandard")
-    @ApiOperation(value = "添加商品单位", response = Boolean.class)
+    @ApiOperation(value = "添加商品规格", response = Boolean.class)
     public ResponseEntity<?> add(@RequestBody GoodsStandard GoodsStandard){
     	if(GoodsStandardService.create(GoodsStandard)){
     		return ResponseEntity.created(URI.create("/goodsstandard/"+GoodsStandard.getId()))
@@ -51,9 +51,9 @@ public class GoodsStandardApi {
     
     @PutMapping("/goodsstandard/{id}")
     @ApiOperation(value = "根据ID修改商品规格", response = GoodsStandard.class)
-    public ResponseEntity<?> modify(@PathVariable("id") Long id, GoodsStandard GoodsStandard) {
-        if (GoodsStandardService.update(GoodsStandard)) {
-            return ResponseEntity.ok(GoodsStandard);
+    public ResponseEntity<?> modify(@PathVariable("id") Long id, @RequestBody GoodsStandard goodsStandard) {
+        if (GoodsStandardService.update(goodsStandard)) {
+            return ResponseEntity.ok(goodsStandard);
         }
         return ResponseEntity.badRequest().body(ResultObject.of("修改失败"));
     }
@@ -79,7 +79,7 @@ public class GoodsStandardApi {
     
     @PostMapping("/goodsstandard/gird")
     @ApiOperation(value = "新建一个查询，分页查询商品规格", response = ArrayObject.class)
-    public ResponseEntity<ArrayObject<PageObject>> grid(@RequestBody(required = true) GoodsStandardGirdParam param) {
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) GoodsStandardGirdParam param) {
         return ResponseEntity.ok(GoodsStandardService.pageQuery(param));
     }
 }

@@ -8,11 +8,11 @@
 	</sql>
 	
 	<sql id="unitColumn">
-		t2.unit_code as baseUnitCode,t2.unit_name as baseUnitName
+		t2.id as baseUnit,t2.unit_code as baseUnitCode,t2.unit_name as baseUnitName
 	</sql>
 	
 	<sql id="categoryColumn">
-		t3.category_name as categoryName
+		t3.id as categoryId ,t3.category_name as categoryName
 	</sql>
 	
 	<!-- lynn 2018/4/19根据商品id查询商品 -->
@@ -21,7 +21,7 @@
 		from t_whs_goods t1
 		left join t_whs_goods_unit t2 on t1.base_unit = t2.id
 		left join t_whs_goods_category t3 on t1.category_id = t3.id
-		where id = #{0}
+		where t1.id = #{0}
 	</select>
 	
 	<!-- lynn 2018/4/19根据商品id 新增商品 -->
@@ -84,12 +84,11 @@
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
 	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam" resultType="Integer">
-		select count(id) from t_whs_goods t1
-		left join t_whs_goods_unit t2 on t1.base_unit = t2.id
-		left join t_whs_goods_category t3 on t1.category_id = t3.id
+		select count(t1.id) from t_whs_goods t1
 		<trim prefix="where" prefixOverrides="and">
-			<if test="goodsCode != null and goodsCode != ''">and goods_code=#{goodsCode}</if>
-			<if test="goodsName != null and goodsName != ''">and goods_name like CONCAT('%',#{goodsName},'%')</if>
+			<if test="goodsCode != null and goodsCode != ''">and t1.goods_code=#{goodsCode}</if>
+			<if test="categoryId != null and categoryId != ''">and t1.category_id = #{categoryId}</if>
+			<if test="goodsName != null and goodsName != ''">and t1.goods_name like CONCAT('%',#{goodsName},'%')</if>
 		</trim>
 	</select>
 	
@@ -101,9 +100,77 @@
 		left join t_whs_goods_unit t2 on t1.base_unit = t2.id
 		left join t_whs_goods_category t3 on t1.category_id = t3.id
 		<trim prefix="where" prefixOverrides="and">
-			<if test="goodsCode != null and goodsCode != ''">and goods_code=#{goodsCode}</if>
-			<if test="goodsName != null and goodsName != ''">and goods_name like CONCAT('%',#{goodsName},'%')</if>
+			<if test="goodsCode != null and goodsCode != ''">and t1.goods_code=#{goodsCode}</if>
+			<if test="goodsName != null and goodsName != ''">and t1.goods_name like CONCAT('%',#{goodsName},'%')</if>
+			<if test="categoryId != null and categoryId != ''">and t1.category_id = #{categoryId}</if>
 		</trim>
 		<include refid="common.pager"></include>
+	</select>
+
+
+	<select id="goodsInfo" parameterType="long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsInfo">
+		select g.id,g.goods_name,s.price,
+		(select MAX(r.price) from t_whs_goods_price_region r where r.goods_standard_id=s.id ) maxPrice,
+		(select MIN(r.price) from t_whs_goods_price_region r where r.goods_standard_id=s.id ) minPrice,
+		u.unit_name,s.standard,g.stock_limit,g.goods_image,g.goods_des,g.goods_images,g.other_image, s.id goodsStandardId
+		from t_whs_goods g
+		left join t_whs_goods_standard s on g.id=s.goods_id
+		left join t_whs_goods_unit u on u.unit_code=s.unit_code
+		where g.id=#{id}
+	</select>
+
+	<select id="goodsFlashsale" parameterType="long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale">
+		select special_price,limit_quantity,end_time from t_whs_flashsale_goods where goods_standard_id=#{0}
+	</select>
+
+    <!-- 常用清单 -->
+    <select id="inventoryList" parameterType="long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsInfo">
+        select g.id,g.goods_name,s.price,(select MAX(price) FROM t_whs_goods_price_region r where r.goods_standard_id=s.id) maxPrice,
+        (select MIN(price) from t_whs_goods_price_region r where r.goods_standard_id=s.id) minPrice,u.unit_name,f.special_price,
+        (select count(*) from t_whs_order_goods og where og.goods_standard_id=s.id) saleCount,s.standard,g.goods_image
+        from t_whs_goods_standard s
+        LEFT JOIN t_whs_goods g on g.id=s.goods_id
+        LEFT JOIN t_whs_goods_unit u on u.unit_code=s.unit_code
+        LEFT JOIN t_whs_flashsale_goods f on f.goods_standard_id=s.id
+        where s.id in(SELECT DISTINCT t.goods_standard_id FROM t_whs_order_goods t where t.user_id=#{0}) LIMIT 5
+    </select>
+
+    <!--<select id="" parameterType="long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale">
+        select special_price,limit_quantity,end_time from t_whs_flashsale_goods where goods_standard_id=#{0}
+    </select>-->
+
+    <!-- 常用清单 -->
+    <select id="recommendList" parameterType="long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsInfo">
+        select g.id,g.goods_name,s.price,(select MAX(price) FROM t_whs_goods_price_region r where r.goods_standard_id=s.id) maxPrice,
+        (select MIN(price) from t_whs_goods_price_region r where r.goods_standard_id=s.id) minPrice,u.unit_name,f.special_price,
+        (select count(*) from t_whs_order_goods og where og.goods_standard_id=s.id) saleCount,s.standard
+        from t_whs_goods_standard s
+        LEFT JOIN t_whs_goods g on g.id=s.goods_id
+        LEFT JOIN t_whs_goods_unit u on u.unit_code=s.unit_code
+        LEFT JOIN t_whs_flashsale_goods f on f.goods_standard_id=s.id
+        where s.id in(SELECT DISTINCT t.goods_standard_id FROM t_whs_plate_goods t where t.plate_id=#{0}) LIMIT 5
+    </select>
+
+	<!-- 根据条件查询商品 -->
+	<select id="searchByCategory" parameterType="java.util.List" 
+		resultType="com.lhiot.mall.wholesale.goods.domain.Goods">
+		select <include refid="goodsColumn"/>, <include refid="unitColumn"/>,<include refid="categoryColumn"/>
+		from t_whs_goods t1
+		left join t_whs_goods_unit t2 on t1.base_unit = t2.id
+		left join t_whs_goods_category t3 on t1.category_id = t3.id
+		where t1.category_id in 
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	
+	<!-- 根据商品编码查询lynn -->
+	<select id="searchByCode" parameterType="String" 
+		resultType="com.lhiot.mall.wholesale.goods.domain.Goods">
+		select <include refid="goodsColumn"/>, <include refid="unitColumn"/>,<include refid="categoryColumn"/>
+		from t_whs_goods t1
+		left join t_whs_goods_unit t2 on t1.base_unit = t2.id
+		left join t_whs_goods_category t3 on t1.category_id = t3.id
+		where t1.category_id = #{0} 
 	</select>
 </mapper>

@@ -1,11 +1,10 @@
 package com.lhiot.mall.wholesale.user.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.leon.microx.util.BeanUtils;
+import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.user.domain.*;
 import com.lhiot.mall.wholesale.user.mapper.UserMapper;
-import com.lhiot.mall.wholesale.user.vo.SearchUser;
-import com.lhiot.mall.wholesale.user.vo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,40 +12,79 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @Transactional
 public class UserService {
 
+    private final UserMapper userMapper;
+    private final SalesUserService salesUserService;
     private final SnowflakeId snowflakeId;
 
-    private final UserMapper userMapper;
-
     @Autowired
-    public UserService(UserMapper userMapper, SnowflakeId snowflakeId) {
+    public UserService(UserMapper userMapper, SalesUserService salesUserService,SnowflakeId snowflakeId) {
         this.userMapper = userMapper;
+        this.salesUserService = salesUserService;
         this.snowflakeId = snowflakeId;
     }
 
-    public boolean save(User user) {
-        if (user.getId() > 0) {
-            return userMapper.update(user) > 0;
-        } else {
-            user.setId(snowflakeId.longId());
-            return userMapper.insert(user) > 0;
-        }
+    public List<User> search(List ids) {
+        return userMapper.search(ids);
     }
 
-    public void delete(long id) {
-        userMapper.remove(id);
+    public int updateUserStatus(long id) {
+        return userMapper.updateUserStatus(id);
     }
 
     public User user(long id) {
-        return userMapper.select(id);
+        return userMapper.user(id);
     }
 
-    public List<User> users(SearchUser param) {
-        return userMapper.search(BeanUtils.toMap(param));
+    public boolean updateUser(User user) {
+        return userMapper.updateUser(user) > 0;
+    }
+
+    public boolean saveOrUpdateAddress(UserAddress userAddress) {
+        if (userAddress.getIsDefault() == 0) {
+            userMapper.updateDefaultAddress(userAddress.getUserId());
+        }
+        UserAddress pojo = userMapper.userAddress(userAddress.getId());
+        if (Objects.nonNull(pojo)) {
+            return userMapper.updateAddress(userAddress) > 0;
+        } else {
+            return userMapper.insertAddress(userAddress) > 0;
+        }
+    }
+
+    public List<UserAddress> searchAddressList(long userId) {
+        return userMapper.searchAddressList(userId);
+    }
+
+    public UserAddress userAddress(long id) {
+        return userMapper.userAddress(id);
+    }
+
+    public void deleteAddress(long id) {
+        userMapper.deleteAddress(id);
+    }
+
+    public boolean register(User user, String code) {
+        SalesUser salesUser = salesUserService.searchSalesUserCode(code);
+        if (Objects.isNull(salesUser)) {
+            throw new ServiceException("不是有效的业务员");
+        }
+        if (this.updateUser(user)) {
+            SalesUserRelation salesUserRelation = new SalesUserRelation();
+            salesUserRelation.setUserId(user.getId());
+            salesUserRelation.setSalesmanId(salesUser.getId());
+            salesUserRelation.setIsCheck(2);
+            if (salesUserService.insertRelation(salesUserRelation) < 1) {
+                throw new ServiceException("注册审核提交失败");
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -58,9 +96,7 @@ public class UserService {
         ObjectMapper om = new ObjectMapper();
         Map<String,String> wxUserMap=om.readValue(userStr, Map.class);
 
-        SearchUser searchUser=new SearchUser();
-        searchUser.setLikeName(wxUserMap.get("openid"));
-        List<User> users=users(searchUser);
+        List<User> users=users(wxUserMap.get("openid"));
         if (users.size()==0)
             return null;
         User returnUser=users.get(0);
@@ -99,5 +135,8 @@ public class UserService {
             user.set("union_id", unionid);
         }*/
         return returnUser;
+    }
+    public List<User> users(String userName) {
+        return userMapper.search(userName);
     }
 }

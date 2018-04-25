@@ -1,21 +1,39 @@
 package com.lhiot.mall.wholesale.user.mapper;
 
-import com.lhiot.mall.wholesale.user.vo.User;
+import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
+import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface UserMapper {
 
-    int insert(User user);
+    List<User> search(List ids);
 
-    int update(User user);
+    List<User> search(String userName);
 
-    void remove(long id);
+    int updateUserStatus(long id);
 
-    User select(long id);
+    User user(long id);
 
-    List<User> search(Map<String, Object> where);
+    int updateUser(User user);
+
+    int insertAddress(UserAddress userAddress);
+
+    int updateAddress(UserAddress userAddress);
+
+    List<UserAddress> searchAddressList(long userId);
+
+    UserAddress userAddress(long id);
+
+    void deleteAddress(long id);
+
+    int updateDefaultAddress(long userId);
+
+    int insertRelation(SalesUserRelation salesUserRelation);
+
+
+
 }

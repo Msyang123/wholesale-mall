@@ -3,6 +3,7 @@ package com.lhiot.mall.wholesale.goods.mapper;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsCategoryGirdParam;
@@ -18,7 +19,15 @@ public interface GoodsCategoryMapper {
 
     GoodsCategory select(long id);
 
-    List<GoodsCategory> search();
+    List<GoodsCategory> search(List<Long> ids);
+    
+    List<GoodsCategory> searchAll();
+    
+    List<GoodsCategory> findTree();
+    
+    List<GoodsCategory> selectByCode(String categoryCode);
+    
+    List<GoodsCategory> selectByParent(List<Long> id);
     
     //分页查询分类
     List<GoodsCategory> pageQuery(GoodsCategoryGirdParam map);

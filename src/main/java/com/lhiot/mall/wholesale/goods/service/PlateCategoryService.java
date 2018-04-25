@@ -1,18 +1,21 @@
 package com.lhiot.mall.wholesale.goods.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.goods.domain.CategoryTree;
+import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
 import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
-import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam;
+import com.lhiot.mall.wholesale.goods.domain.girdparam.PlateGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.PlateCategoryMapper;
 
 /**PlateCategoryService
@@ -25,6 +28,7 @@ import com.lhiot.mall.wholesale.goods.mapper.PlateCategoryMapper;
 public class PlateCategoryService {
 	
 	private final PlateCategoryMapper plateCategoryMapper;
+	private static final String ALLOW = "ok";//允许删除
 	
 	@Autowired
 	public PlateCategoryService(PlateCategoryMapper plateCategoryMapper){
@@ -76,15 +80,14 @@ public class PlateCategoryService {
 	 * @return
 	 */
 	public List<PlateCategory> search(){
-		return plateCategoryMapper.search();
+		return plateCategoryMapper.searchAll();
 	}
 	
 	/**
 	 * 分页查询
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	public ArrayObject<PageObject> pageQuery(GoodsStandardGirdParam param){
+	public PageQueryObject pageQuery(PlateGirdParam param){
 		int count = plateCategoryMapper.pageQueryCount();
 		int page = param.getPage();
 		int rows = param.getRows();
@@ -93,15 +96,53 @@ public class PlateCategoryService {
 		//总记录数
 		int totalPages = (count%rows==0?count/rows:count/rows+1);
 		if(totalPages < page){
-			param.setPage(1);
+			page = 1;
+			param.setPage(page);
 			param.setStart(0);
 		}
-		List<PlateCategory> PlateCategorys = plateCategoryMapper.pageQuery(param);
-		PageObject obj = new PageObject();
-		obj.setPage(param.getPage());
-		obj.setRows(param.getRows());
-		obj.setSidx(param.getSidx());
-		obj.setSord(param.getSord());
-		return ArrayObject.of(PlateCategorys, obj);
+		List<PlateCategory> plateCategorys = plateCategoryMapper.pageQuery(param);
+		PageQueryObject result = new PageQueryObject();
+		result.setRows(plateCategorys);
+		result.setPage(page);
+		result.setRecords(rows);
+		result.setTotal(totalPages);
+		return result;
+	}
+	
+	/**
+	 * 获取版块分类的树结构
+	 * @return
+	 */
+	public List<CategoryTree> tree(){
+		List<CategoryTree> result = new ArrayList<>();
+		List<PlateCategory> list = plateCategoryMapper.findTree();
+		CategoryTree categoryTree = null;
+		for(PlateCategory p : list){
+			categoryTree = new CategoryTree();
+			categoryTree.setId(p.getId());
+			categoryTree.setPId(p.getParentId());
+			categoryTree.setName(p.getPlateName());
+			categoryTree.setParentClassName(p.getParentPlateNameName());
+			categoryTree.setIsParent(p.getParentId().toString().equals("0")?true:false);
+			categoryTree.setLevel(p.getLevels());
+			result.add(categoryTree);
+		}
+		return result;
+	}
+	
+	public String canDelete(String ids){
+		String result = ALLOW;
+		List<Long> list = Arrays.asList(ids.split(",")).stream()
+								.map(id -> Long.parseLong(id.trim())).collect(Collectors.toList());
+		List<PlateCategory> plateCategories = plateCategoryMapper.search(list);
+		for(Long id : list){
+			for(PlateCategory plateCategory : plateCategories){
+				Long pId = plateCategory.getId();
+				if(Objects.equals(id, pId)){
+					result = result.concat(","+plateCategory.getPlateName());
+				}
+			}
+		}
+		return result.substring(result.indexOf(',')+1, result.length());
 	}
 }

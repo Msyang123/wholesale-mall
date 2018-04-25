@@ -15,6 +15,9 @@ public class GoodsCategoryGirdParam extends PageObject {
 	@ApiModelProperty(notes="商品分类父ID",dataType="Long")
 	private Long parentId;
 	
+	@ApiModelProperty(notes="分类编码",dataType="String")
+	private String categoryCode;
+	
 	@ApiModelProperty(notes="分类名称",dataType="String")
 	private String categoryName;
 	

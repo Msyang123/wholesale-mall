@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @ApiModel
 @NoArgsConstructor
@@ -51,5 +53,5 @@ public class Goods {
 	
 	@ApiModelProperty(notes="商品分类名称",dataType="String")
 	private String categoryName;
-	
+
 }

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.lhiot.mall.wholesale.goods.mapper.GoodsCategoryMapper">
 	<sql id="categoryColumn">
-		id,parent_id as parentId,category_name as categoryName
+		id,parent_id as parentId,category_name as categoryName,category_code as categoryCode
 	</sql>
 	
 	<!-- lynn后台管理 新增2018/4/19 -->
@@ -11,12 +11,14 @@
 			<trim suffixOverrides=",">
 				<if test="parentId != null and parentId != ''">parent_id,</if>
 				<if test="categoryName != null and categoryName != ''">category_name,</if>
+				<if test="categoryCode != null and categoryCode != ''">category_code,</if>
 			</trim>
 		)
 		values(
 			<trim suffixOverrides=",">
 				<if test="parentId != null and parentId != ''">#{parentId},</if>
 				<if test="categoryName != null and categoryName != ''">#{categoryName},</if>
+				<if test="categoryCode != null and categoryCode != ''">#{categoryCode},</if>
 			</trim>
 		)
 	</insert>
@@ -32,11 +34,14 @@
 	<!-- lynn后台管理 修改2018/4/19 -->
 	<update id="update" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
 		update t_whs_goods_category
-		<trim suffix="set" suffixOverrides=",">
+		<trim prefix="set" suffixOverrides=",">
+			<if test="categoryCode != null and categoryCode != ''">
+				category_code = #{categoryCode},
+			</if>
 			<if test="categoryName != null and categoryName != ''">
 				category_name = #{categoryName},
 			</if>
-			<if test="unitName != null and unitName != ''">
+			<if test="parentId != null and parentId != ''">
 				parent_id = #{parentId},
 			</if>
 		</trim>
@@ -49,8 +54,16 @@
 	</select>
 	
 	<!-- lynn后台管理 查询所有用作下拉框2018/4/19 -->
-	<select id="search" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
+	<select id="searchAll" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
 		select <include refid="categoryColumn"/> from t_whs_goods_category
+	</select>
+	
+	<!-- lynn后台管理 查询所有用作下拉框2018/4/19 -->
+	<select id="search" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
+		select <include refid="categoryColumn"/> from t_whs_goods_category where id in 
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
 	</select>
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
@@ -71,13 +84,54 @@
 		resultType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
 		select <include refid="categoryColumn"/> from t_whs_goods_category
 		<trim prefix="where" prefixOverrides="and">
-			<if test="parentId != null and parentId != ''">
-				and parent_id = #{parentId}
+			<if test="categoryCode != null and categoryCode != ''">
+				and category_code = #{categoryCode}
 			</if>
 			<if test="categoryName != null and categoryName != ''">
 				and category_name like CONCAT('%',#{categoryName},'%')
 			</if>
+			<if test="parentId != null and parentId != ''">
+				or parent_id = #{parentId}
+			</if>
 		</trim>
 		<include refid="common.pager"></include>
+	</select>
+	
+	<!-- lynn 查找分类树 -->
+	<select id="findTree" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
+		SELECT 
+			id,
+			category_code as categoryCode,
+			category_name as categoryName,
+			parent_id as parentId,
+			(SELECT category_name FROM t_whs_goods_category WHERE id=src.parent_id) AS parentCategoryName,
+			levels 
+		FROM (
+			SELECT id,category_code,category_name,parent_id,
+			@le:= IF (parent_id = 0 ,0, IF( LOCATE( CONCAT('|',parent_id,':'),@pathlevel) > 0 , 
+			SUBSTRING_INDEX( SUBSTRING_INDEX(@pathlevel,CONCAT('|',parent_id,':'),-1),'|',1) +1,@le+1) ) levels, 
+			@pathlevel:= CONCAT(@pathlevel,'|',category_name,':', @le ,'|') pathlevel, 
+			@pathnodes:= IF( parent_id =0,',0', CONCAT_WS(',',IF( LOCATE( CONCAT('|',parent_id,':'),@pathall) > 0 , 
+			SUBSTRING_INDEX( SUBSTRING_INDEX(@pathall,CONCAT('|',parent_id,':'),-1),'|',1),@pathnodes ) ,parent_id ) )paths,
+			@pathall:=CONCAT(@pathall,'|',category_name,':', @pathnodes ,'|') pathall 
+			FROM t_whs_goods_category, (SELECT @le:=0,@pathlevel:='', @pathall:='',@pathnodes:='') vv
+			ORDER BY parent_id,category_name
+		) src
+		ORDER BY parent_id
+	</select>
+	
+	<!-- 查询分类详情 -->
+	<select id="selectByCode" parameterType="String" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
+		select <include refid="categoryColumn"/> from t_whs_goods_category where category_code = #{0}
+	</select>
+	
+	<!-- 查询分类详情 -->
+	<select id="selectByParent" parameterType="java.util.List" 
+			resultType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
+		select <include refid="categoryColumn"/> from t_whs_goods_category 
+		where parent_id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
 	</select>
 </mapper>

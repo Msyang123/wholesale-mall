@@ -4,8 +4,9 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
 import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
-import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam;
+import com.lhiot.mall.wholesale.goods.domain.girdparam.PlateGirdParam;
 
 @Mapper
 public interface PlateCategoryMapper {
@@ -16,11 +17,15 @@ public interface PlateCategoryMapper {
     void removeInbatch(List<Long> ids);
 
     PlateCategory select(long id);
-
-    List<PlateCategory> search();
+    
+    List<PlateCategory> searchAll();
+    
+    List<PlateCategory> findTree();
+    
+    List<PlateCategory> search(List<Long> ids);
     
     //分页查询分类
-    List<PlateCategory> pageQuery(GoodsStandardGirdParam param);
+    List<PlateCategory> pageQuery(PlateGirdParam plateGirdParam);
     //查询分类的总记录数
     int pageQueryCount();
 }

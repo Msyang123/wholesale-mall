@@ -14,6 +14,8 @@ public interface PlateGoodsMapper {
     int insertInbatch(List<PlateGoods> list);
 
     void removeInbatch(List<Long> ids);
+    
+    int update(PlateGoods plateGoods);
 
     GoodsStandard select(long id);
 

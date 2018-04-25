@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.goods.api;
 
 import java.net.URI;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,13 +12,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.common.wrapper.ResultObject;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.Goods;
+import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
+import com.lhiot.mall.wholesale.goods.domain.GoodsDetailResult;
+import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
+import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
+import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
+import com.lhiot.mall.wholesale.goods.domain.InventoryResult;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
+import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 import com.lhiot.mall.wholesale.goods.service.GoodsService;
 
 import io.swagger.annotations.Api;
@@ -31,11 +40,14 @@ import lombok.extern.slf4j.Slf4j;
 public class GoodsApi {
 	
 	private final GoodsService goodsService;
+
+	private final GoodsPriceRegionService goodsPriceRegionService;
 	
 	@Autowired
-	public GoodsApi(GoodsService goodsService){
+	public GoodsApi(GoodsService goodsService, GoodsPriceRegionService goodsPriceRegionService){
 		this.goodsService = goodsService;
-	}
+        this.goodsPriceRegionService = goodsPriceRegionService;
+    }
 	
     @PostMapping("/goods")
     @ApiOperation(value = "添加商品单位", response = Boolean.class)
@@ -49,7 +61,7 @@ public class GoodsApi {
     
     @PutMapping("/goods/{id}")
     @ApiOperation(value = "根据ID修改商品", response = Goods.class)
-    public ResponseEntity<?> modify(@PathVariable("id") Long id, Goods goods) {
+    public ResponseEntity<?> modify(@PathVariable("id") Long id, @RequestBody Goods goods) {
         if (goodsService.update(goods)) {
             return ResponseEntity.ok(goods);
         }
@@ -71,7 +83,39 @@ public class GoodsApi {
     
     @PostMapping("/goods/gird")
     @ApiOperation(value = "新建一个查询，分页查询商品", response = ArrayObject.class)
-    public ResponseEntity<ArrayObject<PageObject>> grid(@RequestBody(required = true) GoodsGirdParam param) {
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) GoodsGirdParam param) {
         return ResponseEntity.ok(goodsService.pageQuery(param));
+    }
+
+    @PostMapping("/goodsDetail/{id}")
+    @ApiOperation(value = "商品详情页面")
+    public  ResponseEntity<GoodsDetailResult> goodsDetail(@PathVariable("id") Long id){
+	    //商品详情信息
+        GoodsInfo goodsInfo = goodsService.goodsInfo(id);
+        //商品价格区间信息
+        List<GoodsPriceRegion> goodsPriceRegions =goodsPriceRegionService.selectPriceRegion(goodsInfo.getGoodsStandardId());
+        goodsInfo.setGoodsPriceRegionList(goodsPriceRegions);
+        GoodsFlashsale goodsFlashsale = goodsService.goodsFlashsale(goodsInfo.getGoodsStandardId());
+        //商品详情信息和抢购信息存放到GoodsDetailResult
+        GoodsDetailResult goodsDetailResult = new GoodsDetailResult();
+        goodsDetailResult.setGoodsInfo(goodsInfo);
+        goodsDetailResult.setGoodsFlashsale(goodsFlashsale);
+        return ResponseEntity.ok(goodsDetailResult);
+    }
+
+    @PostMapping("/inventoryList")
+    @ApiOperation(value = "常用清单商品列表")
+    public ResponseEntity<InventoryResult> inventoryList(@RequestParam("userId") Long userId, @RequestParam("plateId") Long plateId){
+	    InventoryResult inventoryResult = new InventoryResult();
+	    List<GoodsInfo> inventoryList = goodsService.inventoryList(userId);
+        inventoryResult.setRecommendList(goodsService.recommendList(plateId));
+        inventoryResult.setInventoryList(inventoryList);
+	    return ResponseEntity.ok(inventoryResult);
+    }
+
+	@PostMapping("/goods/tryoperation")
+    @ApiOperation(value = "查询商品分类是否可以被修改或新增")
+    public ResponseEntity<Boolean> tryoperation(@RequestBody(required = true) Goods goods) {
+        return ResponseEntity.ok(goodsService.allowOperation(goods));
     }
 }

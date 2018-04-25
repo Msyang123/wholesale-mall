@@ -2,16 +2,19 @@ package com.lhiot.mall.wholesale.goods.service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.Goods;
+import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
+import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
+import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.GoodsMapper;
 
@@ -74,7 +77,7 @@ public class GoodsService {
 	 * 分页查询
 	 * @return
 	 */
-	public ArrayObject<PageObject> pageQuery(GoodsGirdParam param){
+	public PageQueryObject pageQuery(GoodsGirdParam param){
 		int count = goodsMapper.pageQueryCount(param);
 		int page = param.getPage();
 		int rows = param.getRows();
@@ -83,15 +86,70 @@ public class GoodsService {
 		//总记录数
 		int totalPages = (count%rows==0?count/rows:count/rows+1);
 		if(totalPages < page){
-			param.setPage(1);
+			page = 1;
+			param.setPage(page);
 			param.setStart(0);
 		}
 		List<Goods> goods = goodsMapper.pageQuery(param);
-		PageObject obj = new PageObject();
-		obj.setPage(param.getPage());
-		obj.setRows(param.getRows());
-		obj.setSidx(param.getSidx());
-		obj.setSord(param.getSord());
-		return ArrayObject.of(goods, obj);
+		PageQueryObject result = new PageQueryObject();
+		result.setRows(goods);
+		result.setPage(page);
+		result.setRecords(rows);
+		result.setTotal(totalPages);
+		return result;
+	}
+
+
+	public GoodsInfo goodsInfo(long id){
+		return goodsMapper.goodsInfo(id);
+	}
+
+	public GoodsFlashsale goodsFlashsale(long goodsStandardId){
+		return goodsMapper.goodsFlashsale(goodsStandardId);
+	}
+
+	public List<GoodsInfo> inventoryList(long userId){
+		return goodsMapper.inventoryList(userId);
+	}
+
+	public List<GoodsInfo> recommendList(long plateId){
+		return goodsMapper.inventoryList(plateId);
+	}
+	
+	/**
+	 * 根据商品分类id批量查询商品
+	 * @param list
+	 * @return
+	 */
+	public List<Goods> findGoodsByCategory(List<Long> list){
+		return goodsMapper.searchByCategory(list);
+	}
+	
+	/**
+	 * 查询编码是否重复，进而判断是否可以进行修改和增加操作
+	 * @param goodsCategory
+	 * @return true允许操作，false 不允许操作
+	 */
+	public boolean allowOperation(Goods goods){
+		boolean success = true;
+		List<Goods> gcs = goodsMapper.searchByCode(goods.getGoodsCode());
+		Long id = goods.getId();
+		//如果不存在重复的编码
+		if(gcs.isEmpty()){
+			return success;
+		}
+		//存在重复的编码,则判断是否为本身
+		if(null == id){
+			success = false;
+			return success;
+		}
+		for(Goods gc : gcs){
+			Long categoryId = gc.getId();
+			if(!Objects.equals(categoryId, id)){
+				success = false;
+				break;
+			}
+		}
+		return success;
 	}
 }

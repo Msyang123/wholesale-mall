@@ -84,4 +84,10 @@
 		</trim>
 		<include refid="common.pager"></include>
 	</select>
+
+
+	<select id="selectPriceRegion" parameterType="long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion">
+		select * from t_whs_goods_price_region where goods_standard_id=#{0}
+	</select>
+
 </mapper>
