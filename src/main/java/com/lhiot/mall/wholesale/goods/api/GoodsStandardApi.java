@@ -40,7 +40,7 @@ public class GoodsStandardApi {
 	}
 	
     @PostMapping("/goodsstandard")
-    @ApiOperation(value = "添加商品单位", response = Boolean.class)
+    @ApiOperation(value = "添加商品规格", response = Boolean.class)
     public ResponseEntity<?> add(@RequestBody GoodsStandard GoodsStandard){
     	if(GoodsStandardService.create(GoodsStandard)){
     		return ResponseEntity.created(URI.create("/goodsstandard/"+GoodsStandard.getId()))
@@ -51,9 +51,9 @@ public class GoodsStandardApi {
     
     @PutMapping("/goodsstandard/{id}")
     @ApiOperation(value = "根据ID修改商品规格", response = GoodsStandard.class)
-    public ResponseEntity<?> modify(@PathVariable("id") Long id, GoodsStandard GoodsStandard) {
-        if (GoodsStandardService.update(GoodsStandard)) {
-            return ResponseEntity.ok(GoodsStandard);
+    public ResponseEntity<?> modify(@PathVariable("id") Long id, @RequestBody GoodsStandard goodsStandard) {
+        if (GoodsStandardService.update(goodsStandard)) {
+            return ResponseEntity.ok(goodsStandard);
         }
         return ResponseEntity.badRequest().body(ResultObject.of("修改失败"));
     }
