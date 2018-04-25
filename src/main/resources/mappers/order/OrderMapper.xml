@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.order.mapper.OrderMapper">
+
+    <!-- 查询订单信息 -->
+    <select id="searchOrders"  parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+       select id,order_code orderCode,order_discount_fee orderDiscountFee,order_type orderType,pay_status payStatus
+        ,order_status orderStatus,order_create_time createTime,order_total total,order_need_fee needPay,remarks
+       from t_whs_order o
+        <trim prefix="where" prefixOverrides="and">
+            <if test="userId != null ">and o.user_id=#{userId}</if>
+            <if test="orderType != null ">and o.order_type=#{orderType}</if>
+            <if test="payStatus != null ">and o.pay_status=#{payStatus}</if>
+            <if test="orderStatus != null ">and o.order_status = #{orderStatus}</if>
+        </trim>
+    </select>
+
+    <select id="searchOrder"  parameterType="String" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        select id,order_code orderCode,order_discount_fee orderDiscountFee,order_type orderType,pay_status payStatus
+        ,order_status orderStatus,order_create_time createTime,order_total total,order_need_fee needPay,remarks
+        from t_whs_order o where o.order_code = #{orderCode}
+    </select>
+
+    <select id="searchOrderGoods"  parameterType="long" resultType="com.lhiot.mall.wholesale.order.domain.OrderGoods">
+        select t.id,g.goods_name goodsName,u.unit_name unit,t.standard_weight weight,t.goods_price price,t.quanity number,g.goods_image goodsImage
+        from t_whs_order_goods t
+        LEFT JOIN t_whs_goods_standard s on t.goods_standard_id=s.id
+        LEFT JOIN t_whs_goods g on g.id=s.goods_id
+        LEFT JOIN t_whs_goods_unit u on u.unit_code=s.unit_code
+        where t.order_id=#{orderId}
+    </select>
+
+    <select id="searchOutstandingAccountsOrder"  parameterType="String" resultType="Integer">
+        select check_status from t_whs_debt_order do
+        where do.order_ids LIKE concat('%',#{orderCode},'%')  ORDER BY do.create_time desc LIMIT 1
+    </select>
+
+
+</mapper>
