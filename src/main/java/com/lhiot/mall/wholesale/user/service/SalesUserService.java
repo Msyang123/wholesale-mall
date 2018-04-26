@@ -50,4 +50,8 @@ public class SalesUserService {
     public SalesUserRelation isSeller(long userId){
         return salesUserMapper.isSeller(userId);
     }
+
+    public SalesUserRelation searchSaleRelationship(SalesUserRelation salesUserRelation){
+        return salesUserMapper.searchSaleRelationship(salesUserRelation);
+    }
 }

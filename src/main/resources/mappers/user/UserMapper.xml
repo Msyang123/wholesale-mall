@@ -3,7 +3,7 @@
 <mapper namespace="com.lhiot.mall.wholesale.user.mapper.UserMapper">
 
     <sql id="userInfo">
-        shop_name,user_name,city,address_detail,register_time
+        shop_name,user_name,city,address_detail,register_time,balance
     </sql>
 
     <select id="search"  parameterType="java.util.List" resultType="map">
@@ -42,6 +42,9 @@
             </if>
             <if test="registerTime !=null and registerTime !=''">
                 ,register_time=#{registerTime}
+            </if>
+            <if test="balance !=null and balance !=0">
+                ,balance=balance+#{balance}
             </if>
         </trim>
         where id=#{id}
