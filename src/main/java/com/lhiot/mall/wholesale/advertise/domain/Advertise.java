@@ -30,10 +30,10 @@ public class Advertise {
 	@ApiModelProperty(notes="开始时间",dataType="String")
 	private String beginTime;
 	
-	@ApiModelProperty(notes="结束时间",dataType="Long")
-	private Long endTime;
+	@ApiModelProperty(notes="结束时间",dataType="String")
+	private String endTime;
 	
-	@ApiModelProperty(notes="创建时间",dataType="Integer")
+	@ApiModelProperty(notes="创建时间",dataType="String")
 	private String createAt;
 	
 	@ApiModelProperty(notes="是否有效 false无效 true有效",dataType="Boolean")
