@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.advertise.api;
 
 import java.net.URI;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.ResultObject;
 import com.lhiot.mall.wholesale.advertise.domain.Advertise;
+import com.lhiot.mall.wholesale.advertise.domain.AdvertiseType;
 import com.lhiot.mall.wholesale.advertise.domain.gridparam.AdvertiseGirdParam;
 import com.lhiot.mall.wholesale.advertise.service.AdvertiseService;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
@@ -72,5 +75,11 @@ public class AdvertiseApi {
     @ApiOperation(value = "新建一个查询，分页查询广告", response = PageQueryObject.class)
     public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) AdvertiseGirdParam param) {
         return ResponseEntity.ok(advertiseService.pageQuery(param));
+    }
+    
+    @GetMapping("/advertice/type/{type}")
+    @ApiOperation(value = "根据类型查询广告", response = Advertise.class,responseContainer="list")
+    public ResponseEntity<List<Advertise>>findByType(@PathVariable("type") AdvertiseType type) {
+        return ResponseEntity.ok(advertiseService.findByType(type));
     }
 }

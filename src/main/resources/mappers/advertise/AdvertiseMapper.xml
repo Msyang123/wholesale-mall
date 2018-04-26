@@ -89,4 +89,13 @@
 		<include refid="common.pager"></include>
 	</select>
 
+	<!-- 根据类型查询广告 -->
+	<select id="findByType" parameterType="String" resultType="com.lhiot.mall.wholesale.advertise.domain.Advertise">
+		select <include refid="advertiseColumn"/> 
+		from t_whs_advertisement 
+		where advertment_position = #{0} 
+		and is_vaild = '1' 
+		and now() BETWEEN begin_time and end_time 
+		order by begin_time limit 6
+	</select>
 </mapper>
