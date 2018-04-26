@@ -46,8 +46,6 @@ import java.util.Map.Entry;
 @Slf4j
 public class WeChatUtil {
 	public final  String encoding = "UTF-8";
-	/**用于微信openId md5 slat*/
-	public static final String openIdSlat = "sgsl2018";
 
 	/** 微信支付 - 退款接口 (POST) */
 	public final  String REFUND_URL = "https://api.mch.weixin.qq.com/secapi/pay/refund";
@@ -106,13 +104,11 @@ public class WeChatUtil {
 	 *            订单号
 	 * @param totalFee
 	 *            退款金额
-	 * @param p12
-	 *            证书文件 new File("../classes/apiclient_cert.p12")
 	 * @return 微信返回的XML
 	 * @throws Exception 
 	 */
-	public  String refund(final String tradeNo, final int totalFee, final File p12) throws Exception {
-		return refund(tradeNo, tradeNo, totalFee, totalFee, p12);
+	public  String refund(final String tradeNo, final int totalFee) throws Exception {
+		return refund(tradeNo, tradeNo, totalFee, totalFee);
 	}
 
 
@@ -127,13 +123,10 @@ public class WeChatUtil {
 	 *            订单总额
 	 * @param refundFee
 	 *            退款金额
-	 * @param p12
-	 *            证书文件 new File("../classes/apiclient_cert.p12")
 	 * @return 微信返回的XML
 	 * @throws Exception 
 	 */
-	public String refund(final String tradeNo, final String refundNo, final int totalFee, final int refundFee,
-			final File p12) throws Exception {
+	public String refund(final String tradeNo, final String refundNo, final int totalFee, final int refundFee) throws Exception {
 		String currTime = DateFormatUtil.format3(new Date());
 		String strTime = currTime.substring(8, currTime.length());
 		String nonce = strTime + this.buildRandom(4);
@@ -153,7 +146,7 @@ public class WeChatUtil {
 		HttpPost httpPost = new HttpPost(REFUND_URL);
 		try {
 			KeyStore ks = KeyStore.getInstance("pkcs12");
-			ks.load(new FileInputStream(p12), properties.getWeChatPay().getPartnerId().toCharArray());
+			ks.load(new FileInputStream(properties.getWeChatPay().getPkcs12().getFile()), properties.getWeChatPay().getPartnerId().toCharArray());
 			SSLContext sslcontext = SSLContexts.custom().loadKeyMaterial(ks, properties.getWeChatPay().getPartnerId().toCharArray())
 					.build();
 			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext, new String[] { "TLSv1" },

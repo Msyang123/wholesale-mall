@@ -25,5 +25,5 @@ public class SalesUserRelation {
     private long salesmanId;
 
     @JsonProperty("is_check")
-    private long isCheck;
+    private Integer check;
 }

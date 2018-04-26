@@ -2,19 +2,14 @@ package com.lhiot.mall.wholesale;
 
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.base.SpringHolder;
-import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
 @EnableTransactionManagement
-@Configuration
-@EnableConfigurationProperties(PaymentProperties.class)
 public class WholesaleMallApplication {
 
     @Bean

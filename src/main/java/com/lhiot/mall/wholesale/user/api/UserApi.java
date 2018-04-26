@@ -33,7 +33,7 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 
-@Api
+@Api(description ="用户接口")
 @Slf4j
 @RestController
 @RequestMapping("/user")
@@ -112,12 +112,10 @@ public class UserApi {
         //判断是否在数据库中存在此记录，如果存在直接登录，否则就注册用户微信信息
         //需要将access_token(2小时) 和 refresh_token （1个月）做为session缓存起来
 
-        String openIdAfterMd5=MD5.md5(accessToken.getOpenId()+WeChatUtil.openIdSlat);
-        accessToken.setOpenIdAterMd5(openIdAfterMd5);
         //以加密openId做为redis key
-        wxSignleUserMap.put(openIdAfterMd5,accessToken);
+        wxSignleUserMap.put(accessToken.getOpenId(),accessToken);
         //FIXME redis缓存 refresh_token一个月
-        wxRefreshTokenMap.put(openIdAfterMd5,accessToken.getRefreshToken());
+        wxRefreshTokenMap.put(accessToken.getOpenId(),accessToken.getRefreshToken());
         //FIXME 如果用户存在就不做处理 否则插入数据库
 
 
@@ -126,7 +124,7 @@ public class UserApi {
         if(users.size()>0){
             //检查手机号等相关信息用于判断是否需要设置手机号等
             User findUser= users.get(0);
-            return ResponseEntity.ok("{'openid':"+openIdAfterMd5+"}");
+            return ResponseEntity.ok("{'openid':"+accessToken.getOpenId()+"}");
         }
         //FIXME 此项需要写入数据库中
         /*User user=new User();
