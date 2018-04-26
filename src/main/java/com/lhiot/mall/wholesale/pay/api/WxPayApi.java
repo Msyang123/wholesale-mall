@@ -1,5 +1,8 @@
 package com.lhiot.mall.wholesale.pay.api;
 
+import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
+import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.pay.service.PayService;
 import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
 import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
@@ -10,54 +13,52 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
-@Api(description = "支付接口")
+@Api(description = "微信支付接口")
 @RestController
 @RequestMapping("/wechat")
-public class PayApi {
+public class WxPayApi {
 	
 	private final PayService payService;
 
-    private final WeChatUtil weChatUtil;
+    private final OrderService orderService;
+	private final WeChatUtil weChatUtil;
+
+    private final SnowflakeId snowflakeId;
+
+
 
 	@Autowired
-	public PayApi(PayService payService, PaymentProperties properties){
+	public WxPayApi(PayService payService,OrderService orderService, PaymentProperties properties,SnowflakeId snowflakeId){
 
         this.payService = payService;
+        this.orderService=orderService;
         this.weChatUtil = new WeChatUtil(properties);
+        this.snowflakeId=snowflakeId;
 	}
 	
     @GetMapping("/orderpay/sign")
     @ApiOperation(value = "微信订单支付签名", response = String.class)
-    public ResponseEntity<String> orderpaySign(HttpServletRequest request) throws Exception {
-	    String openIdAfterDm5=request.getParameter("openIdAfterDm5");
-	    String orderFee=request.getParameter("orderFee");
-	    int orderFeeIntVal=Integer.valueOf(orderFee);
+    public ResponseEntity<String> orderpaySign(HttpServletRequest request,@RequestParam("openId") String openId,@RequestParam("orderCode") String orderCode) throws Exception {
+        OrderDetail orderDetail= orderService.searchOrder(orderCode);
 	    //通过加密后的openIdAfterDm5查找数据库openId
-        String openId="ouxJf0RQY0eCN6OWotvzwulqSFJQ";
-        String orderCode="3333333"+System.currentTimeMillis();
-        String wxOrderSignStr=payService.wxOrderPay(getRemoteAddr(request),openId,orderFeeIntVal,getUserAgent(request),orderCode,weChatUtil);
+        String wxOrderSignStr=payService.wxOrderPay(getRemoteAddr(request),openId,
+                orderDetail.getOrderNeedFee()+orderDetail.getDeliveryFee(),getUserAgent(request),orderCode,weChatUtil);
+        //FIXME 写订单签名日志
     	return ResponseEntity.ok(wxOrderSignStr);
     }
 
     @GetMapping("/rechargepay/sign")
     @ApiOperation(value = "微信充值支付签名", response = String.class)
-    public ResponseEntity<String> rechargepaySign(HttpServletRequest request) throws Exception {
-        String openIdAfterDm5=request.getParameter("openIdAfterDm5");
-        String orderFee=request.getParameter("orderFee");
-        int orderFeeIntVal=Integer.valueOf(orderFee);
-        //通过加密后的openIdAfterDm5查找数据库openId
-        String openId="ouxJf0RQY0eCN6OWotvzwulqSFJQ";
-        String rechargeCode="4444444"+System.currentTimeMillis();
-        String wxRechargeSignStr=payService.wxRechargePay(getRemoteAddr(request),openId,orderFeeIntVal,getUserAgent(request),rechargeCode,weChatUtil);
+    public ResponseEntity<String> rechargepaySign(HttpServletRequest request,@RequestParam("openId") String openId,@RequestParam("rechargeFee") int rechargeFee) throws Exception {
+
+        String wxRechargeSignStr=payService.wxRechargePay(getRemoteAddr(request),openId,rechargeFee,getUserAgent(request),snowflakeId.stringId(),weChatUtil);
+        //FIXME 写充值签名日志
         return ResponseEntity.ok(wxRechargeSignStr);
     }
 

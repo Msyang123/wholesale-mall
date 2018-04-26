@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.pay.mapper.PaymentLogMapper">
+
+    <insert id="insertPaymentLog" parameterType="com.lhiot.mall.wholesale.pay.domain.PaymentLog"
+            useGeneratedKeys="true"
+            keyProperty="id">
+        insert into t_whs_payment_log (
+                            order_id,
+                            order_code,
+                            user_id,
+                            transaction_id,
+                            refund_fee,
+                            total_fee,
+                            bank_type,
+                            bank_name,
+                            payment_from,
+                            payment_step,
+                            payment_order_type,
+                            payment_time
+                        ) VALUES (#{orderId},#{orderCode},#{userId},
+                        #{transactionId},#{refundFee},#{totalFee},#{bankType},#{bankName},#{paymentFrom},#{paymentStep},
+                        #{paymentOrderType},#{paymentTime})
+    </insert>
+
+    <select id="getPaymentLog" parameterType="String" resultType="com.lhiot.mall.wholesale.pay.domain.PaymentLog">
+
+        select * from t_whs_payment_log where order_code=#{0}
+    </select>
+</mapper>

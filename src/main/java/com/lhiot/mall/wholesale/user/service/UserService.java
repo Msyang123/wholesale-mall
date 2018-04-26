@@ -78,7 +78,7 @@ public class UserService {
             SalesUserRelation salesUserRelation = new SalesUserRelation();
             salesUserRelation.setUserId(user.getId());
             salesUserRelation.setSalesmanId(salesUser.getId());
-            salesUserRelation.setIsCheck(2);
+            salesUserRelation.setCheck(2);
             if (salesUserService.insertRelation(salesUserRelation) < 1) {
                 throw new ServiceException("注册审核提交失败");
             }

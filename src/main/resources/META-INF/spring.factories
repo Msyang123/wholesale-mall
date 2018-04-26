@@ -1,0 +1,5 @@
+# Auto Configure
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.sgsl.id.IdAutoConfigurate,\
+com.sgsl.hd.autoconfigure.HaiDingAutoconfigure,\
+com.lhiot.mall.wholesale.user.wechat.PaymentProperties

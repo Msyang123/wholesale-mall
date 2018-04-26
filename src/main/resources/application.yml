@@ -45,7 +45,22 @@ food-see:
       recharge-notify-url: https://online.food-see.com/wholesale-mall/wechat/recharge/notify
       order-notify-url: https://online.food-see.com/wholesale-mall/wechat/order/notify
       payunit: 100
-      proxy: nginx
+      proxy: nonginx
+hd:
+  config:
+    charset: UTF-8
+    username: test01
+    password: AePq88kJbleNGUDT
+    operator: user
+    url: http://api.sandbox.u.hd123.com/
+    shop-id: 0418
+    platform-id: qianfan
+    platform-name: 千帆
+    tenant-id: test01
+    hd-card: http://172.16.10.108:8180/hdcard-services/api
+    authentication-username: guest
+    authentication-password: guest
+    h4rest: http://172.16.10.109:7280/h4rest-server/rest/h5rest-server/core/
 
 microx:
   swagger:
