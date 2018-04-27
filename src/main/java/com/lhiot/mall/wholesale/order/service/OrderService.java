@@ -63,6 +63,9 @@ public class OrderService {
         return orderMapper.searchOrder(orderCode);
     }
 
+    public List<OrderDetail> searchAfterSaleOrder(OrderDetail orderDetail) {
+        return orderMapper.searchAfterSaleOrders(orderDetail);
+    }
     public int create(OrderDetail orderDetail){
         //产生订单编码
         orderDetail.setOrderCode(snowflakeId.stringId());
