@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.coupon.mapper.CouponPlateMapper">
+	
+	<sql id="CouponPlateColumn">
+		id,coupon_name as couponName ,coupon_fee as couponFee,full_fee as fullFee,coupon_type as couponType,
+		vaild
+	</sql>
+	
+	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.coupon.domain.CouponPlate">
+		select <include refid="CouponPlateColumn"/> from t_coupon_plate where id = #{0}
+	</select>
+	
+	<!-- lynn 2018/4/19根据 新增-->
+	<insert id="insert" parameterType="com.lhiot.mall.wholesale.coupon.domain.CouponPlate">
+		insert into t_coupon_plate (coupon_name,coupon_fee,full_fee,coupon_type,vaild)
+		values(#{couponName},#{couponFee},#{fullFee},#{couponType},#{vaildInt})
+	</insert>
+	
+	<!-- lynn 2018/4/19根据 修改数量 -->
+	<update id="update" parameterType="com.lhiot.mall.wholesale.coupon.domain.CouponPlate">
+		update t_coupon_plate 
+		<trim prefix="set" suffixOverrides=",">
+			<if test="couponName != null and couponName != ''">coupon_name=#{couponName},</if>
+			<if test="couponFee != null and couponFee != ''">coupon_fee=#{couponFee},</if>
+			<if test="fullFee != null and fullFee != ''">full_fee=#{fullFee},</if>
+			<if test="couponType != null and couponType != ''">coupon_type=#{couponType},</if>
+			<if test="vaildInt != null">vaild=#{vaildInt},</if>
+		</trim>
+		where id = #{id}
+	</update>
+	
+	<!-- lynn 2018/4/19根据商品id 删除商品 -->
+	<delete id="removeInbatch" parameterType="java.util.List">
+		delete from t_coupon_plate where id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.coupon.domain.gridparam.CouponGridParam" 
+		resultType="Integer">
+		select count(id) from t_coupon_plate 
+		<trim prefix="where" prefixOverrides="and">
+			<if test="couponName != null and couponName != ''"> 
+				and coupon_name like concat('%',#{couponName},'%')
+			</if>
+			<if test="couponType != null and couponType != ''">and coupon_type=#{couponType}</if>
+			<if test="vaildInt != null">and vaild=#{vaild},</if>
+		</trim>
+	</select>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.coupon.domain.gridparam.CouponGridParam" 
+		resultType="com.lhiot.mall.wholesale.coupon.domain.CouponPlate">
+		select <include refid="CouponPlateColumn"/> from t_coupon_plate
+		<trim prefix="where" prefixOverrides="and">
+			<if test="couponName != null and couponName != ''"> 
+				and coupon_name like concat('%',#{couponName},'%')
+			</if>
+			<if test="couponType != null and couponType != ''">and coupon_type=#{couponType}</if>
+			<if test="vaildInt != null">and vaild=#{vaild},</if>
+		</trim>
+		<include refid="common.pager"></include>
+	</select>
+
+</mapper>

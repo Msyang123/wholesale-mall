@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.coupon.mapper.CouponConfigMapper">
+	
+<sql id="CouponConfigColumn">
+		t1.id,t1.coupon_id as couponId ,date_format(t1.effective_time,'%Y-%m-%d %h:%i:%s') as effectiveTime,
+		date_format(t1.failure_time,'%Y-%m-%d %h:%i:%s') as failureTime,t1.vaild_days as vaildDays,t1.coupon_des as couponDes
+	</sql>
+	
+	<sql id="CouponPlateColumn">
+		t2.coupon_name as couponName ,t2.coupon_fee as couponFee,t2.full_fee as fullFee,t2.coupon_type as couponType,
+		t2.vaild
+	</sql>
+	
+   <select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.coupon.domain.CouponConfig">
+		select <include refid="CouponConfigColumn"/>,<include refid="CouponPlateColumn"/>
+		from t_whs_coupon_config t1
+		left join t_coupon_plate t2 on t1.coupon_id = t2.id
+		where t1.id = #{0}
+	</select> 
+	
+	<!-- lynn 2018/4/19根据 新增-->
+	<insert id="insert" parameterType="com.lhiot.mall.wholesale.coupon.domain.CouponConfig">
+		insert into t_whs_coupon_config (coupon_id,effective_time,failure_time,vaild_days,coupon_des)
+		values(#{couponId},#{effectiveTime},#{failureTime},#{vaildDays},#{couponDes})
+	</insert>
+	
+	<!-- lynn 2018/4/19根据 修改 -->
+	<update id="update" parameterType="com.lhiot.mall.wholesale.coupon.domain.CouponConfig">
+		update t_whs_coupon_config 
+		<trim prefix="set" suffixOverrides=",">
+			<if test="couponId != null and couponId != ''">coupon_id=#{couponId},</if>
+			<if test="effectiveTime != null and effectiveTime != ''">effective_time=#{effectiveTime},</if>
+			<if test="failureTime != null and failureTime != ''">failure_time=#{failureTime},</if>
+			<if test="vaildDays != null and vaildDays != ''">vaild_days=#{vaildDays},</if>
+			<if test="couponDes != null and couponDes != ''">coupon_des=#{couponDes},</if>
+		</trim>
+		where id = #{id}
+	</update>
+	
+	<!-- lynn 2018/4/19根据商品id 删除商品 -->
+	<delete id="removeInbatch" parameterType="java.util.List">
+		delete from t_whs_coupon_config where id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQueryCount" 
+		parameterType="com.lhiot.mall.wholesale.coupon.domain.gridparam.CouponGridParam" 
+		resultType="Integer">
+		select count(id) from t_whs_coupon_config 
+		<trim prefix="where" prefixOverrides="and">
+			<if test="couponName != null and couponName != ''"> 
+				and coupon_name like concat('%',#{couponName},'%')
+			</if>
+			<if test="couponType != null and couponType != ''">and coupon_type=#{couponType}</if>
+		</trim>
+	</select>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQuery" 
+		parameterType="com.lhiot.mall.wholesale.coupon.domain.gridparam.CouponGridParam" 
+		resultType="com.lhiot.mall.wholesale.coupon.domain.CouponConfig">
+		select <include refid="CouponConfigColumn"/> from t_whs_coupon_config
+		<trim prefix="where" prefixOverrides="and">
+			<if test="couponName != null and couponName != ''"> 
+				and coupon_name like concat('%',#{couponName},'%')
+			</if>
+			<if test="couponType != null and couponType != ''">and coupon_type=#{couponType}</if>
+		</trim>
+		<include refid="common.pager"></include>
+	</select>
+</mapper>
