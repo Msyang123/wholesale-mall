@@ -16,6 +16,10 @@ public class PaymentProperties {
      */
     private String charset = "UTF-8";
     /**
+     * 发送验证码的第三方推送服务地址
+     */
+    private String sendMessageUrl;
+    /**
      * http连接超时（毫秒数）
      */
     private Integer httpConnectionTimeoutExpress = -1;

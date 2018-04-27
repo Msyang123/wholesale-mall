@@ -1,12 +1,15 @@
 package com.lhiot.mall.wholesale.pay.api;
 
 import com.leon.microx.common.exception.ServiceException;
+import com.lhiot.mall.wholesale.invoice.domain.Invoice;
+import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.service.DebtOrderService;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.service.PayService;
+import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
 import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
 import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
 import com.lhiot.mall.wholesale.user.wechat.XPathParser;
@@ -31,13 +34,18 @@ public class CurrencyPayApi {
 
     private final DebtOrderService debtOrderService;
     private final OrderService orderService;
+    private final InvoiceService invoiceService;
+    private final PaymentLogService paymentLogService;
 
 	@Autowired
-	public CurrencyPayApi(PayService payService,DebtOrderService debtOrderService, OrderService orderService){
+	public CurrencyPayApi(PayService payService,DebtOrderService debtOrderService, OrderService orderService,
+                          InvoiceService invoiceService,PaymentLogService paymentLogService){
 
         this.payService = payService;
         this.debtOrderService=debtOrderService;
         this.orderService=orderService;
+        this.invoiceService=invoiceService;
+        this.paymentLogService=paymentLogService;
 	}
 	
     @PutMapping("/orderpay/{orderCode}")
@@ -80,4 +88,23 @@ public class CurrencyPayApi {
     }
 
 
+    @PutMapping("/invoicepay/{invoiceCode}")
+    @ApiOperation(value = "余额支付发票", response = String.class)
+    public ResponseEntity invoicePay(@PathVariable("invoiceCode") String invoiceCode) {
+        //依据发票业务编码查询发票信息
+        Invoice invoice= invoiceService.findInvoiceByCode(invoiceCode);
+        if(Objects.isNull(invoice)){
+            return ResponseEntity.badRequest().body("未找到开票信息");
+        }else if(invoice.getInvoiceStatus()==1){
+            return ResponseEntity.badRequest().body("发票已支付，请勿重复支付");
+        }else if(invoice.getInvoiceStatus()==2){
+            return ResponseEntity.badRequest().body("已经开票，请勿重复支付");
+        }
+
+        int payResult=payService.currencyPay(invoice);
+        if(payResult>0){
+            return ResponseEntity.ok(invoice);
+        }
+        return ResponseEntity.badRequest().body("余额支付发票失败");
+    }
 }

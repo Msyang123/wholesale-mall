@@ -52,6 +52,7 @@ wholesale-mall:
 food-see:
   payment:
     charset: UTF-8
+    send-message-url: http://172.16.10.196:6321/verify/{0}?verifyCodeType={1}
     we-chat-oauth:
       app-id: wx8521acbe400f89e3
       app-secret: 5176ebed12516da3cabb3a4d0e6d3ad6
@@ -65,6 +66,10 @@ food-see:
       order-notify-url: https://online.food-see.com/wholesale-mall/wechat/order/notify
       payunit: 100
       proxy: nonginx
+sgsl:
+  manager:
+    rest:
+      string-http-message-converter-default-charset: UTF-8
 hd:
   config:
     charset: UTF-8
