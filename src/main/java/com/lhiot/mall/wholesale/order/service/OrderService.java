@@ -99,7 +99,7 @@ public class OrderService {
         return orderMapper.updateOrderStatusByCode(orderDetail);
     }
     /**
-     * 取消已支付订单
+     * 取消已支付订单 需要调用仓库取消掉订单
      * @param orderDetail
      * @return
      */
@@ -114,7 +114,7 @@ public class OrderService {
         switch (orderDetail.getOrderType()) {
             //1货到付款
             case 1:
-
+                //直接取消掉订单就可以了
                 break;
             //0 线上支付
             case 0:
@@ -122,6 +122,8 @@ public class OrderService {
                 //退款 如果微信支付就微信退款
                 try {
                     weChatUtil.refund(paymentLog.getTransactionId(), paymentLog.getTotalFee());
+
+                    //TODO 写入退款记录  t_whs_refund_log
                 } catch (Exception e) {
                     throw new ServiceException("微信退款失败，请联系客服");
                 }

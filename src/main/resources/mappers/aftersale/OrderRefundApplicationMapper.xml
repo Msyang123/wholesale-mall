@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.aftersale.mapper.OrderRefundApplicationMapper">
+
+    <insert id="create" parameterType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
+        insert into t_whs_order_refund_application(
+            id,
+            refund_type,
+            exist_problem,
+            other_problem,
+            refund_evidence,
+            verify_status,
+            order_discount_fee,
+            delivery_fee,
+            comments,
+            order_id,
+            user_id
+        )VALUES (
+            ${id},
+            #{refundType},
+            #{existProblem},
+            #{otherProblem},
+            #{refundEvidence},
+            #{verifyStatus},
+            #{orderDiscountFee},
+            #{deliveryFee},
+            #{comments},
+            #{orderId},
+            #{userId}
+        )
+    </insert>
+    <update id="updateById" parameterType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
+        UPDATE t_whs_order_refund_application
+        <set>
+          <if test="verifyStatus!=null and verifyStatus!=0">
+              verify_status=#{verifyStatus},
+          </if>
+          <if test="refundEvidence!=null and refundEvidence!=''">
+              refund_evidence=#{refundEvidence},
+          </if>
+            <if test="orderDiscountFee!=null and orderDiscountFee!=''">
+                order_discount_fee=#{orderDiscountFee},
+            </if>
+            <if test="deliveryFee!=null and deliveryFee!=''">
+                delivery_fee=#{deliveryFee},
+            </if>
+            <if test="comments!=null and comments!=''">
+                comments=#{comments},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+    <select id="orderRefundApplicationList" parameterType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication"
+            resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
+        select * from t_whs_order_refund_application
+        <where>
+           <if test="userId!=null and userId!=0">
+              and user_id=#{userId}
+           </if>
+            <if test="orderId!=null and orderId!=0">
+                and  order_id=#{orderId}
+            </if>
+            <if test="id!=null and id!=0">
+                and id=#{id}
+            </if>
+        </where>
+    </select>
+
+</mapper>
