@@ -36,6 +36,15 @@
         where do.order_ids LIKE concat('%',#{orderCode},'%')  ORDER BY do.create_time desc LIMIT 1
     </select>
 
+    <select id="searchOrdersByOrderCodes" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        select id,order_code orderCode,order_discount_fee orderDiscountFee,order_type orderType,pay_status payStatus
+        ,order_status orderStatus,order_create_time createTime,order_total total,order_need_fee orderNeedFee,remarks
+        from t_whs_order where order_code in
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
     <insert id="save" parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail"
             useGeneratedKeys="true"
             keyProperty="id">

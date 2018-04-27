@@ -10,6 +10,7 @@ import java.util.List;
 public interface OrderMapper {
     List<OrderDetail> searchOrders(OrderDetail orderDetail);
 
+    List<OrderDetail> searchOrdersByOrderCodes(List<String> orderCodes);
     List<OrderGoods> searchOrderGoods(long orderId);
 
     Integer searchOutstandingAccountsOrder(String orderCode);
