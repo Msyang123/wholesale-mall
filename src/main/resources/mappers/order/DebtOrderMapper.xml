@@ -18,8 +18,20 @@
               #{userId},#{createTime},#{debtFee},#{checkStatus},#{paymentEvidence},#{orderIds})
     </insert>
 
-    <update id="updateDebtOrderStatusByCode" parameterType="com.lhiot.mall.wholesale.order.domain.DebtOrder">
-        update t_whs_debt_order set check_status=#{checkStatus} where order_debt_code=#{orderDebtCode}
+    <update id="updateDebtOrderByCode" parameterType="com.lhiot.mall.wholesale.order.domain.DebtOrder">
+        update t_whs_debt_order
+        <set>
+            <if test="checkStatus != null and checkStatus !=0">
+             check_status=#{checkStatus},
+            </if>
+            <if test="paymentEvidence != null and paymentEvidence !=0">
+                payment_evidence=#{paymentEvidence},
+            </if>
+            <if test="checkTime != null">
+                check_time=#{checkTime},
+            </if>
+        </set>
+        where order_debt_code=#{orderDebtCode}
     </update>
 
     <select id="findByCode" parameterType="com.lhiot.mall.wholesale.order.domain.DebtOrder">

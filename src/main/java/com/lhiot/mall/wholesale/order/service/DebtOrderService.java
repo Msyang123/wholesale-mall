@@ -56,8 +56,8 @@ public class DebtOrderService {
      * @param debtOrder
      * @return
      */
-    public int updateDebtOrderStatus(DebtOrder debtOrder){
-        return debtOrderMapper.updateDebtOrderStatusByCode(debtOrder);
+    public int updateDebtOrderByCode(DebtOrder debtOrder){
+        return debtOrderMapper.updateDebtOrderByCode(debtOrder);
     }
 
     /**
