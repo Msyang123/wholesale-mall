@@ -7,6 +7,7 @@
 package com.lhiot.mall.wholesale.user.wechat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;

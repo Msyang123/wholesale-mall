@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @Data
@@ -51,6 +52,9 @@ public class OrderDetail {
 
     @JsonProperty("comments")
     private String remarks;
+
+    @JsonProperty("afterSaleTime")
+    private Timestamp afterSaleTime;
 
     @JsonProperty("proList")
     private List<OrderGoods> orderGoodsList;

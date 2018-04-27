@@ -1,7 +1,7 @@
 package com.lhiot.mall.wholesale.pay.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lhiot.mall.wholesale.user.wechat.DateFormatUtil;
+import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

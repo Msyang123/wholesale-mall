@@ -5,14 +5,28 @@
     <!-- 查询订单信息 -->
     <select id="searchOrders"  parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
        select id,order_code orderCode,order_discount_fee orderDiscountFee,order_type orderType,pay_status payStatus
-        ,order_status orderStatus,order_create_time createTime,order_total total,order_need_fee needPay,remarks
+        ,order_status orderStatus,order_create_time createTime,order_total total,order_need_fee needPay,remarks,after_sale_time afterSaleTime
        from t_whs_order o
         <trim prefix="where" prefixOverrides="and">
             <if test="userId != null ">and o.user_id=#{userId}</if>
             <if test="orderType != null ">and o.order_type=#{orderType}</if>
             <if test="payStatus != null ">and o.pay_status=#{payStatus}</if>
             <if test="orderStatus != null ">and o.order_status = #{orderStatus}</if>
+
         </trim>
+    </select>
+
+    <select id="searchAfterSaleOrders"  parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        select id,order_code orderCode,order_discount_fee orderDiscountFee,order_type orderType,pay_status payStatus
+        ,order_status orderStatus,order_create_time createTime,order_total total,order_need_fee needPay,remarks,after_sale_time afterSaleTime
+        from t_whs_order o
+        <trim prefix="where" prefixOverrides="and">
+            <if test="userId != null ">and o.user_id=#{userId}</if>
+            <if test="orderType != null ">and o.order_type=#{orderType}</if>
+            <if test="payStatus != null ">and o.pay_status=#{payStatus}</if>
+            <if test="orderStatus != null ">and o.order_status = #{orderStatus}</if>
+        </trim>
+        and DATE_SUB(CURDATE(),INTERVAL 30 DAY) &lt;= o.order_create_time
     </select>
 
     <select id="searchOrder"  parameterType="String" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">

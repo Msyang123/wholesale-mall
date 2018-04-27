@@ -15,4 +15,6 @@ public interface OrderMapper {
     Integer searchOutstandingAccountsOrder(String orderCode);
 
     OrderDetail searchOrder(String orderCode);
+
+    List<OrderDetail> searchAfterSaleOrders(OrderDetail orderDetail);
 }

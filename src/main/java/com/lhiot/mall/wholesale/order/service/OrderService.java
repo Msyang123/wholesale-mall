@@ -32,4 +32,8 @@ public class OrderService {
     public OrderDetail searchOrder(String orderCode){
         return orderMapper.searchOrder(orderCode);
     }
+
+    public List<OrderDetail> searchAfterSaleOrder(OrderDetail orderDetail){
+        return orderMapper.searchAfterSaleOrders(orderDetail);
+    }
 }
