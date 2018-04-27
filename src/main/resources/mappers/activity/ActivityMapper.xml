@@ -3,7 +3,7 @@
 <mapper namespace="com.lhiot.mall.wholesale.activity.mapper.ActivityMapper">
 	<sql id="activityColumn">
 		id,activity_desc as activityDesc,activity_type as activityType,link_url as linkUrl,
-		date_format(start_time,'%Y-%m-%d %h:%i:%s') as startTime,date_format(end_time,'%Y-%m-%d %h:%i:%s') as endTime,
+		date_format(start_time,'%Y-%m-%d %H:%i:%s') as startTime,date_format(end_time,'%Y-%m-%d %H:%i:%s') as endTime,
 		vaild
 	</sql>
 	
@@ -106,6 +106,15 @@
 	<select id="currentActivity" parameterType="String" resultType="com.lhiot.mall.wholesale.activity.domain.Activity">
 		select <include refid="activityColumn"/> from t_whs_activity
 		where activity_type = #{0} and vaild = '1' and now() between start_time and end_time
+		order by start_time limit 1
+	</select>
+	
+	<!-- 查询下期开启活动lynn -->
+	<select id="nextActivity" parameterType="map" resultType="com.lhiot.mall.wholesale.activity.domain.Activity">
+		select <include refid="activityColumn"/> from t_whs_activity
+		where activity_type = #{activityType} 
+		and vaild = '1'
+		and start_time &gt; #{time}
 		order by start_time limit 1
 	</select>
 </mapper>

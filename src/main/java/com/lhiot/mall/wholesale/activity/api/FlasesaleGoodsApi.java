@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.leon.microx.common.wrapper.ResultObject;
+import com.lhiot.mall.wholesale.activity.domain.ActivityPeriodsType;
 import com.lhiot.mall.wholesale.activity.domain.FlashActivity;
+import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
-import com.lhiot.mall.wholesale.advertise.domain.Advertise;
-import com.lhiot.mall.wholesale.advertise.domain.gridparam.AdvertiseGirdParam;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 
 import io.swagger.annotations.Api;
@@ -76,4 +76,9 @@ public class FlasesaleGoodsApi {
         return ResponseEntity.ok(flashsaleService.pageQuery(param));
     }
     
+    @GetMapping("/flashsale/periods/{type}")
+    @ApiOperation(value = "查询当前或者下期活动信息及活动商品列表", response = FlashActivityGoods.class)
+    public ResponseEntity<FlashActivityGoods> falshGoodses(@PathVariable("type") ActivityPeriodsType type) {
+        return ResponseEntity.ok(flashsaleService.falshGoods(type));
+    }
 }

@@ -120,7 +120,7 @@ public class AdvertiseService {
 		}
 		
 		if(AdvertiseType.flashSale.equals(type)){
-			Activity flashActivity = activityService.findActivityByType(ActivityType.flashsale);
+			Activity flashActivity = activityService.currentActivity(ActivityType.flashsale);
 			//如果不存在活动，则返回空
 			if(Objects.isNull(flashActivity)){
 				return result;

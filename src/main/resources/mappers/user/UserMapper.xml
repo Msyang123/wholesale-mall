@@ -119,5 +119,28 @@
         UPDATE t_whs_user_address SET is_default = 1
         WHERE is_default = 0 and user_id = #{0}
     </update>
-
+	
+	<!-- 批量发券 -->
+	<select id="searchByPhones" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.user.domain.User">
+		select * from t_whs_user
+		where phone in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	
+	<!-- 根据手机号模糊查询用户信息 -->
+	<select id="fuzzySearchByPhone" parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.User">
+		select * from t_whs_user
+		where phone like concat('%',#{0},'%')
+	</select>
+	
+	<!-- 根据手机号模糊查询用户信息 -->
+	<select id="searchInbatch" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.user.domain.User">
+		select * from t_whs_user
+		where id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
 </mapper>
