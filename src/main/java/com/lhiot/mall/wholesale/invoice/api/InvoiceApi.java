@@ -5,8 +5,6 @@ import com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.service.OrderService;
-import com.lhiot.mall.wholesale.user.domain.User;
-import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -17,10 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 
-@Api
+@Api(description ="开票接口")
 @Slf4j
 @RestController
 public class InvoiceApi {
@@ -43,7 +40,7 @@ public class InvoiceApi {
     }
 
     @PutMapping("/saveOrUpdateInvoiceTitle")
-    @ApiOperation(value = "新增/修改个人信息")
+    @ApiOperation(value = "新增/修改发票信息")
     public ResponseEntity saveOrUpdateInvoiceTitle(@RequestBody InvoiceTitle invoiceTitle){
         if (invoiceService.saveOrUpdateInvoiceTitle(invoiceTitle)>0){
             return ResponseEntity.ok().body("新增/修改完成");
@@ -93,6 +90,8 @@ public class InvoiceApi {
         }
         return ResponseEntity.ok(invoiceService.findInvoiceByCode(invoiceCode));
     }
+
+
 
 
 

@@ -54,4 +54,12 @@ public class InvoiceService {
         return invoiceMapper.findInvoiceByCode(invoiceCode);
     }
 
+    /**
+     * 修改发票信息
+     * @param invoice
+     * @return
+     */
+    public int updateInvoiceByCode(Invoice invoice){
+        return invoiceMapper.updateInvoiceByCode(invoice);
+    }
 }
