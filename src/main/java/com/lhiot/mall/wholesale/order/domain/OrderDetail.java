@@ -23,14 +23,20 @@ public class OrderDetail {
     @JsonProperty("orderId")
     private String orderCode;
 
+    @JsonProperty("salesmanId")
+    private long salesmanId;
+
     @JsonProperty("needPay")
-    private Integer needPay;
+    private Integer orderNeedFee;
 
     @JsonProperty("payType")
     private Integer orderType;
 
     @JsonProperty("status")
     private Integer orderStatus;
+
+    //订单当前状态 用于修改的时候约束条件
+    private Integer currentOrderStaus;
 
     @JsonProperty("auditStatus")
     private Integer checkStatus;
@@ -55,6 +61,18 @@ public class OrderDetail {
 
     @JsonProperty("afterSaleTime")
     private Timestamp afterSaleTime;
+
+    @JsonProperty("hdStatus")
+    private int hdStatus;//发送订单到海鼎是否成功0成功1失败
+
+    @JsonProperty("deliveryTime")
+    private Timestamp deliveryTime;
+
+    @JsonProperty("deliveryFee")
+    private int deliveryFee;
+
+    @JsonProperty("deliveryAddress")
+    private String deliveryAddress;
 
     @JsonProperty("proList")
     private List<OrderGoods> orderGoodsList;

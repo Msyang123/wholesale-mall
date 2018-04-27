@@ -7,6 +7,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
 @Data
 @ToString
 @ApiModel
@@ -16,6 +19,30 @@ public class OrderGoods {
     @JsonProperty("id")
     private long id;
 
+    @JsonProperty("goodsStandardId")
+    private long goodsStandardId;
+
+    @JsonProperty("orderId")
+    private long orderId;
+
+    @JsonProperty("quanity")
+    private int quanity;
+
+    @JsonProperty("price")
+    private int goodsPrice;
+
+    @JsonProperty("paymentTime")
+    private Timestamp paymentTime;
+
+    @JsonProperty("refundStaus")
+    private int refundStaus;
+
+    @JsonProperty("discountGoodsPrice")
+    private int discountGoodsPrice;
+
+    @JsonProperty("userId")
+    private long userId;
+
     @JsonProperty("name")
     private String goodsName;
 
@@ -23,14 +50,14 @@ public class OrderGoods {
     private String unit;
 
     @JsonProperty("suttle")
-    private int weight;
-
-    @JsonProperty("price")
-    private int price;
+    private BigDecimal standardWeight;
 
     @JsonProperty("src")
     private String goodsImage;
 
     @JsonProperty("num")
     private int number;
+
+    @JsonProperty("hdSkuId")
+    private String hdSkuId;
 }

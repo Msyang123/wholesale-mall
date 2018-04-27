@@ -16,8 +16,14 @@ public class PlateGoods {
 	@ApiModelProperty(notes="版块id",dataType="Long")
 	private Long plateId;
 	
+	@ApiModelProperty(notes="版块商品排序",dataType="Integer")
+	private Integer rank;
+	
 	@ApiModelProperty(notes="商品规格id,逗号分割",dataType="String")
 	private String goodsStandardIds;
+	
+	@ApiModelProperty(notes="商品版块Id和规格id",dataType="String")
+	private String idAndStandardIds;
 	
 	@ApiModelProperty(notes="商品规格id",dataType="Long")
 	private Long goodsStandardId;

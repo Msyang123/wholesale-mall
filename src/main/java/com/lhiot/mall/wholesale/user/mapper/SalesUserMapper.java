@@ -21,4 +21,6 @@ public interface SalesUserMapper {
     int insertRelation(SalesUserRelation salesUserRelation);
 
     SalesUserRelation isSeller(long userId);
+
+    SalesUserRelation searchSaleRelationship(SalesUserRelation salesUserRelation);
 }

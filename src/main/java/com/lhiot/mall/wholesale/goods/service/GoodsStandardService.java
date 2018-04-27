@@ -8,12 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
-import com.lhiot.mall.wholesale.goods.domain.GoodsUnit;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.GoodsStandardMapper;
 
@@ -74,6 +71,9 @@ public class GoodsStandardService {
 		return goodsStandardMapper.select(id);
 	}
 	
+	public List<GoodsStandard> goodsStandards(List<Long> ids){
+		return goodsStandardMapper.searchByIds(ids);
+	}
 	/**
 	 * 根据关键词查询商品
 	 * @param keywords

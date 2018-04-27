@@ -49,7 +49,7 @@ public class GoodsKeywordsApi {
     
     @PutMapping("/keywords/{id}")
     @ApiOperation(value = "根据ID修改商品关键词", response = GoodsKeywords.class)
-    public ResponseEntity<?> modify(@PathVariable("id") Long id, GoodsKeywords goodsKeywords) {
+    public ResponseEntity<?> modify(@PathVariable("id") Long id,@RequestBody GoodsKeywords goodsKeywords) {
         if (goodsKeywordService.update(goodsKeywords)) {
             return ResponseEntity.ok(goodsKeywords);
         }
