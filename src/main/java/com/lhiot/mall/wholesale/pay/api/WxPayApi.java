@@ -171,8 +171,8 @@ public class WxPayApi {
     }
 
     @GetMapping("/offlinepay/sign")
-    @ApiOperation(value = "线下付款微信支付签名", response = String.class)
-    public ResponseEntity<String> offlinepaySign(HttpServletRequest request,@RequestParam("openId") String openId,@RequestParam("orderDebtCode") String orderDebtCode) throws Exception {
+    @ApiOperation(value = "账款付款微信支付签名", response = String.class)
+    public ResponseEntity<String> debtorderpaySign(HttpServletRequest request,@RequestParam("openId") String openId,@RequestParam("orderDebtCode") String orderDebtCode) throws Exception {
         //依据欠款订单业务编码查询欠款订单信息
         DebtOrder debtOrder= debtOrderService.findByCode(orderDebtCode);
         //审核状态 0-未支付 1-审核中 2-审核失败 3-已支付
@@ -184,14 +184,14 @@ public class WxPayApi {
             return ResponseEntity.badRequest().body("欠款订单已支付");
         }
 
-        String wxInvoiceSignStr=payService.wxInvoicePay(getRemoteAddr(request),openId,debtOrder.getDebtFee(),getUserAgent(request),debtOrder.getOrderDebtCode(),weChatUtil);
+        String wxInvoiceSignStr=payService.wxDebtopderPay(getRemoteAddr(request),openId,debtOrder.getDebtFee(),getUserAgent(request),debtOrder.getOrderDebtCode(),weChatUtil);
         //FIXME 写欠款订单支付签名日志
         return ResponseEntity.ok(wxInvoiceSignStr);
     }
 
     @PostMapping("/offline/notify")
-    @ApiOperation(value = "线下付款微信支付回调", response = String.class)
-    public ResponseEntity<String> offlineNotify(HttpServletRequest request) throws Exception {
+    @ApiOperation(value = "账款付款微信支付回调", response = String.class)
+    public ResponseEntity<String> debtorderNotify(HttpServletRequest request) throws Exception {
         log.info("========支付成功，后台回调=======");
         XPathParser xpath = weChatUtil.getParametersByWeChatCallback(request);
         XPathWrapper wrap = new XPathWrapper(xpath);

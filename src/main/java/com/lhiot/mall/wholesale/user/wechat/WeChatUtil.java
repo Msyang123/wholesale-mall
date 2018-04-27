@@ -509,7 +509,6 @@ public class WeChatUtil {
 			bufferedReader.close();
 			inputStreamReader.close();
 			inputStream.close();
-			inputStream = null;
 			conn.disconnect();
 			return buffer.toString();
 		} catch (ConnectException ce) {

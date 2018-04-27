@@ -21,11 +21,11 @@ public interface DebtOrderMapper {
 
 
     /**
-     * 依据订单号修改账款订单状态
+     * 依据订单号修改账款订单
      * @param debtOrder
      * @return
      */
-    int updateDebtOrderStatusByCode(DebtOrder debtOrder);
+    int updateDebtOrderByCode(DebtOrder debtOrder);
 
     /**
      * 依据编码查询账款订单信息

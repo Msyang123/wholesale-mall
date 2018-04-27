@@ -185,13 +185,13 @@ public class UserApi {
 
 
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/{userId}")
     @ApiOperation("查询个人信息")
     public ResponseEntity<User> queryUser(@PathVariable("userId") @NotNull long userId) {
         return ResponseEntity.ok(userService.user(userId)); // 查询操作幂等
     }
 
-    @PutMapping("/user/{userId}")   //因为要从URL能看出 指定修改哪个用户，所以ID应该放path中
+    @PutMapping("/{userId}")   //因为要从URL能看出 指定修改哪个用户，所以ID应该放path中
     @ApiOperation("修改个人信息")
     public ResponseEntity updateUser(@PathVariable("userId") @NotNull long userId, @RequestBody User user) {
         user.setId(userId);
@@ -199,27 +199,27 @@ public class UserApi {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/user/address/{addressId}")
+    @DeleteMapping("/address/{addressId}")
     @ApiOperation("根据ID删除地址")
     public ResponseEntity deleteAddress(@PathVariable("addressId") @NotNull long addressId) {
         userService.deleteAddress(addressId);   // 删除操作幂等
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/user/{userId}/addresses")
+    @GetMapping("/{userId}/addresses")
     @ApiOperation(value = "我的地址列表", response = UserAddress.class, responseContainer = "List")
     public ResponseEntity<ArrayObject> userAddresses(@PathVariable("userId") @NotNull long userId) {
         List<UserAddress> addresses = userService.searchAddressList(userId);
         return ResponseEntity.ok(ArrayObject.of(addresses));
     }
 
-    @GetMapping("/user/address/{addressId}")
+    @GetMapping("/address/{addressId}")
     @ApiOperation("根据ID查询地址详情")
     public ResponseEntity<UserAddress> userAddress(@PathVariable("addressId") @NotNull long addressId) {
         return ResponseEntity.ok(userService.userAddress(addressId));
     }
 
-    @PostMapping("/user/address")
+    @PostMapping("/address")
     @ApiOperation("新增/修改地址")
     public ResponseEntity saveAddress(@RequestBody UserAddress userAddress) {
         List<UserAddress> addresses = userService.searchAddressList(userAddress.getUserId());
@@ -232,13 +232,28 @@ public class UserApi {
         return ResponseEntity.badRequest().body("添加失败");
     }
 
-    @PostMapping("/user/register")
+    @GetMapping("verificationCode/{phone}")
+    @ApiOperation("依据手机号发送验证码")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "path", name = "phone", value = "手机号", required = true, dataType = "String")
+    })
+    public ResponseEntity verificationCode(@PathVariable("phone") String phone){
+        int code=weChatUtil.buildRandom(4);
+        //发送验证码到第三方推送服务器
+        String sendResult=weChatUtil.httpsRequest("http://","GET","");
+        //FIXME 存redis用于注册验证对错
+
+        return ResponseEntity.ok(phone);
+    }
+
+    @PostMapping("/register")
     @ApiOperation("用户注册")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "body", name = "user", value = "注册用户数据", required = true, dataType = "User"),
             @ApiImplicitParam(paramType = "query", name = "code", value = "业务员邀请码", required = true, dataType = "String")
     })
     public ResponseEntity register(@RequestBody @NotNull User user, @RequestParam("code") String code) {
+
         try {
             if (userService.register(user, code)) {
                 return ResponseEntity.ok().build();
