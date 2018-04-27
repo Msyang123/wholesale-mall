@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -44,6 +45,10 @@ public class OrderService {
 
     public List<OrderDetail> searchOrders(OrderDetail orderDetail){
         return orderMapper.searchOrders(orderDetail);
+    }
+
+    public List<OrderDetail> searchOrdersByOrderCodes(String[] orderCodes){
+        return orderMapper.searchOrdersByOrderCodes(Arrays.asList(orderCodes));
     }
 
     public List<OrderGoods> searchOrderGoods(long orderId){

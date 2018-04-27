@@ -2,8 +2,10 @@ package com.lhiot.mall.wholesale.order.api;
 
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.common.wrapper.ArrayObject;
+import com.lhiot.mall.wholesale.order.domain.DebtOrder;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
+import com.lhiot.mall.wholesale.order.service.DebtOrderService;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.UserAddress;
@@ -27,11 +29,13 @@ import java.util.Objects;
 public class OrderApi {
 
     private final OrderService orderService;
+    private final DebtOrderService debtOrderService;
     private final SalesUserService salesUserService;
 
     @Autowired
-    public OrderApi(OrderService orderService,SalesUserService salesUserService) {
+    public OrderApi(OrderService orderService,DebtOrderService debtOrderService,SalesUserService salesUserService) {
         this.orderService = orderService;
+        this.debtOrderService=debtOrderService;
         this.salesUserService=salesUserService;
     }
 
@@ -91,6 +95,13 @@ public class OrderApi {
         Integer result = orderService.create(orderDetail);
         //FIXME 创建的时候发送创建广播消息 用于优惠券设置无效
         //fixme mq设置三十分钟失效
+
+        if(orderDetail.getOrderType()==1){
+            DebtOrder debtOrder=new DebtOrder();
+            //FIXME 需要赋值
+            debtOrderService.create(debtOrder);
+            orderDetail.setOrderStatus(3);//待收货
+        }
         return ResponseEntity.ok(result);
     }
 
