@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
-@Api
+@Api(description ="开票接口")
 @Slf4j
 @RestController
 public class InvoiceApi {

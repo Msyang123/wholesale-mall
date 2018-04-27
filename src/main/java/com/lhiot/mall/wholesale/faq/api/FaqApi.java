@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
-@Api
+@Api(description = "faq帮助接口")
 @Slf4j
 @RestController
 public class FaqApi {

@@ -76,4 +76,7 @@ public class Invoice {
 
     @JsonProperty("invoiceCode")
     private String invoiceCode;
+
+    @JsonProperty("userId")
+    private long userId;
 }

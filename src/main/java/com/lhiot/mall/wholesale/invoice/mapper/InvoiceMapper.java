@@ -18,4 +18,6 @@ public interface InvoiceMapper {
     int applyInvoice(Invoice invoice);
 
     Invoice findInvoiceByCode(String invoiceCode);
+
+    int updateInvoiceByCode(Invoice invoice);
 }

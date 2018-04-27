@@ -2,6 +2,8 @@ package com.lhiot.mall.wholesale.pay.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leon.microx.common.exception.ServiceException;
+import com.lhiot.mall.wholesale.invoice.domain.Invoice;
+import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
@@ -40,14 +42,16 @@ public class PayService {
     private final UserService userService;
     private final OrderService orderService;
     private final DebtOrderService debtOrderService;
+    private final InvoiceService invoiceService;
     private final HaiDingClient hdClient;
 
     @Autowired
-    public PayService(PaymentLogMapper paymentLogMapper,UserService userService,OrderService orderService,DebtOrderService debtOrderService,HaiDingClient hdClient){
+    public PayService(PaymentLogMapper paymentLogMapper,UserService userService,OrderService orderService,DebtOrderService debtOrderService,InvoiceService invoiceService,HaiDingClient hdClient){
         this.paymentLogMapper=paymentLogMapper;
         this.userService=userService;
         this.orderService=orderService;
         this.debtOrderService=debtOrderService;
+        this.invoiceService=invoiceService;
         this.hdClient=hdClient;
     }
     /**
@@ -366,7 +370,7 @@ public class PayService {
             PaymentLog paymentLog=new PaymentLog();
             //写入日志
             paymentLog.setPaymentOrderType(0);
-            paymentLog.setPaymentStep(2);//余额支付
+            paymentLog.setPaymentStep(1);//0签名 1余额支付 2账款订单未支付 3账款订单已支付 4支付回调 5充值回调 6欠款订单支付回调  7 发票支付回调
             paymentLog.setOrderCode(orderDetail.getOrderCode());
             paymentLog.setOrderId(orderDetail.getId());
             paymentLog.setUserId(orderDetail.getUserId());
@@ -412,14 +416,55 @@ public class PayService {
             PaymentLog paymentLog=new PaymentLog();
             //写入日志
             paymentLog.setPaymentOrderType(0);
-            paymentLog.setPaymentStep(2);//余额支付
+            paymentLog.setPaymentStep(3);//0签名 1余额支付 2账款订单未支付 3账款订单已支付 4支付回调 5充值回调 6欠款订单支付回调  7 发票支付回调
             paymentLog.setOrderCode(debtOrder.getOrderDebtCode());
             paymentLog.setOrderId(debtOrder.getId());
             paymentLog.setUserId(debtOrder.getUserId());
             paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
             paymentLog.setPaymentFrom(0);//支付来源于 0订单 1发票
-            paymentLog.setPaymentStep(4);//支付步骤 0签名 1支付回调 2余额支付 3货到付款未支付 4货到付款已支付 5充值签名 6充值回调
             paymentLog.setPaymentOrderType(1);//订单类型 0线上订单 1账款订单
+            paymentLog.setTotalFee(needPayFee);
+            paymentLogMapper.insertPaymentLog(paymentLog);
+            return 1;
+        }else{
+            throw new ServiceException("扣除用户余额失败");
+        }
+    }
+
+    /**
+     * 余额支付发票
+     * @return
+     */
+    public int currencyPay(Invoice invoice) {
+        User user= userService.user(invoice.getUserId());
+        if(Objects.isNull(user)){
+            throw new ServiceException("用户信息不存在");
+        }
+        //需要支付金额
+        int needPayFee=invoice.getTaxFee();
+        //扣除之后金额
+        int afterPay=user.getBalance()-needPayFee;
+        if(afterPay<0){
+            throw new ServiceException("用户余额不足");
+        }
+        User updateUser=new User();
+        updateUser.setId(invoice.getUserId());
+        updateUser.setBalance(needPayFee);//需要扣除的值
+        boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
+        if(updateResult){
+            invoice.setInvoiceStatus(1);//开票状态 0未开 1已付款 2已开
+            invoiceService.updateInvoiceByCode(invoice);
+
+            PaymentLog paymentLog=new PaymentLog();
+            //写入日志
+            paymentLog.setPaymentOrderType(0);
+            paymentLog.setPaymentStep(1);//0签名 1余额支付 2账款订单未支付 3账款订单已支付 4支付回调 5充值回调 6欠款订单支付回调  7 发票支付回调
+            paymentLog.setOrderCode(invoice.getInvoiceCode());
+            paymentLog.setOrderId(invoice.getId());
+            paymentLog.setUserId(invoice.getUserId());
+            paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
+            paymentLog.setPaymentFrom(1);//支付来源于 0订单 1发票
+            paymentLog.setPaymentOrderType(2);//订单类型 0线上订单 1账款订单 2发票
             paymentLog.setTotalFee(needPayFee);
             paymentLogMapper.insertPaymentLog(paymentLog);
             return 1;
