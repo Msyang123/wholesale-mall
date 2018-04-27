@@ -3,7 +3,7 @@
 <mapper namespace="com.lhiot.mall.wholesale.coupon.mapper.CouponEntityMapper">
 	
 	<!-- lynn 2018/4/19根据 新增-->
-	<insert id="insert" parameterType="com.lhiot.mall.wholesale.coupon.domain.CouponEntityParam">
+	<insert id="insert" parameterType="com.lhiot.mall.wholesale.coupon.domain.CouponEntity">
 		insert into t_whs_coupon_entity (coupon_config_id,user_id,effective_time,failure_time,coupon_status,
 			get_time,coupon_fee,full_fee)
 		values(#{couponConfigId},#{userId},#{effectiveTime},#{failureTime},#{couponStatus},now(),#{couponFee},#{fullFee})
@@ -21,7 +21,7 @@
 	</insert>
 	
 	<!-- lynn 2018/4/19根据 修改数量 -->
-	<update id="update" parameterType="com.lhiot.mall.wholesale.coupon.domain.CouponEntityParam">
+	<update id="update" parameterType="com.lhiot.mall.wholesale.coupon.domain.CouponEntity">
 		update t_whs_coupon_entity 
 		<trim prefix="set" suffixOverrides=",">
 			<if test="useTime != null and useTime != ''">use_time=#{useTime},</if>
@@ -38,7 +38,7 @@
 		</foreach>
 	</delete>
 	
-	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.coupon.domain.CouponEntity">
+	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.coupon.domain.CouponEntityResult">
 		select t1.id,t1.coupon_config_id as couponConfigId,t1.user_id as userId,t1.effective_time as effectiveTime,
 		t1.failure_time as failureTime,t1.coupon_status as couponStatus,t1.get_time as getTime,t1.use_time as userTime,
 		t1.coupon_fee as couponFee,t1.full_fee as fullTime,t3.coupon_name as couponName,t3.coupon_type as couponType
@@ -70,7 +70,7 @@
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
 	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.coupon.domain.gridparam.CouponGridParam" 
-		resultType="com.lhiot.mall.wholesale.coupon.domain.CouponEntity">
+		resultType="com.lhiot.mall.wholesale.coupon.domain.CouponEntityResult">
 		select t1.id,t1.coupon_config_id as couponConfigId,t1.user_id as userId,t1.effective_time as effectiveTime,
 		t1.failure_time as failureTime,t1.coupon_status as couponStatus,t1.get_time as getTime,t1.use_time as userTime,
 		t1.coupon_fee as couponFee,t1.full_fee as fullTime,t3.coupon_name as couponName,t3.coupon_type as couponType
@@ -91,4 +91,22 @@
 		<include refid="common.pager"></include>
 	</select>
 
+	<!-- 查询用户优惠券列表 -->
+	<select id="searchByUser" parameterType="com.lhiot.mall.wholesale.coupon.domain.UserCouponParam" 
+		resultType="com.lhiot.mall.wholesale.coupon.domain.CouponEntity">
+		select id,coupon_config_id as couponConfigId,user_id as userId,effective_time as effectiveTime,
+		failure_time as failureTime,coupon_status as couponStatus,get_time as getTime,use_time as userTime,
+		coupon_fee as couponFee,full_fee as fullFee
+		from t_whs_coupon_entity
+		<trim prefix="where" prefixOverrides="and">
+			<if test="userId != null and userId != ''"> and user_id = #{userId}</if>
+			<if test="couponStatus != null and couponStatus != ''"> and coupon_status = #{couponStatus}</if>
+			<if test="orderFee != null and orderFee != ''"> and coupon_fee &lt;= #{orderFee}</if>
+		</trim>
+			order by couponFee desc
+		<if test="start != null and start != '' 
+				and rows != null and rows != ''">
+			limit #{start},#{rows}
+		</if>
+	</select>
 </mapper>

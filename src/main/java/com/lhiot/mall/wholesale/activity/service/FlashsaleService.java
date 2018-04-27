@@ -1,8 +1,10 @@
 package com.lhiot.mall.wholesale.activity.service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -10,11 +12,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.StringUtils;
-import com.lhiot.mall.wholesale.activity.domain.FlasesaleGoods;
+import com.lhiot.mall.wholesale.activity.domain.Activity;
+import com.lhiot.mall.wholesale.activity.domain.ActivityPeriodsType;
+import com.lhiot.mall.wholesale.activity.domain.ActivityType;
 import com.lhiot.mall.wholesale.activity.domain.FlashActivity;
+import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
+import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
-import com.lhiot.mall.wholesale.activity.mapper.FlasesaleMapper;
+import com.lhiot.mall.wholesale.activity.mapper.FlashsaleMapper;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
 import com.lhiot.mall.wholesale.goods.service.GoodsStandardService;
@@ -28,14 +35,16 @@ import com.lhiot.mall.wholesale.goods.service.GoodsStandardService;
 @Transactional
 public class FlashsaleService {
 	
-	private final FlasesaleMapper flasesaleMapper;
+	private final FlashsaleMapper flashsaleMapper;
 	
 	private final GoodsStandardService goodsStandardService;
-	
+	private final ActivityService activityService;
 	@Autowired
-	public FlashsaleService(FlasesaleMapper flasesaleMapper,GoodsStandardService goodsStandardService){
-		this.flasesaleMapper = flasesaleMapper;
+	public FlashsaleService(FlashsaleMapper flasesaleMapper,GoodsStandardService goodsStandardService,
+		   ActivityService activityService){
+		this.flashsaleMapper = flasesaleMapper;
 		this.goodsStandardService = goodsStandardService;
+		this.activityService = activityService;
 	}
 	
 	/**
@@ -72,7 +81,7 @@ public class FlashsaleService {
 			list.add(activity);
 			rank++;
 		}
-		return flasesaleMapper.insert(list)>0;
+		return flashsaleMapper.insert(list)>0;
 	}
 	
 	/**
@@ -85,7 +94,7 @@ public class FlashsaleService {
 		}
 		List<Long> list = Arrays.asList(ids.split(",")).stream()
 								.map(id -> Long.parseLong(id.trim())).collect(Collectors.toList());
-		flasesaleMapper.removeInbatch(list);
+		flashsaleMapper.removeInbatch(list);
 	}
 	
 	/**
@@ -94,7 +103,7 @@ public class FlashsaleService {
 	 * @return
 	 */
 	public boolean update(FlashActivity flashActivity){
-		return flasesaleMapper.update(flashActivity)>0;
+		return flashsaleMapper.update(flashActivity)>0;
 	}
 	
 	/**
@@ -103,7 +112,7 @@ public class FlashsaleService {
 	 * @return
 	 */
 	public FlashActivity flashActivity(Long id){
-		return flasesaleMapper.select(id);
+		return flashsaleMapper.select(id);
 	}
 	
 	/**
@@ -111,7 +120,7 @@ public class FlashsaleService {
 	 * @return
 	 */
 	public PageQueryObject pageQuery(ActivityGirdParam param){
-		int count = flasesaleMapper.pageQueryCount(param);
+		int count = flashsaleMapper.pageQueryCount(param);
 		int page = param.getPage();
 		int rows = param.getRows();
 		//起始行
@@ -123,7 +132,7 @@ public class FlashsaleService {
 			param.setPage(page);
 			param.setStart(0);
 		}
-		List<FlasesaleGoods> flashsales = flasesaleMapper.pageQuery(param);
+		List<FlashsaleGoods> flashsales = flashsaleMapper.pageQuery(param);
 		//组装商品数据
 		this.contructData(flashsales);
 		PageQueryObject result = new PageQueryObject();
@@ -140,10 +149,10 @@ public class FlashsaleService {
 	 * @param id活动id
 	 */
 	public void duplicate(List<Long> standardIds,Long id){
-		List<FlashActivity> list = flasesaleMapper.search(id);
+		List<FlashsaleGoods> list = flashsaleMapper.search(id);
 		if(list.isEmpty()) return ;
 		for(int i=standardIds.size();i>=0;i--){
-			for(FlashActivity ac : list){
+			for(FlashsaleGoods ac : list){
 				if(Objects.equals(standardIds.get(i), ac.getGoodsStandardId())){
 					standardIds.remove(i);
 				}
@@ -156,7 +165,7 @@ public class FlashsaleService {
 	 * @param flashsales
 	 * @param standardIds
 	 */
-	public void contructData(List<FlasesaleGoods> flashsales){
+	public void contructData(List<FlashsaleGoods> flashsales){
 		if(flashsales.isEmpty()){
 			return ;
 		}
@@ -167,7 +176,7 @@ public class FlashsaleService {
 			standardIds.add(id);
 		});
 		List<GoodsStandard> goodsStandards = goodsStandardService.goodsStandards(standardIds);
-		for(FlasesaleGoods flg : flashsales){
+		for(FlashsaleGoods flg : flashsales){
 			Long sId = flg.getGoodsStandardId();
 			for(GoodsStandard gs : goodsStandards){
 				Long standardId = gs.getId();
@@ -180,5 +189,62 @@ public class FlashsaleService {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * 获取当前或者下期抢购活动商品
+	 * @param type
+	 * @return
+	 */
+	public FlashActivityGoods falshGoods(ActivityPeriodsType activityPeriodsType){
+		Activity activity = null;
+		ActivityType flasesale = ActivityType.flashsale;
+		//获取开启抢购活动
+		if(activityPeriodsType.equals(ActivityPeriodsType.current)){
+			activity = activityService.currentActivity(flasesale);
+		}else if(activityPeriodsType.equals(ActivityPeriodsType.next)){
+			activity = activityService.nextActivity(flasesale);
+		}
+		if(Objects.isNull(activity)){
+			return null;
+		}
+		//设置活动信息
+		FlashActivityGoods flashActivityGoods = new FlashActivityGoods();
+		flashActivityGoods.setActivity(activity);
+		
+		//查询活动商品
+		List<FlashsaleGoods> flashGoods = flashsaleMapper.search(activity.getId());
+		if(flashGoods.isEmpty()){
+			flashActivityGoods.setFlashGoods(new ArrayList<>());
+			return flashActivityGoods;
+		}
+		//查询并设置抢购进度
+		for(FlashsaleGoods flashsaleGoods : flashGoods){
+			int goodsStock = flashsaleGoods.getGoodsStock();
+			Map<String,Object> flashsaleProgress = this.flashsaleProgress(flashsaleGoods.getId(), goodsStock);
+			flashsaleGoods.setProgress(flashsaleProgress.get("progress").toString());
+			flashsaleGoods.setRemainNum(flashsaleProgress.get("remainNum").toString());
+		}
+		//组装商品信息
+		this.contructData(flashGoods);
+		flashActivityGoods.setFlashGoods(flashGoods);
+		return flashActivityGoods;
+	}
+	
+	/**
+	 * 抢购商品抢购进度统计，及剩余数量
+	 * @param id
+	 * @return
+	 */
+	public Map<String,Object> flashsaleProgress(Long id,Integer goodsStock){
+		int progress = 0;
+		Integer sum = flashsaleMapper.flashGoodsRecord(id);
+		if(Objects.isNull(sum)){
+			return ImmutableMap.of("progress", progress, "remainNum", goodsStock);
+		}
+		BigDecimal b1 = new BigDecimal(sum*100);
+		BigDecimal b2 = new BigDecimal(goodsStock);
+		progress = b1.divide(b2).intValue();
+		return ImmutableMap.of("progress", progress, "remainNum", (goodsStock-sum));
 	}
 }

@@ -34,6 +34,9 @@ public interface UserMapper {
 
     int insertRelation(SalesUserRelation salesUserRelation);
 
-
-
+    List<User> searchByPhones(List<String> phones);
+    
+    List<User> fuzzySearchByPhone(String phone);
+    
+    List<User> searchInbatch(List<Long> userIds);
 }

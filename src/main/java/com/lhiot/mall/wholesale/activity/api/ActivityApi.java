@@ -94,6 +94,6 @@ public class ActivityApi {
     @GetMapping("/activity/type/{type}")
     @ApiOperation(value = "根据活动类型查询当前开启的活动", response = Activity.class)
     public ResponseEntity<Activity> goodsUnit(@PathVariable("type") ActivityType type) {
-        return ResponseEntity.ok(activityService.findActivityByType(type));
+        return ResponseEntity.ok(activityService.currentActivity(type));
     }
 }

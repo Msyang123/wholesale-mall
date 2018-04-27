@@ -33,4 +33,7 @@ public class CouponGridParam extends PageObject {
 	
 	@ApiModelProperty(notes="优惠券使用情况",dataType="String")
 	private String couponStatus;
+	
+	@ApiModelProperty(notes="查询起始页",dataType="Integer")
+	private Integer start;
 }

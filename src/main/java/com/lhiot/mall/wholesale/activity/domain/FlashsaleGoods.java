@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @ApiModel
 @NoArgsConstructor
-public class FlasesaleGoods {
-	
+public class FlashsaleGoods {
 
 	@ApiModelProperty(notes="ID",dataType="Long")
 	private Long id;
@@ -49,4 +48,10 @@ public class FlasesaleGoods {
 	
 	@ApiModelProperty(notes="商品排序",dataType="Integer")
 	private Integer rankNum;
+	
+	@ApiModelProperty(notes="抢购进度",dataType="String")
+	private String progress;
+	
+	@ApiModelProperty(notes="剩余数量",dataType="String")
+	private String remainNum;
 }

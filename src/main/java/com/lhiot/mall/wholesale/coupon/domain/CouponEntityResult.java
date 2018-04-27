@@ -8,13 +8,16 @@ import lombok.NoArgsConstructor;
 @Data
 @ApiModel
 @NoArgsConstructor
-public class CouponEntityParam {
+public class CouponEntityResult {
 
 	@ApiModelProperty(notes="ID",dataType="Long")
 	private Long id;
 	
 	@ApiModelProperty(notes="优惠券配置编号",dataType="Long")
 	private Long couponConfigId;
+	
+	@ApiModelProperty(notes="优惠券名称",dataType="Long")
+	private Long couponName;
 	
 	@ApiModelProperty(notes="用户编号",dataType="Long")
 	private Long userId;
@@ -39,4 +42,19 @@ public class CouponEntityParam {
 	
 	@ApiModelProperty(notes="满减金额",dataType="String")
 	private String fullFee;
+	
+	@ApiModelProperty(notes="用户名称",dataType="String")
+	private String userName;
+	
+	@ApiModelProperty(notes="会员状态 0临时会员 1正式会员（审核通过）",dataType="Integer")
+	private Integer userStatus;
+	
+	@ApiModelProperty(notes="用户状态",dataType="String")
+	private String phone;
+	
+	@ApiModelProperty(notes="店名",dataType="String")
+	private String shopName;
+	
+	@ApiModelProperty(notes="详细地址",dataType="String")
+	private String addressDetail;
 }
