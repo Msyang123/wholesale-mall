@@ -59,6 +59,9 @@ public class OrderDetail {
     @JsonProperty("comments")
     private String remarks;
 
+    @JsonProperty("afterSaleTime")
+    private Timestamp afterSaleTime;
+
     @JsonProperty("hdStatus")
     private int hdStatus;//发送订单到海鼎是否成功0成功1失败
 

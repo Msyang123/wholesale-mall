@@ -17,6 +17,8 @@ public interface OrderMapper {
 
     OrderDetail searchOrder(String orderCode);
 
+    List<OrderDetail> searchAfterSaleOrders(OrderDetail orderDetail);
+
     /**
      * 保存订单信息
      * @param orderDetail

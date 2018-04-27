@@ -4,9 +4,10 @@
 * http://www.sgsl.com 
 * All rights reserved. 
 */
-package com.lhiot.mall.wholesale.user.wechat;
+package com.lhiot.mall.wholesale.base;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -64,6 +65,12 @@ public class DateFormatUtil
     public static String format6(Date date){
         SimpleDateFormat formatter=new SimpleDateFormat(format6);  
         return formatter.format(date);  
+    }
+
+    public static Date dayAdd(int day){
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.DAY_OF_MONTH, day);
+        return c.getTime();
     }
 
 }
