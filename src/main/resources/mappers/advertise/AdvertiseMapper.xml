@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.lhiot.mall.wholesale.advertise.mapper.AdvertiseMapper">
 	<sql id="advertiseColumn">
-		id,title,link_url as linkUrl,advertment_position ad advertmentPosition,advertment_image as advertmentImage,
-		date_format(begin_time,'%y-%m-%d %h:%i:%s') as beginTime,date_format(end_time,'%y-%m-%d %h:%i:%s') as endTime,
-		date_format(create_at,'%y-%m-%d %h:%i:%s') as createAt,is_vaild as isVaild
+		id,title,link_url as linkUrl,advertment_position as advertmentPosition,advertment_image as advertmentImage,
+		date_format(begin_time,'%Y-%m-%d %h:%i:%s') as beginTime,date_format(end_time,'%Y-%m-%d %h:%i:%s') as endTime,
+		date_format(create_at,'%Y-%m-%d %h:%i:%s') as createAt,is_vaild as isVaild
 	</sql>
 	
 	<!-- lynn 2018/4/19根据商品id查询广告 -->
@@ -70,8 +70,8 @@
 			<if test="advertmentPosition != null and advertmentPosition != ''">
 				and advertment_position=#{advertmentPosition}
 			</if>
-			<if test="isVaild != null">and is_vaild = #{isVaild}</if>
-			<if test="title != null">and title = #{title}</if>
+			<if test="isVaild != null and isVaild != ''">and is_vaild = #{isVaild}</if>
+			<if test="title != null and title !=''">and title = #{title}</if>
 		</trim>
 	</select>
 	
@@ -83,10 +83,19 @@
 			<if test="advertmentPosition != null and advertmentPosition != ''">
 				and advertment_position=#{advertmentPosition}
 			</if>
-			<if test="isVaild != null">and is_vaild = #{isVaild}</if>
-			<if test="title != null">and title = #{title}</if>
+			<if test="isVaild != null and isVaild != ''">and is_vaild = #{isVaild}</if>
+			<if test="title != null and title !=''">and title = #{title}</if>
 		</trim>
 		<include refid="common.pager"></include>
 	</select>
 
+	<!-- 根据类型查询广告 -->
+	<select id="findByType" parameterType="String" resultType="com.lhiot.mall.wholesale.advertise.domain.Advertise">
+		select <include refid="advertiseColumn"/> 
+		from t_whs_advertisement 
+		where advertment_position = #{0} 
+		and is_vaild = '1' 
+		and now() BETWEEN begin_time and end_time 
+		order by begin_time limit 6
+	</select>
 </mapper>

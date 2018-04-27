@@ -1,7 +1,9 @@
 package com.lhiot.mall.wholesale.advertise.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.activity.domain.Activity;
+import com.lhiot.mall.wholesale.activity.domain.ActivityType;
+import com.lhiot.mall.wholesale.activity.service.ActivityService;
 import com.lhiot.mall.wholesale.advertise.domain.Advertise;
+import com.lhiot.mall.wholesale.advertise.domain.AdvertiseType;
 import com.lhiot.mall.wholesale.advertise.domain.gridparam.AdvertiseGirdParam;
 import com.lhiot.mall.wholesale.advertise.mapper.AdvertiseMapper;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
@@ -24,10 +30,13 @@ import com.lhiot.mall.wholesale.base.PageQueryObject;
 public class AdvertiseService {
 	
 	private final AdvertiseMapper advertiseMapper;
+	private final ActivityService activityService;
 	
 	@Autowired
-	public AdvertiseService(AdvertiseMapper advertiseMapper){
+	public AdvertiseService(AdvertiseMapper advertiseMapper,
+			ActivityService activityService){
 		this.advertiseMapper = advertiseMapper;
+		this.activityService = activityService;
 	}
 	
 	/**
@@ -93,6 +102,39 @@ public class AdvertiseService {
 		result.setPage(page);
 		result.setRecords(rows);
 		result.setTotal(totalPages);
+		return result;
+	}
+	
+	/**
+	 * 根据广告类型查询广告
+	 * @param type
+	 * @return
+	 */
+	public List<Advertise> findByType(AdvertiseType type){
+		//如果是限时抢购判断当前是否存在活动
+		List<Advertise> result = new ArrayList<>();
+		List<Advertise> flashActivies = advertiseMapper.findByType(type.toString());
+		//如果存在广告则,返回空
+		if(flashActivies.isEmpty()){
+			return result;
+		}
+		
+		if(AdvertiseType.flashSale.equals(type)){
+			Activity flashActivity = activityService.findActivityByType(ActivityType.flashsale);
+			//如果不存在活动，则返回空
+			if(Objects.isNull(flashActivity)){
+				return result;
+			}
+			//限时抢购就是一张广告图片
+			result.add(flashActivies.get(0));
+			return result;
+		}
+		//轮播图返回多张
+		if(AdvertiseType.sowing.equals(type)){
+			return flashActivies;
+		}
+		//其他取一则广告
+		result.add(flashActivies.get(0));
 		return result;
 	}
 }

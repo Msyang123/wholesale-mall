@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Data
 @ApiModel
 @NoArgsConstructor
@@ -21,8 +23,8 @@ public class Advertise {
 	@ApiModelProperty(notes="链接地址",dataType="String")
 	private String linkUrl;
 	
-	@ApiModelProperty(notes="广告位置 0广告弹窗 1首页轮播图 2限时抢购 3底部banner图",dataType="String")
-	private String advertmentPosition;
+	@ApiModelProperty(notes="广告位置 0广告弹窗 1首页轮播图 2限时抢购 3底部banner图",dataType="AdvertiseType")
+	private AdvertiseType advertmentPosition;
 	
 	@ApiModelProperty(notes="图片地址",dataType="String")
 	private String advertmentImage;
@@ -30,15 +32,16 @@ public class Advertise {
 	@ApiModelProperty(notes="开始时间",dataType="String")
 	private String beginTime;
 	
-	@ApiModelProperty(notes="结束时间",dataType="Long")
-	private Long endTime;
+	@ApiModelProperty(notes="结束时间",dataType="String")
+	private String endTime;
 	
-	@ApiModelProperty(notes="创建时间",dataType="Integer")
+	@ApiModelProperty(notes="创建时间",dataType="String")
 	private String createAt;
 	
 	@ApiModelProperty(notes="是否有效 false无效 true有效",dataType="Boolean")
 	private Boolean isVaild;
 	
+	@JsonIgnore
 	@ApiModelProperty(notes="是否有效 0无效 1有效",dataType="Integer")
 	private Integer vaild;
 }
