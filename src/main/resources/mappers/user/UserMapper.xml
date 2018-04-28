@@ -3,7 +3,11 @@
 <mapper namespace="com.lhiot.mall.wholesale.user.mapper.UserMapper">
 
     <sql id="userInfo">
+<<<<<<< HEAD
         id,phone,shop_name,user_name,city,address_detail,register_time
+=======
+        shop_name,user_name,city,address_detail,register_time,balance
+>>>>>>> sgsl/master
     </sql>
 
     <select id="search"  parameterType="java.util.List" resultType="map">
@@ -42,6 +46,9 @@
             </if>
             <if test="registerTime !=null and registerTime !=''">
                 ,register_time=#{registerTime}
+            </if>
+            <if test="balance !=null and balance !=0">
+                ,balance=balance+#{balance}
             </if>
         </trim>
         where id=#{id}
@@ -116,6 +123,7 @@
         UPDATE t_whs_user_address SET is_default = 1
         WHERE is_default = 0 and user_id = #{0}
     </update>
+<<<<<<< HEAD
 
 
     <!-- 后台管理 根据用户手机号，用户名分页查询【新品需求】 -->
@@ -131,4 +139,30 @@
         </trim>
     </select>
 
+=======
+	
+	<!-- 批量发券 -->
+	<select id="searchByPhones" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.user.domain.User">
+		select * from t_whs_user
+		where phone in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	
+	<!-- 根据手机号模糊查询用户信息 -->
+	<select id="fuzzySearchByPhone" parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.User">
+		select * from t_whs_user
+		where phone like concat('%',#{0},'%')
+	</select>
+	
+	<!-- 根据手机号模糊查询用户信息 -->
+	<select id="searchInbatch" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.user.domain.User">
+		select * from t_whs_user
+		where id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+>>>>>>> sgsl/master
 </mapper>

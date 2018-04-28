@@ -13,6 +13,5 @@ public class AccessToken implements Serializable
     private String refreshToken;
     private String scope;
     private String openId;
-    private String openIdAterMd5;
     
 }

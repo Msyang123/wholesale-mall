@@ -28,10 +28,14 @@ public class Faq {
     @JsonProperty("content")
     private String content;
 
+    @JsonProperty("rankNum")
+    private String rankNum;
+
+    @JsonProperty("linkUrl")
+    private String linkUrl;
+
     @JsonProperty("createTime")
     private Timestamp createTime;
 
-    @JsonProperty("createPerson")
-    private String createPerson;
 
 }

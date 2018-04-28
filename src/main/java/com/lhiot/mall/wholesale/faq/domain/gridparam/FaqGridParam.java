@@ -1,4 +1,4 @@
-package com.lhiot.mall.wholesale.introduction.domain.gridparam;
+package com.lhiot.mall.wholesale.faq.domain.gridparam;
 
 import com.leon.microx.common.wrapper.PageObject;
 import io.swagger.annotations.ApiModel;
@@ -12,7 +12,7 @@ import lombok.ToString;
 @Data
 @ToString
 @ApiModel
-public class IntroductionGridParam extends PageObject {
+public class FaqGridParam extends PageObject {
 
     @ApiModelProperty(notes="分页查询开始页面",dataType="Integer")
     private Integer start;

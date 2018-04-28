@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.activity.mapper.ActivityMapper">
+	<sql id="activityColumn">
+		id,activity_desc as activityDesc,activity_type as activityType,link_url as linkUrl,
+		date_format(start_time,'%Y-%m-%d %H:%i:%s') as startTime,date_format(end_time,'%Y-%m-%d %H:%i:%s') as endTime,
+		vaild
+	</sql>
+	
+	<!-- lynn 2018/4/19根据商品id查询 -->
+	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.activity.domain.Activity">
+		select <include refid="activityColumn"/> from t_whs_activity where id = #{0}
+	</select>
+	
+	<!-- lynn 2018/4/19 新手增 -->
+ 	<insert id="insert" parameterType="com.lhiot.mall.wholesale.activity.domain.Activity">
+		insert into t_whs_activity(
+			<trim suffixOverrides=",">
+				<if test="activityDesc != null and activityDesc != ''">activity_desc,</if>
+				<if test="activityType != null and activityType != ''">activity_type,</if>
+				<if test="linkUrl != null and linkUrl != ''">link_url,</if>
+				<if test="startTime != null and startTime != ''">start_time,</if>
+				<if test="endTime != null and endTime != ''">end_time,</if>
+				<if test="vaildInt != null">vaild,</if>
+			</trim>
+		)
+		values(
+			<trim suffixOverrides=",">
+				<if test="activityDesc != null and activityDesc != ''">#{activityDesc},</if>
+				<if test="activityType != null and activityType != ''">#{activityType},</if>
+				<if test="linkUrl != null and linkUrl != ''">#{linkUrl},</if>
+				<if test="startTime != null and startTime != ''">#{startTime},</if>
+				<if test="endTime != null and endTime != ''">#{endTime},</if>
+				<if test="vaildInt != null">#{vaildInt},</if>
+			</trim>
+		)
+	</insert>
+	
+	<!-- lynn 2018/4/19根据商品id 修改商品 -->
+	<update id="update" parameterType="com.lhiot.mall.wholesale.activity.domain.Activity">
+		update t_whs_activity
+		<trim prefix="set" suffixOverrides=",">
+			<if test="activityDesc != null and activityDesc != ''">activity_desc=#{activityDesc},</if>
+			<if test="activityType != null and activityType != ''">activity_type=#{activityType},</if>
+			<if test="linkUrl != null and linkUrl != ''">link_url=#{linkUrl},</if>
+			<if test="startTime != null and startTime != ''">start_time=#{startTime},</if>
+			<if test="endTime != null and endTime != ''">end_time=#{endTime},</if>
+			<if test="vaildInt != null">vaild=#{vaildInt},</if>
+		</trim>
+		where id = #{id}
+	</update>
+	
+	<!-- lynn 2018/4/19根据商品id 删除商品 -->
+	<delete id="removeInbatch" parameterType="java.util.List">
+		delete from t_whs_activity where id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam" 
+		resultType="Integer">
+		select count(id) from t_whs_activity
+		<trim prefix="where" prefixOverrides="and">
+			<if test="activityType != null and activityType != ''">
+				and activity_type=#{activityType}
+			</if>
+			<if test="vaild != null and vaild != ''">and vaild = #{vaild}</if>
+		</trim>
+	</select>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam" 
+		resultType="com.lhiot.mall.wholesale.activity.domain.Activity">
+		select <include refid="activityColumn"/> from t_whs_activity
+		<trim prefix="where" prefixOverrides="and">
+			<if test="activityType != null and activityType != ''">
+				and activity_type=#{activityType}
+			</if>
+			<if test="vaild != null and vaild != ''">and vaild = #{vaild}</if>
+		</trim>
+		<include refid="common.pager"></include>
+	</select>
+	
+	<!-- lynn 2018/4/19 批量查询 -->
+	<select id="search" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.activity.domain.Activity">
+		select <include refid="activityColumn"/> from t_whs_activity where id in 
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	
+	<!-- 查询给定时间范围内是否存在开启的当前类型的活动 -->
+  	<select id="avtivityIsOpen" parameterType="com.lhiot.mall.wholesale.activity.domain.Activity" 
+		resultType="com.lhiot.mall.wholesale.activity.domain.Activity">
+		select <include refid="activityColumn"/> from t_whs_activity
+		where ((start_time &lt;= #{startTime} and (end_time &gt;#{startTime} and end_time &lt;= #{endTime}))
+		or (start_time &gt;= #{startTime} and start_time &lt; #{endTime} and end_time &lt; #{endTime})
+		or (start_time &lt;=#{startTime} and end_time &gt;= #{endTime})
+		or (start_time &gt;= #{startTime} and start_time &lt; #{endTime} and end_time &gt;= #{endTime}))
+		and vaild = '1' and activity_type = #{activityType}
+	</select>
+	
+	<!-- 查询当前开启活动lynn -->
+	<select id="currentActivity" parameterType="String" resultType="com.lhiot.mall.wholesale.activity.domain.Activity">
+		select <include refid="activityColumn"/> from t_whs_activity
+		where activity_type = #{0} and vaild = '1' and now() between start_time and end_time
+		order by start_time limit 1
+	</select>
+	
+	<!-- 查询下期开启活动lynn -->
+	<select id="nextActivity" parameterType="map" resultType="com.lhiot.mall.wholesale.activity.domain.Activity">
+		select <include refid="activityColumn"/> from t_whs_activity
+		where activity_type = #{activityType} 
+		and vaild = '1'
+		and start_time &gt; #{time}
+		order by start_time limit 1
+	</select>
+</mapper>

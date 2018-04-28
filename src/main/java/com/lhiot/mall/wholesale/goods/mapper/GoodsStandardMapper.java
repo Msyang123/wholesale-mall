@@ -20,6 +20,8 @@ public interface GoodsStandardMapper {
 
     List<GoodsStandard> fuzzySearch(String name);
     
+    List<GoodsStandard> searchByIds(List<Long> ids);
+    
     //分页查询分类
     List<GoodsStandard> pageQuery(GoodsStandardGirdParam param);
     //查询分类的总记录数

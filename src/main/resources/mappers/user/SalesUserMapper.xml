@@ -8,11 +8,11 @@
             <if test="id !=null and id !=''">
                 SALESMAN_ID = #{id}
             </if>
-            <if test="isCheck !=null and isCheck !='' and isCheck ==2">
-                and is_check =2
+            <if test="check !=null and check !='' and check ==2">
+                and check =2
             </if>
-            <if test="isCheck !=null and isCheck !='' and isCheck ==1">
-                and is_check in(1,0)
+            <if test="check !=null and check !='' and check ==1">
+                and check in(1,0)
             </if>
         </trim>
         <include refid="common.pager"/>
@@ -23,7 +23,7 @@
     </select>
 
     <update id="updateUserSaleRelationship" parameterType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation">
-        UPDATE t_whs_salesuser_relation set  is_check = #{isCheck}
+        UPDATE t_whs_salesuser_relation set  check = #{check}
         where user_id=#{userId}
     </update>
 
@@ -34,7 +34,7 @@
             <if test="id != null and id != ''">id,</if>
             <if test="userId != null and userId != ''">user_id,</if>
             <if test="salesmanId != null and salesmanId != ''">salesman_id,</if>
-            <if test="isCheck != null and isCheck != ''">is_check,</if>
+            <if test="check != null and check != ''">check,</if>
         </trim>
         )
         values(
@@ -42,13 +42,32 @@
             <if test="id != null and id != ''">#{id},</if>
             <if test="userId != null and userId != ''">#{userId},</if>
             <if test="salesmanId != null and salesmanId != ''">#{salesmanId},</if>
-            <if test="isCheck != null and isCheck != ''">#{isCheck},</if>
+            <if test="check != null and check != ''">#{check},</if>
         </trim>
         )
     </insert>
     
     <select id="isSeller" parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation" >
         select * from t_whs_salesuser_relation where user_id=#{id}
+    </select>
+
+    <select id="searchSaleRelationship" parameterType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation" resultType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation">
+        select * from t_whs_salesuser_relation
+        <trim prefix="where" prefixOverrides="and">
+            <if test="id !=null and id !=0">
+                and id = #{id}
+            </if>
+            user_id
+            <if test="userId !=null and userId !=0">
+                and user_id =#{userId}
+            </if>
+            <if test="salesmanId !=null and salesmanId !=0">
+                and salesman_id =#{salesmanId}
+            </if>
+            <if test="check !=null ">
+                and check =#{check}
+            </if>
+        </trim>
     </select>
 
 </mapper>

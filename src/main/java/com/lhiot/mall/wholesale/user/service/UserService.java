@@ -78,7 +78,7 @@ public class UserService {
             SalesUserRelation salesUserRelation = new SalesUserRelation();
             salesUserRelation.setUserId(user.getId());
             salesUserRelation.setSalesmanId(salesUser.getId());
-            salesUserRelation.setIsCheck(2);
+            salesUserRelation.setCheck(2);
             if (salesUserService.insertRelation(salesUserRelation) < 1) {
                 throw new ServiceException("注册审核提交失败");
             }
@@ -138,5 +138,32 @@ public class UserService {
     }
     public List<User> users(String userName) {
         return userMapper.search(userName);
+    }
+    
+    /**
+     * 根据电话号码模糊查询用户信息
+     * @param phone
+     * @return
+     */
+    public List<User> fuzzySearch(String phone){
+    	return userMapper.fuzzySearchByPhone(phone);
+    }
+    
+    /**
+     * 根据电话号码批量查询用户信息
+     * @param phone
+     * @return
+     */
+    public List<User> searchByPhones(List<String> phone){
+    	return userMapper.searchByPhones(phone);
+    }
+    
+    /**
+     * 根据用户id批量查询用户信息
+     * @param userIds
+     * @return
+     */
+    public List<User> users(List<Long> userIds){
+    	return userMapper.searchInbatch(userIds);
     }
 }

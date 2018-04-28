@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.activity.mapper.FlashsaleMapper">
+	
+	<sql id="flashsaleColumn">
+		id,activity_id as activityId ,goods_standard_id as goodsStandardId,special_price as specialPrice,
+		goods_stock as goodsStock,limit_quantity as limitQuantity,rank_num as rankNum
+	</sql>
+	
+	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.activity.domain.FlashActivity">
+		select <include refid="flashsaleColumn"/> from t_whs_flashsale_goods id = #{0}
+	</select>
+	
+	<!-- lynn 2018/4/19根据 新增-->
+	<insert id="insert" parameterType="java.util.List">
+		insert into t_whs_flashsale_goods (activity_id,special_price,goods_standard_id,goods_stock,limit_quantity,rank_num)
+		values
+			<foreach collection="list" item="item" separator="," >
+				(#{item.activityId},#{item.specialPrice},#{item.goodsStandardId},#{item.goodsStock},#{item.limitQuantity},
+				#{item.rankNum})
+			</foreach>
+	</insert>
+	
+	<!-- lynn 2018/4/19根据商品id 修改商品 -->
+	<update id="update" parameterType="com.lhiot.mall.wholesale.activity.domain.FlashActivity">
+		update t_whs_flashsale_goods
+		<trim prefix="set" suffixOverrides=",">
+			<if test="specialPrice != null and specialPrice != ''">special_price=#{specialPrice},</if>
+			<if test="rankNum != null and rankNum != ''">rank_num=#{rankNum},</if>
+			<if test="goodsStock != null and goodsStock != ''">goods_stock=#{goodsStock},</if>
+			<if test="limitQuantity != null and limitQuantity != ''">limit_quantity=#{limitQuantity},</if>
+		</trim>
+		where id = #{id}
+	</update>
+	
+	<!-- lynn 2018/4/19根据商品id 删除商品 -->
+	<delete id="removeInbatch" parameterType="java.util.List">
+		delete from t_whs_flashsale_goods where id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam" 
+		resultType="Integer">
+		select count(id) from t_whs_flashsale_goods where id = #{0}
+	</select>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam" 
+		resultType="com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods">
+		select <include refid="flashsaleColumn"/> from t_whs_flashsale_goods where activity_id = #{0}
+		<include refid="common.pager"></include>
+	</select>
+
+	<!-- lynn 2018/4/19 -->
+	<select id="search" parameterType="Long" resultType="com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods">
+		select <include refid="flashsaleColumn"/> from t_whs_flashsale_goods where activity_id = #{0}
+	</select>
+
+	<select id="flashGoodsRecord" parameterType="Long" resultType="Integer">
+		SELECT SUM(buy_count) FROM t_whs_flashsale_goods_record WHERE flashsale_goods_id = #{0}
+	</select>
+</mapper>

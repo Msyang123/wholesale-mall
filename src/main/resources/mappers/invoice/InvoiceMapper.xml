@@ -57,7 +57,7 @@
             <if test="addressArea !=null and addressArea !=''">
                 ,address_area=#{addressArea}
             </if>
-            <if test="contactName !=null and contactName !=''">
+            <if test="contactName !=null and contactName !=''">t_whs_invoice
                 ,contact_name=#{contactName}
             </if>
             <if test="contactPhone !=null and contactPhone !=''">
@@ -72,5 +72,62 @@
         </trim>
         where id=#{id}
     </update>
+    <!--申请发票-->
+    <insert id="applyInvoice" parameterType="com.lhiot.mall.wholesale.invoice.domain.Invoice" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into t_whs_invoice (
+                    invoice_title_id,
+                    taxpayer_number,
+                    company_name,
+                    contact_name,
+                    contact_phone,
+                    invoice_fee,
+                    invoice_type,
+                    invoice_tax,
+                    tax_fee,
+                    address_area,
+                    address_detail,
+                    bank_name,
+                    bank_card_code,
+                    create_time,
+                    invoice_status,
+                    invoice_order_ids,
+                    invoice_code,
+                    user_id) values (
+                    #{invoiceTitleId},
+                    #{taxpayerNumber},
+                    #{companyName},
+                    #{contactName},
+                    #{contactPhone},
+                    #{invoiceFee},
+                    #{invoiceType},
+                    #{invoiceTax},
+                    #{taxFee},
+                    #{addressArea},
+                    #{addressDetail},
+                    #{bankName},
+                    #{bankCardCode},
+                    #{createTime},
+                    0,
+                    #{invoiceOrderIds},
+                    #{invoiceCode},
+                    #{userId}
+                )
+    </insert>
 
+    <update id="updateInvoiceByCode" parameterType="com.lhiot.mall.wholesale.invoice.domain.Invoice">
+        UPDATE t_whs_invoice
+        <set>
+            <if test="invoiceStatus!=null and invoiceStatus!=0">
+                invoice_status=#{invoiceStatus},
+            </if>
+            <if test="invoicePrintTime!=null">
+                invoice_print_time=#{invoicePrintTime},
+            </if>
+        </set>
+        where invoice_code=#{invoiceCode}
+    </update>
+    <select id="findInvoiceByCode" parameterType="String" resultType="com.lhiot.mall.wholesale.invoice.domain.Invoice">
+        select * from t_whs_invoice  where invoice_code=#{0}
+    </select>
 </mapper>

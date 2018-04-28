@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.invoice.mapper;
 
+import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -14,4 +15,9 @@ public interface InvoiceMapper {
 
     int updateInvoiceTitle(InvoiceTitle invoiceTitle);
 
+    int applyInvoice(Invoice invoice);
+
+    Invoice findInvoiceByCode(String invoiceCode);
+
+    int updateInvoiceByCode(Invoice invoice);
 }

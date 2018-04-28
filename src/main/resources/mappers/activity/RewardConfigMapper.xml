@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.advertise.mapper.RewardConfigMapper">
+	
+	<sql id="rewardCongfinColumn">
+		t1.id,t1.activity_id as activityId ,t1.coupon_config_id as couponConfigId,t1.reward_amount as rewardAmount
+	</sql>
+	
+	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.activity.domain.RewardConfig">
+		select <include refid="rewardCongfinColumn"/> from t_whs_reward_config t1 where t1.id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	
+	<select id="selectByActivity" parameterType="Long" resultType="com.lhiot.mall.wholesale.activity.domain.RewardCoupon">
+		select <include refid="rewardCongfinColumn"/>,date_format(t2.start_time,'%Y-%m-%d %h:%i:%s') as startTime,
+		date_format(t2.end_time,'%Y-%m-%d %h:%i:%s') as endTime,t2.activity_type as activityType
+		from t_whs_reward_config t1
+		left join t_whs_activity t2 on t1.activity_id = t2.id
+		where t1.activity_id = #{0}
+	</select>
+	
+	<!-- lynn 2018/4/19根据 新增-->
+	<insert id="insert" parameterType="java.util.List">
+		insert into t_whs_reward_config (activity_id,coupon_config_id,reward_amount)
+		values
+		<foreach collection="list" item="item" separator="," >
+			(#{item.activityId},#{item.couponConfigId},#{item.rewardAmount})
+		</foreach>
+	</insert>
+	
+	<!-- lynn 2018/4/19根据 修改数量 -->
+	<update id="update" parameterType="com.lhiot.mall.wholesale.activity.domain.RewardConfig">
+		update t_whs_reward_config 
+		<trim prefix="set" suffixOverrides=",">
+			<if test="activityId != null and activityId != ''">activity_id=#{activityId},</if>
+			<if test="couponConfigId != null and couponConfigId != ''">coupon_config_id=#{couponConfigId},</if>
+			<if test="rewardAmount != null and rewardAmount != ''">reward_amount=#{rewardAmount},</if>
+		</trim>
+		where id = #{id}
+	</update>
+	
+	<!-- lynn 2018/4/19根据商品id 删除商品 -->
+	<delete id="removeInbatch" parameterType="java.util.List">
+		delete from t_whs_reward_config where id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.activity.domain.gridparam.RewardConfigGridParam" 
+		resultType="Integer">
+		select count(id) from t_whs_reward_config where activity_id = #{0}
+	</select>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.activity.domain.gridparam.RewardConfigGridParam" 
+		resultType="com.lhiot.mall.wholesale.activity.domain.RewardCoupon">
+		select <include refid="rewardCongfinColumn"/>,date_format(t2.start_time,'%Y-%m-%d %h:%i:%s') as startTime,
+		date_format(t2.end_time,'%Y-%m-%d %h:%i:%s') as endTime,t2.activity_type as activityType
+		from t_whs_reward_config t1
+		left join t_whs_activity t2 on t1.activity_id = t2.id
+		where t1.activity_id = #{0}
+		<include refid="common.pager"></include>
+	</select>
+
+</mapper>

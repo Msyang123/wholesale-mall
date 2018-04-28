@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@Api
+@Api(description = "业务员接口")
 @Slf4j
 @RestController
 public class SalesUserApi {

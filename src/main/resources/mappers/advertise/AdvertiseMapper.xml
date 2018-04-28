@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.advertise.mapper.AdvertiseMapper">
+	<sql id="advertiseColumn">
+		id,title,link_url as linkUrl,advertment_position as advertmentPosition,advertment_image as advertmentImage,
+		date_format(begin_time,'%Y-%m-%d %h:%i:%s') as beginTime,date_format(end_time,'%Y-%m-%d %h:%i:%s') as endTime,
+		date_format(create_at,'%Y-%m-%d %h:%i:%s') as createAt,is_vaild as isVaild
+	</sql>
+	
+	<!-- lynn 2018/4/19根据商品id查询广告 -->
+	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.advertise.domain.Advertise">
+		select <include refid="advertiseColumn"/> from t_whs_advertisement where id = #{0}
+	</select>
+	
+	<!-- lynn 2018/4/19根据商品id 新增广告 -->
+	<insert id="insert" parameterType="com.lhiot.mall.wholesale.advertise.domain.Advertise">
+		insert into t_whs_advertisement(
+			<trim suffixOverrides=",">
+				<if test="title != null and title != ''">title,</if>
+				<if test="linkUrl != null and linkUrl != ''">link_url,</if>
+				<if test="advertmentPosition != null and advertmentPosition != ''">advertment_position,</if>
+				<if test="advertmentImage != null and advertmentImage != ''">advertment_image,</if>
+				<if test="beginTime != null and beginTime != ''">begin_time,</if>
+				<if test="endTime != null and endTime != ''">end_time,</if>
+				<if test="vaild != null">is_vaild,</if>
+				create_at,
+			</trim>
+		)
+		values(
+			<trim suffixOverrides=",">
+				<if test="title != null and title != ''">#{title},</if>
+				<if test="linkUrl != null and linkUrl != ''">#{linkUrl},</if>
+				<if test="advertmentPosition != null and advertmentPosition != ''">#{advertmentPosition},</if>
+				<if test="advertmentImage != null and advertmentImage != ''">#{advertmentImage},</if>
+				<if test="beginTime != null and beginTime != ''">#{beginTime},</if>
+				<if test="endTime != null and endTime != ''">#{endTime},</if>
+				<if test="vaild != null">#{vaild},</if>
+				now(),
+			</trim>
+		)
+	</insert>
+	
+	<!-- lynn 2018/4/19根据商品id 修改商品 -->
+	<update id="update" parameterType="com.lhiot.mall.wholesale.advertise.domain.Advertise">
+		update t_whs_advertisement
+		<trim prefix="set" suffixOverrides=",">
+			<if test="title != null and title != ''">title=#{title},</if>
+			<if test="linkUrl != null and linkUrl != ''">link_url=#{linkUrl},</if>
+			<if test="advertmentPosition != null and advertmentPosition != ''">advertment_position=#{advertmentPosition},</if>
+			<if test="advertmentImage != null and advertmentImage != ''">advertment_image=#{advertmentImage},</if>
+			<if test="beginTime != null and beginTime != ''">begin_time=#{beginTime},</if>
+			<if test="endTime != null and endTime != ''">end_time=#{endTime},</if>
+			<if test="vaild != null">is_vaild=#{vaild},</if>
+		</trim>
+		where id = #{id}
+	</update>
+	
+	<!-- lynn 2018/4/19根据商品id 删除商品 -->
+	<delete id="removeInbatch" parameterType="java.util.List">
+		delete from t_whs_advertisement where id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.advertise.domain.gridparam.AdvertiseGirdParam" resultType="Integer">
+		select count(id) from t_whs_advertisement
+		<trim prefix="where" prefixOverrides="and">
+			<if test="advertmentPosition != null and advertmentPosition != ''">
+				and advertment_position=#{advertmentPosition}
+			</if>
+			<if test="isVaild != null and isVaild != ''">and is_vaild = #{isVaild}</if>
+			<if test="title != null and title !=''">and title = #{title}</if>
+		</trim>
+	</select>
+	
+	<!-- lynn后台管理 分页查询2018/4/19 -->
+	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.advertise.domain.gridparam.AdvertiseGirdParam" 
+		resultType="com.lhiot.mall.wholesale.advertise.domain.Advertise">
+		select <include refid="advertiseColumn"/> from t_whs_advertisement
+		<trim prefix="where" prefixOverrides="and">
+			<if test="advertmentPosition != null and advertmentPosition != ''">
+				and advertment_position=#{advertmentPosition}
+			</if>
+			<if test="isVaild != null and isVaild != ''">and is_vaild = #{isVaild}</if>
+			<if test="title != null and title !=''">and title = #{title}</if>
+		</trim>
+		<include refid="common.pager"></include>
+	</select>
+
+	<!-- 根据类型查询广告 -->
+	<select id="findByType" parameterType="String" resultType="com.lhiot.mall.wholesale.advertise.domain.Advertise">
+		select <include refid="advertiseColumn"/> 
+		from t_whs_advertisement 
+		where advertment_position = #{0} 
+		and is_vaild = '1' 
+		and now() BETWEEN begin_time and end_time 
+		order by begin_time limit 6
+	</select>
+</mapper>

@@ -2,9 +2,11 @@ package com.lhiot.mall.wholesale.user.wechat;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
 @Data
+@Configuration
 @ConfigurationProperties(prefix = PaymentProperties.PROPERTIES_PREFIX)
 public class PaymentProperties {
 
@@ -13,6 +15,10 @@ public class PaymentProperties {
      * 编码
      */
     private String charset = "UTF-8";
+    /**
+     * 发送验证码的第三方推送服务地址
+     */
+    private String sendMessageUrl;
     /**
      * http连接超时（毫秒数）
      */
