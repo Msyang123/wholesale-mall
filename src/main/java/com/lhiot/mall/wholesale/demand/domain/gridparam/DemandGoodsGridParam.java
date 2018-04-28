@@ -6,11 +6,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
-import java.sql.Timestamp;
-import java.util.List;
 
 /**
  * Created by HuFan on 2018/4/23.
@@ -49,7 +44,7 @@ public class DemandGoodsGridParam extends PageObject {
     @ApiModelProperty(notes="排序",dataType="String")
     private String sord;
 
-    public void setUserIds(String userIds){
+    /*public void setUserIds(String userIds){
         String[] array = StringUtils.tokenizeToStringArray(userIds, ",");
         if (!ObjectUtils.isEmpty(array)){
             this.userIds = new Long[array.length];
@@ -57,7 +52,7 @@ public class DemandGoodsGridParam extends PageObject {
                 this.userIds[i] = Long.valueOf(array[i]);
             }
         }
-    }
+    }*/
 
 
 }

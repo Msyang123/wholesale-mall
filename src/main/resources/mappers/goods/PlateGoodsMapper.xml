@@ -2,12 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.lhiot.mall.wholesale.goods.mapper.PlateGoodsMapper">
 	<sql id="goodsStandardColumn">
-		t1.id ,t1.goods_id as goodsId, t1.bar_code as barCode,t1.weight,t1.unit_code as unitCode,
-		t1.standard, t1.price, t1.if_vaild as ifVaild,t1.hd_sku_id as hdSkuId, t1.standard_desc as standardDesc
+		t1.id as standardId,t1.goods_id as goodsId, t1.bar_code as barCode,t1.weight,t1.unit_code as unitCode,
+		t1.standard, t1.price,FORMAT(t1.price/100.0,2) as goodsPrice, t1.if_vaild as ifVaild,t1.hd_sku_id as hdSkuId, t1.standard_desc as standardDesc
 	</sql>
 	
 	<sql id="goodsColumn">
-		t2.id,t1.goods_code as goodsCode,t2.goods_name as goodsName,t2.category_id as categoryId,
+		t2.goods_code as goodsCode,t2.goods_name as goodsName,t2.category_id as categoryId,
 		t2.goods_image as goodsImage,t2.base_bar as baseBar,t2.base_unit as baseUnit,t2.stock_limit as stockLimit,
 		t2.goods_des as goodsDes,t2.goods_images as goodsImages,t2.other_image as otherImage
 	</sql>
@@ -21,7 +21,7 @@
 		insert into t_whs_plate_goods (plate_id,goods_standard_id)
 		values
 		<foreach collection="list" item="item" index="index" separator=",">
-			(#{item.plateId},#{item.goodsStandardId})
+			(#{item.plateId},#{item.goodsStandardId},#{item.rank})
 		</foreach>
 	</insert>
 	
@@ -34,8 +34,9 @@
 	</delete>
 	
 	<!-- lynn后台管理 根据id查询2018/4/19 -->
-	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
-		select <include refid="goodsStandardColumn"/>, <include refid="goodsColumn"/>,<include refid="unitColumn"/>
+	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.PlateGoodsResult">
+		select <include refid="goodsStandardColumn"/>, <include refid="goodsColumn"/>,<include refid="unitColumn"/>,
+		t4.id,t4.rank
 		from t_whs_plate_goods t4
 		left join t_whs_goods_standard t1 on t4.goods_standard_id = t1.id
 		left join t_whs_goods t2 on t1.goods_id = t2.id
@@ -44,8 +45,9 @@
 	</select>
 	
 	<!-- lynn后台管理 查询所有用作下拉框2018/4/19 -->
-	<select id="search" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
-		select <include refid="goodsStandardColumn"/>, <include refid="goodsColumn"/>,<include refid="unitColumn"/>
+	<select id="search" resultType="com.lhiot.mall.wholesale.goods.domain.PlateGoodsResult">
+		select <include refid="goodsStandardColumn"/>, <include refid="goodsColumn"/>,<include refid="unitColumn"/>,
+		t4.id,t4.rank
 		from t_whs_plate_goods t4
 		left join t_whs_goods_standard t1 on t4.goods_standard_id = t1.id
 		left join t_whs_goods t2 on t1.goods_id = t2.id
@@ -54,7 +56,7 @@
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
 	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam" resultType="Integer">
-		select count(id) 
+		select count(t4.id) 
 		from t_whs_plate_goods t4
 		left join t_whs_goods_standard t1 on t4.goods_standard_id = t1.id
 		left join t_whs_goods t2 on t1.goods_id = t2.id
@@ -63,16 +65,17 @@
 			<if test="goodsName != null and goodsName != ''">
 				and t2.goods_name = #{goodsName}
 			</if>
-			<if test="goodsCode != null and goodsCode != ''">
-				and t2.goods_code =#{goodsCode}
+			<if test="plateId != null">
+				and t4.plate_id =#{plateId}
 			</if>
 		</trim>
 	</select>
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
 	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam" 
-		resultType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
-		select <include refid="goodsStandardColumn"/>, <include refid="goodsColumn"/>,<include refid="unitColumn"/> 
+		resultType="com.lhiot.mall.wholesale.goods.domain.PlateGoodsResult">
+		select <include refid="goodsStandardColumn"/>, <include refid="goodsColumn"/>,<include refid="unitColumn"/>,
+		t4.id,t4.rank
 		from t_whs_plate_goods t4
 		left join t_whs_goods_standard t1 on t4.goods_standard_id = t1.id
 		left join t_whs_goods t2 on t1.goods_id = t2.id
@@ -81,15 +84,52 @@
 			<if test="goodsName != null and goodsName != ''">
 				and t2.goods_name = #{goodsName}
 			</if>
-			<if test="goodsCode != null and goodsCode != ''">
-				and t2.goods_code =#{goodsCode}
+			<if test="plateId != null">
+				and t4.plate_id =#{plateId}
 			</if>
 		</trim>
 		<include refid="common.pager"></include>
 	</select>
 	
-	<!-- updatelynn 修改商品版块  -->
+	<!-- update lynn 修改商品排序  -->
 	<update id="update" parameterType="com.lhiot.mall.wholesale.goods.domain.PlateGoods">
-		update t_whs_plate_goods set plate_id = #{plateId} where id = #{id}
+		update t_whs_plate_goods set rank = #{rank} where id = #{id}
 	</update>
+	
+	<!-- lynn 获取当前分类下的最大排序值 -->
+	<select id="maxRank" parameterType="Long" resultType="Integer">
+		select max(rank) as rank from t_whs_plate_goods where plate_id = #{0}
+	</select>
+	
+	<!-- 根据分类id查询 lynn -->
+	<select id="findByPlateId" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.PlateGoods">
+		select id,plate_id as plateId,goods_standard_id as goodsStandardId,rank 
+		from t_whs_plate_goods
+		where plate_id = #{0}
+	</select>
+	
+	<!-- 批量修改 lynn -->
+	<update id="updateInBatch" parameterType="java.util.List">
+      	update t_whs_plate_goods
+      	<trim prefix="set" suffixOverrides=",">
+      		<trim prefix="plate_id=case id" suffix="end,">
+      			<foreach collection="list" item="item" index="index">  
+      				<if test="item.plateId != null and item.plateId != ''">
+      					when #{item.id} then #{item.plateId} 
+      				</if>
+      			</foreach>
+      		</trim>
+      		<trim prefix="rank=case id" suffix="end,">
+      			<foreach collection="list" item="item" index="index"> 
+      			    <if test="item.rank != null and item.rank != ''">
+      					when #{item.id} then #{item.rank} 
+      				</if>   				 
+      			</foreach>
+      		</trim>
+      	</trim>
+      	where id in  
+      	<foreach collection="list" index="index" item="item" separator="," open="(" close=")">  
+        	#{item.id}  
+      	</foreach>  
+	</update>	
 </mapper>

@@ -49,7 +49,7 @@ public class GoodsPriceRegionApi {
     
     @PutMapping("/priceregion/{id}")
     @ApiOperation(value = "根据ID修改价格区间", response = GoodsPriceRegion.class)
-    public ResponseEntity<?> modify(@PathVariable("id") Long id, GoodsPriceRegion goodsPriceRegion) {
+    public ResponseEntity<?> modify(@PathVariable("id") Long id, @RequestBody GoodsPriceRegion goodsPriceRegion) {
         if (goodsPriceRegionService.update(goodsPriceRegion)) {
             return ResponseEntity.ok(goodsPriceRegion);
         }

@@ -27,4 +27,7 @@ public class GoodsCategory {
 	
 	@ApiModelProperty(notes="等级",dataType="Integer")
 	private Integer levels;
+	
+	@ApiModelProperty(notes="父分类编码",dataType="String")
+	private String parentCategoryCode;
 }

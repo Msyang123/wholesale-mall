@@ -18,11 +18,15 @@ public interface GoodsUnitMapper {
 
     GoodsUnit select(long id);
     
-    GoodsUnit findByCode(String code);
+    List<GoodsUnit> findByCode(String code);
 
     List<GoodsUnit> search();
     
     int tryAdd(GoodsUnit goodsUnit);
+    
+    List<Long> searchFromGoods();
+    
+    List<GoodsUnit> searchInbatch(List<Long> ids);
     
     //分页查询分类
     List<GoodsUnit> pageQuery(GoodsUnitGridParam goodsUnitGridParam);

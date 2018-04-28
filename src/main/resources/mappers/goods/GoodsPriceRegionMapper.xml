@@ -2,8 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.lhiot.mall.wholesale.goods.mapper.GoodsPriceRegionMapper">
 	<sql id="goodsPriceRegionColumn">
-		id ,goods_standard_id as goodsStandardId, price, standard_des as standardDes,
-		min_quantity as minQuantity, max_quantity as maxQuantity, reorder
+		t1.id ,t1.goods_standard_id as goodsStandardId, t1.price, t1.standard_des as standardDes,
+		t1.min_quantity as minQuantity, t1.max_quantity as maxQuantity, t1.reorder
 	</sql>
 	
 	<!-- lynn后台管理 新增2018/4/19 -->
@@ -13,19 +13,19 @@
 				<if test="goodsStandardId != null and goodsStandardId != ''">goods_standard_id,</if>
 				<if test="price != null and price != ''">price,</if>
 				<if test="standardDes != null and standardDes != ''">standard_des,</if>
-				<if test="minQuantity != null and minQuantity != ''">minQuantity,</if>
+				<if test="minQuantity != null and minQuantity != ''">min_quantity,</if>
 				<if test="maxQuantity != null and maxQuantity != ''">max_quantity,</if>
 				<if test="reorder != null and reorder != ''">reorder,</if>
 			</trim>
 		)
 		values(
 			<trim suffixOverrides=",">
-				<if test="goodsStandardId != null and goodsStandardId != ''">goods_standard_id=#{goodsStandardId},</if>
-				<if test="price != null and price != ''">price=#{price},</if>
-				<if test="standardDes != null and standardDes != ''">standard_des=#{standardDes},</if>
-				<if test="minQuantity != null and minQuantity != ''">minQuantity=#{minQuantity},</if>
-				<if test="maxQuantity != null and maxQuantity != ''">max_quantity=#{maxQuantity},</if>
-				<if test="reorder != null and reorder != ''">reorder=#{reorder},</if>
+				<if test="goodsStandardId != null and goodsStandardId != ''">#{goodsStandardId},</if>
+				<if test="price != null and price != ''">#{price},</if>
+				<if test="standardDes != null and standardDes != ''">#{standardDes},</if>
+				<if test="minQuantity != null and minQuantity != ''">#{minQuantity},</if>
+				<if test="maxQuantity != null and maxQuantity != ''">#{maxQuantity},</if>
+				<if test="reorder != null and reorder != ''">#{reorder},</if>
 			</trim>
 		)
 	</insert>
@@ -41,11 +41,11 @@
 	<!-- lynn后台管理 修改2018/4/19 -->
 	<update id="update" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion">
 		update t_whs_goods_price_region
-		<trim suffix="set" suffixOverrides=",">
+		<trim prefix="set" suffixOverrides=",">
 			<if test="goodsStandardId != null and goodsStandardId != ''">goods_standard_id = #{goodsStandardId},</if>
 			<if test="price != null and price != ''">price = #{price},</if>
 			<if test="standardDes != null and standardDes != ''">standard_des = #{standardDes},</if>
-			<if test="minQuantity != null and minQuantity != ''">minQuantity = #{minQuantity},</if>
+			<if test="minQuantity != null and minQuantity != ''">min_quantity = #{minQuantity},</if>
 			<if test="maxQuantity != null and maxQuantity != ''">max_quantity = #{maxQuantity},</if>
 			<if test="reorder != null and reorder != ''">reorder = #{reorder},</if>
 		</trim>
@@ -54,18 +54,29 @@
 	
 	<!-- lynn后台管理 根据id查询2018/4/19 -->
 	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion">
-		select <include refid="goodsPriceRegionColumn"/> from t_whs_goods_price_region where id = #{0}
+		select <include refid="goodsPriceRegionColumn"/> ,t2.standard,t3.goods_name as goodsName,
+		t4.unit_name as goodsUnit
+		from t_whs_goods_price_region t1
+		left join t_whs_goods_standard t2 on t1.goods_standard_id = t2.id
+		left join t_whs_goods t3 on t2.goods_id = t3.id
+		left join t_whs_goods_unit t4 on t2.unit_code = t4.id
+		where t1.id = #{0}
 	</select>
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
 	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.goods.domain.girdparam.PriceRegionGirdParam" resultType="Integer">
-		select count(id) from t_whs_goods_price_region
+		select count(t1.id) from t_whs_goods_price_region t1 
+		left join t_whs_goods_standard t2 on t1.goods_standard_id = t2.id
+		left join t_whs_goods t3 on t2.goods_id = t3.id
 		<trim prefix="where" prefixOverrides="and">
-			<if test="minPrice != null and minPrice != ''">
-				and price &gt;= #{minPrice}
+			<if test="minPrice != null and  minPrice != ''">
+				and t1.price &gt;= #{minPrice}
 			</if>
-			<if test="maxPrice != null and maxPrice != ''">
-				and price &lt;= #{maxPrice},
+			<if test="maxPrice != null and  maxPrice != ''">
+				and t1.price &lt;= #{maxPrice}
+			</if>
+			<if test="goodsName != null and goodsName != ''">
+				and t3.goods_name like concat('%',#{goodsName},'%')
 			</if>
 		</trim>
 	</select>
@@ -73,13 +84,19 @@
 	<!-- lynn后台管理 分页查询2018/4/19 -->
 	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.goods.domain.girdparam.PriceRegionGirdParam" 
 		resultType="com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion">
-		select <include refid="goodsPriceRegionColumn"/> from t_whs_goods_price_region
+		select <include refid="goodsPriceRegionColumn"/> ,t2.standard,t3.goods_name as goodsName
+		from t_whs_goods_price_region t1
+		left join t_whs_goods_standard t2 on t1.goods_standard_id = t2.id
+		left join t_whs_goods t3 on t2.goods_id = t3.id
 		<trim prefix="where" prefixOverrides="and">
-			<if test="minPrice != null and minPrice != ''">
-				and price &gt;= #{minPrice}
+			<if test="minPrice != null and  minPrice != ''">
+				and t1.price &gt;= #{minPrice}
 			</if>
-			<if test="maxPrice != null and maxPrice != ''">
-				and price &lt;= #{maxPrice},
+			<if test="maxPrice != null and  maxPrice != ''">
+				and t1.price &lt;= #{maxPrice}
+			</if>
+			<if test="goodsName != null and goodsName != ''">
+				and t3.goods_name like concat('%',#{goodsName},'%')
 			</if>
 		</trim>
 		<include refid="common.pager"></include>

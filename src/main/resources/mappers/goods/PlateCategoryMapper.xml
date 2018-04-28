@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.lhiot.mall.wholesale.goods.mapper.PlateCategoryMapper">
 	<sql id="pleateCategoryColumn">
-		id,plate_name as plateName,plate_image as plateImage,rank,parent_id as parentId
+		t1.id,t1.plate_name as plateName,t1.plate_image as plateImage,t1.rank,t1.parent_id as parentId
 	</sql>
 	
 	<!-- lynn后台管理 新增2018/4/19 -->
@@ -12,6 +12,7 @@
 				<if test="plateName != null and plateName != ''">plate_name,</if>
 				<if test="plateImage != null and plateImage != ''">plate_image,</if>
 				<if test="rank != null and rank != ''">rank,</if>
+				<if test="parentId != null and parentId != ''">parent_id,</if>
 			</trim>
 		)
 		values(
@@ -19,6 +20,7 @@
 				<if test="plateName != null and plateName != ''">#{plateName},</if>
 				<if test="plateImage != null and plateImage != ''">#{plateImage},</if>
 				<if test="rank != null and rank != ''">#{rank},</if>
+				<if test="parentId != null and parentId != ''">#{parentId},</if>
 			</trim>
 		)
 	</insert>
@@ -34,7 +36,7 @@
 	<!-- lynn后台管理 修改2018/4/19 -->
 	<update id="update" parameterType="com.lhiot.mall.wholesale.goods.domain.PlateCategory">
 		update t_whs_plate_category
-		<trim suffix="set" suffixOverrides=",">
+		<trim prefix="set" suffixOverrides=",">
 			<if test="plateName != null and plateName != ''">
 				plate_name = #{plateName},
 			</if>
@@ -42,7 +44,7 @@
 				plate_image = #{plateImage},
 			</if>
 			<if test="rank != null and rank != ''">
-				parent_id = #{rank},
+				rank = #{rank},
 			</if>
 		</trim>
 		where id = #{id}
@@ -50,23 +52,50 @@
 	
 	<!-- lynn后台管理 根据id查询2018/4/19 -->
 	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.PlateCategory">
-		select <include refid="pleateCategoryColumn"/> from t_whs_plate_category where id = #{0}
+		select <include refid="pleateCategoryColumn"/> from t_whs_plate_category t1 where id = #{0}
 	</select>
 	
 	<!-- lynn后台管理 查询所有2018/4/19 -->
-	<select id="search" resultType="com.lhiot.mall.wholesale.goods.domain.PlateCategory">
-		select <include refid="pleateCategoryColumn"/> from t_whs_plate_category
+	<select id="searchAll" resultType="com.lhiot.mall.wholesale.goods.domain.PlateCategory">
+		select <include refid="pleateCategoryColumn"/> from t_whs_plate_category t1
 	</select>
+	
+	<select id="search" parameterType="java.util.List" 
+			resultType="com.lhiot.mall.wholesale.goods.domain.PlateCategory">
+		select <include refid="pleateCategoryColumn"/> from t_whs_plate_goods t2
+		left join t_whs_plate_category t1 on t2.plate_id = t1.id
+		where t2.plate_id in 
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select> 
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
 	<select id="pageQueryCount" resultType="Integer">
 		select count(id) from t_whs_plate_category
+		<trim prefix="where" prefixOverrides="and">
+			<if test="plateName != null and plateName != ''">
+				and plate_name like concat('%',#{plateName},'%')
+			</if>
+			<if test="parentId != null and parentId != ''">
+				and parent_id = #{parentId}
+			</if>
+		</trim>
 	</select>
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
-	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam" 
+	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.goods.domain.girdparam.PlateGirdParam" 
 		resultType="com.lhiot.mall.wholesale.goods.domain.PlateCategory">
-		select <include refid="pleateCategoryColumn"/> from t_whs_plate_category
+		select <include refid="pleateCategoryColumn"/> 
+		from t_whs_plate_category t1
+		<trim prefix="where" prefixOverrides="and">
+			<if test="plateName != null and plateName != ''">
+				and plate_name like concat('%',#{plateName},'%')
+			</if>
+			<if test="parentId != null and parentId != ''">
+				and parent_id = #{parentId}
+			</if>
+		</trim>
 		<include refid="common.pager"></include>
 	</select>
 	

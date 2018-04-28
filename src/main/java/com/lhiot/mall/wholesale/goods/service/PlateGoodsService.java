@@ -3,18 +3,17 @@ package com.lhiot.mall.wholesale.goods.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
 import com.lhiot.mall.wholesale.goods.domain.PlateGoods;
+import com.lhiot.mall.wholesale.goods.domain.PlateGoodsResult;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.PlateGoodsMapper;
 
@@ -40,15 +39,25 @@ public class PlateGoodsService {
 	 * @return
 	 */
 	public boolean create(PlateGoods param){
-		String[] standardIds = param.getGoodsStandardIds().split(",");
-		Long plateId = param.getId();
+		Long plateId = param.getPlateId();
+		String[] standardId = (param.getGoodsStandardIds()).split(",");
+		//查询最大排序号
+		Integer maxRank = this.findMaxRankNum(plateId);
+		
 		PlateGoods plateGoods = null;
 		List<PlateGoods> list = new ArrayList<>();
-		for(String str : standardIds){
+		
+		int size = standardId.length;
+		for(int i=0;i<size;i++){
 			plateGoods = new PlateGoods();
 			plateGoods.setPlateId(plateId);
-			plateGoods.setGoodsStandardId(Long.parseLong(str));
+			plateGoods.setRank(maxRank+i+1);//新增的默认自增添加排序号
+			plateGoods.setGoodsStandardId(Long.parseLong(standardId[i]));
 			list.add(plateGoods);
+		}
+		this.duplicate(plateId, list);
+		if(list.isEmpty()){
+			return false;
 		}
 		return plateGoodsMapper.insertInbatch(list)>0;
 	}
@@ -80,7 +89,7 @@ public class PlateGoodsService {
 	 * @param id
 	 * @return
 	 */
-	public GoodsStandard plateGoods(Long id){
+	public PlateGoodsResult plateGoods(Long id){
 		return plateGoodsMapper.select(id);
 	}
 	
@@ -88,7 +97,7 @@ public class PlateGoodsService {
 	 * 查询所有的商品版块商品
 	 * @return
 	 */
-	public List<GoodsStandard> search(){
+	public List<PlateGoodsResult> search(){
 		return plateGoodsMapper.search();
 	}
 	
@@ -109,12 +118,89 @@ public class PlateGoodsService {
 			param.setPage(page);
 			param.setStart(0);
 		}
-		List<GoodsStandard> goodsUnits = plateGoodsMapper.pageQuery(param);
+		List<PlateGoodsResult> goodsUnits = plateGoodsMapper.pageQuery(param);
 		PageQueryObject result = new PageQueryObject();
 		result.setRows(goodsUnits);
 		result.setPage(page);
 		result.setRecords(rows);
-		result.setTotal(count);
+		result.setTotal(totalPages);
 		return result;
+	}
+	
+	/**
+	 * 批量修改商品版块的分类
+	 * @param param
+	 * @return
+	 */
+	public boolean modifyPlate(PlateGoods param) {
+		boolean success = false;
+		Long plateId = param.getPlateId();
+		//将主键id和standardId组装成一一对应的list,作为update操作的参数
+		String[] idAndStandardIds = param.getIdAndStandardIds().split(",");
+		List<PlateGoods> list = new ArrayList<>(idAndStandardIds.length);
+		PlateGoods plateGoods = null;
+		for(String idAndStandardId : idAndStandardIds){
+			String[] str = idAndStandardId.split("s");//idAndStandardId是有主键id和standardId以s分割组成的字符串，如1s3
+			plateGoods = new PlateGoods();
+			plateGoods.setPlateId(plateId);
+			plateGoods.setId(Long.parseLong(str[0]));
+			plateGoods.setGoodsStandardId(Long.parseLong(str[1]));
+			list.add(plateGoods);
+		}
+		//去除给分类下已有的商品
+		this.duplicate(plateId, list);
+		if(list.isEmpty()){
+			return success;
+		}
+		//获取该分类下的最大排序号
+		Integer maxRank = this.findMaxRankNum(plateId);
+		//给每个商品加上排序号
+		int rank = 1;
+		for(PlateGoods p : list){
+			p.setRank(maxRank+rank);
+			rank++;
+		}
+		success = plateGoodsMapper.updateInBatch(list)>0;
+		return success;
+	}
+	
+	/**
+	 * 查询当前分类下商品的最大排序号，以给新增商品默认排序号，自增
+	 * @param plateId
+	 * @return
+	 */
+	public Integer findMaxRankNum(Long plateId){
+		Integer maxRank = 0;
+		Integer rank = plateGoodsMapper.maxRank(plateId);
+		if(null != rank){
+			maxRank = rank;
+		}
+		return maxRank;
+	}
+	
+	/**
+	 * 去除重复加入的商品
+	 * @param plateId 分类id
+	 * @param paramList 
+	 */
+	public void duplicate (Long plateId,List<PlateGoods> paramList){
+		if(Objects.isNull(plateId) || paramList.isEmpty()){
+			return ;
+		}
+		//查询当前分类下的所有商品
+		List<PlateGoods> list = plateGoodsMapper.findByPlateId(plateId);
+		if(list.isEmpty()){
+			return ;
+		}
+		for(PlateGoods plateGoods : list){
+			Long standardId = plateGoods.getGoodsStandardId();
+			for(int i=paramList.size()-1;i>=0;i--){
+				Long id = (paramList.get(i)).getGoodsStandardId();
+				if(Objects.equals(standardId, id)){
+					paramList.remove(i);
+					break;
+				}
+			}
+		}
 	}
 }

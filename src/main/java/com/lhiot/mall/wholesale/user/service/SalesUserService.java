@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.user.service;
 
 import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.mapper.SalesUserMapper;
 import org.apache.ibatis.session.SqlSession;
@@ -30,7 +31,23 @@ public class SalesUserService {
         return salesUserMapper.selectRelation(param);
     }
 
-    public int updateUserSaleReletionship(SalesUserRelation salesUserRelation){
-        return salesUserMapper.updateUserSaleReletionship(salesUserRelation);
+    public int updateUserSaleRelationship(SalesUserRelation salesUserRelation){
+        return salesUserMapper.updateUserSaleRelationship(salesUserRelation);
+    }
+
+    public SalesUser searchSalesUser(long id){
+        return salesUserMapper.searchSalesUser(id);
+    }
+
+    public SalesUser searchSalesUserCode(String code){
+        return salesUserMapper.searchSalesUserCode(code);
+    }
+
+    public int insertRelation(SalesUserRelation salesUserRelation){
+        return salesUserMapper.insertRelation(salesUserRelation);
+    }
+
+    public SalesUserRelation isSeller(long userId){
+        return salesUserMapper.isSeller(userId);
     }
 }

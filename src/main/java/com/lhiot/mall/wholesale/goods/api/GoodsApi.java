@@ -19,6 +19,7 @@ import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.ResultObject;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.Goods;
+import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
 import com.lhiot.mall.wholesale.goods.domain.GoodsDetailResult;
 import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
 import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
@@ -60,7 +61,7 @@ public class GoodsApi {
     
     @PutMapping("/goods/{id}")
     @ApiOperation(value = "根据ID修改商品", response = Goods.class)
-    public ResponseEntity<?> modify(@PathVariable("id") Long id, Goods goods) {
+    public ResponseEntity<?> modify(@PathVariable("id") Long id, @RequestBody Goods goods) {
         if (goodsService.update(goods)) {
             return ResponseEntity.ok(goods);
         }
@@ -112,4 +113,9 @@ public class GoodsApi {
 	    return ResponseEntity.ok(inventoryResult);
     }
 
+	@PostMapping("/goods/tryoperation")
+    @ApiOperation(value = "查询商品分类是否可以被修改或新增")
+    public ResponseEntity<Boolean> tryoperation(@RequestBody(required = true) Goods goods) {
+        return ResponseEntity.ok(goodsService.allowOperation(goods));
+    }
 }

@@ -37,6 +37,9 @@
             <if test="addressDetail !=null and addressDetail !=''">
                 ,address_detail=#{addressDetail}
             </if>
+            <if test="phone !=null and phone !=''">
+                ,phone=#{phone}
+            </if>
             <if test="registerTime !=null and registerTime !=''">
                 ,register_time=#{registerTime}
             </if>
@@ -45,10 +48,9 @@
     </update>
 
     <!-- 新增地址 -->
-    <insert id="insertAddress" parameterType="com.lhiot.mall.wholesale.user.domain.UserAddress">
+    <insert id="insertAddress" parameterType="com.lhiot.mall.wholesale.user.domain.UserAddress" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
         insert into t_whs_user_address(
         <trim suffixOverrides=",">
-            <if test="id != null and sex != ''">id,</if>
             <if test="sex != null and sex != ''">sex,</if>
             <if test="phone != null and phone != ''">phone,</if>
             <if test="addressArea != null and addressArea != ''">address_area,</if>
@@ -59,7 +61,6 @@
         )
         values(
         <trim suffixOverrides=",">
-            <if test="id != null and id != ''">#{id},</if>
             <if test="sex != null and sex != ''">#{sex},</if>
             <if test="phone != null and phone != ''">#{phone},</if>
             <if test="addressArea != null and addressArea != ''">#{addressArea},</if>
@@ -113,19 +114,21 @@
 
     <update id="updateDefaultAddress" parameterType="long">
         UPDATE t_whs_user_address SET is_default = 1
-        WHERE is_default = 0
+        WHERE is_default = 0 and user_id = #{0}
     </update>
 
 
-    <!-- lynn后台管理 根据手机号，用户名分页查询2018/4/19 -->
-    <select id="pageQuery" parameterType="com.lhiot.mall.wholesale.demand.domain.gridparam.DemandGoodsGridParam"
+    <!-- 后台管理 根据用户手机号，用户名分页查询【新品需求】 -->
+    <select id="pageQuery" parameterType="com.lhiot.mall.wholesale.user.domain.User"
             resultType="com.lhiot.mall.wholesale.user.domain.User">
         select <include refid="userInfo"/>
         from t_whs_user
         <trim prefix="where" prefixOverrides="and">
             <if test="namePhone != null and namePhone != ''">and user_name like CONCAT('%',#{namePhone},'%') or phone like CONCAT('%',#{namePhone},'%')</if>
+            <if test="phone != null and phone != ''">and  phone like CONCAT('%',#{phone},'%')</if>
+            <if test="userName != null and userName != ''">and user_name like CONCAT('%',#{userName},'%') </if>
+            <if test="shopName != null and shopName != ''">and shop_name like CONCAT('%',#{shopName},'%') </if>
         </trim>
-        <include refid="common.pager"></include>
     </select>
 
 </mapper>

@@ -3,6 +3,8 @@ package com.lhiot.mall.wholesale.goods.domain;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -37,6 +39,9 @@ public class GoodsStandard {
 	@ApiModelProperty(notes="是否上架 ",dataType="Boolean")
 	private Boolean ifVaild;
 	
+	@ApiModelProperty(notes="是否上架 ",dataType="Integer")
+	private Integer vaild;
+	
 	@ApiModelProperty(notes="海鼎商品sku_id",dataType="String")
 	private String hdSkuId;
 	
@@ -57,6 +62,12 @@ public class GoodsStandard {
 	
 	@ApiModelProperty(notes="商品规格单位名称",dataType="String")
 	private String goodsUnitName;
+	
+	@ApiModelProperty(notes="商品基础单位名称",dataType="String")
+	private String baseUnitName;
+	
+	@ApiModelProperty(notes="商品规格单位名称",dataType="String")
+	private String goodsPrice;
 
 	@ApiModelProperty(notes="商品价格区间",dataType="List")
 	private List<GoodsPriceRegion> goodsPriceRegionList;

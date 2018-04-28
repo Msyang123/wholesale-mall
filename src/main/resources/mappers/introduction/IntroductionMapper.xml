@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.introduction.mapper.IntroductionMapper">
+	<sql id="introductionColumn">
+		t1.id as id,t1.service_type as serviceType,t1.service_title as serviceTitle,t1.content as content,
+		DATE_FORMAT(t1.create_time,'%Y-%m-%d %H:%i:%s') as createTime,t1.create_person as createPerson,t1.service_status as serviceStatus
+	</sql>
+
+	<!-- 根据id查询信息 -->
+	<select id="select" parameterType="long" resultType="com.lhiot.mall.wholesale.introduction.domain.Introduction">
+		SELECT <include refid="introductionColumn"/>
+		FROM t_whs_introduction t1
+		WHERE t1.id = #{0}
+	</select>
+
+	<!-- 后台管理 分页查询总数 -->
+	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.introduction.domain.gridparam.IntroductionGridParam" resultType="Integer">
+		select count(id) from t_whs_introduction t1
+	</select>
+
+	<!-- 后台管理 分页查询列表信息 -->
+	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.introduction.domain.gridparam.IntroductionGridParam"
+			resultType="com.lhiot.mall.wholesale.introduction.domain.Introduction">
+		select <include refid="introductionColumn"/>
+		from t_whs_introduction t1
+		WHERE 1=1
+		<include refid="common.pager"></include>
+	</select>
+
+	<!-- lynn 2018/4/19根据id 服务文章 -->
+	<update id="update" parameterType="com.lhiot.mall.wholesale.introduction.domain.Introduction">
+		update t_whs_introduction
+		<trim prefix="set" suffixOverrides=",">
+			<if test="serviceType != null and serviceType != ''">service_type=#{serviceType},</if>
+			<if test="serviceTitle != null and serviceTitle != ''">service_title=#{serviceTitle},</if>
+			<if test="content != null and content != ''">content=#{content},</if>
+			<if test="createPerson != null and createPerson != ''">create_person=#{createPerson},</if>
+			<if test="serviceStatus != null and serviceStatus != ''">service_status=#{serviceStatus},</if>
+			create_time = now()
+  		</trim>
+		where id = #{id}
+	</update>
+
+	 <!-- 新增地址 -->
+	<insert id="insert" parameterType="com.lhiot.mall.wholesale.introduction.domain.Introduction" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+		insert into t_whs_introduction(
+		<trim suffixOverrides=",">
+			id,
+			<if test="serviceType != null and serviceType != ''">service_type,</if>
+			<if test="serviceTitle != null and serviceTitle != ''">service_title,</if>
+			<if test="content != null and content != ''">content,</if>
+			<if test="createPerson != null and createPerson != ''">create_person,</if>
+			<if test="serviceStatus != null and serviceStatus != ''">service_status,</if>
+			create_time
+		</trim>
+		)
+		values(
+		<trim suffixOverrides=",">
+			(select count(id) from t_whs_introduction t1)+1,
+			<if test="serviceType != null and serviceType != ''">#{serviceType},</if>
+			<if test="serviceTitle != null and serviceTitle != ''">#{serviceTitle},</if>
+			<if test="content != null and content != ''">#{content},</if>
+			<if test="createPerson != null and createPerson != ''">#{createPerson},</if>
+			<if test="serviceStatus != null and serviceStatus != ''">#{serviceStatus},</if>
+			now()
+		</trim>
+		)
+	</insert>
+</mapper>

@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.ResultObject;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
 import com.lhiot.mall.wholesale.goods.domain.PlateGoods;
+import com.lhiot.mall.wholesale.goods.domain.PlateGoodsResult;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsStandardGirdParam;
 import com.lhiot.mall.wholesale.goods.service.PlateGoodsService;
 
@@ -27,7 +27,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Api(description = "商品版块商品")
+@Api(description = "版块商品")
 @RestController
 @RequestMapping
 public class PlateGoodsApi {
@@ -57,27 +57,36 @@ public class PlateGoodsApi {
     }
 
     @GetMapping("/plategoods/{id}")
-    @ApiOperation(value = "根据ID查询商品版块商品", response = GoodsStandard.class)
-    public ResponseEntity<GoodsStandard> plategoods(@PathVariable("id") Long id) {
+    @ApiOperation(value = "根据ID查询版块商品", response = PlateGoodsResult.class)
+    public ResponseEntity<PlateGoodsResult> plategoods(@PathVariable("id") Long id) {
         return ResponseEntity.ok(plateGoodsService.plateGoods(id));
     }
 
     @GetMapping("/plategoods/search")
-    @ApiOperation(value = "新建一个查询，查询所有商品版块商品", response = GoodsStandard.class, responseContainer = "List")
-    public ResponseEntity<List<GoodsStandard>> search() {
+    @ApiOperation(value = "新建一个查询，查询所有版块商品", response = PlateGoodsResult.class, responseContainer = "List")
+    public ResponseEntity<List<PlateGoodsResult>> search() {
         return ResponseEntity.ok(plateGoodsService.search());
     }
     
     @PostMapping("/plategoods/gird")
-    @ApiOperation(value = "新建一个查询，分页查询商品版块商品", response = ArrayObject.class)
+    @ApiOperation(value = "新建一个查询，分页查询版块商品", response = ArrayObject.class)
     public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) GoodsStandardGirdParam param) {
         return ResponseEntity.ok(plateGoodsService.pageQuery(param));
     }
     
     @PutMapping("/plategoods/{id}")
-    @ApiOperation(value = "修改商品版块", response = Boolean.class)
-    public ResponseEntity<?> modify(@PathVariable("id") Long id, PlateGoods plateGoods) {
+    @ApiOperation(value = "修改版块商品排序", response = Boolean.class)
+    public ResponseEntity<?> modify(@PathVariable("id") Long id, @RequestBody PlateGoods plateGoods) {
         if (plateGoodsService.updatePlate(plateGoods)) {
+            return ResponseEntity.ok(plateGoods);
+        }
+        return ResponseEntity.badRequest().body(ResultObject.of("修改失败"));
+    }
+    
+    @PutMapping("/plategoods/plate")
+    @ApiOperation(value = "批量修改商品的版块", response = Boolean.class)
+    public ResponseEntity<?> modifyPlate(@RequestBody PlateGoods plateGoods) {
+        if (plateGoodsService.modifyPlate(plateGoods)) {
             return ResponseEntity.ok(plateGoods);
         }
         return ResponseEntity.badRequest().body(ResultObject.of("修改失败"));

@@ -50,7 +50,6 @@ public class User {
 
     @JsonProperty("user_status")
     private int userStatus;
-
     @JsonProperty("profile_photo")
     private String profilePhoto;
 
@@ -65,6 +64,9 @@ public class User {
 
     @JsonProperty("city")
     private String city;
+
+    @JsonProperty("namePhone")
+    private String namePhone;
 
     /*public enum Sex {
         MALE, FEMALE, UNKNOWN

@@ -8,11 +8,11 @@
 	</sql>
 	
 	<sql id="unitColumn">
-		t2.unit_code as baseUnitCode,t2.unit_name as baseUnitName
+		t2.id as baseUnit,t2.unit_code as baseUnitCode,t2.unit_name as baseUnitName
 	</sql>
 	
 	<sql id="categoryColumn">
-		t3.category_name as categoryName
+		t3.id as categoryId ,t3.category_name as categoryName
 	</sql>
 	
 	<!-- lynn 2018/4/19根据商品id查询商品 -->
@@ -21,7 +21,7 @@
 		from t_whs_goods t1
 		left join t_whs_goods_unit t2 on t1.base_unit = t2.id
 		left join t_whs_goods_category t3 on t1.category_id = t3.id
-		where id = #{0}
+		where t1.id = #{0}
 	</select>
 	
 	<!-- lynn 2018/4/19根据商品id 新增商品 -->
@@ -84,12 +84,11 @@
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
 	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam" resultType="Integer">
-		select count(id) from t_whs_goods t1
-		left join t_whs_goods_unit t2 on t1.base_unit = t2.id
-		left join t_whs_goods_category t3 on t1.category_id = t3.id
+		select count(t1.id) from t_whs_goods t1
 		<trim prefix="where" prefixOverrides="and">
-			<if test="goodsCode != null and goodsCode != ''">and goods_code=#{goodsCode}</if>
-			<if test="goodsName != null and goodsName != ''">and goods_name like CONCAT('%',#{goodsName},'%')</if>
+			<if test="goodsCode != null and goodsCode != ''">and t1.goods_code=#{goodsCode}</if>
+			<if test="categoryId != null and categoryId != ''">and t1.category_id = #{categoryId}</if>
+			<if test="goodsName != null and goodsName != ''">and t1.goods_name like CONCAT('%',#{goodsName},'%')</if>
 		</trim>
 	</select>
 	
@@ -101,8 +100,9 @@
 		left join t_whs_goods_unit t2 on t1.base_unit = t2.id
 		left join t_whs_goods_category t3 on t1.category_id = t3.id
 		<trim prefix="where" prefixOverrides="and">
-			<if test="goodsCode != null and goodsCode != ''">and goods_code=#{goodsCode}</if>
-			<if test="goodsName != null and goodsName != ''">and goods_name like CONCAT('%',#{goodsName},'%')</if>
+			<if test="goodsCode != null and goodsCode != ''">and t1.goods_code=#{goodsCode}</if>
+			<if test="goodsName != null and goodsName != ''">and t1.goods_name like CONCAT('%',#{goodsName},'%')</if>
+			<if test="categoryId != null and categoryId != ''">and t1.category_id = #{categoryId}</if>
 		</trim>
 		<include refid="common.pager"></include>
 	</select>
@@ -151,4 +151,26 @@
         where s.id in(SELECT DISTINCT t.goods_standard_id FROM t_whs_plate_goods t where t.plate_id=#{0}) LIMIT 5
     </select>
 
+	<!-- 根据条件查询商品 -->
+	<select id="searchByCategory" parameterType="java.util.List" 
+		resultType="com.lhiot.mall.wholesale.goods.domain.Goods">
+		select <include refid="goodsColumn"/>, <include refid="unitColumn"/>,<include refid="categoryColumn"/>
+		from t_whs_goods t1
+		left join t_whs_goods_unit t2 on t1.base_unit = t2.id
+		left join t_whs_goods_category t3 on t1.category_id = t3.id
+		where t1.category_id in 
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+	
+	<!-- 根据商品编码查询lynn -->
+	<select id="searchByCode" parameterType="String" 
+		resultType="com.lhiot.mall.wholesale.goods.domain.Goods">
+		select <include refid="goodsColumn"/>, <include refid="unitColumn"/>,<include refid="categoryColumn"/>
+		from t_whs_goods t1
+		left join t_whs_goods_unit t2 on t1.base_unit = t2.id
+		left join t_whs_goods_category t3 on t1.category_id = t3.id
+		where t1.category_id = #{0} 
+	</select>
 </mapper>
