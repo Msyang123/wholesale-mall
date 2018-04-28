@@ -1,10 +1,25 @@
 package com.lhiot.mall.wholesale.order.service;
 
+<<<<<<< HEAD
+
+import com.lhiot.mall.wholesale.base.PageQueryObject;
+=======
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.SnowflakeId;
+>>>>>>> sgsl/master
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
+import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
+import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
+<<<<<<< HEAD
+import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.mapper.UserMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+=======
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.service.PayService;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
@@ -18,7 +33,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.util.Arrays;
+>>>>>>> sgsl/master
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -26,6 +43,13 @@ import java.util.List;
 public class OrderService {
     private final OrderMapper orderMapper;
 
+<<<<<<< HEAD
+    private final UserMapper userMapper;
+
+    public OrderService(OrderMapper orderMapper,UserMapper userMapper) {
+        this.orderMapper = orderMapper;
+        this.userMapper = userMapper;
+=======
     private final HaiDingClient hdClient;
 
     private final WeChatUtil weChatUtil;
@@ -41,6 +65,7 @@ public class OrderService {
         this.weChatUtil=new WeChatUtil(paymentProperties);
         this.paymentLogService=paymentLogService;
         this.snowflakeId=snowflakeId;
+>>>>>>> sgsl/master
     }
 
     public List<OrderDetail> searchOrders(OrderDetail orderDetail){
@@ -63,6 +88,9 @@ public class OrderService {
         return orderMapper.searchOrder(orderCode);
     }
 
+<<<<<<< HEAD
+
+=======
     public List<OrderDetail> searchAfterSaleOrder(OrderDetail orderDetail) {
         return orderMapper.searchAfterSaleOrders(orderDetail);
     }
@@ -133,4 +161,5 @@ public class OrderService {
         }
         return 1;
     }
+>>>>>>> sgsl/master
 }

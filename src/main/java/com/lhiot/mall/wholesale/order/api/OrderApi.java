@@ -2,6 +2,14 @@ package com.lhiot.mall.wholesale.order.api;
 
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.common.wrapper.ArrayObject;
+<<<<<<< HEAD
+import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
+import com.lhiot.mall.wholesale.demand.domain.gridparam.DemandGoodsGridParam;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
+import com.lhiot.mall.wholesale.order.domain.OrderGoods;
+import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
+=======
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.order.domain.Distribution;
@@ -9,6 +17,7 @@ import com.lhiot.mall.wholesale.order.domain.DebtOrder;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.service.DebtOrderService;
+>>>>>>> sgsl/master
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.setting.service.SettingService;
@@ -86,6 +95,12 @@ public class OrderApi {
         return ResponseEntity.ok(orderDetail);
     }
 
+<<<<<<< HEAD
+   /* @PostMapping("/order/myOrder/grid")
+    @ApiOperation(value = "新建一个查询，分页查询新品需求", response = PageQueryObject.class)
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) OrderGridParam param) {
+        return ResponseEntity.ok(orderService.pageQuery(param));
+=======
     @GetMapping("/invoice/orders/{userId}")
     @ApiOperation(value = "查询可开发票的订单列表")
     public ResponseEntity<ArrayObject> invoiceOrders(@PathVariable("userId") @NotNull long userId) {
@@ -204,6 +219,12 @@ public class OrderApi {
             throw new ServiceException("订单未支付");
         }
        return ResponseEntity.ok(orderService.cancelPayedOrder(orderDetail));
+>>>>>>> sgsl/master
     }
 
+    @GetMapping("/demandgoods/detail/{id}")
+    @ApiOperation(value = "新品需求详情页面",response = DemandGoodsResult.class)
+    public  ResponseEntity<DemandGoodsResult> demandGoodsDetail(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(orderService.detail(id));
+    }*/
 }
