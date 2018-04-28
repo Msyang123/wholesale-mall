@@ -77,4 +77,13 @@ public class OrderDetail {
     @JsonProperty("proList")
     private List<OrderGoods> orderGoodsList;
 
+    @JsonProperty("shopName")
+    private String shopName;
+
+    @JsonProperty("userName")
+    private String userName;
+
+    @JsonProperty("phone")
+    private String phone;
+
 }

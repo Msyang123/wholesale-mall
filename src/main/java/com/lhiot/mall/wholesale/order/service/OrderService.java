@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.order.service;
 
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -16,6 +17,7 @@ import com.lhiot.mall.wholesale.order.domain.SoldQuantity;
 import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
+import com.lhiot.mall.wholesale.user.mapper.UserMapper;
 import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
 import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
 import com.sgsl.hd.client.HaiDingClient;
@@ -28,6 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderService {
     private final OrderMapper orderMapper;
 
+    private final UserMapper userMapper;
+
     private final HaiDingClient hdClient;
 
     private final WeChatUtil weChatUtil;
@@ -37,8 +41,11 @@ public class OrderService {
     private final SnowflakeId snowflakeId;
 
     @Autowired
-    public OrderService(OrderMapper orderMapper, HaiDingClient hdClient, PaymentLogService paymentLogService, PaymentProperties paymentProperties,SnowflakeId snowflakeId) {
+    public OrderService(OrderMapper orderMapper, HaiDingClient hdClient, PaymentLogService paymentLogService, 
+    		PaymentProperties paymentProperties,SnowflakeId snowflakeId,
+    		UserMapper userMapper) {
         this.orderMapper = orderMapper;
+        this.userMapper = userMapper;
         this.hdClient=hdClient;
         this.weChatUtil=new WeChatUtil(paymentProperties);
         this.paymentLogService=paymentLogService;
