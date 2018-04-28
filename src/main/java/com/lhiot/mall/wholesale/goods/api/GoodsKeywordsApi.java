@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.goods.api;
 
 import java.net.URI;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.ResultObject;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.GoodsKeywords;
+import com.lhiot.mall.wholesale.goods.domain.KeywordsType;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.KeywordsGirdParam;
 import com.lhiot.mall.wholesale.goods.service.GoodsKeywordService;
 
@@ -73,5 +75,11 @@ public class GoodsKeywordsApi {
     @ApiOperation(value = "新建一个查询，分页查询商品关键词", response = ArrayObject.class)
     public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) KeywordsGirdParam param) {
         return ResponseEntity.ok(goodsKeywordService.pageQuery(param));
+    }
+    
+    @GetMapping("/keywords/keyword/{key}")
+    @ApiOperation(value = "根据关键词，查询商品的关键词列表", response = GoodsKeywords.class,responseContainer="list")
+    public ResponseEntity<List<GoodsKeywords>> keywords(@PathVariable("key") String keyword) {
+        return ResponseEntity.ok(goodsKeywordService.keywords(keyword, KeywordsType.goods, null));
     }
 }

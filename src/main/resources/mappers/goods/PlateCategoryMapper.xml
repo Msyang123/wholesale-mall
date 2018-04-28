@@ -2,7 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.lhiot.mall.wholesale.goods.mapper.PlateCategoryMapper">
 	<sql id="pleateCategoryColumn">
-		t1.id,t1.plate_name as plateName,t1.plate_image as plateImage,t1.rank,t1.parent_id as parentId
+		t1.id,t1.plate_name as plateName,t1.plate_image as plateImage,t1.rank,t1.parent_id as parentId,
+		t1.layout
 	</sql>
 	
 	<!-- lynn后台管理 新增2018/4/19 -->
@@ -13,6 +14,7 @@
 				<if test="plateImage != null and plateImage != ''">plate_image,</if>
 				<if test="rank != null and rank != ''">rank,</if>
 				<if test="parentId != null and parentId != ''">parent_id,</if>
+				<if test="layout != null and layout != ''">layout,</if>
 			</trim>
 		)
 		values(
@@ -21,6 +23,7 @@
 				<if test="plateImage != null and plateImage != ''">#{plateImage},</if>
 				<if test="rank != null and rank != ''">#{rank},</if>
 				<if test="parentId != null and parentId != ''">#{parentId},</if>
+				<if test="layout != null and layout != ''">#{layout},</if>
 			</trim>
 		)
 	</insert>
@@ -45,6 +48,9 @@
 			</if>
 			<if test="rank != null and rank != ''">
 				rank = #{rank},
+			</if>
+			<if test="layout != null and layout != ''">
+				layout = #{layout},
 			</if>
 		</trim>
 		where id = #{id}
@@ -119,5 +125,10 @@
 			ORDER BY parent_id,plate_name
 		) src
 		ORDER BY parent_id
+	</select>
+	
+	<!-- 判断是否存在滚动布局 -->
+	<select id="rollongLayout" resultType="Integer">
+		select count(id) from t_whs_plate_category where layout = 'rollingLayout'
 	</select>
 </mapper>

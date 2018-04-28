@@ -1,24 +1,26 @@
 package com.lhiot.mall.wholesale.order.service;
 
-import com.leon.microx.common.exception.ServiceException;
-import com.leon.microx.util.SnowflakeId;
-import com.lhiot.mall.wholesale.order.domain.OrderDetail;
-import com.lhiot.mall.wholesale.order.domain.OrderGoods;
-import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
-import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
-import com.lhiot.mall.wholesale.pay.service.PayService;
-import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
-import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
-import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
-import com.sgsl.hd.client.HaiDingClient;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
+import com.leon.microx.common.exception.ServiceException;
+import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
+import com.lhiot.mall.wholesale.order.domain.OrderGoods;
+import com.lhiot.mall.wholesale.order.domain.SoldQuantity;
+import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
+import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
+import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
+import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
+import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
+import com.sgsl.hd.client.HaiDingClient;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -132,5 +134,23 @@ public class OrderService {
                 break;
         }
         return 1;
+    }
+    
+    /**
+     * 根据规格id统计商品的售卖数量
+     * @param standardIds 规格id,逗号分割
+     * @param degree 系数
+     * @return
+     */
+    public List<SoldQuantity> statisticalSoldQuantity(List<Long> standardIds,int degree){
+    	List<SoldQuantity> soldQuantities = orderMapper.soldQuantity(standardIds);
+    	for(SoldQuantity soldQuantity : soldQuantities){
+    		int count = soldQuantity.getSoldQuantity();
+    		//默认设置商品为1份
+    		count = Objects.isNull(count) ? 1 : count;
+    		//乘以系数
+    		soldQuantity.setSoldQuantity(count*degree);
+    	}
+    	return soldQuantities;
     }
 }

@@ -2,6 +2,8 @@ package com.lhiot.mall.wholesale.order.mapper;
 
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
+import com.lhiot.mall.wholesale.order.domain.SoldQuantity;
+
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -38,4 +40,7 @@ public interface OrderMapper {
      * @return
      */
     int updateOrderStatusByCode(OrderDetail orderDetail);
+    
+    //统计商品的售卖数量，根据商品ids
+    List<SoldQuantity> soldQuantity(List<Long> goodsIds);
 }
