@@ -38,4 +38,12 @@ public interface GoodsMapper {
     List<GoodsInfo> inventoryList(long userId);
 
     List<GoodsInfo> recommendList(long plateId);
+    
+    List<Goods> categoryGoods(Long categoryId);
+    
+    //关键词查询商品
+    List<Goods> keywordGoods(String keyword);
+    
+    //根据版块id查询商品
+    List<Goods> plateGoodses(Long plateId);
 }

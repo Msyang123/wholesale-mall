@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.goods.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -12,15 +13,18 @@ import org.springframework.transaction.annotation.Transactional;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.Goods;
-import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
 import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
 import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
+import com.lhiot.mall.wholesale.goods.domain.GoodsMinPrice;
+import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.GoodsMapper;
+import com.lhiot.mall.wholesale.order.domain.SoldQuantity;
+import com.lhiot.mall.wholesale.order.service.OrderService;
 
 /**GoodsService
  * 商品中心
- * @author yj
+ * @author lynn
  *
  */
 @Service
@@ -28,9 +32,17 @@ import com.lhiot.mall.wholesale.goods.mapper.GoodsMapper;
 public class GoodsService {
 	
 	private final GoodsMapper goodsMapper;
+	private final OrderService orderService;
+	private final GoodsPriceRegionService priceRegionService;
+	private final PlateCategoryService plateCategoryService;
 	@Autowired
-	public GoodsService(GoodsMapper goodsMapper){
+	public GoodsService(GoodsMapper goodsMapper,OrderService orderService,
+			GoodsPriceRegionService priceRegionService,
+			PlateCategoryService plateCategoryService){
 		this.goodsMapper = goodsMapper;
+		this.orderService = orderService;
+		this.priceRegionService = priceRegionService;
+		this.plateCategoryService = plateCategoryService;
 	}
 	
 	/**
@@ -151,5 +163,96 @@ public class GoodsService {
 			}
 		}
 		return success;
+	}
+	
+	/**
+	 * 根据分类查询商品列表
+	 * @param categoryId
+	 * @return
+	 */
+	public List<Goods> findByCategory(Long categoryId){
+		return goodsMapper.categoryGoods(categoryId);
+	}
+	
+	/**
+	 * 根据关键词查询商品列表
+	 * @param keyword 关键词
+	 * @param id 关键词id
+	 * @return
+	 */
+	public List<Goods> findGoodsByKeyword(String keyword,Long id){
+		List<Goods> goodses = goodsMapper.keywordGoods(keyword);
+		if(!goodses.isEmpty()){
+			//计算商品最低价格及售卖数
+			this.minPriceAndSoldQua(goodses, 25);
+		}
+		//排序
+		if(Objects.isNull(id)){
+			return goodses;
+		}
+		int size = goodses.size();
+		Goods goods = null;
+		for(int i=0;i<size;i++){
+			goods = goodses.get(i);
+			if(Objects.equals(id, goods.getKeywordId())){
+				goodses.remove(i);
+				goodses.add(0, goods);
+				break;
+			}
+		}
+		return goodses;
+	}
+	
+	/**
+	 * 获取版块商品
+	 * @param plateId
+	 * @return
+	 */
+	public PlateCategory plateGoods(Long plateId){
+		if(Objects.isNull(plateId)){
+			return null;
+		}
+		PlateCategory plateCategory = plateCategoryService.plateCategory(plateId);
+		List<Goods> plateGoodses = goodsMapper.plateGoodses(plateId);
+		//组装商品的售卖数和最低价格
+		this.minPriceAndSoldQua(plateGoodses,25);
+		plateCategory.setPlateGoods(plateGoodses);
+		return plateCategory;
+	}
+	
+	/**
+	 * 统计商品的销售数量以及商品的最低售价
+	 * @param goodses
+	 */
+	public void minPriceAndSoldQua(List<Goods> goodses,int degree){
+		if(goodses.isEmpty()){
+			return ;
+		}
+		List<Long> ids = new ArrayList<>();
+		goodses.forEach(goods -> {
+			Long goodsId = goods.getId();
+			ids.add(goodsId);
+		});
+		//订单中心获取商品销售数量
+		List<SoldQuantity> soldQuantities = orderService.statisticalSoldQuantity(ids, degree);
+		for(Goods goods : goodses){
+			for(SoldQuantity soldQuantity : soldQuantities){
+				if(Objects.equals(goods.getId(), 
+						soldQuantity.getGoodsId())){
+					goods.setSoldQuantity(soldQuantity.getSoldQuantity());
+				}
+			}
+		}
+		
+		//获取订单的最低售价
+		List<GoodsMinPrice> minPrices = priceRegionService.minPrices(ids);
+		for(Goods goods : goodses){
+			for(GoodsMinPrice minPrice : minPrices){
+				if(Objects.equals(goods.getId(), 
+						minPrice.getGoodsId())){
+					goods.setMinPrice(minPrice.getMinPrice());
+				}
+			}
+		}
 	}
 }

@@ -2,17 +2,19 @@ package com.lhiot.mall.wholesale.goods.service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.common.wrapper.PageObject;
+import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.GoodsKeywords;
+import com.lhiot.mall.wholesale.goods.domain.KeywordsType;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.KeywordsGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.GoodsKeywordsMapper;
 
@@ -74,7 +76,6 @@ public class GoodsKeywordService {
 	 * 分页查询
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	public PageQueryObject pageQuery(KeywordsGirdParam param){
 		int count = goodsKeywordsMapper.pageQueryCount(param);
 		int page = param.getPage();
@@ -95,5 +96,27 @@ public class GoodsKeywordService {
 		result.setRecords(rows);
 		result.setTotal(totalPages);
 		return result;
+	}
+	
+	/**
+	 * 查询商品类型或品类类型的关键词、热搜
+	 * @param keyword 关键词
+	 * @param type 关键词类型
+	 * @param hotSearch 是否为热搜商品
+	 * @return
+	 */
+	public List<GoodsKeywords> keywords(String keyword,KeywordsType type,
+			Boolean hotSearch){
+		String kwType = null;
+		Integer hs = null;
+		if(!Objects.isNull(type)){
+			kwType = type.toString();
+		}
+		if(!Objects.isNull(hotSearch)){
+			hs = hotSearch ? 1 : 0;
+		}
+		Map<String,Object> param = ImmutableMap.of("keyword", keyword, "kwType", kwType, 
+				"hotSearch", hs);
+		return goodsKeywordsMapper.keywords(param);
 	}
 }

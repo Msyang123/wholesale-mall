@@ -8,10 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.common.wrapper.PageObject;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.goods.domain.GoodsMinPrice;
 import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.PriceRegionGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.GoodsPriceRegionMapper;
@@ -98,9 +97,16 @@ public class GoodsPriceRegionService {
 		return result;
 	}
 
-
 	public List<GoodsPriceRegion> selectPriceRegion(long goodsStandardId){
 		return goodsPriceRegionMapper.selectPriceRegion(goodsStandardId);
 	}
 	
+	/**
+	 * 根据商品id查询价格区间中的最低价格
+	 * @param goodsIds
+	 * @return
+	 */
+	public List<GoodsMinPrice> minPrices(List<Long> goodsIds){
+		return goodsPriceRegionMapper.minPrice(goodsIds);
+	}
 }

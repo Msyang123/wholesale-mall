@@ -88,4 +88,19 @@
     <update id="updateOrderStatusByCode" parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
         UPDATE t_whs_order set order_status=#{orderStatus} where order_status=#{currentOrderStaus} and order_code=#{orderCode}
     </update>
+    
+    <!-- 统计商品的售卖数量 -->
+    <select id="soldQuantity" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.order.domain.SoldQuantity">
+    	select t1.goods_id as goodsId,sum(quanity) as soldQuantity
+		from t_whs_order_goods t1
+		left join t_whs_order t2 on t1.order_id = t2.id
+		<trim prefix="where">
+			goods_standard_id in
+			<foreach collection="list" item="item" open="(" separator="," close=")">
+				 #{item}
+			</foreach>
+			and t2.order_status in (3,4,8) and t1.refund_staus = '0'
+		</trim>
+		group by t1.goods_standard_id
+    </select>
 </mapper>

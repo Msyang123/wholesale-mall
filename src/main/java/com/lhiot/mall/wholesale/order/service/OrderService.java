@@ -1,41 +1,28 @@
 package com.lhiot.mall.wholesale.order.service;
 
-<<<<<<< HEAD
 
-import com.lhiot.mall.wholesale.base.PageQueryObject;
-=======
-import com.leon.microx.common.exception.ServiceException;
-import com.leon.microx.util.SnowflakeId;
->>>>>>> sgsl/master
-import com.lhiot.mall.wholesale.order.domain.OrderDetail;
-import com.lhiot.mall.wholesale.order.domain.OrderGoods;
-import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
-import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
-import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
-<<<<<<< HEAD
-import com.lhiot.mall.wholesale.user.domain.User;
-import com.lhiot.mall.wholesale.user.mapper.UserMapper;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
-import java.util.ArrayList;
-=======
-import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
-import com.lhiot.mall.wholesale.pay.service.PayService;
-import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
-import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
-import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
-import com.sgsl.hd.client.HaiDingClient;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.util.Arrays;
->>>>>>> sgsl/master
-import java.util.List;
-import java.util.Objects;
+import com.leon.microx.common.exception.ServiceException;
+import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
+import com.lhiot.mall.wholesale.order.domain.OrderGoods;
+import com.lhiot.mall.wholesale.order.domain.SoldQuantity;
+import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
+import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
+import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
+import com.lhiot.mall.wholesale.user.mapper.UserMapper;
+import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
+import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
+import com.sgsl.hd.client.HaiDingClient;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -43,13 +30,8 @@ import java.util.Objects;
 public class OrderService {
     private final OrderMapper orderMapper;
 
-<<<<<<< HEAD
     private final UserMapper userMapper;
 
-    public OrderService(OrderMapper orderMapper,UserMapper userMapper) {
-        this.orderMapper = orderMapper;
-        this.userMapper = userMapper;
-=======
     private final HaiDingClient hdClient;
 
     private final WeChatUtil weChatUtil;
@@ -59,13 +41,15 @@ public class OrderService {
     private final SnowflakeId snowflakeId;
 
     @Autowired
-    public OrderService(OrderMapper orderMapper, HaiDingClient hdClient, PaymentLogService paymentLogService, PaymentProperties paymentProperties,SnowflakeId snowflakeId) {
+    public OrderService(OrderMapper orderMapper, HaiDingClient hdClient, PaymentLogService paymentLogService, 
+    		PaymentProperties paymentProperties,SnowflakeId snowflakeId,
+    		UserMapper userMapper) {
         this.orderMapper = orderMapper;
+        this.userMapper = userMapper;
         this.hdClient=hdClient;
         this.weChatUtil=new WeChatUtil(paymentProperties);
         this.paymentLogService=paymentLogService;
         this.snowflakeId=snowflakeId;
->>>>>>> sgsl/master
     }
 
     public List<OrderDetail> searchOrders(OrderDetail orderDetail){
@@ -88,9 +72,6 @@ public class OrderService {
         return orderMapper.searchOrder(orderCode);
     }
 
-<<<<<<< HEAD
-
-=======
     public List<OrderDetail> searchAfterSaleOrder(OrderDetail orderDetail) {
         return orderMapper.searchAfterSaleOrders(orderDetail);
     }
@@ -161,5 +142,22 @@ public class OrderService {
         }
         return 1;
     }
->>>>>>> sgsl/master
+    
+    /**
+     * 根据规格id统计商品的售卖数量
+     * @param standardIds 规格id,逗号分割
+     * @param degree 系数
+     * @return
+     */
+    public List<SoldQuantity> statisticalSoldQuantity(List<Long> standardIds,int degree){
+    	List<SoldQuantity> soldQuantities = orderMapper.soldQuantity(standardIds);
+    	for(SoldQuantity soldQuantity : soldQuantities){
+    		int count = soldQuantity.getSoldQuantity();
+    		//默认设置商品为1份
+    		count = Objects.isNull(count) ? 1 : count;
+    		//乘以系数
+    		soldQuantity.setSoldQuantity(count*degree);
+    	}
+    	return soldQuantities;
+    }
 }

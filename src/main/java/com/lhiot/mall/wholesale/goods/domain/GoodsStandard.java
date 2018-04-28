@@ -69,6 +69,12 @@ public class GoodsStandard {
 	@ApiModelProperty(notes="商品规格单位名称",dataType="String")
 	private String goodsPrice;
 
+	@ApiModelProperty(notes="进货价",dataType="Integer")
+	private Integer purchasePrice;
+	
+	@ApiModelProperty(notes="进货价 展示字段",dataType="String")
+	private String pprice;
+	
 	@ApiModelProperty(notes="商品价格区间",dataType="List")
 	private List<GoodsPriceRegion> goodsPriceRegionList;
 	
