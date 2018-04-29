@@ -30,8 +30,8 @@ public class OrderRefundApplicationService {
         return this.orderRefundApplicationMapper.updateById(orderRefundApplication);
     }
 
-    public List<OrderRefundApplication> orderRefundApplicationList(OrderRefundApplication orderRefundApplication){
-        return this.orderRefundApplicationMapper.orderRefundApplicationList(orderRefundApplication);
+    public List<OrderRefundApplication> orderRefundApplicationList(long userId){
+        return this.orderRefundApplicationMapper.orderRefundApplicationList(userId);
     }
 
 }

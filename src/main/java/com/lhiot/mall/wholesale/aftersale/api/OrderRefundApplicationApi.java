@@ -44,12 +44,12 @@ public class OrderRefundApplicationApi {
         return ResponseEntity.ok(orderRefundApplicationService.updateById(orderRefundApplication));
     }
 
-    @PostMapping("/list")
+    @PostMapping("/list/{userId}")
     @ApiOperation(value = "售后申请列表")
-    public ResponseEntity<ArrayObject> orderRefundApplicationList(@RequestBody OrderRefundApplication orderRefundApplication) {
-        List<OrderRefundApplication> orderRefundApplicationList = orderRefundApplicationService.orderRefundApplicationList(orderRefundApplication);
+    public ResponseEntity<ArrayObject> orderRefundApplicationList(@PathVariable long userId) {
+        List<OrderRefundApplication> orderRefundApplicationList = orderRefundApplicationService.orderRefundApplicationList(userId);
         for (OrderRefundApplication orderRefund : orderRefundApplicationList) {
-            OrderDetail orderDetail = orderService.searchOrder(orderRefundApplication.getOrderId());
+            OrderDetail orderDetail = orderService.searchOrder(orderRefund.getOrderId());
              List<OrderGoods> orderGoodsList =orderService.searchOrderGoods(orderDetail.getId());
             orderRefund.setOrderGoodsList(orderGoodsList);
         }

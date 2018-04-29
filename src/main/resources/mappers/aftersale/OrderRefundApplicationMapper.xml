@@ -50,7 +50,7 @@
         </set>
         where id=#{id}
     </update>
-    <select id="orderRefundApplicationList" parameterType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication"
+    <select id="orderRefundApplicationList" parameterType="long"
             resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
         select * from t_whs_order_refund_application
         <where>
