@@ -15,9 +15,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import java.net.URI;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
-@Api
+@Api(description = "新品需求接口")
 @Slf4j
 @RestController
 public class IntroductionApi {
@@ -41,19 +44,13 @@ public class IntroductionApi {
         return ResponseEntity.ok(introductionService.pageQuery(param));
     }
 
-    @PutMapping("/introduction/{id}")
-    @ApiOperation(value = "根据ID修改服务协议", response = Introduction.class)
-    public ResponseEntity<?> modify(@PathVariable("id") Long id, @RequestBody Introduction introduction) {
-        if (introductionService.update(introduction)) {
-            return ResponseEntity.ok(introduction);
-        }
-        return ResponseEntity.badRequest().body(ResultObject.of("修改失败"));
-    }
-
-    @PostMapping("/introduction/addorupdate")
+    @PutMapping("/introduction/addorupdate")
     @ApiOperation("新增/修改服务协议")
     public ResponseEntity saveAddress(@RequestBody Introduction introduction) {
-        if (introductionService.saveOrUpdateIntroduction(introduction)) {
+        introduction.setCreateTime(new Timestamp(new Date().getTime()));
+        //FIXME 修改为登录用户
+        introduction.setCreatePerson("张三");
+        if (introductionService.saveOrUpdateIntroduction(introduction)>0) {
             return ResponseEntity.ok(introduction);
         }
         return ResponseEntity.badRequest().body("添加失败");

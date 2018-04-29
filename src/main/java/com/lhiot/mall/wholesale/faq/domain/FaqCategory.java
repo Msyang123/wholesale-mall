@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+
+import java.sql.Timestamp;
 import java.util.List;
 
 @Data
@@ -24,4 +26,9 @@ public class FaqCategory {
     @JsonProperty("faqList")
     private List<Faq> faqList;
 
+    @JsonProperty("faqCategoryCreateTime")
+    private Timestamp createTime;
+
+    @JsonProperty("faqCategoryCreatePerson")
+    private String createPerson;
 }

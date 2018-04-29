@@ -38,7 +38,7 @@ public class DemandGoodsGridParam extends PageObject {
     @ApiModelProperty(notes="每页行数",dataType="Integer")
     private Integer rows;
 
-    @ApiModelProperty(notes="索引",dataType="String")
+    @ApiModelProperty(notes="排序字段",dataType="String")
     private String sidx;
 
     @ApiModelProperty(notes="排序",dataType="String")

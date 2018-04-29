@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 
-@Api
+@Api(description = "新品需求接口")
 @Slf4j
 @RestController
 public class DemandGoodsApi {

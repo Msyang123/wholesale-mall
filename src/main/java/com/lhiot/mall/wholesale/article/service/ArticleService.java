@@ -1,51 +1,47 @@
-package com.lhiot.mall.wholesale.introduction.service;
+package com.lhiot.mall.wholesale.article.service;
 
 import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.article.domain.Article;
+import com.lhiot.mall.wholesale.article.domain.gridparam.ArticleGridParam;
+import com.lhiot.mall.wholesale.article.mapper.ArticleMapper;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
-import com.lhiot.mall.wholesale.demand.domain.gridparam.DemandGoodsGridParam;
-import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.introduction.domain.Introduction;
 import com.lhiot.mall.wholesale.introduction.domain.gridparam.IntroductionGridParam;
 import com.lhiot.mall.wholesale.introduction.mapper.IntroductionMapper;
-import com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle;
-import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 @Service
 @Transactional
-public class IntroductionService {
+public class ArticleService {
 
 
     private final SnowflakeId snowflakeId;
 
-    private final IntroductionMapper introductionMapper;
+    private final ArticleMapper articleMapper;
 
 
     @Autowired
-    public IntroductionService(IntroductionMapper introductionMapper, SnowflakeId snowflakeId) {
-        this.introductionMapper = introductionMapper;
+    public ArticleService(ArticleMapper articleMapper, SnowflakeId snowflakeId) {
+        this.articleMapper = articleMapper;
         this.snowflakeId = snowflakeId;
     }
 
 
-    public Introduction introduction(long id) {
-        return introductionMapper.select(id);
+    public Article article(long id) {
+        return articleMapper.select(id);
     }
 
     /**
      * 分页查询
      * @return
      */
-    public PageQueryObject pageQuery(IntroductionGridParam param){
-        int count = introductionMapper.pageQueryCount(param);
+    public PageQueryObject pageQuery(ArticleGridParam param){
+        int count = articleMapper.pageQueryCount(param);
         int page = param.getPage();
         int rows = param.getRows();
         //起始行
@@ -57,7 +53,7 @@ public class IntroductionService {
             param.setPage(page);
             param.setStart(0);
         }
-        List<Introduction> introductionList = introductionMapper.pageQuery(param);
+        List<Article> introductionList = articleMapper.pageQuery(param);
         PageQueryObject result = new PageQueryObject();
         result.setRows(introductionList);
         result.setPage(page);
@@ -67,11 +63,12 @@ public class IntroductionService {
     }
 
     //新增/修改服务协议
-    public int saveOrUpdateIntroduction(Introduction introduction) {
-        if (introduction.getId()>0){
-            return introductionMapper.insertIntroduction(introduction);
+    public int saveOrUpdateArticle(Article article) {
+        if (article.getId()>0){
+            return articleMapper.updateArticle(article);
         }else {
-            return introductionMapper.updateIntroduction(introduction);
+            article.setId(articleMapper.pageQueryCount()+1);
+            return articleMapper.insertArticle(article);
         }
     }
 

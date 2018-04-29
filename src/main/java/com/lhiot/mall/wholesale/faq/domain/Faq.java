@@ -29,7 +29,7 @@ public class Faq {
     private String content;
 
     @JsonProperty("rankNum")
-    private String rankNum;
+    private Integer rankNum;
 
     @JsonProperty("linkUrl")
     private String linkUrl;
@@ -37,5 +37,9 @@ public class Faq {
     @JsonProperty("createTime")
     private Timestamp createTime;
 
+    @JsonProperty("createPerson")
+    private String createPerson;
 
+    @JsonProperty("faqCategoryName")
+    private String faqCategoryName;
 }

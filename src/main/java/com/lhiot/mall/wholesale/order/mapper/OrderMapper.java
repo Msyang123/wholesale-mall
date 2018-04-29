@@ -21,13 +21,6 @@ public interface OrderMapper {
 
     OrderDetail searchOrder(String orderCode);
 
-<<<<<<< HEAD
-    //后台管理--分页查询新品需求
-    List<OrderGridResult> pageQuery(OrderGridParam param);
-
-    //后台管理--查询分类的总记录数
-    int pageQueryCount(OrderGridParam param);
-=======
     List<OrderDetail> searchAfterSaleOrders(OrderDetail orderDetail);
 
     /**
@@ -49,5 +42,4 @@ public interface OrderMapper {
      * @return
      */
     int updateOrderStatusByCode(OrderDetail orderDetail);
->>>>>>> sgsl/master
 }

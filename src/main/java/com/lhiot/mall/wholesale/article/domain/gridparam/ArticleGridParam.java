@@ -1,4 +1,4 @@
-package com.lhiot.mall.wholesale.introduction.domain.gridparam;
+package com.lhiot.mall.wholesale.article.domain.gridparam;
 
 import com.leon.microx.common.wrapper.PageObject;
 import io.swagger.annotations.ApiModel;
@@ -12,7 +12,12 @@ import lombok.ToString;
 @Data
 @ToString
 @ApiModel
-public class IntroductionGridParam extends PageObject {
+public class ArticleGridParam extends PageObject {
+    @ApiModelProperty(notes="文章标题",dataType="String")
+    private String articleTitle;
+
+    @ApiModelProperty(notes="文章类别",dataType="String")
+    private Integer articleType;
 
     @ApiModelProperty(notes="分页查询开始页面",dataType="Integer")
     private Integer start;
@@ -28,6 +33,4 @@ public class IntroductionGridParam extends PageObject {
 
     @ApiModelProperty(notes="排序",dataType="String")
     private String sord;
-
-
 }
