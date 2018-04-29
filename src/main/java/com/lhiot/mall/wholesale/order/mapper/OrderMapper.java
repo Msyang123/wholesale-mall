@@ -1,10 +1,14 @@
 package com.lhiot.mall.wholesale.order.mapper;
 
-import com.lhiot.mall.wholesale.order.domain.OrderDetail;
-import com.lhiot.mall.wholesale.order.domain.OrderGoods;
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 
-import java.util.List;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
+import com.lhiot.mall.wholesale.order.domain.OrderGoods;
+import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
+import com.lhiot.mall.wholesale.order.domain.SoldQuantity;
+import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 
 @Mapper
 public interface OrderMapper {
@@ -17,6 +21,12 @@ public interface OrderMapper {
 
     OrderDetail searchOrder(String orderCode);
 
+    //后台管理--分页查询新品需求
+    List<OrderGridResult> pageQuery(OrderGridParam param);
+
+    //后台管理--查询分类的总记录数
+    int pageQueryCount(OrderGridParam param);
+    
     List<OrderDetail> searchAfterSaleOrders(OrderDetail orderDetail);
 
     /**
@@ -38,4 +48,7 @@ public interface OrderMapper {
      * @return
      */
     int updateOrderStatusByCode(OrderDetail orderDetail);
+    
+    //统计商品的售卖数量，根据商品ids
+    List<SoldQuantity> soldQuantity(List<Long> goodsIds);
 }

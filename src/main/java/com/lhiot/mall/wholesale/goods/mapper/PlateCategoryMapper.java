@@ -28,4 +28,7 @@ public interface PlateCategoryMapper {
     List<PlateCategory> pageQuery(PlateGirdParam plateGirdParam);
     //查询分类的总记录数
     int pageQueryCount();
+    
+    //判断是否存在滚动布局的版块
+    int rollongLayout();
 }

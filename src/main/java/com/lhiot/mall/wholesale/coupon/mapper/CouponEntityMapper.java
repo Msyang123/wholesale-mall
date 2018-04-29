@@ -4,25 +4,28 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.lhiot.mall.wholesale.coupon.domain.CouponEntityResult;
 import com.lhiot.mall.wholesale.coupon.domain.CouponEntity;
-import com.lhiot.mall.wholesale.coupon.domain.CouponEntityParam;
+import com.lhiot.mall.wholesale.coupon.domain.UserCouponParam;
 import com.lhiot.mall.wholesale.coupon.domain.gridparam.CouponGridParam;
 
 @Mapper
 public interface CouponEntityMapper {
 
-    int insert(CouponEntityParam couponEntityParam);
+    int insert(CouponEntity couponEntityParam);
 
-    int insertBatch(List<CouponEntityParam> couponEntityParams);
+    int insertBatch(List<CouponEntity> couponEntityParams);
     
-    int update(CouponEntityParam couponEntityParam);
+    int update(CouponEntity couponEntityParam);
     
     void removeInbatch(List<Long> ids);
     
-    CouponEntity select(long id);
+    CouponEntityResult select(long id);
     
     //分页查询分类
-    List<CouponEntity> pageQuery(CouponGridParam couponGridParam);
+    List<CouponEntityResult> pageQuery(CouponGridParam couponGridParam);
     //查询分类的总记录数
     int pageQueryCount(CouponGridParam couponGridParams);
+    //查询用户的优惠券列表
+    List<CouponEntity> searchByUser(UserCouponParam userCouponParam);
 }

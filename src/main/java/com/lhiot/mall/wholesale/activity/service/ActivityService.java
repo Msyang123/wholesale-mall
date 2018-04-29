@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.activity.domain.Activity;
 import com.lhiot.mall.wholesale.activity.domain.ActivityType;
@@ -168,7 +170,20 @@ public class ActivityService {
 	 * @return
 	 * @param type
 	 */
-	public Activity findActivityByType(ActivityType type){
+	public Activity currentActivity(ActivityType type){
 		return activityMapper.currentActivity(type.toString());
 	}
+	
+	/**
+	 * 查询下期开启的活动
+	 * @param type
+	 * @return
+	 */
+	public Activity nextActivity(ActivityType type){
+		Activity curActivity = this.currentActivity(type);
+		Map<String,Object> param = ImmutableMap.of("activityType", ActivityType.flashsale.toString(),
+				"time", curActivity.getEndTime());
+		return activityMapper.nextActivity(param);
+	}
+	
 }

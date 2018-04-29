@@ -1,19 +1,10 @@
 package com.lhiot.mall.wholesale.invoice.api;
 
-<<<<<<< HEAD
-import com.leon.microx.common.wrapper.ArrayObject;
-=======
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
->>>>>>> sgsl/master
 import com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.service.OrderService;
-<<<<<<< HEAD
-=======
-import com.lhiot.mall.wholesale.user.domain.User;
-import com.lhiot.mall.wholesale.user.domain.UserAddress;
->>>>>>> sgsl/master
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -23,15 +14,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
-<<<<<<< HEAD
-import java.util.ArrayList;
-=======
 import java.math.BigDecimal;
-import java.sql.Timestamp;
->>>>>>> sgsl/master
 import java.util.List;
 
-@Api
+@Api(description ="开票接口")
 @Slf4j
 @RestController
 public class InvoiceApi {

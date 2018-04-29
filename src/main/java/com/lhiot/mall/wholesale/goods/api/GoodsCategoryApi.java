@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.goods.api;
 
 import java.net.URI;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -94,5 +95,11 @@ public class GoodsCategoryApi {
     @ApiOperation(value = "查询商品分类是否可以被修改或新增")
     public ResponseEntity<Boolean> tryoperation(@RequestBody(required = true) GoodsCategory goodsCategory) {
         return ResponseEntity.ok(goodsCategoryService.allowOperation(goodsCategory));
+    }
+	
+	@GetMapping("/goodscategory/child")
+    @ApiOperation(value = "查询商品某个分类下的子分类")
+    public ResponseEntity<List<GoodsCategory>> parentCategory(@RequestParam(required = false) Long parentId) {
+        return ResponseEntity.ok(goodsCategoryService.findCategories(parentId));
     }
 }

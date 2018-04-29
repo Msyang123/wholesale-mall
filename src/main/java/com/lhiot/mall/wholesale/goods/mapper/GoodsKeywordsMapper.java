@@ -24,4 +24,6 @@ public interface GoodsKeywordsMapper {
     List<GoodsKeywords> pageQuery(KeywordsGirdParam param);
     
     int pageQueryCount(KeywordsGirdParam param);
+    
+    List<GoodsKeywords> keywords(Map<String,Object> map);
 }

@@ -2,16 +2,14 @@ package com.lhiot.mall.wholesale.user.api;
 
 
 import com.leon.microx.common.exception.ServiceException;
-import com.lhiot.mall.wholesale.user.domain.SearchUser;
-import com.lhiot.mall.wholesale.user.service.UserService;
-import com.lhiot.mall.wholesale.user.wechat.*;
-
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
+import com.lhiot.mall.wholesale.user.domain.SearchUser;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
-
+import com.lhiot.mall.wholesale.user.service.UserService;
+import com.lhiot.mall.wholesale.user.wechat.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -19,17 +17,16 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
-import java.net.URI;
 import java.text.MessageFormat;
 import java.util.HashMap;
-import org.springframework.util.CollectionUtils;
-
-import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 
@@ -45,12 +42,14 @@ public class UserApi {
 
     private final SalesUserService salesUserService;
 
+    private final RestTemplate restTemplate;
 
     @Autowired
-    public UserApi(UserService userService,SalesUserService salesUserService,PaymentProperties properties) {
+    public UserApi(UserService userService,SalesUserService salesUserService,PaymentProperties properties,RestTemplate restTemplate) {
         this.userService = userService;
         this.salesUserService = salesUserService;
         this.weChatUtil = new WeChatUtil(properties);
+        this.restTemplate=restTemplate;
     }
 
     /*@PostMapping("/user")
@@ -238,11 +237,9 @@ public class UserApi {
             @ApiImplicitParam(paramType = "path", name = "phone", value = "手机号", required = true, dataType = "String")
     })
     public ResponseEntity verificationCode(@PathVariable("phone") String phone){
-        int code=weChatUtil.buildRandom(4);
         //发送验证码到第三方推送服务器
-        String sendResult=weChatUtil.httpsRequest("http://","GET","");
-        //FIXME 存redis用于注册验证对错
-
+        String sendMessageUrl=MessageFormat.format(weChatUtil.getProperties().getSendMessageUrl(),phone,"sigup");
+        restTemplate.postForObject(sendMessageUrl,null,Map.class);
         return ResponseEntity.ok(phone);
     }
 
@@ -250,11 +247,15 @@ public class UserApi {
     @ApiOperation("用户注册")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "body", name = "user", value = "注册用户数据", required = true, dataType = "User"),
-            @ApiImplicitParam(paramType = "query", name = "code", value = "业务员邀请码", required = true, dataType = "String")
+            @ApiImplicitParam(paramType = "query", name = "code", value = "业务员邀请码", required = true, dataType = "String"),
+            @ApiImplicitParam(paramType = "query", name = "verifCode", value = "手机验证码", required = true, dataType = "String")
     })
-    public ResponseEntity register(@RequestBody @NotNull User user, @RequestParam("code") String code) {
+    public ResponseEntity register(@RequestBody @NotNull User user, @RequestParam("code") String code,@RequestParam("verifCode") String verifCode) {
 
         try {
+            String redisKey=user.getPhone() + ":user:register";
+            //TODO 需要通过redis客户端获取验证码code 然后比较传递的code与redis中存储的是否一致
+
             if (userService.register(user, code)) {
                 return ResponseEntity.ok().build();
             }

@@ -1,12 +1,12 @@
 package com.lhiot.mall.wholesale.goods.domain;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
+
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @ApiModel

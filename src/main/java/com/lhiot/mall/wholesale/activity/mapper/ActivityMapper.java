@@ -1,11 +1,11 @@
 package com.lhiot.mall.wholesale.activity.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
 import com.lhiot.mall.wholesale.activity.domain.Activity;
-import com.lhiot.mall.wholesale.activity.domain.ActivityType;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 
 @Mapper
@@ -29,4 +29,7 @@ public interface ActivityMapper {
     
     //查询当前开启的活动
     Activity currentActivity(String type);
+    
+    //查询下期开启的活动
+    Activity nextActivity(Map<String,Object> map);
 }

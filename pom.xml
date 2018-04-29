@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -46,11 +46,11 @@
 			<optional>true</optional>
 		</dependency>
 		<!-- utils -->
-        <dependency>
-            <groupId>com.leon.microx.util</groupId>
-            <artifactId>microx-utils</artifactId>
-            <version>20180323</version>
-        </dependency>
+		<dependency>
+			<groupId>com.leon.microx.util</groupId>
+			<artifactId>microx-utils</artifactId>
+			<version>20180323</version>
+		</dependency>
 		<!-- web -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -85,15 +85,15 @@
 			<version>0.0.4-SNAPSHOT</version>
 		</dependency>
 		<!--<dependency>-->
-			<!--<groupId>com.baomidou</groupId>-->
-			<!--<artifactId>mybatis-plus-boot-starter</artifactId>-->
-			<!--<version>LATEST</version>-->
-			<!--<exclusions>-->
-				<!--<exclusion>-->
-					<!--<artifactId>tomcat-jdbc</artifactId>-->
-					<!--<groupId>org.apache.tomcat</groupId>-->
-				<!--</exclusion>-->
-			<!--</exclusions>-->
+		<!--<groupId>com.baomidou</groupId>-->
+		<!--<artifactId>mybatis-plus-boot-starter</artifactId>-->
+		<!--<version>LATEST</version>-->
+		<!--<exclusions>-->
+		<!--<exclusion>-->
+		<!--<artifactId>tomcat-jdbc</artifactId>-->
+		<!--<groupId>org.apache.tomcat</groupId>-->
+		<!--</exclusion>-->
+		<!--</exclusions>-->
 		<!--</dependency>-->
 
 		<!-- swagger -->

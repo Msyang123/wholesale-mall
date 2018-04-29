@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.lhiot.mall.wholesale.advertise.mapper.FlasesaleMapper">
+<mapper namespace="com.lhiot.mall.wholesale.activity.mapper.FlashsaleMapper">
 	
 	<sql id="flashsaleColumn">
-		id,activity_id as activityId ,goods_standard_id as goodsStandardId,special_price as specialPrice,goodsStock,
-		limit_quantity as limitQuantity,rank_num as rankNum
+		id,activity_id as activityId ,goods_standard_id as goodsStandardId,special_price as specialPrice,
+		goods_stock as goodsStock,limit_quantity as limitQuantity,rank_num as rankNum
 	</sql>
 	
 	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.activity.domain.FlashActivity">
@@ -49,14 +49,25 @@
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
 	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam" 
-		resultType="com.lhiot.mall.wholesale.activity.domain.FlasesaleGoods">
+		resultType="com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods">
 		select <include refid="flashsaleColumn"/> from t_whs_flashsale_goods where activity_id = #{0}
 		<include refid="common.pager"></include>
 	</select>
 
 	<!-- lynn 2018/4/19 -->
-	<select id="search" parameterType="Long" resultType="com.lhiot.mall.wholesale.activity.domain.FlashActivity">
+	<select id="search" parameterType="Long" resultType="com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods">
 		select <include refid="flashsaleColumn"/> from t_whs_flashsale_goods where activity_id = #{0}
 	</select>
 
+	<select id="flashGoodsRecord" parameterType="Long" resultType="Integer">
+		SELECT SUM(buy_count) FROM t_whs_flashsale_goods_record WHERE flashsale_goods_id = #{0}
+	</select>
+	
+	<!-- lynn 查询用户的已抢购数 -->
+	<select id="userRecord" parameterType="map" resultType="Integer">
+		SELECT COUNT(t1.id) 
+		FROM t_whs_flashsale_goods_record t1
+		LEFT JOIN t_whs_flashsale_goods t2 ON t1.flashsale_goods_id = t2.id
+		WHERE t1.user_id = #{userId}  and t2.activity_id = #{activityId}
+	</select>
 </mapper>

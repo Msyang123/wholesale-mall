@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.CategoryTree;
-import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
+import com.lhiot.mall.wholesale.goods.domain.LayoutType;
 import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.PlateGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.PlateCategoryMapper;
@@ -41,6 +41,9 @@ public class PlateCategoryService {
 	 * @return
 	 */
 	public boolean create(PlateCategory plateCategory){
+		if(this.existRollingLayout()){
+			plateCategory.setLayout(LayoutType.tilesLayout.toString());
+		}
 		return plateCategoryMapper.insert(plateCategory)>0;
 	}
 	
@@ -63,6 +66,9 @@ public class PlateCategoryService {
 	 * @return
 	 */
 	public boolean update(PlateCategory plateCategory){
+		if(this.existRollingLayout()){
+			plateCategory.setLayout(LayoutType.tilesLayout.toString());
+		}
 		return plateCategoryMapper.update(plateCategory)>0;
 	}
 	
@@ -144,5 +150,14 @@ public class PlateCategoryService {
 			}
 		}
 		return result.substring(result.indexOf(',')+1, result.length());
+	}
+	
+	/**
+	 * 用于后台管理是否存在滚动布局
+	 * @return
+	 */
+	public boolean existRollingLayout(){
+		int count = plateCategoryMapper.rollongLayout();
+		return count>0;
 	}
 }

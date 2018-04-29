@@ -21,7 +21,7 @@ public interface GoodsCategoryMapper {
 
     List<GoodsCategory> search(List<Long> ids);
     
-    List<GoodsCategory> searchAll();
+    List<GoodsCategory> searchAll(Long parentId);
     
     List<GoodsCategory> findTree();
     

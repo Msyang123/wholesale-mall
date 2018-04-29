@@ -1,30 +1,36 @@
 package com.lhiot.mall.wholesale.order.service;
 
-import com.leon.microx.common.exception.ServiceException;
-import com.leon.microx.util.SnowflakeId;
-import com.lhiot.mall.wholesale.order.domain.OrderDetail;
-import com.lhiot.mall.wholesale.order.domain.OrderGoods;
-import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
-import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
-import com.lhiot.mall.wholesale.pay.service.PayService;
-import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
-import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
-import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
-import com.sgsl.hd.client.HaiDingClient;
-import lombok.extern.slf4j.Slf4j;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
+import com.leon.microx.common.exception.ServiceException;
+import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
+import com.lhiot.mall.wholesale.order.domain.OrderGoods;
+import com.lhiot.mall.wholesale.order.domain.SoldQuantity;
+import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
+import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
+import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
+import com.lhiot.mall.wholesale.user.mapper.UserMapper;
+import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
+import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
+import com.sgsl.hd.client.HaiDingClient;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 @Transactional
 public class OrderService {
     private final OrderMapper orderMapper;
+
+    private final UserMapper userMapper;
 
     private final HaiDingClient hdClient;
 
@@ -35,8 +41,11 @@ public class OrderService {
     private final SnowflakeId snowflakeId;
 
     @Autowired
-    public OrderService(OrderMapper orderMapper, HaiDingClient hdClient, PaymentLogService paymentLogService, PaymentProperties paymentProperties,SnowflakeId snowflakeId) {
+    public OrderService(OrderMapper orderMapper, HaiDingClient hdClient, PaymentLogService paymentLogService, 
+    		PaymentProperties paymentProperties,SnowflakeId snowflakeId,
+    		UserMapper userMapper) {
         this.orderMapper = orderMapper;
+        this.userMapper = userMapper;
         this.hdClient=hdClient;
         this.weChatUtil=new WeChatUtil(paymentProperties);
         this.paymentLogService=paymentLogService;
@@ -99,7 +108,7 @@ public class OrderService {
         return orderMapper.updateOrderStatusByCode(orderDetail);
     }
     /**
-     * 取消已支付订单
+     * 取消已支付订单 需要调用仓库取消掉订单
      * @param orderDetail
      * @return
      */
@@ -114,7 +123,7 @@ public class OrderService {
         switch (orderDetail.getOrderType()) {
             //1货到付款
             case 1:
-
+                //直接取消掉订单就可以了
                 break;
             //0 线上支付
             case 0:
@@ -122,6 +131,8 @@ public class OrderService {
                 //退款 如果微信支付就微信退款
                 try {
                     weChatUtil.refund(paymentLog.getTransactionId(), paymentLog.getTotalFee());
+
+                    //TODO 写入退款记录  t_whs_refund_log
                 } catch (Exception e) {
                     throw new ServiceException("微信退款失败，请联系客服");
                 }
@@ -130,5 +141,23 @@ public class OrderService {
                 break;
         }
         return 1;
+    }
+    
+    /**
+     * 根据规格id统计商品的售卖数量
+     * @param standardIds 规格id,逗号分割
+     * @param degree 系数
+     * @return
+     */
+    public List<SoldQuantity> statisticalSoldQuantity(List<Long> standardIds,int degree){
+    	List<SoldQuantity> soldQuantities = orderMapper.soldQuantity(standardIds);
+    	for(SoldQuantity soldQuantity : soldQuantities){
+    		int count = soldQuantity.getSoldQuantity();
+    		//默认设置商品为1份
+    		count = Objects.isNull(count) ? 1 : count;
+    		//乘以系数
+    		soldQuantity.setSoldQuantity(count*degree);
+    	}
+    	return soldQuantities;
     }
 }
