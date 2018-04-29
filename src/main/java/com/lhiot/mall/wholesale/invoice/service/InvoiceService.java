@@ -62,4 +62,9 @@ public class InvoiceService {
     public int updateInvoiceByCode(Invoice invoice){
         return invoiceMapper.updateInvoiceByCode(invoice);
     }
+
+
+    public List<Invoice> list(Invoice invoice){
+        return this.invoiceMapper.list(invoice);
+    }
 }

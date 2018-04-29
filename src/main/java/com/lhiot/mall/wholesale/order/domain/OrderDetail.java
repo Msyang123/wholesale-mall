@@ -26,11 +26,8 @@ public class OrderDetail {
     @JsonProperty("salesmanId")
     private long salesmanId;
 
-    @JsonProperty("needPay")
-    private Integer orderNeedFee;
-
     @JsonProperty("payType")
-    private Integer orderType;
+    private Integer settlementType;
 
     @JsonProperty("status")
     private Integer orderStatus;
@@ -45,10 +42,10 @@ public class OrderDetail {
     private String createTime;
 
     @JsonProperty("total")
-    private Integer total;
+    private Integer totalFee;
 
     @JsonProperty("couponVal")
-    private Integer orderDiscountFee;
+    private Integer discountFee;
 
     @JsonProperty("userId")
     private long userId;
@@ -63,13 +60,13 @@ public class OrderDetail {
     private Timestamp afterSaleTime;
 
     @JsonProperty("hdStatus")
-    private int hdStatus;//发送订单到海鼎是否成功0成功1失败
+    private Integer hdStatus;//发送订单到海鼎是否成功0成功1失败
 
     @JsonProperty("deliveryTime")
     private Timestamp deliveryTime;
 
     @JsonProperty("deliveryFee")
-    private int deliveryFee;
+    private Integer deliveryFee;
 
     @JsonProperty("deliveryAddress")
     private String deliveryAddress;
@@ -85,5 +82,8 @@ public class OrderDetail {
 
     @JsonProperty("phone")
     private String phone;
+
+    @JsonProperty("payableFee")
+    private  Integer payableFee;
 
 }

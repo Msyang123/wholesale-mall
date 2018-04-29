@@ -120,7 +120,7 @@ public class OrderService {
 
        //FIXME 查询支付日志
 
-        switch (orderDetail.getOrderType()) {
+        switch (orderDetail.getSettlementType()) {
             //1货到付款
             case 1:
                 //直接取消掉订单就可以了
@@ -159,5 +159,9 @@ public class OrderService {
     		soldQuantity.setSoldQuantity(count*degree);
     	}
     	return soldQuantities;
+    }
+
+    public OrderDetail order(OrderDetail orderDetail){
+        return orderMapper.order(orderDetail);
     }
 }
