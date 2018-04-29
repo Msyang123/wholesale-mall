@@ -1,6 +1,9 @@
 package com.lhiot.mall.wholesale.pay.api;
 
 import com.leon.microx.common.exception.ServiceException;
+import com.leon.microx.common.wrapper.ArrayObject;
+import com.lhiot.mall.wholesale.faq.domain.Faq;
+import com.lhiot.mall.wholesale.faq.domain.FaqCategory;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.service.DebtOrderService;
@@ -19,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -55,6 +59,13 @@ public class CurrencyPayApi {
             return ResponseEntity.ok(orderDetail);
         }
         return ResponseEntity.badRequest().body("余额支付订单失败");
+    }
+
+    @GetMapping("/balance/{userId}")
+    @ApiOperation(value = "余额收支明细")
+    public ResponseEntity<ArrayObject> getBalanceRecord(@PathVariable("userId") Integer userId) {
+        List<PaymentLog> paymentLogList = payService.getBalanceRecord(userId);//待测
+        return ResponseEntity.ok(ArrayObject.of(paymentLogList));
     }
 
     @PutMapping("/debtorderpay/{orderDebtCode}")

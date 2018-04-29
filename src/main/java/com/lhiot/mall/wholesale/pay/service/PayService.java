@@ -1,9 +1,7 @@
 package com.lhiot.mall.wholesale.pay.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-<<<<<<< HEAD
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
-=======
 import com.leon.microx.common.exception.ServiceException;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
@@ -14,8 +12,6 @@ import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.mapper.PaymentLogMapper;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.service.UserService;
-import com.lhiot.mall.wholesale.user.wechat.DateFormatUtil;
->>>>>>> sgsl/master
 import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
 import com.sgsl.hd.client.HaiDingClient;
 import com.sgsl.hd.client.vo.OrderReduceData;
@@ -525,5 +521,10 @@ public class PayService {
         } catch (Throwable e) {
             return "";
         }
+    }
+
+
+    public List<PaymentLog> getBalanceRecord(Integer userId){
+        return paymentLogMapper.getBalanceRecord(userId);
     }
 }
