@@ -1,9 +1,11 @@
 package com.lhiot.mall.wholesale.invoice.api;
 
+import com.leon.microx.common.wrapper.ArrayObject;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
+import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -59,7 +61,7 @@ public class InvoiceApi {
         //计算订单的开票金额
         int invoiceFee=0;
         for (OrderDetail item:orderDetailList) {
-            invoiceFee+=item.getOrderNeedFee()+item.getDeliveryFee();
+            invoiceFee+=item.getPayableFee()+item.getDeliveryFee();
         }
         BigDecimal invoiceTax=new BigDecimal(0.0336f);
         int taxFee=(int)(invoiceFee*invoiceTax.floatValue());
@@ -68,7 +70,6 @@ public class InvoiceApi {
         invoice.setInvoiceFee(invoiceFee);
         invoice.setTaxFee(taxFee);
         invoice.setInvoiceTax(invoiceTax);
-        invoice.setInvoiceType(1);//发票类型
         return ResponseEntity.ok(invoice);
     }
 
@@ -91,9 +92,25 @@ public class InvoiceApi {
         return ResponseEntity.ok(invoiceService.findInvoiceByCode(invoiceCode));
     }
 
-
-
-
+    @GetMapping("/invoices/{userId}")
+    @ApiOperation(value = "开票信息记录查询")
+    public ResponseEntity<ArrayObject> invoiceRecord(@PathVariable("userId") long userId){
+        Invoice invoice = new Invoice();
+        invoice.setUserId(userId);
+        List<Invoice> invoiceList = invoiceService.list(invoice);
+        OrderDetail orderDetail = new OrderDetail();
+        for (Invoice item: invoiceList) {
+            String orders = item.getInvoiceOrderIds();
+            for (String orderCode:orders.split(",")) {
+                orderDetail.setOrderCode(orderCode);
+                OrderDetail order  = orderService.order(orderDetail);
+                List<OrderGoods> orderGoodsList = orderService.searchOrderGoods(order.getId());
+                order.setOrderGoodsList(orderGoodsList);
+                item.setOrderDetail(order);
+            }
+        }
+        return ResponseEntity.ok(ArrayObject.of(invoiceList));
+    }
 
 
 }

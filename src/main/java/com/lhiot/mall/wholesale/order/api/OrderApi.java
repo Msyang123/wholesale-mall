@@ -1,17 +1,22 @@
 package com.lhiot.mall.wholesale.order.api;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import com.lhiot.mall.wholesale.base.DateFormatUtil;
+import com.lhiot.mall.wholesale.base.JacksonUtils;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
+import com.lhiot.mall.wholesale.order.domain.DebtOrder;
+import com.lhiot.mall.wholesale.order.domain.Distribution;
+import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
+import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
+import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.common.wrapper.ArrayObject;
@@ -25,6 +30,8 @@ import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.validation.constraints.NotNull;
 
 @Api(description ="订单接口")
 @Slf4j
@@ -51,7 +58,7 @@ public class OrderApi {
             , @RequestParam(required = false) Integer payType, @RequestParam(required = false) Integer payStatus,@RequestParam Integer orderStatus){
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setUserId(userId);
-        orderDetail.setOrderType(payType);
+        orderDetail.setSettlementType(payType);
         orderDetail.setPayStatus(payStatus);
         orderDetail.setOrderStatus(orderStatus);
         List<OrderDetail> orderDetailList = orderService.searchOrders(orderDetail);
@@ -85,11 +92,11 @@ public class OrderApi {
         return ResponseEntity.ok(orderDetail);
     }
 
-   /* @PostMapping("/order/myOrder/grid")
+    /*@PostMapping("/order/myOrder/grid")
     @ApiOperation(value = "新建一个查询，分页查询新品需求", response = PageQueryObject.class)
     public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) OrderGridParam param) {
         return ResponseEntity.ok(orderService.pageQuery(param));
-=======
+    }*/
     @GetMapping("/invoice/orders/{userId}")
     @ApiOperation(value = "查询可开发票的订单列表")
     public ResponseEntity<ArrayObject> invoiceOrders(@PathVariable("userId") @NotNull long userId) {
@@ -175,7 +182,7 @@ public class OrderApi {
         //FIXME 创建的时候发送创建广播消息 用于优惠券设置无效
         //fixme mq设置三十分钟失效
 
-        if(orderDetail.getOrderType()==1){
+        if(orderDetail.getSettlementType()==1){
             DebtOrder debtOrder=new DebtOrder();
             //FIXME 需要赋值
             debtOrderService.create(debtOrder);
@@ -208,10 +215,9 @@ public class OrderApi {
             throw new ServiceException("订单未支付");
         }
        return ResponseEntity.ok(orderService.cancelPayedOrder(orderDetail));
->>>>>>> sgsl/master
     }
 
-    @GetMapping("/demandgoods/detail/{id}")
+   /* @GetMapping("/demandgoods/detail/{id}")
     @ApiOperation(value = "新品需求详情页面",response = DemandGoodsResult.class)
     public  ResponseEntity<DemandGoodsResult> demandGoodsDetail(@PathVariable("id") Long id) {
         return ResponseEntity.ok(orderService.detail(id));

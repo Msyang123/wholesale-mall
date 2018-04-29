@@ -103,4 +103,19 @@
 		</trim>
 		group by t1.goods_standard_id
     </select>
+
+    <!--查询订单信息-->
+
+
+
+    <select id="order" parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail"  resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        select * from t_whs_order
+        <where>
+            <if test="id!=null and id!=0"> and id = #{id} </if>
+            <if test="orderCode!=null and orderCode!=''"> and order_code = #{orderCode} </if>
+            <if test="userId!=null and userId!=0"> and user_id = #{userId} </if>
+            <if test="salesmanId!=null and salesmanId!=0"> and salesman_id = #{salesmanId} </if>
+            <if test="createTime!=null and createTime!=''"> and create_time = #{createTime} </if>
+        </where>
+    </select>
 </mapper>

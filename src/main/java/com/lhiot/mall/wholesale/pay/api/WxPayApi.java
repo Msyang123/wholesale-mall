@@ -62,7 +62,7 @@ public class WxPayApi {
         OrderDetail orderDetail= orderService.searchOrder(orderCode);
 	    //通过加密后的openIdAfterDm5查找数据库openId
         String wxOrderSignStr=payService.wxOrderPay(getRemoteAddr(request),openId,
-                orderDetail.getOrderNeedFee()+orderDetail.getDeliveryFee(),getUserAgent(request),orderCode,weChatUtil);
+                orderDetail.getPayableFee()+orderDetail.getDeliveryFee(),getUserAgent(request),orderCode,weChatUtil);
         //FIXME 写订单签名日志
     	return ResponseEntity.ok(wxOrderSignStr);
     }

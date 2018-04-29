@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
-import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.domain.SoldQuantity;
 import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
@@ -120,7 +120,7 @@ public class OrderService {
 
        //FIXME 查询支付日志
 
-        switch (orderDetail.getOrderType()) {
+        switch (orderDetail.getSettlementType()) {
             //1货到付款
             case 1:
                 //直接取消掉订单就可以了
@@ -159,5 +159,9 @@ public class OrderService {
     		soldQuantity.setSoldQuantity(count*degree);
     	}
     	return soldQuantities;
+    }
+
+    public OrderDetail order(OrderDetail orderDetail){
+        return orderMapper.order(orderDetail);
     }
 }

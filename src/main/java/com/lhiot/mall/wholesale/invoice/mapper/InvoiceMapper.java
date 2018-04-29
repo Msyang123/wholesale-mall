@@ -20,4 +20,6 @@ public interface InvoiceMapper {
     Invoice findInvoiceByCode(String invoiceCode);
 
     int updateInvoiceByCode(Invoice invoice);
+
+    List<Invoice> list(Invoice invoice);
 }

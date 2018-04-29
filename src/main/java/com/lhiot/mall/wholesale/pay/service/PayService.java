@@ -342,7 +342,7 @@ public class PayService {
             throw new ServiceException("用户信息不存在");
         }
         //需要支付金额
-        int needPayFee=orderDetail.getOrderNeedFee()+orderDetail.getDeliveryFee();
+        int needPayFee=orderDetail.getPayableFee()+orderDetail.getDeliveryFee();
         //扣除之后金额
         int afterPay=user.getBalance()-needPayFee;
         if(afterPay<0){
@@ -488,13 +488,13 @@ public class PayService {
         returnData.setOrderId(orderDetail.getOrderCode());
         returnData.setOrderUserId(orderDetail.getUserId());
 
-        returnData.setNeedPay(orderDetail.getOrderNeedFee());
+        returnData.setNeedPay(orderDetail.getPayableFee());
 
         returnData.setPayTime(sdf.format(new Date()));
         returnData.setDeliveryType("1");
         returnData.setOrderType("1");
-        returnData.setTotal(orderDetail.getTotal());
-        returnData.setDiscount(orderDetail.getOrderDiscountFee());
+        returnData.setTotal(orderDetail.getTotalFee());
+        returnData.setDiscount(orderDetail.getDiscountFee());
 
         JSONObject json = new JSONObject(orderDetail.getDeliveryAddress());
         returnData.setReceiverName(json.getString("deliveryName"));
@@ -566,5 +566,10 @@ public class PayService {
         } catch (Throwable e) {
             return "";
         }
+    }
+
+
+    public List<PaymentLog> getBalanceRecord(Integer userId){
+        return paymentLogMapper.getBalanceRecord(userId);
     }
 }
