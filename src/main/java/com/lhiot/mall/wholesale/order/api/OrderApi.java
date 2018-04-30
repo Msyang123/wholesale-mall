@@ -1,19 +1,25 @@
 package com.lhiot.mall.wholesale.order.api;
 
+import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import com.lhiot.mall.wholesale.base.DateFormatUtil;
+import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
+import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
+import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.common.wrapper.ArrayObject;
-import com.lhiot.mall.wholesale.order.domain.OrderDetail;
-import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.service.DebtOrderService;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.setting.service.SettingService;
@@ -22,6 +28,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.validation.constraints.NotNull;
 
 @Api(description ="订单接口")
 @Slf4j
@@ -45,10 +52,10 @@ public class OrderApi {
     @PostMapping("/myOrders/{userId}")
     @ApiOperation(value = "我的订单列表")
     public ResponseEntity<ArrayObject> queryMyOrders(@PathVariable("userId") long userId
-            , @RequestParam(required = false) Integer payType, @RequestParam(required = false) String payStatus,@RequestParam String orderStatus){
+            , @RequestParam(required = false) String payType, @RequestParam(required = false) String payStatus,@RequestParam String orderStatus){
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setUserId(userId);
-        orderDetail.setOrderType(payType);
+        orderDetail.setSettlementType(payType);
         orderDetail.setPayStatus(payStatus);
         orderDetail.setOrderStatus(orderStatus);
         List<OrderDetail> orderDetailList = orderService.searchOrders(orderDetail);
@@ -57,7 +64,7 @@ public class OrderApi {
         }else {
             for (OrderDetail order:orderDetailList){
                 Integer checkStatus = orderService.searchOutstandingAccountsOrder(order.getOrderCode());
-                order.setCheckStatus(checkStatus);
+                order.setCheckStatus(""); //FIXME 改为String 类型  order.setCheckStatus(checkStatus);
                 List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
                 order.setOrderGoodsList(goods);
             }
@@ -82,12 +89,6 @@ public class OrderApi {
         return ResponseEntity.ok(orderDetail);
     }
 
-    @PostMapping("/grid")
-    @ApiOperation(value = "新建一个查询，分页查询订单信息", response = PageQueryObject.class)
-    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) OrderGridParam param) {
-        return ResponseEntity.ok(orderService.pageQuery(param));
-    }
-
     @GetMapping("/{id}")
     @ApiOperation(value = "根据订单编号查询订单详情")
     public ResponseEntity<OrderDetail> queryOrderById(@PathVariable("id") long id){
@@ -103,10 +104,7 @@ public class OrderApi {
         }
         return ResponseEntity.ok(orderDetail);
     }
-   /* @PostMapping("/order/myOrder/grid")
-    @ApiOperation(value = "新建一个查询，分页查询新品需求", response = PageQueryObject.class)
-    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) FinancialGridParam param) {
-        return ResponseEntity.ok(orderService.pageQuery(param));
+
     @GetMapping("/invoice/orders/{userId}")
     @ApiOperation(value = "查询可开发票的订单列表")
     public ResponseEntity<ArrayObject> invoiceOrders(@PathVariable("userId") @NotNull long userId) {
@@ -120,10 +118,11 @@ public class OrderApi {
         String time = DateFormatUtil.format1(new java.util.Date());
         Timestamp currentTime = Timestamp.valueOf(time);
         for (OrderDetail order:orders) {
-            if (order.getOrderStatus()==4&&order.getPayStatus()==0&&order.getAfterSaleTime().before(currentTime)){
-                List<Financial> goods = orderService.searchOrderGoods(order.getId());
+            //FIXME 改为枚举   if (order.getOrderStatus()==4&&order.getPayStatus()==0&&order.getAfterSaleTime().before(currentTime)){
+            if (order.getOrderStatus()=="" &&order.getPayStatus()==""&&order.getAfterSaleTime().before(currentTime)){
+                List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
                 if (goods.isEmpty()){
-                    orderDetail.setOrderGoodsList(new ArrayList<Financial>());
+                    orderDetail.setOrderGoodsList(new ArrayList<OrderGoods>());
                 }else {
                     orderDetail.setOrderGoodsList(goods);
                 }
@@ -154,7 +153,7 @@ public class OrderApi {
     @GetMapping("/orders/aftersale/{userId}")
     @ApiOperation(value = "查询售后订单")
     public ResponseEntity<ArrayObject> queryAfterSale(@PathVariable("userId") @NotNull long userId
-            ,@RequestParam Integer orderStatus, @RequestParam Integer payStatus) {
+            ,@RequestParam String orderStatus, @RequestParam String payStatus) {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setUserId(userId);
         orderDetail.setOrderStatus(orderStatus);
@@ -166,9 +165,9 @@ public class OrderApi {
         String time = DateFormatUtil.format1(new java.util.Date());
         Timestamp currentTime = Timestamp.valueOf(time);
         for (OrderDetail order:orders) {
-            List<Financial> goods = orderService.searchOrderGoods(order.getId());
+            List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
             if (goods.isEmpty()){
-                orderDetail.setOrderGoodsList(new ArrayList<Financial>());
+                orderDetail.setOrderGoodsList(new ArrayList<OrderGoods>());
             }else {
                 orderDetail.setOrderGoodsList(goods);
             }
@@ -192,11 +191,12 @@ public class OrderApi {
         //FIXME 创建的时候发送创建广播消息 用于优惠券设置无效
         //fixme mq设置三十分钟失效
 
-        if(orderDetail.getOrderType()==1){
+        if(orderDetail.getSettlementType()== ""){  //FIXME 改为枚举 if(orderDetail.getSettlementType()==1){
             DebtOrder debtOrder=new DebtOrder();
             //FIXME 需要赋值
             debtOrderService.create(debtOrder);
-            orderDetail.setOrderStatus(3);//待收货
+            //FIXME 改为枚举    orderDetail.setOrderStatus(3);//待收货
+            orderDetail.setOrderStatus("");//待收货
         }
         return ResponseEntity.ok(result);
     }
@@ -218,18 +218,27 @@ public class OrderApi {
         if (Objects.isNull(orderDetail)){
             throw new ServiceException("没有该订单信息");
         }
-        if(orderDetail.getOrderStatus()!=3){
+        //FIXME 改为枚举     if(orderDetail.getOrderStatus()!=3){
+        if(orderDetail.getOrderStatus()!=""){
             throw new ServiceException("非待收货订单状态");
         }
-        if(orderDetail.getPayStatus()!=0){
+        //FIXME 改为枚举      if(orderDetail.getPayStatus()!=0){
+        if(orderDetail.getPayStatus()!=""){
             throw new ServiceException("订单未支付");
         }
        return ResponseEntity.ok(orderService.cancelPayedOrder(orderDetail));
     }
 
-    @GetMapping("/demandgoods/detail/{id}")
-    @ApiOperation(value = "新品需求详情页面",response = DemandGoodsResult.class)
-    public  ResponseEntity<DemandGoodsResult> demandGoodsDetail(@PathVariable("id") Long id) {
+    @PostMapping("/grid")
+    @ApiOperation(value = "后台管理-分页查询订单信息", response = PageQueryObject.class)
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) OrderGridParam param) throws IntrospectionException, InstantiationException, IllegalAccessException, InvocationTargetException {
+        return ResponseEntity.ok(orderService.pageQuery(param));
+    }
+
+    @GetMapping("/detail/{id}")
+    @ApiOperation(value = "后台管理-根据订单id查看订单详情",response = OrderGridResult.class)
+    public  ResponseEntity<OrderDetail> demandGoodsDetail(@PathVariable("id") Long id){
         return ResponseEntity.ok(orderService.detail(id));
-    }*/
+    }
+
 }

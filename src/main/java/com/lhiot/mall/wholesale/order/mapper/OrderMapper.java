@@ -63,4 +63,8 @@ public interface OrderMapper {
 
     //统计商品的售卖数量，根据商品ids
     List<SoldQuantity> soldQuantity(List<Long> goodsIds);
+
+    OrderDetail order(OrderDetail orderDetail);
+
+    OrderDetail select(long id);
 }

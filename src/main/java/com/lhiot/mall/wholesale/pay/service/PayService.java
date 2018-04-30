@@ -342,7 +342,7 @@ public class PayService {
             throw new ServiceException("用户信息不存在");
         }
         //需要支付金额
-        int needPayFee=orderDetail.getOrderNeedFee()+orderDetail.getDeliveryFee();
+        int needPayFee=orderDetail.getPayableFee()+orderDetail.getDeliveryFee();
         //扣除之后金额
         int afterPay=user.getBalance()-needPayFee;
         if(afterPay<0){
@@ -410,7 +410,7 @@ public class PayService {
         updateUser.setBalance(needPayFee);//需要扣除的值
         boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
         if(updateResult){
-            debtOrder.setCheckStatus(1);//设置审核中
+            debtOrder.setCheckStatus("unaudited");//设置审核中
             debtOrderService.updateDebtOrderByCode(debtOrder);
 
             PaymentLog paymentLog=new PaymentLog();
@@ -452,7 +452,7 @@ public class PayService {
         updateUser.setBalance(needPayFee);//需要扣除的值
         boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
         if(updateResult){
-            invoice.setInvoiceStatus(1);//开票状态 0未开 1已付款 2已开
+            invoice.setInvoiceStatus("yes");//开票状态 0未开 1已付款 2已开
             invoiceService.updateInvoiceByCode(invoice);
 
             PaymentLog paymentLog=new PaymentLog();
@@ -488,12 +488,12 @@ public class PayService {
         returnData.setOrderId(orderDetail.getOrderCode());
         returnData.setOrderUserId(orderDetail.getUserId());
 
-        returnData.setNeedPay(orderDetail.getOrderNeedFee());
+        returnData.setNeedPay(orderDetail.getPayableFee());
 
         returnData.setPayTime(sdf.format(new Date()));
         returnData.setDeliveryType("1");
         returnData.setOrderType("1");
-        returnData.setTotal(orderDetail.getTotal());
+        returnData.setTotal(orderDetail.getTotalFee());
         returnData.setDiscount(orderDetail.getDiscountFee());
 
         JSONObject json = new JSONObject(orderDetail.getDeliveryAddress());
@@ -566,5 +566,10 @@ public class PayService {
         } catch (Throwable e) {
             return "";
         }
+    }
+
+
+    public List<PaymentLog> getBalanceRecord(Integer userId){
+        return paymentLogMapper.getBalanceRecord(userId);
     }
 }

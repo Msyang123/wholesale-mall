@@ -13,5 +13,5 @@ public interface OrderRefundApplicationMapper {
 
     int updateById(OrderRefundApplication orderRefundApplication);
 
-    List<OrderRefundApplication> orderRefundApplicationList(OrderRefundApplication orderRefundApplication);
+    List<OrderRefundApplication> orderRefundApplicationList(long userId);
 }

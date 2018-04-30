@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 @Data
 @ApiModel
 @NoArgsConstructor
-public class DebtOrderGridResult {
+public class DebtOrderResult {
     @JsonProperty("id")
     private long id;
 
@@ -40,10 +40,6 @@ public class DebtOrderGridResult {
 
     @JsonProperty("orderIds")
     private String orderIds;
-
-    //后台管理系统所需其他字段
-    @JsonProperty("discountFee")
-    private Integer discountFee;
 
     @JsonProperty("remarks")
     private String remarks;

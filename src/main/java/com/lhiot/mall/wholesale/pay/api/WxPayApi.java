@@ -62,7 +62,7 @@ public class WxPayApi {
         OrderDetail orderDetail= orderService.searchOrder(orderCode);
 	    //通过加密后的openIdAfterDm5查找数据库openId
         String wxOrderSignStr=payService.wxOrderPay(getRemoteAddr(request),openId,
-                orderDetail.getOrderNeedFee()+orderDetail.getDeliveryFee(),getUserAgent(request),orderCode,weChatUtil);
+                orderDetail.getPayableFee()+orderDetail.getDeliveryFee(),getUserAgent(request),orderCode,weChatUtil);
         //FIXME 写订单签名日志
     	return ResponseEntity.ok(wxOrderSignStr);
     }
@@ -131,7 +131,7 @@ public class WxPayApi {
         Invoice invoice= invoiceService.findInvoiceByCode(invoiceCode);
         if(Objects.isNull(invoice)){
             return ResponseEntity.badRequest().body("未找到开票信息");
-        }else if(invoice.getInvoiceStatus()==1){
+        }else if(Objects.equals(invoice.getInvoiceStatus(),"yes")){
             return ResponseEntity.badRequest().body("已经开票，请勿重复支付");
         }
         //查询支付记录 防止重复支付

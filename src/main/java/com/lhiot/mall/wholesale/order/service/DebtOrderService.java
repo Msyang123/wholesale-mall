@@ -3,13 +3,13 @@ package com.lhiot.mall.wholesale.order.service;
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.base.DataMergeUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.demand.domain.DemandGoods;
+import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
-import com.lhiot.mall.wholesale.order.domain.DebtOrderGridResult;
+import com.lhiot.mall.wholesale.order.domain.DebtOrderResult;
 import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
 import com.lhiot.mall.wholesale.order.domain.gridparam.DebtOrderGridParam;
-import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.mapper.DebtOrderMapper;
-import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -82,17 +82,19 @@ public class DebtOrderService {
      */
     public PageQueryObject pageQuery(DebtOrderGridParam param) throws InvocationTargetException, IntrospectionException, InstantiationException, IllegalAccessException {
         String phone = param.getPhone();
+        String shopName = param.getShopName();
         User userParam = new User();
         userParam.setPhone(phone);
+        userParam.setShopName(shopName);
         List<DebtOrder> debtOrderList = new ArrayList<DebtOrder>();
         List<User> userList = new ArrayList<User>();
-        List<DebtOrderGridResult> debtOrderGridResults = new ArrayList<>();
+        List<DebtOrderResult> debtOrderResults = new ArrayList<>();
         int count = 0;
         int page = param.getPage();
         int rows = param.getRows();
         //总记录数
         int totalPages = 0;
-        if(phone == null){//未传手机号查询条件,先根据条件查询分页的账款订单列表及用户ids，再根据ids查询用户信息列表
+        if(phone == null && shopName == null){//未传手机号查询条件,先根据条件查询分页的账款订单列表及用户ids，再根据ids查询用户信息列表
             count = debtOrderMapper.pageQueryCount(param);
             //起始行
             param.setStart((page-1)*rows);
@@ -148,13 +150,32 @@ public class DebtOrderService {
         }
         PageQueryObject result = new PageQueryObject();
         if(debtOrderList != null && debtOrderList.size() > 0){//如果账款订单信息不为空,将账款订单列表与用户信息列表进行行数据组装
-            debtOrderGridResults = DataMergeUtils.dataMerge(debtOrderList,userList,"userId","id",DebtOrderGridResult.class);
+            debtOrderResults = DataMergeUtils.dataMerge(debtOrderList,userList,"userId","id",DebtOrderResult.class);
         }
         result.setPage(page);
         result.setRecords(rows);
         result.setTotal(totalPages);
-        result.setRows(debtOrderGridResults);//将查询记录放入返回参数中
+        result.setRows(debtOrderResults);//将查询记录放入返回参数中
         return result;
+    }
+
+    /**
+     * 查询账款订单详情
+     * @return
+     */
+    public DebtOrderResult detail(Long id) {
+        //账款订单详情信息
+        DebtOrderResult debtOrderResult = debtOrderMapper.select(id);
+        if (Objects.nonNull(debtOrderResult)) {
+            //用户信息
+            User user1 = userService.user(debtOrderResult.getUserId());
+            if (Objects.nonNull(user1)) {
+                debtOrderResult.setShopName(user1.getShopName());
+                debtOrderResult.setUserName(user1.getUserName());
+                debtOrderResult.setPhone(user1.getPhone());
+            }
+        }
+        return debtOrderResult;
     }
 
 }

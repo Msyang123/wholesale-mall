@@ -44,4 +44,6 @@ public class DebtOrder {
     @JsonProperty("orderIds")
     private String orderIds;
 
+    @JsonProperty("remarks")
+    private String remarks;
 }

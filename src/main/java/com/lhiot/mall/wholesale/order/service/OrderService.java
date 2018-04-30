@@ -1,33 +1,34 @@
 package com.lhiot.mall.wholesale.order.service;
 
-import com.leon.microx.common.exception.ServiceException;
-import com.leon.microx.util.SnowflakeId;
+import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+
+import com.lhiot.mall.wholesale.base.DataMergeUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.order.domain.OrderDetail;
-import com.lhiot.mall.wholesale.order.domain.OrderGoods;
-import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
-import com.lhiot.mall.wholesale.order.domain.SoldQuantity;
+import com.lhiot.mall.wholesale.demand.domain.DemandGoods;
+import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
+import com.lhiot.mall.wholesale.goods.domain.Goods;
+import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
-import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.service.UserService;
-import org.springframework.core.annotation.Order;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.leon.microx.common.exception.ServiceException;
+import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
 import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
 import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
 import com.sgsl.hd.client.HaiDingClient;
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 
 
 @Slf4j
@@ -129,13 +130,13 @@ public class OrderService {
 
        //FIXME 查询支付日志
 
-        switch (orderDetail.getOrderType()) {
+        switch (orderDetail.getSettlementType()) {
             //1货到付款
-            case 1:
+            case "cod":
                 //直接取消掉订单就可以了
                 break;
             //0 线上支付
-            case 0:
+            case "online":
 
                 //退款 如果微信支付就微信退款
                 try {
@@ -175,7 +176,7 @@ public class OrderService {
      * @param param
      * @return
      */
-    public PageQueryObject pageQuery(OrderGridParam param){
+    public PageQueryObject pageQuery(OrderGridParam param) throws InvocationTargetException, IntrospectionException, InstantiationException, IllegalAccessException {
         String phone = param.getPhone();
         User userParam = new User();
         userParam.setPhone(phone);
@@ -243,7 +244,6 @@ public class OrderService {
                 paymentLogList = paymentLogService.getPaymentLogList(orderIds);//根据订单ID列表查询支付信息
             }
         }
-
         PageQueryObject result = new PageQueryObject();
         if(orderGridResultList != null && orderGridResultList.size() > 0){//如果订单信息不为空,将订单列表与用户信息列表进行行数据组装
             //根据用户id与订单中的用户id匹配
@@ -279,5 +279,26 @@ public class OrderService {
         return result;
     }
 
+    public OrderDetail order(OrderDetail orderDetail){
+        return orderMapper.order(orderDetail);
+    }
 
+    /**
+     * 后台管理--查询订单详情
+     * @return
+     */
+    public OrderDetail detail(Long id) {
+        //账款订单详情信息
+        OrderDetail orderDetail = orderMapper.select(id);
+        if (Objects.nonNull(orderDetail)) {
+            User user = userService.user(orderDetail.getUserId()); //用户信息
+            if (Objects.nonNull(user)) {
+                orderDetail.setShopName(user.getShopName());
+                orderDetail.setUserName(user.getUserName());
+                orderDetail.setPhone(user.getPhone());
+                orderDetail.setAddressDetail(user.getAddressDetail());
+            }
+        }
+        return orderDetail;
+    }
 }

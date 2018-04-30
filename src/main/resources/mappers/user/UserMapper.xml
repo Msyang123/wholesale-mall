@@ -3,8 +3,7 @@
 <mapper namespace="com.lhiot.mall.wholesale.user.mapper.UserMapper">
 
     <sql id="userInfo">
-        id,phone,shop_name,user_name,city,address_detail,register_time,
-        shop_name,user_name,city,address_detail,register_time,balance
+        id,phone,shop_name,user_name,city,address_detail,register_time,balance
     </sql>
 
     <select id="search"  parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.user.domain.User">
@@ -20,7 +19,7 @@
     </update>
 
     <select id="user"  parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.User">
-        select <include refid="userInfo" /> from t_whs_user where id=#{id}
+        select <include refid="userInfo" /> from t_whs_user where id=#{0}
     </select>
 
     <update id="updateUser" parameterType="com.lhiot.mall.wholesale.user.domain.User">
@@ -151,7 +150,7 @@
             #{item}
         </foreach>
     </select>
-	
+
 	<!-- 根据手机号模糊查询用户信息 -->
 	<select id="fuzzySearchByPhone" parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.User">
 		select * from t_whs_user

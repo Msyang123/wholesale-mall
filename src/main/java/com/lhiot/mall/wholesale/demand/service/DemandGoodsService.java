@@ -37,11 +37,6 @@ public class DemandGoodsService {
         this.userService = userService;
     }
 
-
-    public DemandGoods demandGoods(long id) {
-        return demandGoodsMapper.select(id);
-    }
-
     /**
      * 分页查询
      * @return
@@ -98,35 +93,24 @@ public class DemandGoodsService {
     }
 
     /**
-     * 查询详情
+     * 查询新品需求详情
      * @return
      */
     public DemandGoodsResult detail(Long id) {
-        DemandGoodsResult demandGoodsResult = new DemandGoodsResult();
         //新品需求详情信息
-        DemandGoods demandGoods = demandGoodsMapper.select(id);
-        if (demandGoods != null){
+        DemandGoodsResult demandGoodsResult = demandGoodsMapper.select(id);
+        if (Objects.nonNull(demandGoodsResult)){
             //用户信息
-            User user1 = userService.user(demandGoods.getUserId());
-
-            demandGoodsResult.setId(demandGoods.getId());
-            demandGoodsResult.setGoodsName(demandGoods.getGoodsName());
-            demandGoodsResult.setGoodsBrand(demandGoods.getGoodsBrand());
-            demandGoodsResult.setGoodsStandard(demandGoods.getGoodsStandard());
-            demandGoodsResult.setReferencePrice(demandGoods.getReferencePrice());
-            demandGoodsResult.setSupplier(demandGoods.getSupplier());
-            demandGoodsResult.setComments(demandGoods.getComments());
-            demandGoodsResult.setContactPhone(demandGoods.getContactPhone());
-            demandGoodsResult.setUserId(demandGoods.getUserId());
-            demandGoodsResult.setCreateTime(demandGoods.getCreateTime().toString());
-            demandGoodsResult.setShopName(user1.getShopName());
-            demandGoodsResult.setUserName(user1.getUserName());
-            demandGoodsResult.setPhone(user1.getPhone());
-            return demandGoodsResult;
-        }else{
-            return null;
+            User user1 = userService.user(demandGoodsResult.getUserId());
+            if (Objects.nonNull(user1)) {
+                demandGoodsResult.setShopName(user1.getShopName());
+                demandGoodsResult.setUserName(user1.getUserName());
+                demandGoodsResult.setPhone(user1.getPhone());
+            }
         }
+        return demandGoodsResult;
     }
+
     public int insertDemandGoods(DemandGoods demandGoods){
         return demandGoodsMapper.insertDemandGoods(demandGoods);
     }

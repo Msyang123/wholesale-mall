@@ -12,7 +12,7 @@ import java.util.Map;
 @Mapper
 public interface DemandGoodsMapper {
 
-    DemandGoods select(long id);
+    DemandGoodsResult select(long id);
 
     //分页查询新品需求
     List<DemandGoodsResult> pageQuery(DemandGoodsGridParam param);

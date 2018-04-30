@@ -26,26 +26,22 @@ public class OrderDetail {
     @JsonProperty("salesmanId")
     private Long salesmanId;
 
-    @JsonProperty("needPay")
-    private Integer orderNeedFee;
-
     @JsonProperty("payType")
-    private Integer orderType;
+    private String settlementType;
 
     @JsonProperty("status")
     private String orderStatus;
 
-    //订单当前状态 用于修改的时候约束条件
     private String currentOrderStatus;
 
     @JsonProperty("auditStatus")
-    private Integer checkStatus;
+    private String checkStatus;
 
     @JsonProperty("createTime")
-    private String createTime;
+    private Timestamp createTime;
 
     @JsonProperty("total")
-    private Integer total;
+    private Integer totalFee;
 
     @JsonProperty("couponVal")
     private Integer discountFee;
@@ -85,5 +81,11 @@ public class OrderDetail {
 
     @JsonProperty("phone")
     private String phone;
+
+    @JsonProperty("payableFee")
+    private  Integer payableFee;
+
+    @JsonProperty("addressDetail")
+    private String addressDetail;
 
 }

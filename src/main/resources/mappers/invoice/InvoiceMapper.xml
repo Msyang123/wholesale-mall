@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.lhiot.mall.wholesale.invoice.mapper.InvoiceMapper">
+    <sql id="invoiceColumn">
+       t1.id as id,t1.invoice_title_id as invoiceTitleId,t1.taxpayer_number as taxpayerNumber,t1.company_name as companyName,t1.contact_name as contactName,
+    t1.contact_phone as contactPhone,t1.invoice_fee as invoiceFee,t1.invoice_tax as invoiceTax,t1.tax_fee as taxFee,t1.address_area as addressArea,t1.address_detail as addressDetail,
+    t1.bank_name as bankName,t1.bank_card_code as bankCardCode,t1.create_time as createTime,t1.invoice_status as invoiceStatus,t1.invoice_print_time as invoicePrintTime,
+    t1.invoice_order_ids as invoiceOrderIds,t1.invoice_code as invoiceCode,t1.user_id as userId
+    </sql>
 
     <!-- 新增发票抬头 -->
     <insert id="insertInvoiceTitle" parameterType="com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle">
@@ -130,4 +136,68 @@
     <select id="findInvoiceByCode" parameterType="String" resultType="com.lhiot.mall.wholesale.invoice.domain.Invoice">
         select * from t_whs_invoice  where invoice_code=#{0}
     </select>
+
+    <!--查询发票信息表-->
+    <select parameterType="com.lhiot.mall.wholesale.invoice.domain.Invoice" id="list" resultType="com.lhiot.mall.wholesale.invoice.domain.Invoice">
+        select id,invoice_title_id invoiceTitleId,taxpayer_number taxpayerNumber,company_name companyName,contact_name contactName,
+        contact_phone contactName,contact_phone contactPhone,invoice_fee invoiceFee,invoice_tax invoiceTax,tax_fee taxFee,address_area addressArea,
+        address_detail addressDetail,bank_name bankName,bank_card_code bankCardCode,create_time createTime,invoice_status invoiceStatus,
+        invoice_print_time invoicePrintTime,invoice_order_ids invoiceOrderIds,invoice_code invoiceCode,user_id userId
+        from t_whs_invoice
+        <where>
+            <if test="id!=null and id!=0"> and id = #{id} </if>
+            <if test="invoiceTitleId!=null and invoiceTitleId!=0"> and invoice_title_id = #{invoiceTitleId} </if>
+            <if test="taxpayerNumber!=null and taxpayerNumber!=''"> and taxpayer_number = #{taxpayerNumber} </if>
+            <if test="companyName!=null and companyName!=''"> and company_name = #{companyName} </if>
+            <if test="contactName!=null and contactName!=''"> and contact_name = #{contactName} </if>
+            <if test="contactPhone!=null and contactPhone!=''"> and contact_phone = #{contactPhone} </if>
+            <if test="addressArea!=null and addressArea!=''"> and address_area = #{addressArea} </if>
+            <if test="addressDetail!=null and addressDetail!=''"> and address_detail = #{addressDetail} </if>
+            <if test="bankName!=null and bankName!=''"> and bank_name = #{bankName} </if>
+            <if test="bankCardCode!=null and bankCardCode!=''"> and bank_card_code = #{bankCardCode} </if>
+            <if test="createTime!=null and createTime!=''"> and create_time = #{createTime} </if>
+            <if test="invoicePrintTime!=null and invoicePrintTime!=''"> and invoice_print_time = #{invoicePrintTime} </if>
+            <if test="invoiceOrderIds!=null and invoiceOrderIds!=''"> and invoice_order_ids = #{invoiceOrderIds} </if>
+            <if test="invoiceCode!=null and invoiceCode!=''"> and invoice_code = #{invoiceCode} </if>
+            <if test="userId!=null and userId!=0"> and user_id = #{userId} </if>
+        </where>
+    </select>
+
+    <!-- 根据id查询新品需求详情 -->
+    <select id="select" parameterType="long" resultType="com.lhiot.mall.wholesale.invoice.domain.Invoice">
+        SELECT <include refid="invoiceColumn"/>
+        FROM t_whs_invoice t1
+        WHERE t1.id = #{0}
+    </select>
+
+    <!-- 后台管理 分页查询总数 -->
+    <select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.invoice.domain.gridparam.InvoiceGridParam" resultType="Integer">
+        select count(t1.id) from t_whs_invoice t1
+        <trim prefix="where" prefixOverrides="and">
+            <if test="invoiceStatus != null and invoiceStatus != ''">and t1.invoice_status = #{invoiceStatus}</if>
+            <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
+            <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
+        </trim>
+    </select>
+
+    <!-- 后台管理 分页查询开票信息 -->
+    <select id="pageQuery" parameterType="com.lhiot.mall.wholesale.invoice.domain.gridparam.InvoiceGridParam"
+            resultType="com.lhiot.mall.wholesale.invoice.domain.Invoice">
+        select <include refid="invoiceColumn"/>
+        from t_whs_invoice t1
+        <trim prefix="where" prefixOverrides="and">
+            <if test="invoiceStatus != null and invoiceStatus != ''">and t1.invoice_status = #{invoiceStatus}</if>
+            <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
+            <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
+        </trim>
+        <include refid="common.pager"></include>
+    </select>
+
+    <!-- 后台管理 修改开票状态 -->
+    <update id="updateInvoiceStatus" parameterType="com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle">
+        UPDATE t_whs_invoice
+        SET invoice_status = "yes"
+        where id=#{id}
+    </update>
+
 </mapper>

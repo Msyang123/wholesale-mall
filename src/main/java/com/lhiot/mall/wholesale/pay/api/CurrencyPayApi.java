@@ -4,12 +4,19 @@ import com.leon.microx.common.exception.ServiceException;
 import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
+import com.leon.microx.common.wrapper.ArrayObject;
+import com.lhiot.mall.wholesale.faq.domain.Faq;
+import com.lhiot.mall.wholesale.faq.domain.FaqCategory;
+import com.leon.microx.common.wrapper.ArrayObject;
+import com.lhiot.mall.wholesale.invoice.domain.Invoice;
+import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.service.DebtOrderService;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.service.PayService;
+import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
 import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
 import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
@@ -23,6 +30,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.List;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -68,6 +77,13 @@ public class CurrencyPayApi {
         return ResponseEntity.badRequest().body("余额支付订单失败");
     }
 
+    @GetMapping("/balance/{userId}")
+    @ApiOperation(value = "余额收支明细")
+    public ResponseEntity<ArrayObject> getBalanceRecord(@PathVariable("userId") Integer userId) {
+        List<PaymentLog> paymentLogList = payService.getBalanceRecord(userId);//待测
+        return ResponseEntity.ok(ArrayObject.of(paymentLogList));
+    }
+
     @PutMapping("/debtorderpay/{orderDebtCode}")
     @ApiOperation(value = "余额支付账款订单", response = String.class)
     public ResponseEntity debtorderPay(@PathVariable("orderDebtCode") String orderDebtCode){
@@ -77,9 +93,9 @@ public class CurrencyPayApi {
         //审核状态 0-未支付 1-审核中 2-审核失败 3-已支付
         if(Objects.isNull(debtOrder)){
             return ResponseEntity.badRequest().body("未找到欠款订单信息");
-        }else if(debtOrder.getCheckStatus()==1){
+        }else if(Objects.equals(debtOrder.getCheckStatus(),"unaudited")){
             return ResponseEntity.badRequest().body("欠款订单审核中");
-        }else if(debtOrder.getCheckStatus()==3){
+        }else if(Objects.equals(debtOrder.getCheckStatus(),"paid") ||  Objects.equals(debtOrder.getCheckStatus(),"agree")){
             return ResponseEntity.badRequest().body("欠款订单已支付");
         }
         //余额支付账款订单支付
@@ -98,9 +114,9 @@ public class CurrencyPayApi {
         Invoice invoice= invoiceService.findInvoiceByCode(invoiceCode);
         if(Objects.isNull(invoice)){
             return ResponseEntity.badRequest().body("未找到开票信息");
-        }else if(invoice.getInvoiceStatus()==1){
+        }else if(invoice.getInvoiceStatus()==""){ //FIXME 更改为枚举  invoice.getInvoiceStatus()==1
             return ResponseEntity.badRequest().body("发票已支付，请勿重复支付");
-        }else if(invoice.getInvoiceStatus()==2){
+        }else if(invoice.getInvoiceStatus()==""){//FIXME 更改为枚举  invoice.getInvoiceStatus()==2
             return ResponseEntity.badRequest().body("已经开票，请勿重复支付");
         }
 

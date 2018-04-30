@@ -39,7 +39,6 @@ public class OrderGridResult {
     @JsonProperty("userId")
     private long userId;
 
-    //------以下为管理系统所需数据-------
     @JsonProperty("paymentTime")
     private String paymentTime;
 

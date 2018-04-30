@@ -1,9 +1,13 @@
 package com.lhiot.mall.wholesale.invoice.api;
 
+import com.leon.microx.common.wrapper.ArrayObject;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle;
+import com.lhiot.mall.wholesale.invoice.domain.gridparam.InvoiceGridParam;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
+import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -59,7 +63,7 @@ public class InvoiceApi {
         //计算订单的开票金额
         int invoiceFee=0;
         for (OrderDetail item:orderDetailList) {
-            invoiceFee+=item.getOrderNeedFee()+item.getDeliveryFee();
+            invoiceFee+=item.getPayableFee()+item.getDeliveryFee();
         }
         BigDecimal invoiceTax=new BigDecimal(0.0336f);
         int taxFee=(int)(invoiceFee*invoiceTax.floatValue());
@@ -68,7 +72,6 @@ public class InvoiceApi {
         invoice.setInvoiceFee(invoiceFee);
         invoice.setTaxFee(taxFee);
         invoice.setInvoiceTax(invoiceTax);
-        invoice.setInvoiceType(1);//发票类型
         return ResponseEntity.ok(invoice);
     }
 
@@ -91,9 +94,46 @@ public class InvoiceApi {
         return ResponseEntity.ok(invoiceService.findInvoiceByCode(invoiceCode));
     }
 
+    @GetMapping("/invoices/{userId}")
+    @ApiOperation(value = "开票信息记录查询")
+    public ResponseEntity<ArrayObject> invoiceRecord(@PathVariable("userId") long userId){
+        Invoice invoice = new Invoice();
+        invoice.setUserId(userId);
+        List<Invoice> invoiceList = invoiceService.list(invoice);
+        OrderDetail orderDetail = new OrderDetail();
+        for (Invoice item: invoiceList) {
+            String orders = item.getInvoiceOrderIds();
+            for (String orderCode:orders.split(",")) {
+                orderDetail.setOrderCode(orderCode);
+                OrderDetail order  = orderService.order(orderDetail);
+                List<OrderGoods> orderGoodsList = orderService.searchOrderGoods(order.getId());
+                order.setOrderGoodsList(orderGoodsList);
+                item.setOrderDetail(order);
+            }
+        }
+        return ResponseEntity.ok(ArrayObject.of(invoiceList));
+    }
 
+    @PostMapping("/invoices/grid")
+    @ApiOperation(value = "后台管理-分页查询开票信息", response = PageQueryObject.class)
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) InvoiceGridParam param) {
+        return ResponseEntity.ok(invoiceService.pageQuery(param));
+    }
 
+    @GetMapping("/invoices/detail/{id}")
+    @ApiOperation(value = "后台管理-开票信息详情页面",response = Invoice.class)
+    public  ResponseEntity<Invoice> demandGoodsDetail(@PathVariable("id") Long id){
+        return ResponseEntity.ok(invoiceService.detail(id));
+    }
 
-
+    @PutMapping("/updateInvoiceStatus")
+    @ApiOperation(value = "后台管理-修改开票状态")
+    public ResponseEntity updateInvoiceStatus(@RequestBody(required = true) long id){
+        if (invoiceService.updateInvoiceStatus(id)>0){
+            return ResponseEntity.ok().body("修改完成");
+        }else{
+            return ResponseEntity.badRequest().body("修改失败");
+        }
+    }
 
 }

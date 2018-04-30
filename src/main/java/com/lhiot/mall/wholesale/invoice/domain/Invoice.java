@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.invoice.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -53,20 +54,17 @@ public class Invoice {
     @JsonProperty("invoiceFee")
     private int invoiceFee;
 
-    @JsonProperty("invoiceType")
-    private int invoiceType;
-
     @JsonProperty("invoiceTax")
     private BigDecimal invoiceTax;
 
     @JsonProperty("taxFee")
     private int taxFee;
 
-    @JsonProperty("taxFee")
+    @JsonProperty("createTime")
     private Timestamp createTime;
 
     @JsonProperty("invoiceStatus")
-    private int invoiceStatus;
+    private String invoiceStatus;
 
     @JsonProperty("invoicePrintTime")
     private Timestamp invoicePrintTime;
@@ -79,4 +77,7 @@ public class Invoice {
 
     @JsonProperty("userId")
     private long userId;
+
+    @JsonProperty("orderDetail")
+    private OrderDetail orderDetail;
 }

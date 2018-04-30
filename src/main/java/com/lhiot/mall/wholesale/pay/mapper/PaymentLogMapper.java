@@ -15,4 +15,6 @@ public interface PaymentLogMapper {
 
     List<PaymentLog> getPaymentLogList(List<Long> userIds);
 
+    List <PaymentLog> getBalanceRecord(Integer userId);
+
 }

@@ -23,15 +23,6 @@
         </trim>
     </select>
 
-    <!-- 根据order_id查询订单详情 -->
-    <select id="searchOrderById" parameterType="long"
-            resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
-        select id,order_code orderCode,discount_fee discountFee,settlement_type settlementType,pay_status payStatus
-        ,order_status orderStatus,create_time createTime,total_fee total,payable_fee needPay,remarks,after_sale_time afterSaleTime
-        from t_whs_order t1
-        where id = #{orderId}
-    </select>
-
     <select id="searchAfterSaleOrders"  parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
         select id,order_code orderCode,discount_fee discountFee,settlement_type settlementType,pay_status payStatus
         ,order_status orderStatus,create_time createTime,total_fee total,payable_fee needPay,remarks,after_sale_time afterSaleTime
@@ -161,5 +152,24 @@
             </if>
         </trim>
         <include refid="common.pager"></include>
+    </select>
+
+    <!--查询订单信息-->
+    <select id="order" parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail"  resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        select * from t_whs_order
+        <where>
+            <if test="id!=null and id!=0"> and id = #{id} </if>
+            <if test="orderCode!=null and orderCode!=''"> and order_code = #{orderCode} </if>
+            <if test="userId!=null and userId!=0"> and user_id = #{userId} </if>
+            <if test="salesmanId!=null and salesmanId!=0"> and salesman_id = #{salesmanId} </if>
+            <if test="createTime!=null and createTime!=''"> and create_time = #{createTime} </if>
+        </where>
+    </select>
+
+    <!-- 后台管理  根据id查询订单详情 -->
+    <select id="select" parameterType="long" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        SELECT <include refid="orderColumn"/>
+        FROM t_whs_order t1
+        WHERE t1.id = #{0}
     </select>
 </mapper>
