@@ -97,40 +97,6 @@ public class DataMergeUtils {
             }
         }
         return obj;
-    }
-    
-    /*public static void main(String[] args) throws IllegalAccessException, IntrospectionException, InvocationTargetException, InstantiationException {
-        List<Order> orderGridResultList = new ArrayList<>();
-        Order orderGridResult1 = new Order();
-        orderGridResult1.setId(1);
-        orderGridResult1.setUserId(1);
-        orderGridResult1.setSettlementType("cod");
-        orderGridResultList.add(orderGridResult1);
-        Order orderGridResult2 = new Order();
-        orderGridResult2.setId(2);
-        orderGridResult2.setUserId(1);
-        orderGridResult2.setSettlementType("other");
-        orderGridResultList.add(orderGridResult2);
-        Order orderGridResult3 = new Order();
-        orderGridResult3.setId(3);
-        orderGridResult3.setUserId(2);
-        orderGridResult3.setSettlementType("other");
-        orderGridResultList.add(orderGridResult3);
-        List<User> userList = new ArrayList<>();
-        User user1 = new User();
-        user1.setId(1);
-        user1.setNickName("lalala");
-        user1.setShopName("s1");
-        userList.add(user1);
-        User user2 = new User();
-        user2.setId(2);
-        user2.setNickName("wawawa");
-        user2.setShopName("s2");
-        userList.add(user2);
-        List<DataResult> resultList = DataMergeUtils.dataMerge(orderGridResultList,userList,"userId","id",DataResult.class);
-        for(DataResult dr : resultList){
-        	System.out.println(dr.toString());
-        }
-    }*/
+    }      
 }
 
