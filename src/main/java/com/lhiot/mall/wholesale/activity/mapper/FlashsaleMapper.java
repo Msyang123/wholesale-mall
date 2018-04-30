@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.activity.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
@@ -27,4 +28,7 @@ public interface FlashsaleMapper {
     
     //统计抢购商品数量
     int flashGoodsRecord(Long activityId);
+    
+    //统计用户的抢购商品数量
+    int userRecord(Map<String,Object> map);
 }

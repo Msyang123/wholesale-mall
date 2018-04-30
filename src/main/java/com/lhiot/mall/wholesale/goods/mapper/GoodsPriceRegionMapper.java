@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
+import com.lhiot.mall.wholesale.goods.domain.GoodsMinPrice;
 import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.PriceRegionGirdParam;
 
@@ -24,4 +25,7 @@ public interface GoodsPriceRegionMapper {
     int pageQueryCount(PriceRegionGirdParam param);
 
     List<GoodsPriceRegion> selectPriceRegion(long goodsStandardId);
+    
+    //根据商品id查询商品的最低的价格
+    List<GoodsMinPrice> minPrice(List<Long> goodsId);
 }

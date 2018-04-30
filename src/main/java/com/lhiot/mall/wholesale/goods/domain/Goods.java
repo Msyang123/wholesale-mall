@@ -1,11 +1,13 @@
 package com.lhiot.mall.wholesale.goods.domain;
 
+import java.math.BigDecimal;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @ApiModel
@@ -45,7 +47,7 @@ public class Goods {
 	@ApiModelProperty(notes="服务保障图片",dataType="String")
 	private String otherImage;
 	
-	@ApiModelProperty(notes="商品基础单位编码",dataType="String")
+	@ApiModelProperty(notes="基础单位编码",dataType="String")
 	private String baseUnitCode;
 	
 	@ApiModelProperty(notes="商品基础单位名称",dataType="String")
@@ -53,5 +55,26 @@ public class Goods {
 	
 	@ApiModelProperty(notes="商品分类名称",dataType="String")
 	private String categoryName;
+	
+	@ApiModelProperty(notes="计价单位",dataType="String")
+	private String goodsUnit;
+	
+	@ApiModelProperty(notes="商品重量",dataType="BigDecimal")
+	private BigDecimal weight;
 
+	@ApiModelProperty(notes="商品规格",dataType="String")
+	private String standard;
+	
+	@ApiModelProperty(notes="原价",dataType="Integer")
+	private Integer price;
+	
+	@ApiModelProperty(notes="最低价",dataType="Integer")
+	private Integer minPrice;
+	
+	@ApiModelProperty(notes="已售数量",dataType="Integer")
+	private Integer soldQuantity;
+	
+	@JsonIgnore
+	@ApiModelProperty(notes="关键词id，关键查询商品列表",dataType="Long")
+	private Long keywordId;
 }

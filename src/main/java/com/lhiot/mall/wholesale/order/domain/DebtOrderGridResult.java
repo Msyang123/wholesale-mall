@@ -3,25 +3,22 @@ package com.lhiot.mall.wholesale.order.domain;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 import java.sql.Timestamp;
-import java.util.List;
 
+/**
+ * Created by HuFan on 2018/4/25.
+ */
 @Data
-@ToString
 @ApiModel
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = false)
-public class DebtOrder {
-
+public class DebtOrderGridResult {
     @JsonProperty("id")
     private long id;
 
     @JsonProperty("checkTime")
-    private Timestamp checkTime;
+    private String checkTime;
 
     @JsonProperty("orderDebtCode")
     private String orderDebtCode;
@@ -44,4 +41,19 @@ public class DebtOrder {
     @JsonProperty("orderIds")
     private String orderIds;
 
+    //后台管理系统所需其他字段
+    @JsonProperty("discountFee")
+    private Integer discountFee;
+
+    @JsonProperty("remarks")
+    private String remarks;
+
+    @JsonProperty("shopName")
+    private String shopName;
+
+    @JsonProperty("userName")
+    private String userName;
+
+    @JsonProperty("phone")
+    private String phone;
 }

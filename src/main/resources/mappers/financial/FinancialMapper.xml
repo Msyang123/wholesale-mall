@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.faq.mapper.FaqMapper">
+    <sql id="faqColumn">
+        t1.id as id,t1.faq_category_id as faqCategoryId,t1.title as title,t1.content as content,
+        t1.rank_num as rankNum,t1.link_url as linkUrl,DATE_FORMAT(t1.create_time,'%Y-%m-%d %H:%i:%s') as createTime,t1.create_person as createPerson
+    </sql>
+
+    <sql id="faqCategoryColumn">
+        t2.faq_category_name as faqCategoryName
+    </sql>
+
+    <select id="searchFaqCategory"  resultType="com.lhiot.mall.wholesale.faq.domain.FaqCategory">
+        select * from t_whs_faq_category
+    </select>
+
+    <select id="searchFaq"  parameterType="long" resultType="com.lhiot.mall.wholesale.faq.domain.Faq">
+        select * from t_whs_faq where faq_category_id=#{0}
+    </select>
+
+    <!-- 根据id查询FAQ信息 -->
+    <select id="select" parameterType="long" resultType="com.lhiot.mall.wholesale.faq.domain.Faq">
+        SELECT <include refid="faqColumn"/>,<include refid="faqCategoryColumn"/>
+        FROM t_whs_faq t1
+        LEFT JOIN t_whs_faq_category t2 on t1.faq_category_id = t2.id
+        WHERE t1.id = #{0}
+    </select>
+
+    <!-- 后台管理 查询FAQ总数 -->
+    <select id="pageQueryCount" resultType="Integer">
+        select count(t1.id) from t_whs_faq t1
+    </select>
+
+    <!-- 后台管理 分页查询-新品需求表详情 -->
+    <select id="pageQuery" parameterType="com.lhiot.mall.wholesale.faq.domain.gridparam.FaqGridParam"
+            resultType="com.lhiot.mall.wholesale.faq.domain.Faq">
+        select <include refid="faqColumn"/>,<include refid="faqCategoryColumn"/>
+        from t_whs_faq t1
+        LEFT JOIN t_whs_faq_category t2 on t1.faq_category_id = t2.id
+        <include refid="common.pager"></include>
+    </select>
+
+    <!-- 后台管理系统新增FAQ -->
+    <insert id="insertFaq" parameterType="com.lhiot.mall.wholesale.faq.domain.Faq">
+    insert into t_whs_faq(
+    <trim suffixOverrides=",">
+        <if test="id != null and id != ''">id,</if>
+        <if test="faqCategoryId != null and faqCategoryId != ''">faq_category_id,</if>
+        <if test="title != null and title != ''">title,</if>
+        <if test="content != null and content != ''">content,</if>
+        <if test="rankNum != null and rankNum != ''">rank_num,</if>
+        <if test="linkUrl != null and linkUrl != ''">link_url,</if>
+        <if test="createTime != null">create_time,</if>
+        <if test="createPerson != null and createPerson != ''">create_person,</if>
+    </trim>
+    )
+    values(
+    <trim suffixOverrides=",">
+        <if test="id != null and id != ''">#{id},</if>
+        <if test="faqCategoryId != null and faqCategoryId != ''">#{faqCategoryId},</if>
+        <if test="title != null and title != ''">#{title},</if>
+        <if test="content != null and content != ''">#{content},</if>
+        <if test="rankNum != null and rankNum != ''">#{rankNum},</if>
+        <if test="linkUrl != null and linkUrl != ''">#{linkUrl},</if>
+        <if test="createTime != null ">#{createTime,jdbcType=TIMESTAMP},</if>
+        <if test="createPerson != null and createPerson != ''">#{createPerson},</if>
+    </trim>
+    )
+    </insert>
+
+    <!-- 根据FAQ的id修改FAQ -->
+    <update id="updateFaq" parameterType="com.lhiot.mall.wholesale.faq.domain.Faq">
+        update t_whs_faq
+        <trim prefix="set" suffixOverrides=",">
+            <if test="faqCategoryId != null and faqCategoryId != ''">faq_category_id=#{faqCategoryId},</if>
+            <if test="title != null and title != ''">title=#{title},</if>
+            <if test="content != null and content != ''">content=#{content},</if>
+            <if test="rankNum != null and rankNum != ''">rank_num=#{rankNum},</if>
+            <if test="linkUrl != null and linkUrl != ''">link_url=#{linkUrl},</if>
+            <if test="createTime != null">create_time=#{createTime,jdbcType=TIMESTAMP},</if>
+            <if test="createPerson != null and createPerson != ''">create_person=#{createPerson},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+</mapper>

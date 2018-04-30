@@ -205,4 +205,22 @@ public class GoodsCategoryService {
 		}
 		return result.substring(result.indexOf(',')+1, result.length());
 	}
+	
+	/**
+	 * 根据父节点id查询分类
+	 * @param parentId
+	 * @return
+	 */
+	public List<GoodsCategory> findCategories(Long parentId){
+		List<GoodsCategory> goodsCategories = goodsCategoryMapper.searchAll(parentId);
+		if(Objects.equals(parentId, 0) || goodsCategories.isEmpty()){
+			return goodsCategories;
+		}
+		//如果是子节点，则第一子节点的商品查询出来，作为默认显示
+		GoodsCategory goodsCategory = goodsCategories.get(0);
+		Long categoryId = goodsCategory.getId();
+		List<Goods> goods = goodsService.findByCategory(categoryId);
+		goodsCategory.setCategoryGoods(goods);
+		return goodsCategories;
+	}
 }

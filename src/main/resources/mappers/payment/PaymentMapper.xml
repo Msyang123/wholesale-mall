@@ -24,7 +24,18 @@
     </insert>
 
     <select id="getPaymentLog" parameterType="String" resultType="com.lhiot.mall.wholesale.pay.domain.PaymentLog">
-
         select * from t_whs_payment_log where order_code=#{0}
     </select>
+
+    <select id="getPaymentLogList" parameterType="java.util.ArrayList" resultType="com.lhiot.mall.wholesale.pay.domain.PaymentLog">
+        select * from t_whs_payment_log where 1=2
+        <if test="list != null and list.size()>0">
+        or order_id IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        </if>
+    </select>
+
+
 </mapper>

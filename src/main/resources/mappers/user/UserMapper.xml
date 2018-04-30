@@ -7,8 +7,8 @@
         shop_name,user_name,city,address_detail,register_time,balance
     </sql>
 
-    <select id="search"  parameterType="java.util.List" resultType="map">
-        SELECT SHOP_NAME,USER_NAME,PHONE,REGISTER_TIME,CITY,ADDRESS_DETAIL FROM T_WHS_USER WHERE id IN
+    <select id="search"  parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.user.domain.User">
+        SELECT ID,SHOP_NAME,USER_NAME,PHONE,REGISTER_TIME,CITY,ADDRESS_DETAIL FROM T_WHS_USER WHERE id IN
         <foreach collection="list" item="item" open="(" separator="," close=")">
             #{item}
         </foreach>
@@ -122,8 +122,8 @@
     </update>
 
 
-    <!-- 后台管理 根据用户手机号，用户名分页查询【新品需求】 -->
-    <select id="pageQuery" parameterType="com.lhiot.mall.wholesale.user.domain.User"
+    <!-- 后台管理 根据用户手机号或用户名分页查询用户信息 -->
+    <select id="searchByPhoneOrName" parameterType="com.lhiot.mall.wholesale.user.domain.User"
             resultType="com.lhiot.mall.wholesale.user.domain.User">
         select <include refid="userInfo"/>
         from t_whs_user
@@ -143,6 +143,14 @@
 			#{item}
 		</foreach>
 	</select>
+
+    <select id="searchByIds" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.user.domain.User">
+        select * from t_whs_user
+        where id in
+        <foreach collection="list" item = "item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 	
 	<!-- 根据手机号模糊查询用户信息 -->
 	<select id="fuzzySearchByPhone" parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.User">

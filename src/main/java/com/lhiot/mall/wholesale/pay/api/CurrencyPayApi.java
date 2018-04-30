@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.pay.api;
 
 import com.leon.microx.common.exception.ServiceException;
+import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
@@ -22,6 +23,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -55,8 +58,8 @@ public class CurrencyPayApi {
         if (Objects.isNull(orderDetail)){
             return ResponseEntity.badRequest().body("没有该订单信息");
         }
-        if(orderDetail.getOrderStatus()>2||orderDetail.getPayStatus()!=0){
-            return ResponseEntity.badRequest().body("已支付订单状态，请勿重复支付");
+        if(!Objects.equals(orderDetail.getOrderStatus(),"unpaid")){
+            return ResponseEntity.badRequest().body("订单状态异常，请检查订单状态");
         }
         int payResult=payService.currencyPay(orderDetail);
         if(payResult>0){
@@ -106,5 +109,12 @@ public class CurrencyPayApi {
             return ResponseEntity.ok(invoice);
         }
         return ResponseEntity.badRequest().body("余额支付发票失败");
+    }
+
+    @GetMapping("/orderpay/payment")
+    @ApiOperation(value = "根据订单Ids查询支付记录",response = PaymentLog.class)
+    public  ResponseEntity<List<PaymentLog>> paymentList(@PathVariable("orderIds") Long[] orderIds){
+        List<Long> orderIdList =  Arrays.asList(orderIds);
+        return ResponseEntity.ok(paymentLogService.getPaymentLogList(orderIdList));
     }
 }

@@ -178,12 +178,11 @@ public class WxPayApi {
         //审核状态 0-未支付 1-审核中 2-审核失败 3-已支付
         if(Objects.isNull(debtOrder)){
             return ResponseEntity.badRequest().body("未找到欠款订单信息");
-        }else if(debtOrder.getCheckStatus()==1){
+        }else if(Objects.equals(debtOrder.getCheckStatus(),"unaudited")){
             return ResponseEntity.badRequest().body("欠款订单审核中");
-        }else if(debtOrder.getCheckStatus()==3){
+        }else if(Objects.equals(debtOrder.getCheckStatus(),"paid") || Objects.equals(debtOrder.getCheckStatus(),"agree")){
             return ResponseEntity.badRequest().body("欠款订单已支付");
         }
-
         String wxInvoiceSignStr=payService.wxDebtopderPay(getRemoteAddr(request),openId,debtOrder.getDebtFee(),getUserAgent(request),debtOrder.getOrderDebtCode(),weChatUtil);
         //FIXME 写欠款订单支付签名日志
         return ResponseEntity.ok(wxInvoiceSignStr);

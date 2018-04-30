@@ -1,5 +1,8 @@
 package com.lhiot.mall.wholesale.goods.domain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -30,5 +33,11 @@ public class PlateCategory {
 	
 	@ApiModelProperty(notes="等级",dataType="Integer")
 	private Integer levels;
+	
+	@ApiModelProperty(notes="布局方式",dataType="String")
+	private String layout;
+	
+	@ApiModelProperty(notes="版块商品",dataType="java.util.List")
+	private List<Goods> plateGoods = new ArrayList<>();
 }
 

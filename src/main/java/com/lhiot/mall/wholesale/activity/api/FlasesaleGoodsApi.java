@@ -81,4 +81,11 @@ public class FlasesaleGoodsApi {
     public ResponseEntity<FlashActivityGoods> falshGoodses(@PathVariable("type") ActivityPeriodsType type) {
         return ResponseEntity.ok(flashsaleService.falshGoods(type));
     }
+    
+    @GetMapping("/flashsale/records/{userId}/{activityId}")
+    @ApiOperation(value = "获取用户抢购数量")
+    public ResponseEntity<Integer> userRecords(@PathVariable("userId") Long userId,
+    		@PathVariable("activityId") Long activityId) {
+        return ResponseEntity.ok(flashsaleService.userRecords(userId, activityId));
+    }
 }

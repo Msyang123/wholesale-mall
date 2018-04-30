@@ -379,8 +379,8 @@ public class PayService {
             paymentLog.setTotalFee(needPayFee);
             paymentLogMapper.insertPaymentLog(paymentLog);
             //修改订单并且发送海鼎订单
-            orderDetail.setOrderStatus(3);//已付款状态
-            orderDetail.setCurrentOrderStaus(1);//待付款状态
+            orderDetail.setOrderStatus("undelivery");//已付款状态
+            orderDetail.setCurrentOrderStatus("unpaid");//待付款状态
 
             //修改订单状态为已支付状态
             return 1;
@@ -494,7 +494,7 @@ public class PayService {
         returnData.setDeliveryType("1");
         returnData.setOrderType("1");
         returnData.setTotal(orderDetail.getTotal());
-        returnData.setDiscount(orderDetail.getOrderDiscountFee());
+        returnData.setDiscount(orderDetail.getDiscountFee());
 
         JSONObject json = new JSONObject(orderDetail.getDeliveryAddress());
         returnData.setReceiverName(json.getString("deliveryName"));

@@ -166,4 +166,9 @@ public class UserService {
     public List<User> users(List<Long> userIds){
     	return userMapper.searchInbatch(userIds);
     }
+
+    //后台管理 根据用户手机号或用户名分页查询用户信息
+    public List<User> searchByPhoneOrName(User param) {
+        return userMapper.searchByPhoneOrName(param);
+    }
 }

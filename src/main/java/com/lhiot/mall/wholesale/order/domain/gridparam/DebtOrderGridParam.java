@@ -8,8 +8,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -18,30 +16,15 @@ import java.util.List;
 @ApiModel
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class OrderGridParam extends PageObject{
-    @JsonProperty("id")
-    private Long id;
-
-    @JsonProperty("orderCode")
-    private String orderCode;
-
+public class DebtOrderGridParam extends PageObject{
     @JsonProperty("phone")
     private String phone;
 
-    @JsonProperty("orderStatus")
-    private String orderStatus;
+    @JsonProperty("shopName")
+    private String shopName;
 
-    @JsonProperty("payStatus")
-    private String payStatus;
-
-    @JsonProperty("createTimeBegin")
-    private String createTimeBegin;
-
-    @JsonProperty("createTimeEnd")
-    private String createTimeEnd;
-
-    @JsonProperty("settlementType")
-    private String settlementType;
+    @JsonProperty("checkStatus")
+    private String checkStatus;
 
     @ApiModelProperty(notes="分页查询开始页面",dataType="Integer")
     private Integer start;

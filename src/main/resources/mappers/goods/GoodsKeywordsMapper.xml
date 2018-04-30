@@ -116,4 +116,35 @@
 		</trim>
 		<include refid="common.pager"></include>
 	</select>
+	
+	<!-- lynn 根据条件查询关键词列表 -->
+	<select id="keywords" parameterType="map" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsKeywords">
+				select o1.id ,o1.keyword,o1.hot_search as hotSearch,o1.mapping_id as mappingId,o1.mappingName,
+		o1.kw_type as kwType
+		from(
+			select t.* ,
+			case kw_type 
+			when 'goods' then (
+				select n2.goods_name as goodsName from t_whs_goods_standard n1
+				left join t_whs_goods n2 on n1.goods_id = n2.id
+				where n1.id = t.mapping_id
+			)
+			else(
+				select category_name as categoryName from t_whs_goods_category where id = t.mapping_id
+			)
+			end as mappingName
+			from t_whs_goods_keywords t
+		) as o1
+		<trim prefix="where" prefixOverrides="and">
+			<if test="keyword != null and keyword != ''">
+				and o1.keyword like concat('%',#{keyword},'%')
+			</if>
+			<if test="kwType != null and kwType != ''">
+				and o1.kw_type = #{kwType}
+			</if>
+			<if test="hotSearch != null">
+				and o1.hot_search = #{hotSearch}
+			</if>
+		</trim>
+	</select>
 </mapper>

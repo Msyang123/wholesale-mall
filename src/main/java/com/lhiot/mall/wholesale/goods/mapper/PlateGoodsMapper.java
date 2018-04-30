@@ -22,7 +22,7 @@ public interface PlateGoodsMapper {
     PlateGoodsResult select(long id);
 
     List<PlateGoodsResult> search();
-    //获取当前分类的醉倒排序值
+    //获取当前分类的最大排序值
     Integer maxRank(Long plateId);
     //根据分类id查询
     List<PlateGoods> findByPlateId(Long plateId);

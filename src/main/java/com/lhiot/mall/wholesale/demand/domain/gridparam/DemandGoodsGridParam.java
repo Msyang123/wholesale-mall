@@ -44,15 +44,5 @@ public class DemandGoodsGridParam extends PageObject {
     @ApiModelProperty(notes="排序",dataType="String")
     private String sord;
 
-    /*public void setUserIds(String userIds){
-        String[] array = StringUtils.tokenizeToStringArray(userIds, ",");
-        if (!ObjectUtils.isEmpty(array)){
-            this.userIds = new Long[array.length];
-            for (int i = 0; i < array.length; i++) {
-                this.userIds[i] = Long.valueOf(array[i]);
-            }
-        }
-    }*/
-
 
 }

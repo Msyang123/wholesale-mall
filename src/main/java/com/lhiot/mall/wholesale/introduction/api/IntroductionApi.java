@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-@Api(description = "新品需求接口")
+@Api(description = "服务协议接口")
 @Slf4j
 @RestController
 public class IntroductionApi {

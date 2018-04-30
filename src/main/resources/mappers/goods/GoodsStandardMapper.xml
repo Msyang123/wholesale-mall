@@ -4,7 +4,8 @@
 
 	<sql id="goodsStandardColumn">
 		t1.id ,t1.goods_id as goodsId, t1.bar_code as barCode,t1.weight,t1.unit_code as unitCode,
-		t1.standard, t1.price,FORMAT(t1.price/100.0,2) as goodsPrice, t1.if_vaild as ifVaild,t1.hd_sku_id as hdSkuId, t1.standard_desc as standardDesc
+		t1.standard, t1.price,FORMAT(t1.price/100.0,2) as goodsPrice, t1.if_vaild as ifVaild,t1.hd_sku_id as hdSkuId, 
+		t1.standard_desc as standardDesc,t1.purchase_price as purchasePrice,FORMAT(t1.purchase_price/100.0,2) as pprice
 	</sql>
 	
 	<sql id="goodsColumn">
@@ -80,6 +81,7 @@
 				<if test="vaild != null">if_vaild,</if>
 				<if test="hdSkuId != null and hdSkuId != ''">hd_sku_id,</if>
 				<if test="standardDesc != null and standardDesc != ''">standard_desc,</if>
+				<if test="purchasePrice != null and purchasePrice != ''">purchase_price,</if>
 			</trim>
 		)
 		values(
@@ -93,6 +95,7 @@
 				<if test="vaild != null">#{ifVaild},</if>
 				<if test="hdSkuId != null and hdSkuId != ''">#{hdSkuId},</if>
 				<if test="standardDesc != null and standardDesc != ''">#{standardDesc},</if>
+				<if test="purchasePrice != null and purchasePrice != ''">#{purchasePrice},</if>
 			</trim>
 		)
 	</insert>
@@ -110,6 +113,7 @@
 			<if test="vaild != null">if_vaild=#{ifVaild},</if>
 			<if test="hdSkuId != null and hdSkuId != ''">hd_sku_id=#{hdSkuId},</if>
 			<if test="standardDesc != null and standardDesc != ''">standard_desc=#{standardDesc},</if>
+			<if test="purchasePrice != null and purchasePrice != ''">purchase_price=#{purchasePrice},</if>
 		</trim>
 		where id = #{id}
 	</update>

@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional
 @Slf4j
@@ -26,5 +28,14 @@ public class PaymentLogService {
      */
     public PaymentLog getPaymentLog(String orderCode){
         return paymentLogMapper.getPaymentLog(orderCode);
+    }
+
+    /**
+     * 依据订单id集合查询支付日志
+     * @param orderIds
+     * @return
+     */
+    public List<PaymentLog> getPaymentLogList(List<Long> orderIds){
+        return paymentLogMapper.getPaymentLogList(orderIds);
     }
 }

@@ -247,4 +247,15 @@ public class FlashsaleService {
 		progress = b1.divide(b2).intValue();
 		return ImmutableMap.of("progress", progress, "remainNum", (goodsStock-sum));
 	}
+	
+	/**
+	 * 查询用户当前活动的抢购数量
+	 * @param userId
+	 * @param activityId
+	 * @return
+	 */
+	public int userRecords(Long userId,Long activityId){
+		Map<String,Object> param = ImmutableMap.of("userId", userId, "activityId", activityId);
+		return flashsaleMapper.userRecord(param);
+	}
 }

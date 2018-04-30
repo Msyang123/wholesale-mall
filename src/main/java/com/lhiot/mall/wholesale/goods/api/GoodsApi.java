@@ -19,12 +19,12 @@ import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.ResultObject;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.Goods;
-import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
 import com.lhiot.mall.wholesale.goods.domain.GoodsDetailResult;
 import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
 import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
 import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
 import com.lhiot.mall.wholesale.goods.domain.InventoryResult;
+import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
 import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 import com.lhiot.mall.wholesale.goods.service.GoodsService;
@@ -117,5 +117,18 @@ public class GoodsApi {
     @ApiOperation(value = "查询商品分类是否可以被修改或新增")
     public ResponseEntity<Boolean> tryoperation(@RequestBody(required = true) Goods goods) {
         return ResponseEntity.ok(goodsService.allowOperation(goods));
+    }
+	
+	@GetMapping("/goods/keyword/{keyword}")
+    @ApiOperation(value = "根据关键词查询商品列表" ,response= Goods.class,responseContainer="list")
+    public ResponseEntity<List<Goods>> findGoodsByKeyword(@RequestParam(required = false) Long id,
+    		@PathVariable("keyword") String keywrod) {
+        return ResponseEntity.ok(goodsService.findGoodsByKeyword(keywrod, id));
+    }
+	
+	@GetMapping("/goods/plate/{plateId}")
+    @ApiOperation(value = "根据版块获取商品列表" ,response= PlateCategory.class)
+    public ResponseEntity<PlateCategory> findGoodsByKeyword(@PathVariable("plateId") Long plateId) {
+        return ResponseEntity.ok(goodsService.plateGoods(plateId));
     }
 }

@@ -1,37 +1,53 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.lhiot.mall.wholesale.order.mapper.OrderMapper">
+    <sql id="orderColumn">
+        t1.id as id,t1.order_code as orderCode,t1.user_id as userId,t1.salesman_id as salesmanId,t1.total_fee as totalFee,
+    t1.create_time as createTime,t1.order_status as orderStatus,t1.order_coupon as orderCoupon,t1.discount_fee as discountFee,
+    t1.payable_fee as payableFee,t1.hd_status as hdStatus,t1.delivery_time as deliveryTime,t1.delivery_fee as deliveryFee,
+    t1.remarks as remarks,t1.settlement_type as settlementType,t1.pay_status as payStatus,t1.delivery_address as deliveryAddress,
+    t1.receive_time as receiveTime,t1.after_sale_time as afterSale_Time
+    </sql>
 
     <!-- 查询订单信息 -->
     <select id="searchOrders"  parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
-       select id,order_code orderCode,order_discount_fee orderDiscountFee,order_type orderType,pay_status payStatus
-        ,order_status orderStatus,order_create_time createTime,order_total total,order_need_fee needPay,remarks,after_sale_time afterSaleTime
+       select id,order_code orderCode,discount_fee discountFee,settlement_type settlementType,pay_status payStatus
+        ,order_status orderStatus,create_time createTime,total_fee total,payable_fee needPay,remarks,after_sale_time afterSaleTime
        from t_whs_order o
         <trim prefix="where" prefixOverrides="and">
             <if test="userId != null ">and o.user_id=#{userId}</if>
-            <if test="orderType != null ">and o.order_type=#{orderType}</if>
-            <if test="payStatus != null ">and o.pay_status=#{payStatus}</if>
+            <if test="settlementType != null ">and o.settlement_type=#{settlementType}</if>
+            <if test="payStatus != null ">and o.pay_status=#{payStatus}</if>R
             <if test="orderStatus != null ">and o.order_status = #{orderStatus}</if>
 
         </trim>
+    </select>
+
+    <!-- 根据order_id查询订单详情 -->
+    <select id="searchOrderById" parameterType="long"
+            resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        select id,order_code orderCode,discount_fee discountFee,settlement_type settlementType,pay_status payStatus
+        ,order_status orderStatus,create_time createTime,total_fee total,payable_fee needPay,remarks,after_sale_time afterSaleTime
+        from t_whs_order t1
+        where id = #{orderId}
     </select>
 
     <select id="searchAfterSaleOrders"  parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
-        select id,order_code orderCode,order_discount_fee orderDiscountFee,order_type orderType,pay_status payStatus
-        ,order_status orderStatus,order_create_time createTime,order_total total,order_need_fee needPay,remarks,after_sale_time afterSaleTime
+        select id,order_code orderCode,discount_fee discountFee,settlement_type settlementType,pay_status payStatus
+        ,order_status orderStatus,create_time createTime,total_fee total,payable_fee needPay,remarks,after_sale_time afterSaleTime
         from t_whs_order o
         <trim prefix="where" prefixOverrides="and">
             <if test="userId != null ">and o.user_id=#{userId}</if>
-            <if test="orderType != null ">and o.order_type=#{orderType}</if>
+            <if test="settlementType != null ">and o.settlement_type=#{settlementType}</if>
             <if test="payStatus != null ">and o.pay_status=#{payStatus}</if>
             <if test="orderStatus != null ">and o.order_status = #{orderStatus}</if>
         </trim>
-        and DATE_SUB(CURDATE(),INTERVAL 30 DAY) &lt;= o.order_create_time
+        and DATE_SUB(CURDATE(),INTERVAL 30 DAY) &lt;= o.create_time
     </select>
 
     <select id="searchOrder"  parameterType="String" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
-        select id,order_code orderCode,order_discount_fee orderDiscountFee,order_type orderType,pay_status payStatus
-        ,order_status orderStatus,order_create_time createTime,order_total total,order_need_fee orderNeedFee,remarks,
+        select id,order_code orderCode,discount_fee discountFee,settlement_type settlementType,pay_status payStatus
+        ,order_status orderStatus,create_time createTime,total_fee total,payable_fee orderNeedFee,remarks,
         hd_status,delivery_time,delivery_fee,delivery_address
         from t_whs_order o where o.order_code = #{orderCode}
     </select>
@@ -51,8 +67,8 @@
     </select>
 
     <select id="searchOrdersByOrderCodes" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
-        select id,order_code orderCode,order_discount_fee orderDiscountFee,order_type orderType,pay_status payStatus
-        ,order_status orderStatus,order_create_time createTime,order_total total,order_need_fee orderNeedFee,remarks
+        select id,order_code orderCode,discount_fee discountFee,settlement_type settlementType,pay_status payStatus
+        ,order_status orderStatus,create_time createTime,total_fee total,payable_fee orderNeedFee,remarks
         from t_whs_order where order_code in
         <foreach collection="list" item="item" open="(" close=")" separator=",">
             #{item}
@@ -63,13 +79,13 @@
             useGeneratedKeys="true"
             keyProperty="id">
         insert into t_whs_order (order_code,user_id,
-                        salesman_id,order_total,order_create_time,order_status,order_coupon,order_discount_fee,order_need_fee,
-                        hd_status,delivery_time,delivery_fee,remarks,order_type,pay_status,delivery_address,receive_time,hd_status,
+                        salesman_id,total_fee,create_time,order_status,order_coupon,discount_fee,payable_fee,
+                        hd_status,delivery_time,delivery_fee,remarks,settlement_type,pay_status,delivery_address,receive_time,hd_status,
                         delivery_time,delivery_fee.delivery_address
                         ) VALUES
           (#{orderCode},#{userId},
-              #{salesmanId},#{orderTotal},#{orderCreateTime},#{orderStatus},#{orderCoupon},#{orderDiscountFee},#{orderNeedFee},
-              #{hdStatus},#{deliveryTime},#{deliveryFee},#{remarks},#{orderType},#{payStatus},#{deliveryAddress},#{receiveTime},
+              #{salesmanId},#{orderTotal},#{createTime},#{orderStatus},#{orderCoupon},#{discountFee},#{orderNeedFee},
+              #{hdStatus},#{deliveryTime},#{deliveryFee},#{remarks},#{settlementType},#{payStatus},#{deliveryAddress},#{receiveTime},
               #{hdStatus},#{deliveryTime},#{deliveryFee},#{deliveryAddress}
           )
     </insert>
@@ -88,4 +104,62 @@
     <update id="updateOrderStatusByCode" parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
         UPDATE t_whs_order set order_status=#{orderStatus} where order_status=#{currentOrderStaus} and order_code=#{orderCode}
     </update>
+    
+    <!-- 统计商品的售卖数量 -->
+    <select id="soldQuantity" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.order.domain.SoldQuantity">
+    	select t1.goods_id as goodsId,sum(quanity) as soldQuantity
+		from t_whs_order_goods t1
+		left join t_whs_order t2 on t1.order_id = t2.id
+		<trim prefix="where">
+			goods_standard_id in
+			<foreach collection="list" item="item" open="(" separator="," close=")">
+				 #{item}
+			</foreach>
+			and t2.order_status in (3,4,8) and t1.refund_staus = '0'
+		</trim>
+		group by t1.goods_standard_id
+    </select>
+
+    <!-- 后台管理 分页查询总数 -->
+    <select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam" resultType="Integer">
+        select count(t1.id) from t_whs_order t1
+        <trim prefix="where" prefixOverrides="and">
+            <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
+            <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
+            <if test="orderCode != null and orderCode != ''">and t1.order_code = #{orderCode}</if>
+            <if test="orderStatus != null and orderStatus != ''">and t1.order_status = #{orderStatus}</if>
+            <if test="payStatus != null and payStatus != ''">and t1.pay_status = #{payStatus}</if>
+            <if test="settlementType != null and settlementType != ''">and t1.settlement_type = #{settlementType}</if>
+            <if test="id != null and id != ''">and t1.id = #{id}</if>
+            <if test="userIds != null and userIds.size()>0">
+                and t1.user_id in
+                <foreach collection="userIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </trim>
+    </select>
+
+    <!-- 后台管理 分页查询-订单表查询 -->
+    <select id="pageQuery" parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam"
+            resultType="com.lhiot.mall.wholesale.order.domain.OrderGridResult">
+        select <include refid="orderColumn"/>
+        from t_whs_order t1
+        <trim prefix="where" prefixOverrides="and">
+            <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
+            <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
+            <if test="orderCode != null and orderCode != ''">and t1.order_code = #{orderCode}</if>
+            <if test="orderStatus != null and orderStatus != ''">and t1.order_status = #{orderStatus}</if>
+            <if test="payStatus != null and payStatus != ''">and t1.pay_status = #{payStatus}</if>
+            <if test="settlementType != null and settlementType != ''">and t1.settlement_type = #{settlementType}</if>
+            <if test="id != null and id != ''">and t1.id = #{id}</if>
+            <if test="userIds != null and userIds.size()>0">
+                and t1.user_id in
+                <foreach collection="userIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </trim>
+        <include refid="common.pager"></include>
+    </select>
 </mapper>
