@@ -48,8 +48,8 @@ wholesale-mall:
   id-generator:
     worker-id: 1
     data-center-id: 1
-
-food-see:
+  rest-template:
+    string-http-message-converter-default-charset: UTF-8
   payment:
     charset: UTF-8
     send-message-url: http://172.16.10.196:6321/verify/{0}?verifyCodeType={1}
@@ -66,10 +66,6 @@ food-see:
       order-notify-url: https://online.food-see.com/wholesale-mall/wechat/order/notify
       payunit: 100
       proxy: nonginx
-sgsl:
-  manager:
-    rest:
-      string-http-message-converter-default-charset: UTF-8
 hd:
   config:
     charset: UTF-8
