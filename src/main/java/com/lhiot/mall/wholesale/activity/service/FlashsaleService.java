@@ -197,25 +197,20 @@ public class FlashsaleService {
 	 * @return
 	 */
 	public FlashActivityGoods falshGoods(ActivityPeriodsType activityPeriodsType){
-		Activity activity = null;
+		FlashActivityGoods flashActivityGoods = null;
 		ActivityType flasesale = ActivityType.flashsale;
 		//获取开启抢购活动
 		if(activityPeriodsType.equals(ActivityPeriodsType.current)){
-			activity = activityService.currentActivity(flasesale);
+			flashActivityGoods = activityService.currentActivity(flasesale);
 		}else if(activityPeriodsType.equals(ActivityPeriodsType.next)){
-			activity = activityService.nextActivity(flasesale);
+			flashActivityGoods = activityService.nextActivity(flasesale);
 		}
-		if(Objects.isNull(activity)){
+		if(Objects.isNull(flashActivityGoods)){
 			return null;
 		}
-		//设置活动信息
-		FlashActivityGoods flashActivityGoods = new FlashActivityGoods();
-		flashActivityGoods.setActivity(activity);
-		
 		//查询活动商品
-		List<FlashsaleGoods> flashGoods = flashsaleMapper.search(activity.getId());
+		List<FlashsaleGoods> flashGoods = flashsaleMapper.search(flashActivityGoods.getId());
 		if(flashGoods.isEmpty()){
-			flashActivityGoods.setFlashGoods(new ArrayList<>());
 			return flashActivityGoods;
 		}
 		//查询并设置抢购进度
@@ -227,7 +222,7 @@ public class FlashsaleService {
 		}
 		//组装商品信息
 		this.contructData(flashGoods);
-		flashActivityGoods.setFlashGoods(flashGoods);
+		flashActivityGoods.setProList(flashGoods);
 		return flashActivityGoods;
 	}
 	
@@ -239,7 +234,7 @@ public class FlashsaleService {
 	public Map<String,Object> flashsaleProgress(Long id,Integer goodsStock){
 		int progress = 0;
 		Integer sum = flashsaleMapper.flashGoodsRecord(id);
-		if(Objects.isNull(sum)){
+		if(Objects.equals(0, sum)){
 			return ImmutableMap.of("progress", progress, "remainNum", goodsStock);
 		}
 		BigDecimal b1 = new BigDecimal(sum*100);

@@ -106,7 +106,7 @@
 			<foreach collection="list" item="item" open="(" separator="," close=")">
 				 #{item}
 			</foreach>
-			and t2.order_status in (3,4,8) and t1.refund_staus = '0'
+			and t2.order_status in ('undelivery','delivery','received') and t1.refund_status = 'no'
 		</trim>
 		group by t1.goods_standard_id
     </select>

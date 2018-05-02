@@ -21,7 +21,7 @@
 				<if test="linkUrl != null and linkUrl != ''">link_url,</if>
 				<if test="startTime != null and startTime != ''">start_time,</if>
 				<if test="endTime != null and endTime != ''">end_time,</if>
-				<if test="vaildInt != null">vaild,</if>
+				<if test="vaild != null">vaild,</if>
 			</trim>
 		)
 		values(
@@ -31,7 +31,7 @@
 				<if test="linkUrl != null and linkUrl != ''">#{linkUrl},</if>
 				<if test="startTime != null and startTime != ''">#{startTime},</if>
 				<if test="endTime != null and endTime != ''">#{endTime},</if>
-				<if test="vaildInt != null">#{vaildInt},</if>
+				<if test="vaild != null">#{vaild},</if>
 			</trim>
 		)
 	</insert>
@@ -45,7 +45,7 @@
 			<if test="linkUrl != null and linkUrl != ''">link_url=#{linkUrl},</if>
 			<if test="startTime != null and startTime != ''">start_time=#{startTime},</if>
 			<if test="endTime != null and endTime != ''">end_time=#{endTime},</if>
-			<if test="vaildInt != null">vaild=#{vaildInt},</if>
+			<if test="vaild != null">vaild=#{vaild},</if>
 		</trim>
 		where id = #{id}
 	</update>
@@ -103,17 +103,17 @@
 	</select>
 	
 	<!-- 查询当前开启活动lynn -->
-	<select id="currentActivity" parameterType="String" resultType="com.lhiot.mall.wholesale.activity.domain.Activity">
+	<select id="currentActivity" parameterType="String" resultType="com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods">
 		select <include refid="activityColumn"/> from t_whs_activity
-		where activity_type = #{0} and vaild = '1' and now() between start_time and end_time
+		where activity_type = #{0} and vaild = 'yes' and now() between start_time and end_time
 		order by start_time limit 1
 	</select>
 	
 	<!-- 查询下期开启活动lynn -->
-	<select id="nextActivity" parameterType="map" resultType="com.lhiot.mall.wholesale.activity.domain.Activity">
+	<select id="nextActivity" parameterType="map" resultType="com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods">
 		select <include refid="activityColumn"/> from t_whs_activity
 		where activity_type = #{activityType} 
-		and vaild = '1'
+		and vaild = 'yes'
 		and start_time &gt; #{time}
 		order by start_time limit 1
 	</select>

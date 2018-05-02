@@ -2,7 +2,6 @@ package com.lhiot.mall.wholesale.goods.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lhiot.mall.wholesale.goods.domain.Goods;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
