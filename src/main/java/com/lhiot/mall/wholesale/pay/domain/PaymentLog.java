@@ -53,5 +53,4 @@ public class PaymentLog {
     @JsonProperty("paymentTime")
     private Timestamp paymentTime;
 
-
 }

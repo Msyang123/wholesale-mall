@@ -64,7 +64,7 @@ public class Invoice {
     private Timestamp createTime;
 
     @JsonProperty("invoiceStatus")
-    private int invoiceStatus;
+    private String invoiceStatus;
 
     @JsonProperty("invoicePrintTime")
     private Timestamp invoicePrintTime;

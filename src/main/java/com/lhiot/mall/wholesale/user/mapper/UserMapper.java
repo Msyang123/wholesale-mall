@@ -37,12 +37,14 @@ public interface UserMapper {
 
     int updateDefaultAddress();
 
-    //后台管理 新品需求--根据用户手机号或用户名分页查询用户信息
-    List<User> pageQuery(User param);
-   
+    //后台管理 根据用户手机号或用户名分页查询用户信息
+    List<User> searchByPhoneOrName(User param);
+
+
     List<User> searchByPhones(List<String> phones);
     
     List<User> fuzzySearchByPhone(String phone);
     
     List<User> searchInbatch(List<Long> userIds);
+
 }

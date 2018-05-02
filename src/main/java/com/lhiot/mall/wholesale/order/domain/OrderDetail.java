@@ -18,28 +18,27 @@ import java.util.List;
 public class OrderDetail {
 
     @JsonProperty("id")
-    private long id;
+    private Long id;
 
     @JsonProperty("orderId")
     private String orderCode;
 
     @JsonProperty("salesmanId")
-    private long salesmanId;
+    private Long salesmanId;
 
     @JsonProperty("payType")
-    private Integer settlementType;
+    private String settlementType;
 
     @JsonProperty("status")
-    private Integer orderStatus;
+    private String orderStatus;
 
-    //订单当前状态 用于修改的时候约束条件
-    private Integer currentOrderStaus;
+    private String currentOrderStatus;
 
     @JsonProperty("auditStatus")
-    private Integer checkStatus;
+    private String checkStatus;
 
     @JsonProperty("createTime")
-    private String createTime;
+    private Timestamp createTime;
 
     @JsonProperty("total")
     private Integer totalFee;
@@ -48,10 +47,10 @@ public class OrderDetail {
     private Integer discountFee;
 
     @JsonProperty("userId")
-    private long userId;
+    private Long userId;
 
     @JsonProperty("payStatus")
-    private Integer payStatus;
+    private String payStatus;
 
     @JsonProperty("comments")
     private String remarks;
@@ -60,7 +59,7 @@ public class OrderDetail {
     private Timestamp afterSaleTime;
 
     @JsonProperty("hdStatus")
-    private Integer hdStatus;//发送订单到海鼎是否成功0成功1失败
+    private String hdStatus;//发送订单到海鼎是否成功0成功1失败
 
     @JsonProperty("deliveryTime")
     private Timestamp deliveryTime;
@@ -85,5 +84,8 @@ public class OrderDetail {
 
     @JsonProperty("payableFee")
     private  Integer payableFee;
+
+    @JsonProperty("addressDetail")
+    private String addressDetail;
 
 }

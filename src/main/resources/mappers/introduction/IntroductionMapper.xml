@@ -27,8 +27,8 @@
 		<include refid="common.pager"></include>
 	</select>
 
-	<!-- lynn 2018/4/19根据id 服务文章 -->
-	<update id="update" parameterType="com.lhiot.mall.wholesale.introduction.domain.Introduction">
+	<!-- 后台管理 修改服务协议 -->
+	<update id="updateIntroduction" parameterType="com.lhiot.mall.wholesale.introduction.domain.Introduction">
 		update t_whs_introduction
 		<trim prefix="set" suffixOverrides=",">
 			<if test="serviceType != null and serviceType != ''">service_type=#{serviceType},</if>
@@ -36,13 +36,13 @@
 			<if test="content != null and content != ''">content=#{content},</if>
 			<if test="createPerson != null and createPerson != ''">create_person=#{createPerson},</if>
 			<if test="serviceStatus != null and serviceStatus != ''">service_status=#{serviceStatus},</if>
-			create_time = now()
+			<if test="create != null">create_time=#{createTime,jdbcType=TIMESTAMP},</if>
   		</trim>
 		where id = #{id}
 	</update>
 
-	 <!-- 新增地址 -->
-	<insert id="insert" parameterType="com.lhiot.mall.wholesale.introduction.domain.Introduction" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+	 <!-- 后台管理 新增服务协议 -->
+	<insert id="insertIntroduction" parameterType="com.lhiot.mall.wholesale.introduction.domain.Introduction" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
 		insert into t_whs_introduction(
 		<trim suffixOverrides=",">
 			id,

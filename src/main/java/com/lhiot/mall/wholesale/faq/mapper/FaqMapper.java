@@ -18,13 +18,13 @@ public interface FaqMapper {
 
     Faq select(long id);
 
-    //分页查询新品需求
+    //分页查询问题
     List<Faq> pageQuery(FaqGridParam param);
 
-    //查询分类的总记录数
-    int pageQueryCount(FaqGridParam param);
+    //查询FAQ的总记录数
+    int pageQueryCount();
 
-    int update(Faq faq);
+    int updateFaq(Faq faq);
 
-    int insert(Faq faq);
+    int insertFaq(Faq faq);
 }
