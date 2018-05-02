@@ -36,7 +36,7 @@ public class DebtOrder {
     private int debtFee;
 
     @JsonProperty("checkStatus")
-    private int checkStatus;
+    private String checkStatus;
 
     @JsonProperty("paymentEvidence")
     private String paymentEvidence;
@@ -44,4 +44,6 @@ public class DebtOrder {
     @JsonProperty("orderIds")
     private String orderIds;
 
+    @JsonProperty("remarks")
+    private String remarks;
 }

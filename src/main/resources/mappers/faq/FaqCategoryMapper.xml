@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.faq.mapper.FaqCategoryMapper">
+
+    <!-- 后台管理 查询FAQ分类记录总数 -->
+    <select id="pageQueryCount" resultType="Integer">
+        select count(id) from t_whs_faq_category
+    </select>
+
+
+    <!-- 后台管理系统新增FAQ分类 -->
+    <insert id="insertFaqCategory" parameterType="com.lhiot.mall.wholesale.faq.domain.FaqCategory">
+    insert into t_whs_faq_category(
+    <trim suffixOverrides=",">
+        <if test="id != null and id != ''">id,</if>
+        <if test="faqCategoryName != null and faqCategoryName != ''">faq_category_name,</if>
+        <if test="createTime != null">create_time,</if>
+        <if test="createPerson != null and createPerson != ''">create_person,</if>
+    </trim>
+    )
+    values(
+    <trim suffixOverrides=",">
+        <if test="id != null and id != ''">#{id},</if>
+        <if test="faqCategoryName != null and faqCategoryName != ''">#{faqCategoryName},</if>
+        <if test="createTime != null ">#{createTime,jdbcType=TIMESTAMP},</if>
+        <if test="createPerson != null and createPerson != ''">#{createPerson},</if>
+    </trim>
+    )
+    </insert>
+
+</mapper>

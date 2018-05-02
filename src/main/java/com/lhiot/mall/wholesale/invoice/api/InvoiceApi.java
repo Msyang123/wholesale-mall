@@ -1,8 +1,10 @@
 package com.lhiot.mall.wholesale.invoice.api;
 
 import com.leon.microx.common.wrapper.ArrayObject;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle;
+import com.lhiot.mall.wholesale.invoice.domain.gridparam.InvoiceGridParam;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
@@ -112,5 +114,26 @@ public class InvoiceApi {
         return ResponseEntity.ok(ArrayObject.of(invoiceList));
     }
 
+    @PostMapping("/invoices/grid")
+    @ApiOperation(value = "后台管理-分页查询开票信息", response = PageQueryObject.class)
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) InvoiceGridParam param) {
+        return ResponseEntity.ok(invoiceService.pageQuery(param));
+    }
+
+    @GetMapping("/invoices/detail/{id}")
+    @ApiOperation(value = "后台管理-开票信息详情页面",response = Invoice.class)
+    public  ResponseEntity<Invoice> demandGoodsDetail(@PathVariable("id") Long id){
+        return ResponseEntity.ok(invoiceService.detail(id));
+    }
+
+    @PutMapping("/updateInvoiceStatus")
+    @ApiOperation(value = "后台管理-修改开票状态")
+    public ResponseEntity updateInvoiceStatus(@RequestBody(required = true) long id){
+        if (invoiceService.updateInvoiceStatus(id)>0){
+            return ResponseEntity.ok().body("修改完成");
+        }else{
+            return ResponseEntity.badRequest().body("修改失败");
+        }
+    }
 
 }

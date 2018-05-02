@@ -8,9 +8,12 @@ import java.util.List;
 @Mapper
 public interface PaymentLogMapper {
 
+
     int insertPaymentLog(PaymentLog paymentLog);
 
     PaymentLog getPaymentLog(String orderCode);
+
+    List<PaymentLog> getPaymentLogList(List<Long> userIds);
 
     List <PaymentLog> getBalanceRecord(Integer userId);
 

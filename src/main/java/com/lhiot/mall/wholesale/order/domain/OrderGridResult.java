@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
+
 /**
  * Created by HuFan on 2018/4/25.
  */
@@ -16,41 +18,39 @@ public class OrderGridResult {
     @JsonProperty("id")
     private long id;
 
-    @JsonProperty("id")
+    @JsonProperty("orderCode")
     private String orderCode;
 
-    @JsonProperty("orderCreateTime")
-    private String orderCreateTime;
+    @JsonProperty("createTime")
+    private String createTime;
 
-    @JsonProperty("orderTotal")
-    private long orderTotal;
+    @JsonProperty("totalFee")
+    private long totalFee;
 
-    @JsonProperty("orderDiscountFee")
-    private long orderDiscountFee;
+    @JsonProperty("discountFee")
+    private long discountFee;
 
-    @JsonProperty("order_need_fee")
-    private long orderNeedFee;
+    @JsonProperty("payableFee")
+    private long payableFee;
 
-    @JsonProperty("order_type")
-    private long orderType;
+    @JsonProperty("settlementType")
+    private String settlementType;
 
     @JsonProperty("userId")
     private long userId;
 
-    //------以下为管理系统所需数据-------
-    //TODO 查询支付记录表支付时间
     @JsonProperty("paymentTime")
     private String paymentTime;
 
     @JsonProperty("shopName")
-    private long shopName;
+    private String shopName;
 
     @JsonProperty("userName")
-    private long userName;
+    private String userName;
 
     @JsonProperty("phone")
-    private long phone;
+    private String phone;
 
     @JsonProperty("orderStatus")
-    private long orderStatus;
+    private String orderStatus;
 }

@@ -21,7 +21,7 @@ public interface IntroductionMapper {
     //查询分类的总记录数
     int pageQueryCount(IntroductionGridParam param);
 
-    int update(Introduction introduction);
+    int updateIntroduction(Introduction introduction);
 
-    int insert(Introduction introduction);
+    int insertIntroduction(Introduction introduction);
 }

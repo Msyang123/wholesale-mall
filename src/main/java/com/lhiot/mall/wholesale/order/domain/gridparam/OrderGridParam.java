@@ -11,13 +11,18 @@ import lombok.ToString;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
+
 @Data
 @ToString
 @ApiModel
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 public class OrderGridParam extends PageObject{
-    @JsonProperty("orderId")
+    @JsonProperty("id")
+    private Long id;
+
+    @JsonProperty("orderCode")
     private String orderCode;
 
     @JsonProperty("phone")
@@ -25,9 +30,6 @@ public class OrderGridParam extends PageObject{
 
     @JsonProperty("orderStatus")
     private String orderStatus;
-
-    @JsonProperty("orderType")
-    private String orderType;
 
     @JsonProperty("payStatus")
     private String payStatus;
@@ -38,6 +40,9 @@ public class OrderGridParam extends PageObject{
     @JsonProperty("createTimeEnd")
     private String createTimeEnd;
 
+    @JsonProperty("settlementType")
+    private String settlementType;
+
     @ApiModelProperty(notes="分页查询开始页面",dataType="Integer")
     private Integer start;
 
@@ -47,22 +52,13 @@ public class OrderGridParam extends PageObject{
     @ApiModelProperty(notes="每页行数",dataType="Integer")
     private Integer rows;
 
-    @ApiModelProperty(notes="索引",dataType="String")
+    @ApiModelProperty(notes="排序字段",dataType="String")
     private String sidx;
 
     @ApiModelProperty(notes="排序",dataType="String")
     private String sord;
 
     @ApiModelProperty(notes="用户ids",dataType="Long")
-    private Long[] userIds;
+    private List<Long> userIds;
 
-    public void setUserIds(String userIds){
-        String[] array = StringUtils.tokenizeToStringArray(userIds, ",");
-        if (!ObjectUtils.isEmpty(array)){
-            this.userIds = new Long[array.length];
-            for (int i = 0; i < array.length; i++) {
-                this.userIds[i] = Long.valueOf(array[i]);
-            }
-        }
-    }
 }

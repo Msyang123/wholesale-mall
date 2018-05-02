@@ -1,8 +1,9 @@
 package com.lhiot.mall.wholesale.order.mapper;
 
+import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
-import com.lhiot.mall.wholesale.order.domain.OrderDetail;
-import com.lhiot.mall.wholesale.order.domain.OrderGoods;
+import com.lhiot.mall.wholesale.order.domain.DebtOrderResult;
+import com.lhiot.mall.wholesale.order.domain.gridparam.DebtOrderGridParam;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -33,4 +34,26 @@ public interface DebtOrderMapper {
      * @return
      */
     DebtOrder findByCode(String debtOrderCode);
+
+    /**
+     * 后台管理--分页查询欠款订单总数
+     * @param param
+     * @return
+     */
+    List<DebtOrder> pageQuery(DebtOrderGridParam param);
+
+
+    /**
+     * 后台管理--查询分类的总记录数
+     * @param param
+     * @return
+     */
+    int pageQueryCount(DebtOrderGridParam param);
+
+    /**
+     * 根据账款订单id查询账款订单信息
+     * @param id
+     * @return
+     */
+    DebtOrderResult select(long id);
 }
