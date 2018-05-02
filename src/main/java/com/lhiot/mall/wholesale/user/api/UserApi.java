@@ -1,9 +1,16 @@
 package com.lhiot.mall.wholesale.user.api;
 
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.encoder.QRCode;
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
+import com.lhiot.mall.wholesale.base.QRCodeUtil;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.SearchUser;
 import com.lhiot.mall.wholesale.user.domain.User;
@@ -23,8 +30,12 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -320,4 +331,31 @@ public class UserApi {
         user.setDebtFee(userService.debtFee(userId));
         return ResponseEntity.ok(user);
     }
+
+    @ApiOperation("获取二维码图片")
+    @GetMapping("/qrcode/{code}")
+    public void getCaptcha(@PathVariable("code") @NotNull String code,
+                           HttpServletResponse response) throws IOException {
+        response.setContentType("image/jpeg");
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("Cache-Control", "no-cache");
+        response.setDateHeader("Expires", 0);
+
+            try {
+                int qrcodeWidth = 300;
+                int qrcodeHeight = 300;
+                String qrcodeFormat = "png";
+                HashMap<EncodeHintType, String> hints = new HashMap<EncodeHintType, String>();
+                hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+                BitMatrix bitMatrix = new MultiFormatWriter().encode(code, BarcodeFormat.QR_CODE, qrcodeWidth, qrcodeHeight, hints);
+
+                BufferedImage image = QRCodeUtil.toBufferedImage(bitMatrix);
+                image.flush();
+                ImageIO.write(image, qrcodeFormat, response.getOutputStream());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+    }
+
 }

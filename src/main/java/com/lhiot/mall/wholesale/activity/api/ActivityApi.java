@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.leon.microx.common.wrapper.ResultObject;
 import com.lhiot.mall.wholesale.activity.domain.Activity;
 import com.lhiot.mall.wholesale.activity.domain.ActivityType;
+import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 import com.lhiot.mall.wholesale.activity.service.ActivityService;
 import com.lhiot.mall.wholesale.advertise.domain.Advertise;
@@ -93,7 +94,7 @@ public class ActivityApi {
 	
     @GetMapping("/activity/type/{type}")
     @ApiOperation(value = "根据活动类型查询当前开启的活动", response = Activity.class)
-    public ResponseEntity<Activity> goodsUnit(@PathVariable("type") ActivityType type) {
+    public ResponseEntity<FlashActivityGoods> goodsUnit(@PathVariable("type") ActivityType type) {
         return ResponseEntity.ok(activityService.currentActivity(type));
     }
 }

@@ -42,7 +42,7 @@ public class PlateCategoryService {
 	 */
 	public boolean create(PlateCategory plateCategory){
 		if(this.existRollingLayout()){
-			plateCategory.setLayout(LayoutType.tilesLayout.toString());
+			plateCategory.setLayout(LayoutType.tile.toString());
 		}
 		return plateCategoryMapper.insert(plateCategory)>0;
 	}
@@ -67,7 +67,7 @@ public class PlateCategoryService {
 	 */
 	public boolean update(PlateCategory plateCategory){
 		if(this.existRollingLayout()){
-			plateCategory.setLayout(LayoutType.tilesLayout.toString());
+			plateCategory.setLayout(LayoutType.roll.toString());
 		}
 		return plateCategoryMapper.update(plateCategory)>0;
 	}

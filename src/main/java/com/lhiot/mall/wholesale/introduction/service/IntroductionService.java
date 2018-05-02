@@ -8,6 +8,7 @@ import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.introduction.domain.Introduction;
 import com.lhiot.mall.wholesale.introduction.domain.gridparam.IntroductionGridParam;
 import com.lhiot.mall.wholesale.introduction.mapper.IntroductionMapper;
+import com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle;
 import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -65,16 +66,12 @@ public class IntroductionService {
         return result;
     }
 
-    public boolean update(Introduction introduction){
-        return introductionMapper.update(introduction)>0;
-    }
-
-    public boolean saveOrUpdateIntroduction(Introduction introduction) {
-        Long id = introduction.getId();
-        if ((id == null) || (id == 0)) {
-            return introductionMapper.insert(introduction) > 0;
-        } else {
-            return introductionMapper.update(introduction) > 0;
+    //新增/修改服务协议
+    public int saveOrUpdateIntroduction(Introduction introduction) {
+        if (introduction.getId()>0){
+            return introductionMapper.insertIntroduction(introduction);
+        }else {
+            return introductionMapper.updateIntroduction(introduction);
         }
     }
 

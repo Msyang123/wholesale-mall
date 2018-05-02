@@ -14,7 +14,7 @@ import java.util.List;
 
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "sgsl.manager.rest")
+@ConfigurationProperties(prefix = "wholesale-mall.rest-template")
 public class RestClientAutoConfigure {
 	
 	private Integer readTimeout = 5000;

@@ -1,8 +1,8 @@
 package com.lhiot.mall.wholesale.goods.domain;
 
 public enum LayoutType {
-	tilesLayout("水平布局"),
-	rollingLayout("滚动布局");
+	tile("水平布局"),
+	roll("滚动布局");
 	
 	private final String displayTag;
 	

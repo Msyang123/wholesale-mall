@@ -1,12 +1,11 @@
 package com.lhiot.mall.wholesale.activity.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import springfox.documentation.annotations.ApiIgnore;
 
 @Data
 @ApiModel
@@ -31,10 +30,9 @@ public class Activity {
 	@ApiModelProperty(notes="链接地址",dataType="String")
 	private String linkUrl;
 	
-	@ApiModelProperty(notes="是否有效",dataType="Boolean")
-	private Boolean vaild;
+	@ApiModelProperty(notes="是否有效",dataType="String")
+	private String vaild;
 	
-	@JsonIgnore
-	@ApiModelProperty(notes="是否有效,冗余字段用于维护数据",dataType="Integer")
-	private Integer vaildInt;
+	@ApiModelProperty(notes="抢购活动商品",dataType="java.util.List")
+	List<FlashsaleGoods> flashGoods;
 }

@@ -28,4 +28,19 @@
     </select>
 
 
+    <select id="getPaymentLogList" parameterType="java.util.ArrayList" resultType="com.lhiot.mall.wholesale.pay.domain.PaymentLog">
+        select * from t_whs_payment_log where 1=2
+        <if test="list != null and list.size()>0">
+        or order_id IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        </if>
+    </select>
+
+    <select id="getBalanceRecord" parameterType="Integer" resultType="com.lhiot.mall.wholesale.pay.domain.PaymentLog">
+        (select payment_time time,payment_step type,total_fee fee from t_whs_payment_log where user_id=#{userId} and payment_step in(1,5))
+         union all
+        (select refund_time time,refund_type type,refund_fee fee from t_whs_refund_log where user_id=#{userId} and refund_type=1)
+    </select>
 </mapper>

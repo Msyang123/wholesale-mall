@@ -1,6 +1,5 @@
 package com.lhiot.mall.wholesale.demand.service;
 
-import com.leon.microx.util.BeanUtils;
 import com.leon.microx.util.SnowflakeId;
 
 import com.lhiot.mall.wholesale.base.PageQueryObject;
@@ -10,11 +9,11 @@ import com.lhiot.mall.wholesale.demand.domain.gridparam.DemandGoodsGridParam;
 import com.lhiot.mall.wholesale.demand.mapper.DemandGoodsMapper;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.mapper.UserMapper;
+import com.lhiot.mall.wholesale.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,19 +27,14 @@ public class DemandGoodsService {
 
     private final DemandGoodsMapper demandGoodsMapper;
 
-    private final UserMapper userMapper;
+    private final UserService userService;
 
 
     @Autowired
-    public DemandGoodsService(DemandGoodsMapper demandGoodsMapper, SnowflakeId snowflakeId,UserMapper userMapper) {
+    public DemandGoodsService(DemandGoodsMapper demandGoodsMapper, SnowflakeId snowflakeId, UserService userService) {
         this.demandGoodsMapper = demandGoodsMapper;
         this.snowflakeId = snowflakeId;
-        this.userMapper = userMapper;
-    }
-
-
-    public DemandGoods demandGoods(long id) {
-        return demandGoodsMapper.select(id);
+        this.userService = userService;
     }
 
     /**
@@ -48,12 +42,10 @@ public class DemandGoodsService {
      * @return
      */
     public PageQueryObject pageQuery(DemandGoodsGridParam param){
-
         //根据参数（手机号或姓名）获取用户信息
         User userParam=new User();
         userParam.setNamePhone(param.getNamePhone());
-        List<User> userList = userMapper.pageQuery(userParam);
-
+        List<User> userList = userService.searchByPhoneOrName(userParam);
         PageQueryObject result = new PageQueryObject();
         //如果用户信息不为空，根据用户ids查询新品需求
         if(userList != null){
@@ -101,35 +93,24 @@ public class DemandGoodsService {
     }
 
     /**
-     * 查询详情
+     * 查询新品需求详情
      * @return
      */
     public DemandGoodsResult detail(Long id) {
-        DemandGoodsResult demandGoodsResult = new DemandGoodsResult();
         //新品需求详情信息
-        DemandGoods demandGoods = demandGoodsMapper.select(id);
-        if (demandGoods != null){
+        DemandGoodsResult demandGoodsResult = demandGoodsMapper.select(id);
+        if (Objects.nonNull(demandGoodsResult)){
             //用户信息
-            User user1 = userMapper.user(demandGoods.getUserId());
-
-            demandGoodsResult.setId(demandGoods.getId());
-            demandGoodsResult.setGoodsName(demandGoods.getGoodsName());
-            demandGoodsResult.setGoodsBrand(demandGoods.getGoodsBrand());
-            demandGoodsResult.setGoodsStandard(demandGoods.getGoodsStandard());
-            demandGoodsResult.setReferencePrice(demandGoods.getReferencePrice());
-            demandGoodsResult.setSupplier(demandGoods.getSupplier());
-            demandGoodsResult.setComments(demandGoods.getComments());
-            demandGoodsResult.setContactPhone(demandGoods.getContactPhone());
-            demandGoodsResult.setUserId(demandGoods.getUserId());
-            demandGoodsResult.setCreateTime(demandGoods.getCreateTime().toString());
-            demandGoodsResult.setShopName(user1.getShopName());
-            demandGoodsResult.setUserName(user1.getUserName());
-            demandGoodsResult.setPhone(user1.getPhone());
-            return demandGoodsResult;
-        }else{
-            return null;
+            User user1 = userService.user(demandGoodsResult.getUserId());
+            if (Objects.nonNull(user1)) {
+                demandGoodsResult.setShopName(user1.getShopName());
+                demandGoodsResult.setUserName(user1.getUserName());
+                demandGoodsResult.setPhone(user1.getPhone());
+            }
         }
+        return demandGoodsResult;
     }
+
     public int insertDemandGoods(DemandGoods demandGoods){
         return demandGoodsMapper.insertDemandGoods(demandGoods);
     }

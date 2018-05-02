@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.article.mapper.ArticleMapper">
+    <sql id="articleColumn">
+        t1.id as id,t1.article_type as articleType,t1.create_type as createType,t1.article_title as articleTitle,
+        t1.article_subhead as articleSubhead,t1.article_author as articleAuthor,t1.article_content as articleContent,t1.rank_num as rankNum,
+        t1.resouce_url as resouceUrl,t1.article_url as articleUrl,t1.create_time as createTime
+    </sql>
+
+    <!-- 根据id查询FAQ信息 -->
+    <select id="select" parameterType="long" resultType="com.lhiot.mall.wholesale.article.domain.Article">
+        SELECT <include refid="articleColumn"/>
+        FROM t_whs_article t1
+        WHERE t1.id = #{0}
+    </select>
+
+    <!-- 后台管理 查询新闻总数 -->
+    <select id="pageQueryCount" resultType="Integer">
+        select count(t1.id) from t_whs_article t1
+        <trim prefix="where" prefixOverrides="and">
+            <if test="articleTitle != null and articleTitle != ''">and t1.article_title = #{articleTitle}</if>
+            <if test="articleType != null and articleType != ''">and t1.article_type = #{articleType}</if>
+        </trim>
+    </select>
+
+    <!-- 后台管理 分页查询新闻详情 -->
+    <select id="pageQuery" parameterType="com.lhiot.mall.wholesale.article.domain.gridparam.ArticleGridParam"
+            resultType="com.lhiot.mall.wholesale.article.domain.Article">
+        select <include refid="articleColumn"/>
+        from t_whs_article t1
+        <trim prefix="where" prefixOverrides="and">
+            <if test="articleTitle != null and articleTitle != ''">and t1.article_title = #{articleTitle}</if>
+            <if test="articleType != null and articleType != ''">and t1.article_type = #{articleType}</if>
+        </trim>
+        <include refid="common.pager"></include>
+    </select>
+
+    <!-- 后台管理系统新增新文章 -->
+    <insert id="insertArticle" parameterType="com.lhiot.mall.wholesale.article.domain.Article">
+    insert into t_whs_article(
+    <trim suffixOverrides=",">
+        <if test="id != null and id != ''">id,</if>
+        <if test="articleType != null and articleType != ''">article_type,</if>
+        <if test="createType != null and createType != ''">create_type,</if>
+        <if test="articleTitle != null and articleTitle != ''">article_title,</if>
+        <if test="articleSubhead != null and articleSubhead != ''">article_subhead,</if>
+        <if test="articleAuthor != null and articleAuthor != ''">article_author,</if>
+        <if test="articleContent != null and articleContent != ''">article_content,</if>
+        <if test="rankNum != null and rankNum != ''">rank_num,</if>
+        <if test="resouceUrl != null and resouceUrl != ''">resouce_url,</if>
+        <if test="articleUrl != null and articleUrl != ''">article_url,</if>
+        <if test="createTime != null">create_time,</if>
+    </trim>
+    )
+    values(
+    <trim suffixOverrides=",">
+        <if test="id != null and id != ''">#{id},</if>
+        <if test="articleType != null and articleType != ''">#{articleType},</if>
+        <if test="createType != null and createType != ''">#{createType},</if>
+        <if test="articleTitle != null and articleTitle != ''">#{articleTitle},</if>
+        <if test="articleSubhead != null and articleSubhead != ''">#{articleSubhead},</if>
+        <if test="articleAuthor != null and articleAuthor != ''">#{articleAuthor},</if>
+        <if test="articleContent != null and articleContent != ''">#{articleContent},</if>
+        <if test="rankNum != null and rankNum != ''">rank_num,</if>
+        <if test="resouceUrl != null and resouceUrl != ''">link_url,</if>
+        <if test="articleUrl != null and articleUrl != ''">#{createPerson},</if>
+        <if test="createTime != null ">#{createTime,jdbcType=TIMESTAMP},</if>
+    </trim>
+    )
+    </insert>
+
+    <!-- 根据id修改新闻-->
+    <update id="updateArticle" parameterType="com.lhiot.mall.wholesale.article.domain.Article">
+        update t_whs_article
+        <trim prefix="set" suffixOverrides=",">
+            <if test="id != null and id != ''">id=#{id},</if>
+            <if test="articleType != null and articleType != ''">article_type=#{articleType},</if>
+            <if test="createType != null and createType != ''">create_type=#{createType},</if>
+            <if test="articleTitle != null and articleTitle != ''">article_title=#{articleTitle},</if>
+            <if test="articleSubhead != null and articleSubhead != ''">article_subhead=#{articleSubhead},</if>
+            <if test="articleAuthor != null and articleAuthor != ''">article_author=#{articleAuthor},</if>
+            <if test="articleContent != null and articleContent != ''">article_content=#{articleContent},</if>
+            <if test="rankNum != null and rankNum != ''">rank_num=#{rankNum},</if>
+            <if test="resouceUrl != null and resouceUrl != ''">resouce_url=#{resouceUrl},</if>
+            <if test="articleUrl != null and articleUrl != ''">article_url=#{articleUrl},</if>
+            <if test="createTime != null ">create_time=#{createTime,jdbcType=TIMESTAMP},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+</mapper>

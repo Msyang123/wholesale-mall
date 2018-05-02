@@ -1,11 +1,11 @@
 package com.lhiot.mall.wholesale.order.mapper;
 
-import java.util.List;
-
 import com.lhiot.mall.wholesale.order.domain.*;
+import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import org.apache.ibatis.annotations.Mapper;
 
-import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
+import java.util.List;
+
 
 @Mapper
 public interface OrderMapper {
@@ -18,12 +18,23 @@ public interface OrderMapper {
 
     OrderDetail searchOrder(String orderCode);
 
-    //后台管理--分页查询新品需求
+    OrderDetail searchOrderById(long orderId);
+
+    /**
+     * 后台管理--分页查询订单
+     * @param param
+     * @return
+     */
     List<OrderGridResult> pageQuery(OrderGridParam param);
 
-    //后台管理--查询分类的总记录数
+
+    /**
+     * 后台管理--查询分类的总记录数
+     * @param param
+     * @return
+     */
     int pageQueryCount(OrderGridParam param);
-    
+
     List<OrderDetail> searchAfterSaleOrders(OrderDetail orderDetail);
 
     /**
@@ -45,7 +56,7 @@ public interface OrderMapper {
      * @return
      */
     int updateOrderStatusByCode(OrderDetail orderDetail);
-    
+
     //统计商品的售卖数量，根据商品ids
     List<SoldQuantity> soldQuantity(List<Long> goodsIds);
 
@@ -56,4 +67,6 @@ public interface OrderMapper {
     OrderDetail lateOneOrder(long userId);
 
     Integer lateOrdersFee(OrderParam orderParam);
+
+    OrderDetail select(long id);
 }

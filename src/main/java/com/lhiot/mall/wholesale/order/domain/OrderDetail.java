@@ -19,13 +19,13 @@ import java.util.List;
 public class OrderDetail {
 
     @JsonProperty("id")
-    private long id;
+    private Long id;
 
     @JsonProperty("orderId")
     private String orderCode;
 
     @JsonProperty("salesmanId")
-    private long salesmanId;
+    private Long salesmanId;
 
     @JsonProperty("payType")
     private String settlementType;
@@ -34,7 +34,7 @@ public class OrderDetail {
     private String orderStatus;
 
     //订单当前状态 用于修改的时候约束条件
-    private Integer currentOrderStatus;
+    private String currentOrderStatus;
 
     @JsonProperty("auditStatus")
     private String checkStatus;
@@ -50,7 +50,7 @@ public class OrderDetail {
     private Integer discountFee;
 
     @JsonProperty("userId")
-    private long userId;
+    private Long userId;
 
     @JsonProperty("payStatus")
     private String payStatus;
@@ -89,5 +89,8 @@ public class OrderDetail {
 
     @JsonProperty("needPay")
     private  Integer payableFee;
+
+    @JsonProperty("addressDetail")
+    private String addressDetail;
 
 }

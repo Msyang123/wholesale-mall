@@ -221,6 +221,25 @@ public class GoodsService {
 	}
 	
 	/**
+	 * 获取版块商品
+	 * @param plateId
+	 * @return
+	 */
+	public List<PlateCategory> plateGoodses(){
+		List<PlateCategory> plateCategories = plateCategoryService.search();
+		if(plateCategories.isEmpty()){
+			return plateCategories;
+		}
+		for(PlateCategory plateCategory : plateCategories){
+			List<Goods> plateGoodses = goodsMapper.plateGoodses(plateCategory.getId());
+			//组装商品的售卖数和最低价格
+			this.minPriceAndSoldQua(plateGoodses,25);
+			plateCategory.setPlateGoods(plateGoodses);
+		}
+		return plateCategories;
+	}
+	
+	/**
 	 * 统计商品的销售数量以及商品的最低售价
 	 * @param goodses
 	 */

@@ -7,6 +7,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.sql.Timestamp;
+
 
 @Data
 @ToString
@@ -27,7 +29,7 @@ public class Introduction {
     private String content;
 
     @JsonProperty("createTime")
-    private String createTime;
+    private Timestamp createTime;
 
     @JsonProperty("createPerson")
     private String createPerson;

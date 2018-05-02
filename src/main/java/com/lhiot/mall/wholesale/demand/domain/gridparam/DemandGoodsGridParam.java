@@ -38,21 +38,11 @@ public class DemandGoodsGridParam extends PageObject {
     @ApiModelProperty(notes="每页行数",dataType="Integer")
     private Integer rows;
 
-    @ApiModelProperty(notes="索引",dataType="String")
+    @ApiModelProperty(notes="排序字段",dataType="String")
     private String sidx;
 
     @ApiModelProperty(notes="排序",dataType="String")
     private String sord;
-
-    /*public void setUserIds(String userIds){
-        String[] array = StringUtils.tokenizeToStringArray(userIds, ",");
-        if (!ObjectUtils.isEmpty(array)){
-            this.userIds = new Long[array.length];
-            for (int i = 0; i < array.length; i++) {
-                this.userIds[i] = Long.valueOf(array[i]);
-            }
-        }
-    }*/
 
 
 }

@@ -31,6 +31,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.List;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -64,9 +66,9 @@ public class CurrencyPayApi {
         if (Objects.isNull(orderDetail)){
             return ResponseEntity.badRequest().body("没有该订单信息");
         }
-       /* if(orderDetail.getOrderStatus()>2||orderDetail.getPayStatus()!=0){
-            return ResponseEntity.badRequest().body("已支付订单状态，请勿重复支付");
-        }*/
+        if(!Objects.equals(orderDetail.getOrderStatus(),"unpaid")){
+            return ResponseEntity.badRequest().body("订单状态异常，请检查订单状态");
+        }
         int payResult=payService.currencyPay(orderDetail);
         if(payResult>0){
             return ResponseEntity.ok(orderDetail);
@@ -74,6 +76,12 @@ public class CurrencyPayApi {
         return ResponseEntity.badRequest().body("余额支付订单失败");
     }
 
+  /*  @GetMapping("/balance/{userId}")
+    @ApiOperation(value = "余额收支明细")
+    public ResponseEntity<ArrayObject> getBalanceRecord(@PathVariable("userId") Integer userId) {
+        List<PaymentLog> paymentLogList = payService.getBalanceRecord(userId);//待测
+        return ResponseEntity.ok(ArrayObject.of(paymentLogList));
+    }*/
 
     @PutMapping("/debtorderpay/{orderDebtCode}")
     @ApiOperation(value = "余额支付账款订单", response = String.class)
@@ -84,9 +92,9 @@ public class CurrencyPayApi {
         //审核状态 0-未支付 1-审核中 2-审核失败 3-已支付
         if(Objects.isNull(debtOrder)){
             return ResponseEntity.badRequest().body("未找到欠款订单信息");
-        }else if(debtOrder.getCheckStatus()==1){
+        }else if(Objects.equals(debtOrder.getCheckStatus(),"unaudited")){
             return ResponseEntity.badRequest().body("欠款订单审核中");
-        }else if(debtOrder.getCheckStatus()==3){
+        }else if(Objects.equals(debtOrder.getCheckStatus(),"paid") ||  Objects.equals(debtOrder.getCheckStatus(),"agree")){
             return ResponseEntity.badRequest().body("欠款订单已支付");
         }
         //余额支付账款订单支付
@@ -98,16 +106,16 @@ public class CurrencyPayApi {
     }
 
 
-    @PutMapping("/invoicepay/{invoiceCode}")
+    @PutMapping("/invoice-pay/{invoiceCode}")
     @ApiOperation(value = "余额支付发票", response = String.class)
     public ResponseEntity invoicePay(@PathVariable("invoiceCode") String invoiceCode) {
         //依据发票业务编码查询发票信息
         Invoice invoice= invoiceService.findInvoiceByCode(invoiceCode);
         if(Objects.isNull(invoice)){
             return ResponseEntity.badRequest().body("未找到开票信息");
-        }else if(invoice.getInvoiceStatus()==1){
+        }else if(invoice.getInvoiceStatus()==""){ //FIXME 更改为枚举  invoice.getInvoiceStatus()==1
             return ResponseEntity.badRequest().body("发票已支付，请勿重复支付");
-        }else if(invoice.getInvoiceStatus()==2){
+        }else if(invoice.getInvoiceStatus()==""){//FIXME 更改为枚举  invoice.getInvoiceStatus()==2
             return ResponseEntity.badRequest().body("已经开票，请勿重复支付");
         }
 
@@ -116,5 +124,12 @@ public class CurrencyPayApi {
             return ResponseEntity.ok(invoice);
         }
         return ResponseEntity.badRequest().body("余额支付发票失败");
+    }
+
+    @GetMapping("/orderpay/payment")
+    @ApiOperation(value = "根据订单Ids查询支付记录",response = PaymentLog.class)
+    public  ResponseEntity<List<PaymentLog>> paymentList(@PathVariable("orderIds") Long[] orderIds){
+        List<Long> orderIdList =  Arrays.asList(orderIds);
+        return ResponseEntity.ok(paymentLogService.getPaymentLogList(orderIdList));
     }
 }

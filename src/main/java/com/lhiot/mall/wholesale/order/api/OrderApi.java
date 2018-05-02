@@ -1,5 +1,7 @@
 package com.lhiot.mall.wholesale.order.api;
 
+import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,9 +10,7 @@ import java.util.Objects;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
-import com.lhiot.mall.wholesale.order.domain.DebtOrder;
-import com.lhiot.mall.wholesale.order.domain.Distribution;
+import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
@@ -26,7 +26,6 @@ import com.lhiot.mall.wholesale.order.service.DebtOrderService;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.setting.service.SettingService;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -92,11 +91,22 @@ public class OrderApi {
         return ResponseEntity.ok(orderDetail);
     }
 
-    /*@PostMapping("/order/myOrder/grid")
-    @ApiOperation(value = "新建一个查询，分页查询新品需求", response = PageQueryObject.class)
-    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) OrderGridParam param) {
-        return ResponseEntity.ok(orderService.pageQuery(param));
-    }*/
+    @GetMapping("/{id}")
+    @ApiOperation(value = "根据订单编号查询订单详情")
+    public ResponseEntity<OrderDetail> queryOrderById(@PathVariable("id") long id){
+        OrderDetail orderDetail = orderService.searchOrderById(id);
+        if (Objects.isNull(orderDetail)){
+            throw new ServiceException("没有该订单信息");
+        }
+        List<OrderGoods> goods = orderService.searchOrderGoods(id);
+        if (goods.isEmpty()){
+            orderDetail.setOrderGoodsList(new ArrayList<OrderGoods>());
+        }else {
+            orderDetail.setOrderGoodsList(goods);
+        }
+        return ResponseEntity.ok(orderDetail);
+    }
+
     @GetMapping("/invoice/orders/{userId}")
     @ApiOperation(value = "查询可开发票的订单列表")
     public ResponseEntity<ArrayObject> invoiceOrders(@PathVariable("userId") @NotNull long userId,
@@ -117,9 +127,9 @@ public class OrderApi {
             if ("received".equals(order.getOrderStatus())&&"paid".equals(order.getPayStatus())&&order.getAfterSaleTime().before(currentTime)){
                 List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
                 if (goods.isEmpty()){
-                    order.setOrderGoodsList(new ArrayList<OrderGoods>());
+                    orderDetail.setOrderGoodsList(new ArrayList<OrderGoods>());
                 }else {
-                    order.setOrderGoodsList(goods);
+                    orderDetail.setOrderGoodsList(goods);
                 }
                 orderResults.add(order);
             }
@@ -186,12 +196,13 @@ public class OrderApi {
         //FIXME 创建的时候发送创建广播消息 用于优惠券设置无效
         //fixme mq设置三十分钟失效
 
-       /* if(orderDetail.getSettlementType()==1){
+        if(orderDetail.getSettlementType()== ""){  //FIXME 改为枚举 if(orderDetail.getSettlementType()==1){
             DebtOrder debtOrder=new DebtOrder();
             //FIXME 需要赋值
             debtOrderService.create(debtOrder);
-            orderDetail.setOrderStatus(3);//待收货
-        }*/
+            //FIXME 改为枚举    orderDetail.setOrderStatus(3);//待收货
+            orderDetail.setOrderStatus("");//待收货
+        }
         return ResponseEntity.ok(result);
     }
 
@@ -212,18 +223,27 @@ public class OrderApi {
         if (Objects.isNull(orderDetail)){
             throw new ServiceException("没有该订单信息");
         }
-       /* if(orderDetail.getOrderStatus()!=3){
+        //FIXME 改为枚举     if(orderDetail.getOrderStatus()!=3){
+        if(orderDetail.getOrderStatus()!=""){
             throw new ServiceException("非待收货订单状态");
         }
-        if(orderDetail.getPayStatus()!=0){
+        //FIXME 改为枚举      if(orderDetail.getPayStatus()!=0){
+        if(orderDetail.getPayStatus()!=""){
             throw new ServiceException("订单未支付");
-        }*/
+        }
        return ResponseEntity.ok(orderService.cancelPayedOrder(orderDetail));
     }
 
-   /* @GetMapping("/demandgoods/detail/{id}")
-    @ApiOperation(value = "新品需求详情页面",response = DemandGoodsResult.class)
-    public  ResponseEntity<DemandGoodsResult> demandGoodsDetail(@PathVariable("id") Long id) {
+    @PostMapping("/grid")
+    @ApiOperation(value = "后台管理-分页查询订单信息", response = PageQueryObject.class)
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) OrderGridParam param) throws IntrospectionException, InstantiationException, IllegalAccessException, InvocationTargetException {
+        return ResponseEntity.ok(orderService.pageQuery(param));
+    }
+
+    @GetMapping("/detail/{id}")
+    @ApiOperation(value = "后台管理-根据订单id查看订单详情",response = OrderGridResult.class)
+    public  ResponseEntity<OrderDetail> demandGoodsDetail(@PathVariable("id") Long id){
         return ResponseEntity.ok(orderService.detail(id));
-    }*/
+    }
+
 }

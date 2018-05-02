@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.lhiot.mall.wholesale.order.mapper.DebtOrderMapper">
-
-
+    <sql id="debtOrderColumn">
+       t1.id as id,t1.check_time as checkTime,t1.order_debt_code as orderDebt_Code,t1.user_id as userId,t1.create_time as createTime,
+    t1.debt_fee as debtFee,t1.check_status as checkStatus,t1.payment_type as paymentType,t1.payment_evidence as paymentEvidence,
+    t1.order_ids as orderIds,t1.remarks as remarks
+    </sql>
 
     <insert id="save" parameterType="com.lhiot.mall.wholesale.order.domain.DebtOrder">
-        insert into t_whs_order (
-                check_time
-                order_debt_code
-                user_id
-                create_time
-                debt_fee
-                check_status
-                payment_evidence
+        insert into t_whs_debt_order (
+                check_time,
+                order_debt_code,
+                user_id,
+                create_time,
+                debt_fee,
+                check_status,
+                payment_evidence,
                 order_ids) VALUES
           (#{checkTime},#{orderDebtCode},
               #{userId},#{createTime},#{debtFee},#{checkStatus},#{paymentEvidence},#{orderIds})
@@ -34,15 +37,47 @@
         where order_debt_code=#{orderDebtCode}
     </update>
 
-    <select id="findByCode" parameterType="com.lhiot.mall.wholesale.order.domain.DebtOrder">
-        select id,check_time
-                order_debt_code
-                user_id
-                create_time
-                debt_fee
-                check_status
-                payment_evidence
-                order_ids
+    <select id="findByCode" parameterType="String" resultType="com.lhiot.mall.wholesale.order.domain.DebtOrder">
+        select id,check_time,order_debt_code,user_id,create_time,
+                debt_fee,check_status,payment_evidence,order_ids
         from t_whs_debt_order where order_debt_code=#{orderDebtCode}
+    </select>
+
+    <!-- 后台管理 分页查询总数 -->
+    <select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.DebtOrderGridParam" resultType="Integer">
+        select count(t1.id) from t_whs_debt_order t1
+        <trim prefix="where" prefixOverrides="and">
+            <if test="checkStatus != null and checkStatus != ''">and t1.check_status = #{checkStatus}</if>
+            <if test="userIds != null and userIds.size()>0">
+                and t1.user_id in
+                <foreach collection="userIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </trim>
+    </select>
+
+    <!-- 后台管理 分页查询账款订单记录 -->
+    <select id="pageQuery" parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.DebtOrderGridParam"
+            resultType="com.lhiot.mall.wholesale.order.domain.DebtOrder">
+        select <include refid="debtOrderColumn"/>
+        from t_whs_debt_order t1
+        <trim prefix="where" prefixOverrides="and">
+            <if test="checkStatus != null and checkStatus != ''">and t1.check_status = #{checkStatus}</if>
+            <if test="userIds != null and userIds.size()>0">
+                and t1.user_id in
+                <foreach collection="userIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </trim>
+        <include refid="common.pager"></include>
+    </select>
+
+    <!-- 根据账款订单id查询详情 -->
+    <select id="select" parameterType="long" resultType="com.lhiot.mall.wholesale.order.domain.DebtOrderResult">
+        SELECT <include refid="debtOrderColumn"/>
+        FROM t_whs_debt_order t1
+        WHERE t1.id = #{0}
     </select>
 </mapper>

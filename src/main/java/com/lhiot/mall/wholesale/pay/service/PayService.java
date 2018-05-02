@@ -379,9 +379,9 @@ public class PayService {
             paymentLog.setTotalFee(needPayFee);
             paymentLogMapper.insertPaymentLog(paymentLog);
             //修改订单并且发送海鼎订单
-          /*  orderDetail.setOrderStatus(3);//已付款状态
-            orderDetail.setCurrentOrderStaus(1);//待付款状态
-*/
+            orderDetail.setOrderStatus("undelivery");//已付款状态
+            orderDetail.setCurrentOrderStatus("unpaid");//待付款状态
+
             //修改订单状态为已支付状态
             return 1;
         }else{
@@ -410,7 +410,7 @@ public class PayService {
         updateUser.setBalance(needPayFee);//需要扣除的值
         boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
         if(updateResult){
-            debtOrder.setCheckStatus(1);//设置审核中
+            debtOrder.setCheckStatus("unaudited");//设置审核中
             debtOrderService.updateDebtOrderByCode(debtOrder);
 
             PaymentLog paymentLog=new PaymentLog();
@@ -452,7 +452,7 @@ public class PayService {
         updateUser.setBalance(needPayFee);//需要扣除的值
         boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
         if(updateResult){
-            invoice.setInvoiceStatus(1);//开票状态 0未开 1已付款 2已开
+            invoice.setInvoiceStatus("yes");//开票状态 0未开 1已付款 2已开
             invoiceService.updateInvoiceByCode(invoice);
 
             PaymentLog paymentLog=new PaymentLog();

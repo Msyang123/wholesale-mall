@@ -40,13 +40,13 @@ public class OfflinePayApi {
         //审核状态 0-未支付 1-审核中 2-审核失败 3-已支付
         if(Objects.isNull(searchDebtOrder)){
             return ResponseEntity.badRequest().body("未找到欠款订单信息");
-        }else if(searchDebtOrder.getCheckStatus()==1){
+        }else if(searchDebtOrder.getCheckStatus()==""){ //FIXME 改为枚举  else if(searchDebtOrder.getCheckStatus()==1){
             return ResponseEntity.badRequest().body("欠款订单审核中");
-        }else if(searchDebtOrder.getCheckStatus()==3){
+        }else if(searchDebtOrder.getCheckStatus()==""){ //FIXME 改为枚举   else if(searchDebtOrder.getCheckStatus()==3){
             return ResponseEntity.badRequest().body("欠款订单已支付");
         }
         //提交账款订单审核
-        debtOrder.setCheckStatus(1);
+        debtOrder.setCheckStatus(""); //FIXME 改为枚举   debtOrder.setCheckStatus(1);
         int result=debtOrderService.updateDebtOrderByCode(debtOrder);
         if(result>0){
             return ResponseEntity.ok(debtOrder);
