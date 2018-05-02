@@ -72,6 +72,7 @@ public class CurrencyPayApi {
         }
         int payResult=payService.currencyPay(orderDetail);
         if(payResult>0){
+            //发送订单到海鼎总仓
             return ResponseEntity.ok(orderDetail);
         }
         return ResponseEntity.badRequest().body("余额支付订单失败");
