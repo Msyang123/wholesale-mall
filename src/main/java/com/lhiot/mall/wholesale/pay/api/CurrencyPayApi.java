@@ -1,7 +1,6 @@
 package com.lhiot.mall.wholesale.pay.api;
 
 import com.leon.microx.common.exception.ServiceException;
-import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.leon.microx.common.wrapper.ArrayObject;
@@ -77,12 +76,12 @@ public class CurrencyPayApi {
         return ResponseEntity.badRequest().body("余额支付订单失败");
     }
 
-    @GetMapping("/balance/{userId}")
+  /*  @GetMapping("/balance/{userId}")
     @ApiOperation(value = "余额收支明细")
     public ResponseEntity<ArrayObject> getBalanceRecord(@PathVariable("userId") Integer userId) {
         List<PaymentLog> paymentLogList = payService.getBalanceRecord(userId);//待测
         return ResponseEntity.ok(ArrayObject.of(paymentLogList));
-    }
+    }*/
 
     @PutMapping("/debtorderpay/{orderDebtCode}")
     @ApiOperation(value = "余额支付账款订单", response = String.class)
@@ -107,7 +106,7 @@ public class CurrencyPayApi {
     }
 
 
-    @PutMapping("/invoicepay/{invoiceCode}")
+    @PutMapping("/invoice-pay/{invoiceCode}")
     @ApiOperation(value = "余额支付发票", response = String.class)
     public ResponseEntity invoicePay(@PathVariable("invoiceCode") String invoiceCode) {
         //依据发票业务编码查询发票信息
