@@ -3,6 +3,7 @@ package com.lhiot.mall.wholesale.user.service;
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
+import com.lhiot.mall.wholesale.user.domain.ShopResult;
 import com.lhiot.mall.wholesale.user.mapper.SalesUserMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,5 +54,9 @@ public class SalesUserService {
 
     public SalesUserRelation searchSaleRelationship(SalesUserRelation salesUserRelation){
         return salesUserMapper.searchSaleRelationship(salesUserRelation);
+    }
+
+    public List<ShopResult> searchShopInfo(long salesId){
+        return salesUserMapper.searchShopInfo(salesId);
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.activity.domain.Activity;
 import com.lhiot.mall.wholesale.activity.domain.ActivityType;
+import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
 import com.lhiot.mall.wholesale.activity.service.ActivityService;
 import com.lhiot.mall.wholesale.advertise.domain.Advertise;
 import com.lhiot.mall.wholesale.advertise.domain.AdvertiseType;
@@ -114,23 +115,27 @@ public class AdvertiseService {
 		//如果是限时抢购判断当前是否存在活动
 		List<Advertise> result = new ArrayList<>();
 		List<Advertise> flashActivies = advertiseMapper.findByType(type.toString());
-		//如果存在广告则,返回空
+		//如果不存在广告则,返回空
 		if(flashActivies.isEmpty()){
 			return result;
 		}
 		
-		if(AdvertiseType.flashSale.equals(type)){
-			Activity flashActivity = activityService.currentActivity(ActivityType.flashsale);
+		if(AdvertiseType.flashsale.equals(type)){
+			FlashActivityGoods flashActivity = activityService.currentActivity(ActivityType.flashsale);
 			//如果不存在活动，则返回空
 			if(Objects.isNull(flashActivity)){
 				return result;
 			}
 			//限时抢购就是一张广告图片
-			result.add(flashActivies.get(0));
+			Advertise advertise = flashActivies.get(0);
+			//将抢购的活动时间设置到广告中，用来倒计时
+			advertise.setBeginTime(flashActivity.getStartTime());
+			advertise.setEndTime(flashActivity.getEndTime());
+			result.add(advertise);
 			return result;
 		}
 		//轮播图返回多张
-		if(AdvertiseType.sowing.equals(type)){
+		if(AdvertiseType.top.equals(type)){
 			return flashActivies;
 		}
 		//其他取一则广告

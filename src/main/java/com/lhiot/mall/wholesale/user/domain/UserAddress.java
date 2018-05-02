@@ -23,15 +23,18 @@ public class UserAddress {
     @JsonProperty("phone")
     private String phone;
 
-    @JsonProperty("address_detail")
+    @JsonProperty("address")
     private String addressDetail;
 
-    @JsonProperty("address_area")
+    @JsonProperty("city")
     private String addressArea;
 
-    @JsonProperty("is_default")
-    private int isDefault;
+    @JsonProperty("isDefault")
+    private String isDefault;
 
-    @JsonProperty("user_id")
+    @JsonProperty("userId")
     private Long userId;
+
+    @JsonProperty("name")
+    private String userName;
 }

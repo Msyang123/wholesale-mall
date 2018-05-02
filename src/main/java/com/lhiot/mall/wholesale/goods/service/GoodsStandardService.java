@@ -35,7 +35,6 @@ public class GoodsStandardService {
 	 * @return
 	 */
 	public boolean create(GoodsStandard goodsStandard){
-		goodsStandard.setVaild(goodsStandard.getIfVaild()?1:0);
 		return goodsStandardMapper.insert(goodsStandard)>0;
 	}
 	
@@ -58,7 +57,6 @@ public class GoodsStandardService {
 	 * @return
 	 */
 	public boolean update(GoodsStandard goodsStandard){
-		goodsStandard.setVaild(goodsStandard.getIfVaild()?1:0);
 		return goodsStandardMapper.update(goodsStandard)>0;
 	}
 	

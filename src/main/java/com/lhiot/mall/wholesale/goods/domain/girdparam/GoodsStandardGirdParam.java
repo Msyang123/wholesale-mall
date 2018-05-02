@@ -18,8 +18,8 @@ public class GoodsStandardGirdParam extends PageObject {
 	@ApiModelProperty(notes="商品条码",dataType="String")
 	private String barCode;
 	
-	@ApiModelProperty(notes="是否上架 ",dataType="Integer")
-	private Integer ifVaild;
+	@ApiModelProperty(notes="是否上架 ",dataType="String")
+	private String vaild;
 	
 	@ApiModelProperty(notes="商品单位名称",dataType="Integer")
 	private Integer start;

@@ -16,6 +16,7 @@ import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.activity.domain.Activity;
 import com.lhiot.mall.wholesale.activity.domain.ActivityType;
+import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 import com.lhiot.mall.wholesale.activity.mapper.ActivityMapper;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
@@ -42,7 +43,6 @@ public class ActivityService {
 	 * @return
 	 */
 	public boolean create(Activity activity){
-		activity.setVaildInt(activity.getVaild()?1:0);
 		return activityMapper.insert(activity)>0;
 	}
 	
@@ -65,7 +65,6 @@ public class ActivityService {
 	 * @return
 	 */
 	public boolean update(Activity activity){
-		activity.setVaildInt(activity.getVaild()?1:0);
 		return activityMapper.update(activity)>0;
 	}
 	
@@ -124,7 +123,7 @@ public class ActivityService {
 			LocalDate beginTime = LocalDate.parse(activity.getStartTime(), formatter);
 			boolean afterBeginTime = currentTime.isAfter(beginTime);
 			//如果活动已经开启或者当前时间大于活动开始时间，则不能删除活动
-			boolean vailid = activity.getVaild();
+			boolean vailid = "yes".equals(activity.getVaild());
 			if(afterBeginTime || vailid){
 				success = false;
 				break;
@@ -141,9 +140,8 @@ public class ActivityService {
 	 */
 	public boolean allowOperation(Activity activity){
 		boolean success = true;
-		boolean vaild = activity.getVaild();
 		//如果是关闭状态是可以操作的
-		if(!vaild){
+		if("no".equals(activity.getVaild())){
 			return success;
 		}
 		List<Activity> activities = activityMapper.avtivityIsOpen(activity);
@@ -170,7 +168,7 @@ public class ActivityService {
 	 * @return
 	 * @param type
 	 */
-	public Activity currentActivity(ActivityType type){
+	public FlashActivityGoods currentActivity(ActivityType type){
 		return activityMapper.currentActivity(type.toString());
 	}
 	
@@ -179,8 +177,8 @@ public class ActivityService {
 	 * @param type
 	 * @return
 	 */
-	public Activity nextActivity(ActivityType type){
-		Activity curActivity = this.currentActivity(type);
+	public FlashActivityGoods nextActivity(ActivityType type){
+		FlashActivityGoods curActivity = this.currentActivity(type);
 		Map<String,Object> param = ImmutableMap.of("activityType", ActivityType.flashsale.toString(),
 				"time", curActivity.getEndTime());
 		return activityMapper.nextActivity(param);

@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.order.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
@@ -32,11 +33,13 @@ public class OrderDetail {
     @JsonProperty("status")
     private String orderStatus;
 
+    //订单当前状态 用于修改的时候约束条件
     private String currentOrderStatus;
 
     @JsonProperty("auditStatus")
     private String checkStatus;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @JsonProperty("createTime")
     private Timestamp createTime;
 
@@ -55,12 +58,14 @@ public class OrderDetail {
     @JsonProperty("comments")
     private String remarks;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @JsonProperty("afterSaleTime")
     private Timestamp afterSaleTime;
 
     @JsonProperty("hdStatus")
     private String hdStatus;//发送订单到海鼎是否成功0成功1失败
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @JsonProperty("deliveryTime")
     private Timestamp deliveryTime;
 
@@ -82,7 +87,7 @@ public class OrderDetail {
     @JsonProperty("phone")
     private String phone;
 
-    @JsonProperty("payableFee")
+    @JsonProperty("needPay")
     private  Integer payableFee;
 
     @JsonProperty("addressDetail")

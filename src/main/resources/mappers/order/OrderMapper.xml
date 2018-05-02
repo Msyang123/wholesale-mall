@@ -12,12 +12,12 @@
     <!-- 查询订单信息 -->
     <select id="searchOrders"  parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
        select id,order_code orderCode,discount_fee discountFee,settlement_type settlementType,pay_status payStatus
-        ,order_status orderStatus,create_time createTime,total_fee total,payable_fee needPay,remarks,after_sale_time afterSaleTime
+        ,order_status orderStatus,create_time createTime,total_fee totalFee,payable_fee payableFee,remarks,after_sale_time afterSaleTime
        from t_whs_order o
         <trim prefix="where" prefixOverrides="and">
             <if test="userId != null ">and o.user_id=#{userId}</if>
             <if test="settlementType != null ">and o.settlement_type=#{settlementType}</if>
-            <if test="payStatus != null ">and o.pay_status=#{payStatus}</if>R
+            <if test="payStatus != null ">and o.pay_status=#{payStatus}</if>
             <if test="orderStatus != null ">and o.order_status = #{orderStatus}</if>
 
         </trim>
@@ -52,7 +52,7 @@
         where t.order_id=#{orderId}
     </select>
 
-    <select id="searchOutstandingAccountsOrder"  parameterType="String" resultType="Integer">
+    <select id="searchOutstandingAccountsOrder"  parameterType="String" resultType="String">
         select check_status from t_whs_debt_order do
         where do.order_ids LIKE concat('%',#{orderCode},'%')  ORDER BY do.create_time desc LIMIT 1
     </select>
@@ -106,7 +106,7 @@
 			<foreach collection="list" item="item" open="(" separator="," close=")">
 				 #{item}
 			</foreach>
-			and t2.order_status in (3,4,8) and t1.refund_staus = '0'
+			and t2.order_status in ('undelivery','delivery','received') and t1.refund_status = 'no'
 		</trim>
 		group by t1.goods_standard_id
     </select>
@@ -164,6 +164,28 @@
             <if test="salesmanId!=null and salesmanId!=0"> and salesman_id = #{salesmanId} </if>
             <if test="createTime!=null and createTime!=''"> and create_time = #{createTime} </if>
         </where>
+    </select>
+
+    <!--用户最近下单数据 下单金额和下单时间-->
+    <select id="lateOneOrder" parameterType="long"  resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        select t.payable_fee,t.create_time from t_whs_order t where t.user_id=#{userId} ORDER BY t.create_time DESC LIMIT 1
+    </select>
+
+    <!--用户最近下单数据 -->
+    <select id="lateOrders" parameterType="com.lhiot.mall.wholesale.order.domain.OrderParam"  resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        select id,order_code orderCode,discount_fee orderDiscountFee,settlement_type orderType,pay_status payStatus
+        ,order_status orderStatus,create_time createTime,total_fee total,payable_fee needPay,remarks,after_sale_time afterSaleTime
+        from t_whs_order o where o.user_id=#{id}
+        and o.order_status = 'received'
+        and DATE_SUB(CURDATE(),INTERVAL #{dayNum} DAY) &gt; o.create_time
+    </select>
+
+    <!--用户最近下单数据 -->
+    <select id="lateOrdersFee" parameterType="com.lhiot.mall.wholesale.order.domain.OrderParam"  resultType="Integer">
+        select IFNULL(SUM(payable_fee),0) ordersTotalFee
+					from t_whs_order o where o.user_id=#{id}
+							and o.order_status = 'received'
+					and DATE_SUB(CURDATE(),INTERVAL #{dayNum} DAY) &gt; o.create_time
     </select>
 
     <!-- 后台管理  根据id查询订单详情 -->

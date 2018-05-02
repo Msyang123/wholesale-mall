@@ -9,6 +9,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.encoder.QRCode;
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.common.wrapper.ArrayObject;
+import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.base.QRCodeUtil;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.SearchUser;
@@ -37,6 +38,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +91,7 @@ public class UserApi {
         return ResponseEntity.noContent().build();
     }*/
 
-    @GetMapping("/{id}")
+    @GetMapping("query/{id}")
     @ApiOperation(value = "根据ID查询一个用户信息", response = User.class)
     public ResponseEntity<User> user(@PathVariable("id") Long id) {
         return ResponseEntity.ok(userService.user(id));
@@ -197,30 +199,52 @@ public class UserApi {
 
     @GetMapping("/{userId}")
     @ApiOperation("查询个人信息")
-    public ResponseEntity<User> queryUser(@PathVariable("userId") @NotNull long userId) {
-        return ResponseEntity.ok(userService.user(userId)); // 查询操作幂等
+    public ResponseEntity<User> queryUser(@PathVariable("userId") long uid) {
+        return ResponseEntity.ok(userService.user(uid)); // 查询操作幂等
     }
 
-    @PutMapping("/{userId}")   //因为要从URL能看出 指定修改哪个用户，所以ID应该放path中
+    @PutMapping("modify/{userId}")   //因为要从URL能看出 指定修改哪个用户，所以ID应该放path中
     @ApiOperation("修改个人信息")
-    public ResponseEntity updateUser(@PathVariable("userId") @NotNull long userId, @RequestBody User user) {
+    public ResponseEntity updateUser(@PathVariable("userId") long userId, @RequestBody User user) {
         user.setId(userId);
         userService.updateUser(user);   // 修改操作幂等
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("修改成功");
     }
 
-    @DeleteMapping("/address/{addressId}")
+    @DeleteMapping("/address/remove/{addressId}")
     @ApiOperation("根据ID删除地址")
     public ResponseEntity deleteAddress(@PathVariable("addressId") @NotNull long addressId) {
         userService.deleteAddress(addressId);   // 删除操作幂等
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("删除成功");
+    }
+
+    @GetMapping("/{userId}/addresses1")
+    @ApiOperation(value = "我的地址列表11111", response = UserAddress.class, responseContainer = "List")
+    public ResponseEntity<ArrayObject> userAddresses(@PathVariable("userId") @NotNull long userId) {
+        List<UserAddress> addresses = userService.searchAddressList(userId);
+        List<UserAddress> list = userService.searchAddressList(userId);
+        for (UserAddress userAddress:addresses) {
+            if ("yes".equals(userAddress.getIsDefault())){
+                list.add(0,userAddress);
+            }else{
+                list.add(userAddress);
+            }
+        }
+        return ResponseEntity.ok(ArrayObject.of(addresses));
     }
 
     @GetMapping("/{userId}/addresses")
     @ApiOperation(value = "我的地址列表", response = UserAddress.class, responseContainer = "List")
-    public ResponseEntity<ArrayObject> userAddresses(@PathVariable("userId") @NotNull long userId) {
-        List<UserAddress> addresses = userService.searchAddressList(userId);
-        return ResponseEntity.ok(ArrayObject.of(addresses));
+    public ResponseEntity<ArrayObject> userAddresses1(@PathVariable("userId") @NotNull long userId) {
+        //List<UserAddress> addresses = userService.searchAddressList(userId);
+        UserAddress userAddressYes = userService.searchAddressListYes(userId);
+        List<UserAddress> userAddressNo = userService.searchAddressListNO(userId);
+        List<UserAddress> list = new ArrayList<UserAddress>();
+            list.add(0,userAddressYes);
+        for (UserAddress userAddress:userAddressNo) {
+            list.add(userAddress);
+        }
+        return ResponseEntity.ok(ArrayObject.of(list));
     }
 
     @GetMapping("/address/{addressId}")
@@ -234,12 +258,21 @@ public class UserApi {
     public ResponseEntity saveAddress(@RequestBody UserAddress userAddress) {
         List<UserAddress> addresses = userService.searchAddressList(userAddress.getUserId());
         if (CollectionUtils.isEmpty(addresses)) {
-            userAddress.setIsDefault(0);//如果只有第一条数据则为默认地址
+            userAddress.setIsDefault("yes");//如果只有第一条数据则为默认地址
         }
         if (userService.saveOrUpdateAddress(userAddress)) {
             return ResponseEntity.ok(userAddress);
         }
         return ResponseEntity.badRequest().body("添加失败");
+    }
+
+    @PostMapping("/set-default")
+    @ApiOperation("设置默认接口")
+    public ResponseEntity setDefault(@RequestBody UserAddress userAddress) {
+        if (userService.updateDefault(userAddress)) {
+            return ResponseEntity.ok(userAddress);
+        }
+        return ResponseEntity.badRequest().body("无效数据");
     }
 
     @GetMapping("verificationCode/{phone}")
@@ -280,6 +313,23 @@ public class UserApi {
     @ApiOperation("查询是否是审核通过的商户")
     public ResponseEntity<SalesUserRelation> sellerApproved(@PathVariable("sellerId") @NotNull long sellerId) {
         return ResponseEntity.ok(salesUserService.isSeller(sellerId));
+    }
+
+
+    @GetMapping("/balance/{userId}")
+    @ApiOperation(value = "余额收支明细")
+    public ResponseEntity<ArrayObject> getBalanceRecord(@PathVariable("userId") Integer userId) {
+        List<PaymentLog> paymentLogList = userService.getBalanceRecord(userId);//待测
+        return ResponseEntity.ok(ArrayObject.of(paymentLogList));
+    }
+
+    @GetMapping("/my/{userId}")
+    @ApiOperation(value = "我的页面用户数据接口")
+    public ResponseEntity<User> myData(@PathVariable("userId") Integer userId) {
+        //List<PaymentLog> paymentLogList = userService.getBalanceRecord(userId);//待测
+        User user = userService.user(userId);
+        user.setDebtFee(userService.debtFee(userId));
+        return ResponseEntity.ok(user);
     }
 
     @ApiOperation("获取二维码图片")
