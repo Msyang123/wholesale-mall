@@ -379,9 +379,9 @@ public class PayService {
             paymentLog.setTotalFee(needPayFee);
             paymentLogMapper.insertPaymentLog(paymentLog);
             //修改订单并且发送海鼎订单
-            orderDetail.setOrderStatus(3);//已付款状态
+          /*  orderDetail.setOrderStatus(3);//已付款状态
             orderDetail.setCurrentOrderStaus(1);//待付款状态
-
+*/
             //修改订单状态为已支付状态
             return 1;
         }else{
@@ -568,8 +568,4 @@ public class PayService {
         }
     }
 
-
-    public List<PaymentLog> getBalanceRecord(Integer userId){
-        return paymentLogMapper.getBalanceRecord(userId);
-    }
 }

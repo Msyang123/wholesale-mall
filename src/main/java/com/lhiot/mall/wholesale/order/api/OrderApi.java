@@ -55,10 +55,10 @@ public class OrderApi {
     @PostMapping("/myOrders/{userId}")
     @ApiOperation(value = "我的订单列表")
     public ResponseEntity<ArrayObject> queryMyOrders(@PathVariable("userId") long userId
-            , @RequestParam(required = false) Integer payType, @RequestParam(required = false) Integer payStatus,@RequestParam Integer orderStatus){
+            , @RequestParam(required = false) String settlementType, @RequestParam(required = false) String payStatus,@RequestParam String orderStatus){
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setUserId(userId);
-        orderDetail.setSettlementType(payType);
+        orderDetail.setSettlementType(settlementType);
         orderDetail.setPayStatus(payStatus);
         orderDetail.setOrderStatus(orderStatus);
         List<OrderDetail> orderDetailList = orderService.searchOrders(orderDetail);
@@ -66,7 +66,7 @@ public class OrderApi {
             return ResponseEntity.ok(ArrayObject.of(new ArrayList<OrderDetail>()));
         }else {
             for (OrderDetail order:orderDetailList){
-                Integer checkStatus = orderService.searchOutstandingAccountsOrder(order.getOrderCode());
+                String checkStatus = orderService.searchOutstandingAccountsOrder(order.getOrderCode());
                 order.setCheckStatus(checkStatus);
                 List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
                 order.setOrderGoodsList(goods);
@@ -99,9 +99,12 @@ public class OrderApi {
     }*/
     @GetMapping("/invoice/orders/{userId}")
     @ApiOperation(value = "查询可开发票的订单列表")
-    public ResponseEntity<ArrayObject> invoiceOrders(@PathVariable("userId") @NotNull long userId) {
+    public ResponseEntity<ArrayObject> invoiceOrders(@PathVariable("userId") @NotNull long userId,
+                                                     @RequestParam String payStatus,@RequestParam String orderStatus) {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setUserId(userId);
+        orderDetail.setPayStatus(payStatus);
+        orderDetail.setOrderStatus(orderStatus);
         List <OrderDetail> orders = orderService.searchOrders(orderDetail);
         List<OrderDetail> orderResults=new ArrayList<OrderDetail>();
         if (orders.isEmpty()){
@@ -110,12 +113,13 @@ public class OrderApi {
         String time = DateFormatUtil.format1(new java.util.Date());
         Timestamp currentTime = Timestamp.valueOf(time);
         for (OrderDetail order:orders) {
-            if (order.getOrderStatus()==4&&order.getPayStatus()==0&&order.getAfterSaleTime().before(currentTime)){
+            //发票订单是收货已付款且过售后时间的订单
+            if ("received".equals(order.getOrderStatus())&&"paid".equals(order.getPayStatus())&&order.getAfterSaleTime().before(currentTime)){
                 List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
                 if (goods.isEmpty()){
-                    orderDetail.setOrderGoodsList(new ArrayList<OrderGoods>());
+                    order.setOrderGoodsList(new ArrayList<OrderGoods>());
                 }else {
-                    orderDetail.setOrderGoodsList(goods);
+                    order.setOrderGoodsList(goods);
                 }
                 orderResults.add(order);
             }
@@ -141,10 +145,10 @@ public class OrderApi {
         return ResponseEntity.ok(100);
     }
 
-    @GetMapping("/orders/aftersale/{userId}")
+    @GetMapping("/orders/after-sale/{userId}")
     @ApiOperation(value = "查询售后订单")
     public ResponseEntity<ArrayObject> queryAfterSale(@PathVariable("userId") @NotNull long userId
-            ,@RequestParam Integer orderStatus, @RequestParam Integer payStatus) {
+            ,@RequestParam String orderStatus, @RequestParam String payStatus) {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setUserId(userId);
         orderDetail.setOrderStatus(orderStatus);
@@ -182,12 +186,12 @@ public class OrderApi {
         //FIXME 创建的时候发送创建广播消息 用于优惠券设置无效
         //fixme mq设置三十分钟失效
 
-        if(orderDetail.getSettlementType()==1){
+       /* if(orderDetail.getSettlementType()==1){
             DebtOrder debtOrder=new DebtOrder();
             //FIXME 需要赋值
             debtOrderService.create(debtOrder);
             orderDetail.setOrderStatus(3);//待收货
-        }
+        }*/
         return ResponseEntity.ok(result);
     }
 
@@ -208,12 +212,12 @@ public class OrderApi {
         if (Objects.isNull(orderDetail)){
             throw new ServiceException("没有该订单信息");
         }
-        if(orderDetail.getOrderStatus()!=3){
+       /* if(orderDetail.getOrderStatus()!=3){
             throw new ServiceException("非待收货订单状态");
         }
         if(orderDetail.getPayStatus()!=0){
             throw new ServiceException("订单未支付");
-        }
+        }*/
        return ResponseEntity.ok(orderService.cancelPayedOrder(orderDetail));
     }
 

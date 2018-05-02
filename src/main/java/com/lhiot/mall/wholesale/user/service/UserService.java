@@ -3,6 +3,7 @@ package com.lhiot.mall.wholesale.user.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.user.domain.*;
 import com.lhiot.mall.wholesale.user.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +21,11 @@ public class UserService {
 
     private final UserMapper userMapper;
     private final SalesUserService salesUserService;
-    private final SnowflakeId snowflakeId;
 
     @Autowired
     public UserService(UserMapper userMapper, SalesUserService salesUserService,SnowflakeId snowflakeId) {
         this.userMapper = userMapper;
         this.salesUserService = salesUserService;
-        this.snowflakeId = snowflakeId;
     }
 
     public List<User> search(List ids) {
@@ -46,15 +45,22 @@ public class UserService {
     }
 
     public boolean saveOrUpdateAddress(UserAddress userAddress) {
-        if (userAddress.getIsDefault() == 0) {
+        if ("yes".equals(userAddress.getIsDefault())) {
             userMapper.updateDefaultAddress(userAddress.getUserId());
         }
         UserAddress pojo = userMapper.userAddress(userAddress.getId());
         if (Objects.nonNull(pojo)) {
             return userMapper.updateAddress(userAddress) > 0;
         } else {
+            userAddress.setIsDefault("no");
             return userMapper.insertAddress(userAddress) > 0;
         }
+    }
+
+    public boolean updateDefault(UserAddress userAddress){
+        userMapper.updateDefaultAddress(userAddress.getUserId());
+        userAddress.setIsDefault("yes");
+        return userMapper.updateAddress(userAddress)>0;
     }
 
     public List<UserAddress> searchAddressList(long userId) {
@@ -166,4 +172,21 @@ public class UserService {
     public List<User> users(List<Long> userIds){
     	return userMapper.searchInbatch(userIds);
     }
+
+    public List<PaymentLog> getBalanceRecord(Integer userId){
+        return userMapper.getBalanceRecord(userId);
+    }
+
+    public UserAddress searchAddressListYes(long userId) {
+        return userMapper.searchAddressListYes(userId);
+    }
+
+    public List<UserAddress> searchAddressListNO(long userId) {
+        return userMapper.searchAddressListNo(userId);
+    }
+
+    public Integer debtFee(long userId){
+        return userMapper.debtFee(userId);
+    }
+
 }

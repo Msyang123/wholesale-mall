@@ -12,6 +12,6 @@ public interface PaymentLogMapper {
 
     PaymentLog getPaymentLog(String orderCode);
 
-    List <PaymentLog> getBalanceRecord(Integer userId);
+
 
 }

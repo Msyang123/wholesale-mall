@@ -64,9 +64,9 @@ public class CurrencyPayApi {
         if (Objects.isNull(orderDetail)){
             return ResponseEntity.badRequest().body("没有该订单信息");
         }
-        if(orderDetail.getOrderStatus()>2||orderDetail.getPayStatus()!=0){
+       /* if(orderDetail.getOrderStatus()>2||orderDetail.getPayStatus()!=0){
             return ResponseEntity.badRequest().body("已支付订单状态，请勿重复支付");
-        }
+        }*/
         int payResult=payService.currencyPay(orderDetail);
         if(payResult>0){
             return ResponseEntity.ok(orderDetail);
@@ -74,12 +74,6 @@ public class CurrencyPayApi {
         return ResponseEntity.badRequest().body("余额支付订单失败");
     }
 
-    @GetMapping("/balance/{userId}")
-    @ApiOperation(value = "余额收支明细")
-    public ResponseEntity<ArrayObject> getBalanceRecord(@PathVariable("userId") Integer userId) {
-        List<PaymentLog> paymentLogList = payService.getBalanceRecord(userId);//待测
-        return ResponseEntity.ok(ArrayObject.of(paymentLogList));
-    }
 
     @PutMapping("/debtorderpay/{orderDebtCode}")
     @ApiOperation(value = "余额支付账款订单", response = String.class)

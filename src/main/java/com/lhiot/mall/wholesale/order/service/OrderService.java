@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
+import com.lhiot.mall.wholesale.order.domain.OrderParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,7 +65,7 @@ public class OrderService {
         return orderMapper.searchOrderGoods(orderId);
     }
 
-    public Integer searchOutstandingAccountsOrder(String orderCode){
+    public String searchOutstandingAccountsOrder(String orderCode){
         return orderMapper.searchOutstandingAccountsOrder(orderCode);
     }
 
@@ -94,8 +95,8 @@ public class OrderService {
     public int cancelUnpayOrder(String orderCode){
         OrderDetail orderDetail=new OrderDetail();
         orderDetail.setOrderCode(orderCode);
-        orderDetail.setOrderStatus(0);
-        orderDetail.setCurrentOrderStaus(1);
+       /* orderDetail.setOrderStatus(0);
+        orderDetail.setCurrentOrderStaus(1);*/
         return orderMapper.updateOrderStatusByCode(orderDetail);
     }
 
@@ -120,9 +121,9 @@ public class OrderService {
 
        //FIXME 查询支付日志
 
-        switch (orderDetail.getSettlementType()) {
+         /*switch (orderDetail.getSettlementType()) {
             //1货到付款
-            case 1:
+           case 1:
                 //直接取消掉订单就可以了
                 break;
             //0 线上支付
@@ -139,7 +140,7 @@ public class OrderService {
                 break;
             default:
                 break;
-        }
+        }*/
         return 1;
     }
     
@@ -163,5 +164,17 @@ public class OrderService {
 
     public OrderDetail order(OrderDetail orderDetail){
         return orderMapper.order(orderDetail);
+    }
+
+    public List<OrderDetail> lateOrders(OrderParam orderParam){
+        return orderMapper.lateOrders(orderParam);
+    }
+
+    public OrderDetail lateOneOrder(long userId){
+        return orderMapper.lateOneOrder(userId);
+    }
+
+    public Integer lateOrdersFee(OrderParam orderParam){
+        return orderMapper.lateOrdersFee(orderParam);
     }
 }

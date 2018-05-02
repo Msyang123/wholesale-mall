@@ -3,7 +3,7 @@
 <mapper namespace="com.lhiot.mall.wholesale.user.mapper.UserMapper">
 
     <sql id="userInfo">
-        id,phone,shop_name,user_name,city,address_detail,register_time,balance
+        id,phone,shop_name,user_name,city,address_detail,register_time,balance,profile_photo
     </sql>
 
     <select id="search"  parameterType="java.util.List" resultType="map">
@@ -20,6 +20,14 @@
 
     <select id="user"  parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.User">
         select <include refid="userInfo" /> from t_whs_user where id=#{id}
+    </select>
+
+    <!-- 用户欠款金额-->
+    <select id="debtFee"  parameterType="long" resultType="Integer">
+        select IFNULL(SUM(payable_fee),0) debtFee from t_whs_order
+        where user_id=#{0} and order_status in
+        ('undelivery','delivery','received','unrefunded','refundfailed')
+        and settlement_type='cod' and pay_status='unpaid'
     </select>
 
     <update id="updateUser" parameterType="com.lhiot.mall.wholesale.user.domain.User">
@@ -51,7 +59,7 @@
     </update>
 
     <!-- 新增地址 -->
-    <insert id="insertAddress" parameterType="com.lhiot.mall.wholesale.user.domain.UserAddress" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+    <insert id="insertAddress" parameterType="com.lhiot.mall.wholesale.user.domain.UserAddress">
         insert into t_whs_user_address(
         <trim suffixOverrides=",">
             <if test="sex != null and sex != ''">sex,</if>
@@ -102,12 +110,28 @@
 
     <!-- 查询当前用户所有地址 -->
     <select id="searchAddressList"  parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.UserAddress">
-       select * from t_whs_user_address where user_id=#{userId}
+        select a.*,u.user_name from t_whs_user_address a
+        LEFT JOIN t_whs_user u on a.user_id=u.id
+        where a.user_id=#{userId} ORDER BY a.id desc
+    </select>
+
+    <select id="searchAddressListYes"  parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.UserAddress">
+        select a.*,u.user_name from t_whs_user_address a
+        LEFT JOIN t_whs_user u on a.user_id=u.id
+        where a.user_id=#{userId} and is_default='yes'
+    </select>
+
+    <select id="searchAddressListNo"  parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.UserAddress">
+        select a.*,u.user_name from t_whs_user_address a
+        LEFT JOIN t_whs_user u on a.user_id=u.id
+        where a.user_id=#{userId} and is_default='no' ORDER BY a.id desc
     </select>
 
     <!-- 查询地址 -->
     <select id="userAddress"  parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.UserAddress">
-       select * from t_whs_user_address where id=#{id}
+        select a.id,a.sex,a.phone,a.address_area,a.address_detail,a.user_id,u.user_name from t_whs_user_address a
+        LEFT JOIN t_whs_user u on a.user_id=u.id
+        where a.id=#{id}
     </select>
 
     <!-- 删除地址 -->
@@ -116,8 +140,8 @@
     </delete>
 
     <update id="updateDefaultAddress" parameterType="long">
-        UPDATE t_whs_user_address SET is_default = 1
-        WHERE is_default = 0 and user_id = #{0}
+        UPDATE t_whs_user_address SET is_default = 'no'
+        WHERE is_default = 'yes' and user_id = #{0}
     </update>
 
 
@@ -158,4 +182,10 @@
 			#{item}
 		</foreach>
 	</select>
+
+    <select id="getBalanceRecord" parameterType="Integer" resultType="com.lhiot.mall.wholesale.pay.domain.Balance">
+        (select payment_time time,payment_from type,total_fee fee from t_whs_payment_log where user_id=#{id} )
+          union all
+        (select refund_time time,refund_type type,refund_fee fee from t_whs_refund_log where user_id=#{id})
+    </select>
 </mapper>
