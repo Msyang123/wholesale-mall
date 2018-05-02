@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.goods.domain.CategoryGoods;
 import com.lhiot.mall.wholesale.goods.domain.CategoryTree;
 import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
@@ -207,20 +208,44 @@ public class GoodsCategoryService {
 	}
 	
 	/**
-	 * 根据父节点id查询分类
+	 * 查询分类父节点或者字节及其分类下的商品
 	 * @param parentId
 	 * @return
 	 */
 	public List<GoodsCategory> findCategories(Long parentId){
-		List<GoodsCategory> goodsCategories = goodsCategoryMapper.searchAll(parentId);
-		if(Objects.equals(parentId, 0) || goodsCategories.isEmpty()){
-			return goodsCategories;
-		}
-		//如果是子节点，则第一子节点的商品查询出来，作为默认显示
-		GoodsCategory goodsCategory = goodsCategories.get(0);
-		Long categoryId = goodsCategory.getId();
+		return goodsCategoryMapper.searchAll(parentId);
+	}
+	
+	/**
+	 * 查询分类下的商品
+	 * @param categoryId
+	 * @return
+	 */
+	public List<Goods> categoryGoods(Long categoryId){
 		List<Goods> goods = goodsService.findByCategory(categoryId);
-		goodsCategory.setCategoryGoods(goods);
-		return goodsCategories;
+		//设置最低价格
+		goodsService.minPriceAndSoldQua(goods,25);
+		return goods;
+	}
+	
+	/**
+	 * 查询当前父节点下的所有子分类，并取得第一个子分类的所有商品
+	 * @param parentId
+	 * @return
+	 */
+	public CategoryGoods categoryAndGoods(Long parentId){
+		CategoryGoods categoryGoods = new CategoryGoods(); 
+		if(Objects.equals(0L, parentId)){
+			return categoryGoods;
+		}
+		List<GoodsCategory> categoryList = this.findCategories(parentId);
+		if(!categoryList.isEmpty()){
+			//获取第一个分类，并且取得他下面的所有商品
+			GoodsCategory goodsCategory = categoryList.get(0);
+			List<Goods> goods = this.categoryGoods(goodsCategory.getId());
+			categoryGoods.setProList(goods);
+		}
+		categoryGoods.setCategoryList(categoryList);
+		return categoryGoods;
 	}
 }

@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.ResultObject;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.goods.domain.CategoryGoods;
 import com.lhiot.mall.wholesale.goods.domain.CategoryTree;
+import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsCategoryGirdParam;
 import com.lhiot.mall.wholesale.goods.service.GoodsCategoryService;
@@ -34,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GoodsCategoryApi {
 	
 	private final GoodsCategoryService goodsCategoryService;
+	private static final Long parentId = 0l;
 	
 	@Autowired
 	public GoodsCategoryApi(GoodsCategoryService goodsCategoryService){
@@ -97,9 +100,21 @@ public class GoodsCategoryApi {
         return ResponseEntity.ok(goodsCategoryService.allowOperation(goodsCategory));
     }
 	
-	@GetMapping("/goodscategory/child")
+	@GetMapping("/goodscategory/parent")
     @ApiOperation(value = "查询商品某个分类下的子分类")
-    public ResponseEntity<List<GoodsCategory>> parentCategory(@RequestParam(required = false) Long parentId) {
+    public ResponseEntity<List<GoodsCategory>> parentCategory() {
         return ResponseEntity.ok(goodsCategoryService.findCategories(parentId));
+    }
+	
+	@GetMapping("/goodscategory/goods/{id}")
+    @ApiOperation(value = "查询商品某个分类下的商品",response=Goods.class,responseContainer="list")
+    public ResponseEntity<List<Goods>> categoryGoodses(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(goodsCategoryService.categoryGoods(id));
+    }
+	
+	@GetMapping("/goodscategory/child")
+    @ApiOperation(value = "查询商品某个分类下的子分类及第一子分类的商品" ,response = CategoryGoods.class)
+    public ResponseEntity<CategoryGoods> parentCategory(@RequestParam(required = true) Long parentId) {
+        return ResponseEntity.ok(goodsCategoryService.categoryAndGoods(parentId));
     }
 }

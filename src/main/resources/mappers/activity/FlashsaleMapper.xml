@@ -60,7 +60,7 @@
 	</select>
 
 	<select id="flashGoodsRecord" parameterType="Long" resultType="Integer">
-		SELECT SUM(buy_count) FROM t_whs_flashsale_goods_record WHERE flashsale_goods_id = #{0}
+		SELECT IFNULL(SUM(buy_count),0) as count FROM t_whs_flashsale_goods_record WHERE flashsale_goods_id = #{0}
 	</select>
 	
 	<!-- lynn 查询用户的已抢购数 -->
