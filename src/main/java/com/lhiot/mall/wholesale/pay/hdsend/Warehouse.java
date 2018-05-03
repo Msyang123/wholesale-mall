@@ -111,9 +111,15 @@ public class Warehouse {
             ObjectMapper om=new ObjectMapper();
             //api=/savenew2state/{to_state}
            System.out.println(new Warehouse().h4Request("post","/wholesaleservice/wholesale/savenew2state/1700",om.writeValueAsString(inventory)));
+           /**********批发单服务-作废**********************************/
+            Abolish abolish=new Abolish();
+            abolish.setId("96461805030003");
+            abolish.setSrcCls("批发商城");
+            abolish.setOper("退货管理员");
+            System.out.println(new Warehouse().h4Request("post","/wholesaleservice/wholesale/abolish/96461805030003?srcCls=批发商城&oper=退货管理员",om.writeValueAsString(abolish)));
 
             /*********批发退服务**********************/
-            Wholesalebck wholesalebck=new Wholesalebck();
+            /*Wholesalebck wholesalebck=new Wholesalebck();
             wholesalebck.setUuid(UUID.randomUUID().toString());
             wholesalebck.setReceiverCode("9646");
             wholesalebck.setReceiverWrh("07310101");
@@ -147,7 +153,7 @@ public class Warehouse {
             products.add(product);
             wholesalebck.setProducts(products);
 
-            System.out.println(new Warehouse().h4Request("post","/wholesalebckservice/wholesalebck",om.writeValueAsString(wholesalebck)));
+            System.out.println(new Warehouse().h4Request("post","/wholesalebckservice/wholesalebck",om.writeValueAsString(wholesalebck)));*/
 
 
         } catch (Exception e) {
