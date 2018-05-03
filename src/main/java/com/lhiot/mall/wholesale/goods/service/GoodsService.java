@@ -11,6 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.activity.domain.ActivityPeriodsType;
+import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
+import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
+import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
@@ -35,14 +39,17 @@ public class GoodsService {
 	private final OrderService orderService;
 	private final GoodsPriceRegionService priceRegionService;
 	private final PlateCategoryService plateCategoryService;
+	private final FlashsaleService flashsaleService;
 	@Autowired
 	public GoodsService(GoodsMapper goodsMapper,OrderService orderService,
 			GoodsPriceRegionService priceRegionService,
-			PlateCategoryService plateCategoryService){
+			PlateCategoryService plateCategoryService,
+			FlashsaleService flashsaleService){
 		this.goodsMapper = goodsMapper;
 		this.orderService = orderService;
 		this.priceRegionService = priceRegionService;
 		this.plateCategoryService = plateCategoryService;
+		this.flashsaleService = flashsaleService;
 	}
 	
 	/**
@@ -182,10 +189,11 @@ public class GoodsService {
 	 */
 	public List<Goods> findGoodsByKeyword(String keyword,Long id){
 		List<Goods> goodses = goodsMapper.keywordGoods(keyword);
-		if(!goodses.isEmpty()){
-			//计算商品最低价格及售卖数
-			this.minPriceAndSoldQua(goodses, 25);
+		if(goodses.isEmpty()){
+			return goodses;
 		}
+		//计算商品最低价格及售卖数
+		this.minPriceAndSoldQua(goodses, 25);
 		//排序
 		if(Objects.isNull(id)){
 			return goodses;
@@ -216,7 +224,7 @@ public class GoodsService {
 		List<Goods> plateGoodses = goodsMapper.plateGoodses(plateId);
 		//组装商品的售卖数和最低价格
 		this.minPriceAndSoldQua(plateGoodses,25);
-		plateCategory.setPlateGoods(plateGoodses);
+		plateCategory.setChannelGoods(plateGoodses);
 		return plateCategory;
 	}
 	
@@ -234,13 +242,14 @@ public class GoodsService {
 			List<Goods> plateGoodses = goodsMapper.plateGoodses(plateCategory.getId());
 			//组装商品的售卖数和最低价格
 			this.minPriceAndSoldQua(plateGoodses,25);
-			plateCategory.setPlateGoods(plateGoodses);
+			plateCategory.setChannelGoods(plateGoodses);
 		}
 		return plateCategories;
 	}
 	
 	/**
-	 * 统计商品的销售数量以及商品的最低售价
+	 * 统计商品的销售数量以及商品的最低售价,
+	 * 及判断当前商品是否抢购商品
 	 * @param goodses
 	 */
 	public void minPriceAndSoldQua(List<Goods> goodses,int degree){
@@ -270,6 +279,23 @@ public class GoodsService {
 				if(Objects.equals(goods.getId(), 
 						minPrice.getGoodsId())){
 					goods.setMinPrice(minPrice.getMinPrice());
+					goods.setMaxPrice(minPrice.getMaxPrice());
+				}
+			}
+		}
+		
+		//获取当前的抢购商品
+		FlashActivityGoods flashActivityGoods = flashsaleService.flashGoods(ActivityPeriodsType.current);
+		List<FlashsaleGoods> flGoods = flashActivityGoods.getProList();
+		if(flGoods.isEmpty()){
+			return ;
+		}
+		//匹配抢购商品价格及标识为抢购商品
+		for(Goods goods : goodses){
+			for(FlashsaleGoods flashsaleGoods : flGoods){
+				if(Objects.equals(goods.getId(), flashsaleGoods.getGoodsId())){
+					goods.setIsFlash(true);
+					goods.setMinPrice(flashsaleGoods.getSpecialPrice());
 				}
 			}
 		}

@@ -26,7 +26,7 @@ public class IndexApi {
 		this.indexService = indexService;
 	}
     
-    @GetMapping("/index")
+    @GetMapping("/index/data")
     @ApiOperation(value = "根据类型查询广告", response = Index.class)
     public ResponseEntity<Index> index() {
         return ResponseEntity.ok(indexService.index());

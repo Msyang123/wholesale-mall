@@ -128,7 +128,7 @@ public class PlateCategoryService {
 			categoryTree.setId(p.getId());
 			categoryTree.setPId(p.getParentId());
 			categoryTree.setName(p.getPlateName());
-			categoryTree.setParentClassName(p.getParentPlateNameName());
+			categoryTree.setParentClassName(p.getParentPlateName());
 			categoryTree.setIsParent(p.getParentId().toString().equals("0")?true:false);
 			categoryTree.setLevel(p.getLevels());
 			result.add(categoryTree);

@@ -18,7 +18,6 @@ public class Goods {
 	@ApiModelProperty(notes="商品单位ID",dataType="Long")
 	private Long id;
 	
-	@JsonIgnore
 	@ApiModelProperty(notes="商品编码",dataType="String")
 	private String goodsCode;
 	
@@ -26,7 +25,6 @@ public class Goods {
 	@ApiModelProperty(notes="商品名字",dataType="String")
 	private String goodsName;
 	
-	@JsonIgnore
 	@ApiModelProperty(notes="商品分类id",dataType="Long")
 	private Long categoryId;
 	
@@ -34,31 +32,27 @@ public class Goods {
 	@ApiModelProperty(notes="商品主图路径",dataType="String")
 	private String goodsImage;
 	
-	@JsonIgnore
 	@ApiModelProperty(notes="商品基础条码",dataType="String")
 	private String baseBar;
 	
-	@JsonIgnore
+	@JsonProperty("baseUintId")
 	@ApiModelProperty(notes="基础单位id",dataType="Long")
 	private Long baseUnit;
 	
-	@JsonIgnore
+	@JsonProperty("stock")
 	@ApiModelProperty(notes="安全库存",dataType="Integer")
 	private String stockLimit;
 	
-	@JsonIgnore
 	@ApiModelProperty(notes="商品描述",dataType="String")
 	private String goodsDes;
 	
-	@JsonIgnore
+	
 	@ApiModelProperty(notes="商品详情图片s",dataType="String")
 	private String goodsImages;
 	
-	@JsonIgnore
 	@ApiModelProperty(notes="服务保障图片",dataType="String")
 	private String otherImage;
 	
-	@JsonIgnore
 	@ApiModelProperty(notes="基础单位编码",dataType="String")
 	private String baseUnitCode;
 	
@@ -66,10 +60,10 @@ public class Goods {
 	@ApiModelProperty(notes="商品基础单位名称",dataType="String")
 	private String baseUnitName;
 	
-	@JsonIgnore
 	@ApiModelProperty(notes="商品分类名称",dataType="String")
 	private String categoryName;
 	
+	@JsonProperty("unit")
 	@ApiModelProperty(notes="计价单位",dataType="String")
 	private String goodsUnit;
 	
@@ -85,10 +79,16 @@ public class Goods {
 	@ApiModelProperty(notes="最低价",dataType="Integer")
 	private Integer minPrice;
 	
+	@ApiModelProperty(notes="最高价",dataType="Integer")
+	private Integer maxPrice;
+	
+	@JsonProperty("saleCount")
 	@ApiModelProperty(notes="已售数量",dataType="Integer")
 	private Integer soldQuantity;
 	
-	@JsonIgnore
 	@ApiModelProperty(notes="关键词id，关键查询商品列表",dataType="Long")
 	private Long keywordId;
+	
+	@ApiModelProperty(notes="是否为抢购商品",dataType="Boolean")
+	private Boolean isFlash = false;
 }

@@ -47,6 +47,10 @@ public class FlashsaleGoods {
 	@ApiModelProperty(notes="基础单位",dataType="String")
 	private String baseUnit;
 	
+	@JsonProperty("unit")
+	@ApiModelProperty(notes="商品单位",dataType="String")
+	private String goodsUnit;
+	
 	@JsonProperty("src")
 	@ApiModelProperty(notes="商品图片",dataType="String")
 	private String goodsImage;
@@ -68,5 +72,5 @@ public class FlashsaleGoods {
 	private String progress;
 	
 	@ApiModelProperty(notes="剩余数量",dataType="String")
-	private String remainNum;
+	private String remain;
 }

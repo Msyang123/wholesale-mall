@@ -113,17 +113,17 @@ public class GoodsApi {
 	    return ResponseEntity.ok(inventoryResult);
     }
 
-	@PostMapping("/goods/tryoperation")
+	@PostMapping("/goods/try-operation")
     @ApiOperation(value = "查询商品分类是否可以被修改或新增")
-    public ResponseEntity<Boolean> tryoperation(@RequestBody(required = true) Goods goods) {
+    public ResponseEntity<Boolean> tryOperation(@RequestBody(required = true) Goods goods) {
         return ResponseEntity.ok(goodsService.allowOperation(goods));
     }
 	
-	@GetMapping("/goods/keyword/{keyword}")
+	@GetMapping("/goods/keyword")
     @ApiOperation(value = "根据关键词查询商品列表" ,response= Goods.class,responseContainer="list")
     public ResponseEntity<List<Goods>> findGoodsByKeyword(@RequestParam(required = false) Long id,
-    		@PathVariable("keyword") String keywrod) {
-        return ResponseEntity.ok(goodsService.findGoodsByKeyword(keywrod, id));
+    		@RequestParam(required = true) String keyword) {
+        return ResponseEntity.ok(goodsService.findGoodsByKeyword(keyword, id));
     }
 	
 	@GetMapping("/goods/plate/{plateId}")

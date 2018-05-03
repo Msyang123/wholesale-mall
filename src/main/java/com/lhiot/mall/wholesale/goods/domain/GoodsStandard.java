@@ -58,7 +58,7 @@ public class GoodsStandard {
 	private String goodsImage;
 	
 	@ApiModelProperty(notes="商品规格单位名称",dataType="String")
-	private String goodsUnitName;
+	private String goodsUnit;
 	
 	@ApiModelProperty(notes="商品基础单位名称",dataType="String")
 	private String baseUnitName;
