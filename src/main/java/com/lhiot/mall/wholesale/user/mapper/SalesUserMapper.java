@@ -27,4 +27,20 @@ public interface SalesUserMapper {
     SalesUserRelation searchSaleRelationship(SalesUserRelation salesUserRelation);
 
     List<ShopResult> searchShopInfo(long salesId);
+
+/********************后台管理系统接口***********************/
+
+    int create(SalesUser salesUser);
+
+    int updateById(SalesUser salesUser);
+
+    int deleteByIds(List<String> ids);
+
+    List<SalesUser> list(SalesUser salesUser);
+
+    List<SalesUser> page(Map<String,Object> param);
+
+    SalesUser findById(Long id);
+
+    SalesUser findCode(String code);
 }
