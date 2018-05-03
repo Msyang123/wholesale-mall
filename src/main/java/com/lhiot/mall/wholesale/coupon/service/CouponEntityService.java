@@ -187,13 +187,26 @@ public class CouponEntityService {
 		if(Objects.isNull(orderFee) || Objects.equals(orderFee, 0)){
 			return list;
 		}
+		//判断优惠券是否到达使用标准,将可用的优惠按照优惠金额倒序排列
+		//到达使用标准的优惠券
+		List<CouponEntity> availables = new ArrayList<>();
 		for(CouponEntity couponEntity : list){
-			int couponFee = couponEntity.getCouponFee();
-			if(orderFee > couponFee){
+			int fullFee = couponEntity.getFullFee();
+			if(orderFee >= fullFee){
 				couponEntity.setIsValidate(true);
+				availables.add(couponEntity);
 			}
 		}
-		return list;
+		if(availables.isEmpty()){
+			return list;
+		}
+		//没有达到使用标准的优惠券
+		List<CouponEntity> unavailable = list.stream().filter(m -> !m.getIsValidate())
+										 .collect(Collectors.toList());
+		if(!unavailable.isEmpty()){
+			availables.addAll(availables.size(), unavailable);
+		}
+		return availables;
 	}
 }
 
