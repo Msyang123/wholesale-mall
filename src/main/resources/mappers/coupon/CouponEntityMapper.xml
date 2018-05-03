@@ -94,8 +94,12 @@
 	<!-- 查询用户优惠券列表 -->
 	<select id="searchByUser" parameterType="com.lhiot.mall.wholesale.coupon.domain.UserCouponParam" 
 		resultType="com.lhiot.mall.wholesale.coupon.domain.CouponEntity">
-		select a.id,a.coupon_config_id as couponConfigId,a.user_id as userId,a.effective_time as effectiveTime,
-		a.failure_time as failureTime,a.coupon_status as couponStatus,a.get_time as getTime,a.use_time as userTime,
+		select a.id,a.coupon_config_id as couponConfigId,a.user_id as userId,
+		DATE_FORMAT(a.effective_time,'%Y-%m-%d %H:%i:%s') as effectiveTime,
+		DATE_FORMAT(a.failure_time,'%Y-%m-%d %H:%i:%s') as failureTime,
+		a.coupon_status as couponStatus,
+		DATE_FORMAT(a.get_time,'%Y-%m-%d %H:%i:%s') as getTime,
+		DATE_FORMAT(a.use_time,'%Y-%m-%d %H:%i:%s') as userTime,
 		a.coupon_fee as couponFee,a.full_fee as fullFee,c.coupon_name as couponName,b.coupon_des as couponDes
 		from t_whs_coupon_entity a
 		left join t_whs_coupon_config b on a.coupon_config_id = b.id
