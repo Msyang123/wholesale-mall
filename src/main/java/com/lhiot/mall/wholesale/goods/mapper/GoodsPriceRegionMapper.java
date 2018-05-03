@@ -27,5 +27,5 @@ public interface GoodsPriceRegionMapper {
     List<GoodsPriceRegion> selectPriceRegion(long goodsStandardId);
     
     //根据商品id查询商品的最低的价格
-    List<GoodsMinPrice> minPrice(List<Long> goodsId);
+    List<GoodsMinPrice> priceRegion(List<Long> goodsId);
 }

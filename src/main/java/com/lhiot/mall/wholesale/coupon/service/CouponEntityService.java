@@ -182,7 +182,18 @@ public class CouponEntityService {
 	 * @return
 	 */
 	public List<CouponEntity> userCoupons(UserCouponParam userCouponParam){
-		return couponEntityMapper.searchByUser(userCouponParam);
+		List<CouponEntity> list = couponEntityMapper.searchByUser(userCouponParam);
+		Integer orderFee = userCouponParam.getOrderFee();
+		if(Objects.isNull(orderFee) || Objects.equals(orderFee, 0)){
+			return list;
+		}
+		for(CouponEntity couponEntity : list){
+			int couponFee = couponEntity.getCouponFee();
+			if(orderFee > couponFee){
+				couponEntity.setIsValidate(true);
+			}
+		}
+		return list;
 	}
 }
 

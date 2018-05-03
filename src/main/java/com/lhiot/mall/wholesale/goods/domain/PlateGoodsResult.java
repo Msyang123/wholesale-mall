@@ -1,9 +1,6 @@
 package com.lhiot.mall.wholesale.goods.domain;
 
 import java.math.BigDecimal;
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -39,8 +36,8 @@ public class PlateGoodsResult {
 	@ApiModelProperty(notes="原价",dataType="Integer")
 	private Integer price;
 	
-	@ApiModelProperty(notes="是否上架 ",dataType="Boolean")
-	private Boolean ifVaild;
+	@ApiModelProperty(notes="是否上架 ",dataType="String")
+	private String vaild;
 	
 	@ApiModelProperty(notes="海鼎商品sku_id",dataType="String")
 	private String hdSkuId;

@@ -94,14 +94,15 @@
 	<!-- 查询用户优惠券列表 -->
 	<select id="searchByUser" parameterType="com.lhiot.mall.wholesale.coupon.domain.UserCouponParam" 
 		resultType="com.lhiot.mall.wholesale.coupon.domain.CouponEntity">
-		select id,coupon_config_id as couponConfigId,user_id as userId,effective_time as effectiveTime,
-		failure_time as failureTime,coupon_status as couponStatus,get_time as getTime,use_time as userTime,
-		coupon_fee as couponFee,full_fee as fullFee
-		from t_whs_coupon_entity
+		select a.id,a.coupon_config_id as couponConfigId,a.user_id as userId,a.effective_time as effectiveTime,
+		a.failure_time as failureTime,a.coupon_status as couponStatus,a.get_time as getTime,a.use_time as userTime,
+		a.coupon_fee as couponFee,a.full_fee as fullFee,c.coupon_name as couponName,b.coupon_des as couponDes
+		from t_whs_coupon_entity a
+		left join t_whs_coupon_config b on a.coupon_config_id = b.id
+		left join t_whs_coupon_plate c on b.coupon_id = c.id
 		<trim prefix="where" prefixOverrides="and">
 			<if test="userId != null and userId != ''"> and user_id = #{userId}</if>
 			<if test="couponStatus != null and couponStatus != ''"> and coupon_status = #{couponStatus}</if>
-			<if test="orderFee != null and orderFee != ''"> and coupon_fee &lt;= #{orderFee}</if>
 		</trim>
 			order by couponFee desc
 		<if test="start != null and start != '' 

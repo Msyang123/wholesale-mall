@@ -107,6 +107,6 @@ public class GoodsPriceRegionService {
 	 * @return
 	 */
 	public List<GoodsMinPrice> minPrices(List<Long> goodsIds){
-		return goodsPriceRegionMapper.minPrice(goodsIds);
+		return goodsPriceRegionMapper.priceRegion(goodsIds);
 	}
 }

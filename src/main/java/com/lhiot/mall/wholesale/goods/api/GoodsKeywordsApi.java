@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.leon.microx.common.wrapper.ArrayObject;
@@ -77,9 +78,9 @@ public class GoodsKeywordsApi {
         return ResponseEntity.ok(goodsKeywordService.pageQuery(param));
     }
     
-    @GetMapping("/keywords/keyword/{key}")
+    @GetMapping("/keywords")
     @ApiOperation(value = "根据关键词，查询商品的关键词列表", response = GoodsKeywords.class,responseContainer="list")
-    public ResponseEntity<List<GoodsKeywords>> keywords(@PathVariable("key") String keyword) {
+    public ResponseEntity<List<GoodsKeywords>> keywords(@RequestParam(required = true) String keyword) {
         return ResponseEntity.ok(goodsKeywordService.keywords(keyword, KeywordsType.goods, null));
     }
 }

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.leon.microx.common.wrapper.ResultObject;
 import com.lhiot.mall.wholesale.activity.domain.ActivityPeriodsType;
 import com.lhiot.mall.wholesale.activity.domain.FlashActivity;
-import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
+import com.lhiot.mall.wholesale.activity.domain.FlashResult;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
@@ -76,16 +76,19 @@ public class FlasesaleGoodsApi {
         return ResponseEntity.ok(flashsaleService.pageQuery(param));
     }
     
-    @GetMapping("/flashsale/periods/{type}")
-    @ApiOperation(value = "查询当前或者下期活动信息及活动商品列表", response = FlashActivityGoods.class)
-    public ResponseEntity<FlashActivityGoods> falshGoodses(@PathVariable("type") ActivityPeriodsType type) {
-        return ResponseEntity.ok(flashsaleService.falshGoods(type));
-    }
-    
     @GetMapping("/flashsale/records/{userId}/{activityId}")
     @ApiOperation(value = "获取用户抢购数量")
     public ResponseEntity<Integer> userRecords(@PathVariable("userId") Long userId,
     		@PathVariable("activityId") Long activityId) {
         return ResponseEntity.ok(flashsaleService.userRecords(userId, activityId));
+    }
+    
+    @GetMapping("/flashsale/periods")
+    @ApiOperation(value = "查询当前或者下期活动信息及活动商品列表", response = FlashResult.class)
+    public ResponseEntity<FlashResult> falshGoodses() {
+    	FlashResult flashResult = new FlashResult();
+    	flashResult.setFlash(flashsaleService.flashGoods(ActivityPeriodsType.current));
+    	flashResult.setNextFlash(flashsaleService.flashGoods(ActivityPeriodsType.next));
+        return ResponseEntity.ok(flashResult);
     }
 }

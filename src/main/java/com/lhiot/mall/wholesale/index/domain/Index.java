@@ -37,5 +37,5 @@ public class Index {
 	private PlateCategory hotPro;
 	
 	@ApiModelProperty(notes="滚动排版的版块商品",dataType="HotPro")
-	private List<PlateCategory> ranking;
+	private List<PlateCategory> channelList;
 }

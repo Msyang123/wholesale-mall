@@ -86,7 +86,7 @@ public class IndexService {
 					break;
 				}
 			}
-			index.setRanking(plateCategories);
+			index.setChannelList(plateCategories);
 		}
 		return index;
 	}

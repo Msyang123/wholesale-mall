@@ -3,6 +3,9 @@ package com.lhiot.mall.wholesale.goods.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -19,9 +22,11 @@ public class PlateCategory {
 	@ApiModelProperty(notes="商品规格id",dataType="Long")
 	private Long parentId;
 	
+	@JsonProperty("name")
 	@ApiModelProperty(notes="版块名称",dataType="String")
 	private String plateName;
 	
+	@JsonProperty("src")
 	@ApiModelProperty(notes="版块图片",dataType="String")
 	private String plateImage;
 	
@@ -29,7 +34,7 @@ public class PlateCategory {
 	private Integer rank;
 	
 	@ApiModelProperty(notes="父分类名称",dataType="String")
-	private String parentPlateNameName;
+	private String parentPlateName;
 	
 	@ApiModelProperty(notes="等级",dataType="Integer")
 	private Integer levels;
@@ -38,6 +43,6 @@ public class PlateCategory {
 	private String layout;
 	
 	@ApiModelProperty(notes="版块商品",dataType="java.util.List")
-	private List<Goods> plateGoods = new ArrayList<>();
+	private List<Goods> channelGoods = new ArrayList<>();
 }
 

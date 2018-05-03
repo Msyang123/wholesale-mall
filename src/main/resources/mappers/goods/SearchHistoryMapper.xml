@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lhiot.mall.wholesale.goods.mapper.SearchHistoryMapper">
+	<sql id="searchHistotyColumn">
+		id ,user_id as userId,keyword, keyword_id as keywordId
+	</sql>
+	
+	<!-- lynn后台管理 新增2018/4/19 -->
+	<insert id="insert" parameterType="com.lhiot.mall.wholesale.goods.domain.SearchHistoryParam" useGeneratedKeys="true">
+		insert into t_whs_search_history(
+			<trim suffixOverrides=",">
+				<if test="userId != null and userId != ''">user_id,</if>
+				<if test="keyword != null and keyword != ''">keyword,</if>
+				<if test="keywordId != null and keywordId != ''">keyword_id,</if>
+				create_at
+			</trim>
+		)
+		values(
+			<trim suffixOverrides=",">
+				<if test="userId != null and userId != ''">#{userId},</if>
+				<if test="keyword != null and keyword != ''">#{keyword},</if>
+				<if test="keywordId != null and keywordId != ''">#{keywordId},</if>
+				now()
+			</trim>
+		)
+	</insert>
+	
+	<!-- lynn 删除2018/4/19 -->
+	<delete id="remove" parameterType="Long">
+		delete from t_whs_search_history where user_id = #{0}
+	</delete>
+	
+	<!-- lynn后台管理 查询所有单位用作下拉框2018/4/19 -->
+	<select id="search" resultType="com.lhiot.mall.wholesale.goods.domain.SearchHistory">
+		select <include refid="searchHistotyColumn"/> from t_whs_search_history
+		where user_id = #{0}
+		order by create_at limit 6
+	</select>
+	
+	<!-- lynn 判断关键字是否存在 -->
+	<select id="searchByKeyword" parameterType="com.lhiot.mall.wholesale.goods.domain.SearchHistoryParam" 
+		resultType="Integer">
+		select count(*) from t_whs_search_history where keyword = #{keyword} and user_id = #{userId}
+	</select>
+</mapper>

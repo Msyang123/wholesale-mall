@@ -36,7 +36,7 @@ public class CouponEntityApi {
     @ApiOperation(value = "查询用户优惠券列表", response = CouponEntity.class, responseContainer = "List")
     public ResponseEntity<List<CouponEntity>> userCoupons(
     		@PathVariable(required=true) Long userId,
-    		@RequestParam(defaultValue="unuse") String status,
+    		@RequestParam(defaultValue="unused") String status,
     		@RequestParam(defaultValue="1") Integer page,
     		@RequestParam(defaultValue="10") Integer rows) {
     	
@@ -59,7 +59,7 @@ public class CouponEntityApi {
     	UserCouponParam param = new UserCouponParam();
     	param.setOrderFee(orderfee);
     	param.setUserId(userId);
-    	param.setCouponStatus(CouponStatusType.unuse.toString());
+    	param.setCouponStatus(CouponStatusType.unused.toString());
     	
         return ResponseEntity.ok(couponEntityService.userCoupons(param));
     }
