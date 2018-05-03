@@ -2,6 +2,8 @@ package com.lhiot.mall.wholesale.user.mapper;
 
 import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
+import com.lhiot.mall.wholesale.user.domain.ShopResult;
+import com.lhiot.mall.wholesale.user.domain.User;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -23,4 +25,6 @@ public interface SalesUserMapper {
     SalesUserRelation isSeller(long userId);
 
     SalesUserRelation searchSaleRelationship(SalesUserRelation salesUserRelation);
+
+    List<ShopResult> searchShopInfo(long salesId);
 }

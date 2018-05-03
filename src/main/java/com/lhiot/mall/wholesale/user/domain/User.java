@@ -29,11 +29,11 @@ public class User {
     @JsonProperty("phone")
     private String phone;
 
-    @JsonProperty("address_detail")
+    @JsonProperty("address")
     private String addressDetail;
 
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    @JsonProperty("register_time")
+    @JsonProperty("registerTime")
     private String registerTime;
 
     @JsonProperty("nickname")
@@ -42,15 +42,16 @@ public class User {
     @JsonProperty("balance")
     private int balance;
 
-    @JsonProperty("shop_name")
+    @JsonProperty("shopName")
     private String shopName;
 
-    @JsonProperty("user_name")
+    @JsonProperty("userName")
     private String userName;
 
-    @JsonProperty("user_status")
+    @JsonProperty("userStatus")
     private int userStatus;
-    @JsonProperty("profile_photo")
+
+    @JsonProperty("profilePhoto")
     private String profilePhoto;
 
     @JsonProperty("supplier")
@@ -68,6 +69,8 @@ public class User {
     @JsonProperty("namePhone")
     private String namePhone;
 
+    @JsonProperty("debtFee")
+    private Integer debtFee;
     /*public enum Sex {
         MALE, FEMALE, UNKNOWN
     }*/

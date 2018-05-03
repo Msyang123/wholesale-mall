@@ -568,8 +568,4 @@ public class PayService {
         }
     }
 
-
-    public List<PaymentLog> getBalanceRecord(Integer userId){
-        return paymentLogMapper.getBalanceRecord(userId);
-    }
 }
