@@ -22,9 +22,12 @@ public class FaqCategoryService {
     }
 
     public int save(FaqCategory faqCategory) {
-        faqCategory.setId(faqCategoryMapper.pageQueryCount()+1);
+        //faqCategory.setId(faqCategoryMapper.pageQueryCount()+1);
         return faqCategoryMapper.insertFaqCategory(faqCategory);
     }
 
+    public List<FaqCategory> searchFaqCategory() {
+        return faqCategoryMapper.searchFaqCategory();
+    }
 
 }

@@ -16,13 +16,13 @@ import java.sql.Timestamp;
 public class SalesUserRelation {
 
     @JsonProperty("id")
-    private long id;
+    private Long id;
 
     @JsonProperty("user_id")
-    private long userId;
+    private Long userId;
 
     @JsonProperty("salesman_id")
-    private long salesmanId;
+    private Long salesmanId;
 
     @JsonProperty("is_check")
     private Integer check;

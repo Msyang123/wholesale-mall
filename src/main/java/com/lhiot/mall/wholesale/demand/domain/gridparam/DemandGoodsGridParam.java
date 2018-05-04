@@ -7,6 +7,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import java.util.List;
+
 /**
  * Created by HuFan on 2018/4/23.
  */
@@ -27,7 +29,7 @@ public class DemandGoodsGridParam extends PageObject {
     private String createTimeEnd;
 
     @ApiModelProperty(notes="用户ids",dataType="Long")
-    private Long[] userIds;
+    private List<Long> userIds;
 
     @ApiModelProperty(notes="分页查询开始页面",dataType="Integer")
     private Integer start;

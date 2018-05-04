@@ -17,31 +17,31 @@ import java.sql.Timestamp;
 @EqualsAndHashCode(callSuper = false)
 public class OrderGoods {
     @JsonProperty("id")
-    private long id;
+    private Long id;
 
     @JsonProperty("goodsStandardId")
-    private long goodsStandardId;
+    private Long goodsStandardId;
 
     @JsonProperty("orderId")
-    private long orderId;
+    private Long orderId;
 
     @JsonProperty("quanity")
-    private int quanity;
+    private Integer quanity;
 
     @JsonProperty("price")
-    private int goodsPrice;
+    private Integer goodsPrice;
 
     @JsonProperty("paymentTime")
     private Timestamp paymentTime;
 
     @JsonProperty("refundStaus")
-    private int refundStaus;
+    private Integer refundStaus;
 
     @JsonProperty("discountGoodsPrice")
-    private int discountGoodsPrice;
+    private Integer discountGoodsPrice;
 
     @JsonProperty("userId")
-    private long userId;
+    private Long userId;
 
     @JsonProperty("name")
     private String goodsName;
@@ -56,7 +56,7 @@ public class OrderGoods {
     private String goodsImage;
 
     @JsonProperty("num")
-    private int number;
+    private Integer number;
 
     @JsonProperty("hdSkuId")
     private String hdSkuId;

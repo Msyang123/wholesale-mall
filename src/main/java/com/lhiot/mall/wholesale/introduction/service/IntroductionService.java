@@ -69,9 +69,10 @@ public class IntroductionService {
     //新增/修改服务协议
     public int saveOrUpdateIntroduction(Introduction introduction) {
         if (introduction.getId()>0){
-            return introductionMapper.insertIntroduction(introduction);
-        }else {
             return introductionMapper.updateIntroduction(introduction);
+        }else {
+            introduction.setId(10l);
+            return introductionMapper.insertIntroduction(introduction);
         }
     }
 
