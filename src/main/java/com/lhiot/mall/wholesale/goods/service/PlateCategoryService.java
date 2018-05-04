@@ -90,18 +90,12 @@ public class PlateCategoryService {
 	}
 	
 	/**
-	 * 获取推荐列表版块的id
+	 * 推荐商品id的集合
 	 * @param layoutType
 	 * @return
 	 */
-	public Long recommendPlateId(LayoutType layoutType){
-		Long plateId = 0l;
-		List<PlateCategory> list = plateCategoryMapper.searchByType(layoutType.toString());
-		if(list.isEmpty()){
-			return plateId;
-		}
-		PlateCategory plateCategory = list.get(0);
-		return plateCategory.getId();
+	public List<Long> recommendGoodsId(LayoutType layoutType){
+		return plateCategoryMapper.plateGoodsId(layoutType.toString());
 	}
 	
 	/**

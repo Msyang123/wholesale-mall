@@ -32,4 +32,6 @@ public interface PlateCategoryMapper {
     
     //判断是否存在滚动布局的版块
     int rollongLayout();
+    //获取版块的商品id
+    List<Long> plateGoodsId(String type);
 }
