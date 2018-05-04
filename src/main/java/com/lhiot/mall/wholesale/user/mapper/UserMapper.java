@@ -18,6 +18,8 @@ public interface UserMapper {
 
     int updateUserStatus(long id);
 
+    int save(User user);
+
     User user(long id);
 
     int updateUser(User user);
