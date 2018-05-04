@@ -19,7 +19,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -96,5 +98,75 @@ public class SalesUserApi {
         return ResponseEntity.ok(ArrayObject.of(shopResultList));
     }
 
+    /*@GetMapping("/page")
+    @ApiOperation(value = "业务员账号登陆接口")
+    public ResponseEntity<SalesUser> salesLogin(@RequestParam String acount,@RequestParam String salesmanPassword){
+
+        return ResponseEntity.ok(SalesUser);
+    }*/
+
+
+    /***************************************后台管理系统接口***********************************************/
+    @PostMapping("/create")
+    @ApiOperation(value = "业务员信息表创建")
+    public ResponseEntity create(@RequestBody SalesUser salesUser) {
+        return ResponseEntity.ok(salesUserService.create(salesUser));
+    }
+
+    @PutMapping("/update/{id}")
+    @ApiOperation(value = "依据id更新业务员信息表")
+    public ResponseEntity updateById(@PathVariable("id") Long id,@RequestBody SalesUser salesUser) {
+        salesUser.setId(id);
+        return ResponseEntity.ok(salesUserService.updateById(salesUser));
+    }
+
+    @DeleteMapping("/remove/{ids}")
+    @ApiOperation(value = "依据id删除业务员信息表")
+    public ResponseEntity deleteByIds(@PathVariable("ids") String ids) {
+        return ResponseEntity.ok(salesUserService.deleteByIds(ids));
+    }
+
+    @PostMapping("/list")
+    @ApiOperation(value = "查询业务员信息表列表")
+    public ResponseEntity<ArrayObject> list(@RequestBody SalesUser salesuser){
+        return ResponseEntity.ok(ArrayObject.of(salesUserService.list(salesuser)));
+    }
+
+    @GetMapping("/page")
+    @ApiOperation(value = "分页查询业务员信息表列表")
+    public ResponseEntity<ArrayObject> list(
+            @RequestParam(value="salesmanName", required = false) String salesmanName,
+            @RequestParam(value="salesmanPhone", required = false) String salesmanPhone,
+            @RequestParam(value="rows", required = false, defaultValue="10") Integer rows,
+            @RequestParam(value="page", required = false, defaultValue="1") Integer page,
+            @RequestParam(value="sidx", required = false, defaultValue="") String sidx,
+            @RequestParam(value="sord", required = false, defaultValue="") String sord){
+        Map<String,Object> param=new HashMap<>();
+        param.put("salesmanName",salesmanName);
+        param.put("salesmanPhone",salesmanPhone);
+        param.put("page",page);
+        param.put("rows",rows);
+        param.put("sidx",sidx);
+        param.put("sord",sord);
+        ArrayObject result=ArrayObject.of(salesUserService.page(param));
+        //TODO 此处需要做记录总数查询
+        result.setPage(page);
+        result.setRows(rows);
+        result.setSidx(sidx);
+        result.setSord(sord);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/find/{id}")
+    @ApiOperation(value = "依据id查询业务员信息表详细信息")
+    public ResponseEntity<SalesUser> find(@PathVariable("id") Long id){
+        return ResponseEntity.ok(salesUserService.findById(id));
+    }
+
+    @GetMapping("/find-code/{code}")
+    @ApiOperation(value = "依据邀请码判断邀请码是否存在")
+    public ResponseEntity<SalesUser> findCode(@PathVariable("code") String code){
+        return ResponseEntity.ok(salesUserService.findCode(code));
+    }
 
 }
