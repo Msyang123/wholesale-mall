@@ -17,6 +17,8 @@ public interface PlateCategoryMapper {
 
     PlateCategory select(long id);
     
+    List<PlateCategory> searchByType(String type);
+    
     List<PlateCategory> searchAll();
     
     List<PlateCategory> findTree();
