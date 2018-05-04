@@ -46,4 +46,5 @@ public interface GoodsMapper {
     
     //根据版块id查询商品
     List<Goods> plateGoodses(Long plateId);
+
 }

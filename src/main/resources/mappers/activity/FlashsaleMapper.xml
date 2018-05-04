@@ -70,4 +70,5 @@
 		LEFT JOIN t_whs_flashsale_goods t2 ON t1.flashsale_goods_id = t2.id
 		WHERE t1.user_id = #{userId}  and t2.activity_id = #{activityId}
 	</select>
+
 </mapper>

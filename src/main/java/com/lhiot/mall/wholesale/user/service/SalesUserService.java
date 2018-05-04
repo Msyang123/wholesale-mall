@@ -92,4 +92,8 @@ public class SalesUserService {
     public SalesUser findCode(String code){
         return this.salesUserMapper.findCode(code);
     }
+
+    public SalesUser login(String acount){
+        return this.salesUserMapper.login(acount);
+    }
 }

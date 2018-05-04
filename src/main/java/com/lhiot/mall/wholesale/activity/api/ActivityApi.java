@@ -80,11 +80,11 @@ public class ActivityApi {
         return ResponseEntity.ok(activityService.pageQuery(param));
     }
     
-	@GetMapping("/activity/trydelete/{ids}")
+	/*@GetMapping("/activity/trydelete/{ids}")
     @ApiOperation(value = "查询是否可以被删除")
     public ResponseEntity<Boolean> tryOperation(@PathVariable("ids") String ids) {
         return ResponseEntity.ok(activityService.canDelete(ids));
-    }
+    }*/
 	
 	@PostMapping("/activity/tryoperation")
     @ApiOperation(value = "查询是否可以被修改或新增")
