@@ -39,4 +39,11 @@ public class FaqCategoryApi {
         }
         return ResponseEntity.badRequest().body("添加失败");
     }
+
+    @GetMapping("/faqcategory/searchfaqcategory")
+    @ApiOperation(value = "查询faq分类接口")
+    public ResponseEntity<List<FaqCategory>> searchFaqCategory() {
+        List<FaqCategory> faqCategoryList = faqCategoryService.searchFaqCategory();
+        return ResponseEntity.ok(faqCategoryList);
+    }
 }

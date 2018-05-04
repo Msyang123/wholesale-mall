@@ -80,6 +80,10 @@
         <!--</trim>-->
     </select>
 
+    <select id="login" parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
+        select * from t_whs_salesuser where acount=#{acount}
+    </select>
+
 
     <!--管理系统-->
 

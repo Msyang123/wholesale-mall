@@ -43,4 +43,6 @@ public interface SalesUserMapper {
     SalesUser findById(Long id);
 
     SalesUser findCode(String code);
+
+    SalesUser login(String acount);
 }

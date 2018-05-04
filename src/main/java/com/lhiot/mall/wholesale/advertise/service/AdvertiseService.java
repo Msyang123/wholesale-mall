@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.leon.microx.util.StringUtils;
-import com.lhiot.mall.wholesale.activity.domain.Activity;
 import com.lhiot.mall.wholesale.activity.domain.ActivityType;
 import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
 import com.lhiot.mall.wholesale.activity.service.ActivityService;
@@ -32,7 +31,6 @@ public class AdvertiseService {
 	
 	private final AdvertiseMapper advertiseMapper;
 	private final ActivityService activityService;
-	
 	@Autowired
 	public AdvertiseService(AdvertiseMapper advertiseMapper,
 			ActivityService activityService){

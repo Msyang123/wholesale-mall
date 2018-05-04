@@ -61,6 +61,12 @@
 		select <include refid="pleateCategoryColumn"/> from t_whs_plate_category t1 where id = #{0}
 	</select>
 	
+	<!-- lynn后台管理 根据类型查询所有2018/4/19 -->
+	<select id="searchByType" parameterType="String" resultType="com.lhiot.mall.wholesale.goods.domain.PlateCategory">
+		select <include refid="pleateCategoryColumn"/> from t_whs_plate_category t1
+		where parent_id != '0' and layout = #{0}
+	</select>
+	
 	<!-- lynn后台管理 查询所有2018/4/19 -->
 	<select id="searchAll" resultType="com.lhiot.mall.wholesale.goods.domain.PlateCategory">
 		select <include refid="pleateCategoryColumn"/> from t_whs_plate_category t1
@@ -131,5 +137,12 @@
 	<!-- 判断是否存在滚动布局 -->
 	<select id="rollongLayout" resultType="Integer">
 		select count(id) from t_whs_plate_category where layout = 'rollingLayout'
+	</select>
+	
+	<!-- 查询版块下的商品id -->
+	<select id="plateGoodsId" parameterType="String" resultType="Long">
+		SELECT t1.goods_standard_id FROM t_whs_plate_goods t1
+		LEFT JOIN t_whs_plate_category t2 ON t1.plate_id = t2.id
+		WHERE t2.layout=#{0}
 	</select>
 </mapper>

@@ -1,7 +1,6 @@
 package com.lhiot.mall.wholesale.user.api;
 
 import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.util.ImmutableMap;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderParam;
 import com.lhiot.mall.wholesale.order.service.OrderService;
@@ -11,6 +10,7 @@ import com.lhiot.mall.wholesale.user.domain.ShopResult;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
+import com.sgsl.util.ImmutableMap;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -97,11 +97,32 @@ public class SalesUserApi {
         }
         return ResponseEntity.ok(ArrayObject.of(shopResultList));
     }
-
     @GetMapping("/detial/{openid}")
     @ApiOperation(value = "依据openid查询业务员详细信息")
-    public ResponseEntity<SalesUser> detial(@RequestParam("openid") String openid){
+    public ResponseEntity<SalesUser> detial(@RequestParam("openid") String openid) {
         return ResponseEntity.ok(salesUserService.searchSalesUserByOpenid(openid));
+    }
+    @GetMapping("/login")
+    @ApiOperation(value = "业务员账号登陆接口")
+    public ResponseEntity salesLogin(@RequestParam String acount,@RequestParam String salesmanPassword){
+        SalesUser salesUser=salesUserService.login(acount);
+        if (salesUser==null){
+            return ResponseEntity.badRequest().body("账号不存在");
+        }
+        if (salesmanPassword.equals(salesUser.getSalesmanPassword())){
+            return ResponseEntity.ok().body("登陆成功");
+        }
+        return ResponseEntity.badRequest().body("密码错误");
+    }
+
+    @GetMapping("/salesman")
+    @ApiOperation(value = "业务员主页信息")
+    public ResponseEntity<SalesUser> salesman(@RequestParam long userId){
+        SalesUser salesUser = salesUserService.findById(userId);
+        if (salesUser==null){
+            return ResponseEntity.ok(new SalesUser());
+        }
+        return ResponseEntity.ok(salesUser);
     }
 
 

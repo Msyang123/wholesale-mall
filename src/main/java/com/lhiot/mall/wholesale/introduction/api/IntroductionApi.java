@@ -44,6 +44,6 @@ public class IntroductionApi {
         if (introductionService.saveOrUpdateIntroduction(introduction)>0) {
             return ResponseEntity.ok(introduction);
         }
-        return ResponseEntity.badRequest().body("添加失败");
+        return ResponseEntity.badRequest().body("添加/修改失败");
     }
 }

@@ -18,7 +18,7 @@ import java.sql.Timestamp;
 public class DemandGoodsResult {
 
     @ApiModelProperty(notes = "新品需求ID", dataType = "Long")
-    private long id;
+    private Long id;
 
     @ApiModelProperty(notes = "商品名称", dataType = "String")
     private String goodsName;
@@ -29,8 +29,8 @@ public class DemandGoodsResult {
     @ApiModelProperty(notes = "商品规格", dataType = "String")
     private String goodsStandard;
 
-    @ApiModelProperty(notes = "参考价格", dataType = "Int")
-    private int referencePrice;
+    @ApiModelProperty(notes = "参考价格", dataType = "Integer")
+    private Integer referencePrice;
 
     @ApiModelProperty(notes = "供应商", dataType = "String")
     private String supplier;
@@ -46,7 +46,7 @@ public class DemandGoodsResult {
 
 
     @ApiModelProperty(notes = "创建时间", dataType = "String")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss" ,timezone = "GMT+8")
     private String createTime;
 
     //--------t_whs_user 用户表-------

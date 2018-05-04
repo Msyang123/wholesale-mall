@@ -1,7 +1,9 @@
 package com.lhiot.mall.wholesale.activity.domain;
 
+import java.sql.Timestamp;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -17,12 +19,14 @@ public class Activity {
 	
 	@ApiModelProperty(notes="活动描述",dataType="String")
 	private String activityDesc;
-	
+
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	@ApiModelProperty(notes="活动起始时间",dataType="String")
-	private String startTime;
-	
+	private Timestamp startTime;
+
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	@ApiModelProperty(notes="活动结束时间",dataType="String")
-	private String endTime;
+	private Timestamp endTime;
 	
 	@ApiModelProperty(notes="活动类型",dataType="String")
 	private String activityType;

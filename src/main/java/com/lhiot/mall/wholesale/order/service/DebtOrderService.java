@@ -139,7 +139,7 @@ public class DebtOrderService {
                     param.setPage(page);
                     param.setStart(0);
                 }
-                debtOrderList = debtOrderMapper.pageQuery(param);//根据用户ID列表及其他查询条件查询用户信息
+                debtOrderList = debtOrderMapper.pageQuery(param);//根据用户ID列表及其他查询条件查询账款订单信息
                 List<Long> orderIds = new ArrayList<Long>();
                 if(debtOrderList != null && debtOrderList.size() > 0){
                     for(DebtOrder debtOrder : debtOrderList){

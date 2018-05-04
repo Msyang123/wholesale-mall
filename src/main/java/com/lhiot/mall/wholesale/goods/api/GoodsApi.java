@@ -3,6 +3,9 @@ package com.lhiot.mall.wholesale.goods.api;
 import java.net.URI;
 import java.util.List;
 
+import com.lhiot.mall.wholesale.activity.domain.Activity;
+import com.lhiot.mall.wholesale.activity.service.ActivityService;
+import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,6 +27,7 @@ import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
 import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
 import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
 import com.lhiot.mall.wholesale.goods.domain.InventoryResult;
+import com.lhiot.mall.wholesale.goods.domain.LayoutType;
 import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
 import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
@@ -38,15 +42,21 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping
 public class GoodsApi {
-	
+	private static final Integer FIRST = 0;//第一个节点
 	private final GoodsService goodsService;
 
 	private final GoodsPriceRegionService goodsPriceRegionService;
+
+	private final ActivityService activityService;
+
+	private final FlashsaleService flashsaleService;
 	
 	@Autowired
-	public GoodsApi(GoodsService goodsService, GoodsPriceRegionService goodsPriceRegionService){
+	public GoodsApi(GoodsService goodsService, GoodsPriceRegionService goodsPriceRegionService, ActivityService activityService, FlashsaleService flashsaleService){
 		this.goodsService = goodsService;
         this.goodsPriceRegionService = goodsPriceRegionService;
+        this.activityService = activityService;
+        this.flashsaleService = flashsaleService;
     }
 	
     @PostMapping("/goods")
@@ -87,9 +97,9 @@ public class GoodsApi {
         return ResponseEntity.ok(goodsService.pageQuery(param));
     }
 
-    @PostMapping("/goodsDetail/{id}")
+    @GetMapping("/goods-detail/{id}")
     @ApiOperation(value = "商品详情页面")
-    public  ResponseEntity<GoodsDetailResult> goodsDetail(@PathVariable("id") Long id){
+    public  ResponseEntity<GoodsDetailResult> goodsDetail(@PathVariable("id") Long id,@RequestParam Long userId){
 	    //商品详情信息
         GoodsInfo goodsInfo = goodsService.goodsInfo(id);
         //商品价格区间信息
@@ -98,8 +108,18 @@ public class GoodsApi {
         GoodsFlashsale goodsFlashsale = goodsService.goodsFlashsale(goodsInfo.getGoodsStandardId());
         //商品详情信息和抢购信息存放到GoodsDetailResult
         GoodsDetailResult goodsDetailResult = new GoodsDetailResult();
+        if (goodsFlashsale==null){
+            goodsDetailResult.setGoodsFlashsale(new GoodsFlashsale());
+        }else{
+            Activity activity = activityService.flashGoods(goodsFlashsale.getActivityId());
+            goodsFlashsale.setEndTime(activity.getEndTime());
+            goodsFlashsale.setStartTime(activity.getStartTime());
+            Integer userPucharse = flashsaleService.userRecords(userId,goodsFlashsale.getActivityId());//用户已购抢购商品数量
+            goodsFlashsale.setUserPucharse(userPucharse);
+            goodsDetailResult.setGoodsFlashsale(goodsFlashsale);
+        }
         goodsDetailResult.setGoodsInfo(goodsInfo);
-        goodsDetailResult.setGoodsFlashsale(goodsFlashsale);
+        goodsDetailResult.setOtherImage(goodsInfo.getOtherImage());
         return ResponseEntity.ok(goodsDetailResult);
     }
 
@@ -131,4 +151,10 @@ public class GoodsApi {
     public ResponseEntity<PlateCategory> findGoodsByKeyword(@PathVariable("plateId") Long plateId) {
         return ResponseEntity.ok(goodsService.plateGoods(plateId));
     }
+	
+/*	@GetMapping("/goods/plate/recommend")
+    @ApiOperation(value = "推荐商品列表" ,response= PlateCategory.class)
+    public ResponseEntity<PlateCategory> recommendList() {
+        return ResponseEntity.ok(goodsService.plateGoodses(LayoutType.list).get(FIRST));
+    }*/
 }

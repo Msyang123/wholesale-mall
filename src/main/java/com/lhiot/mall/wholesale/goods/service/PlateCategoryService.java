@@ -82,10 +82,27 @@ public class PlateCategoryService {
 	}
 	
 	/**
-	 * 查询所有的商品版块
+	 * 根据类型查询所有的商品版块
 	 * @return
 	 */
-	public List<PlateCategory> search(){
+	public List<PlateCategory> search(String layoutType){
+		return plateCategoryMapper.searchByType(layoutType);
+	}
+	
+	/**
+	 * 推荐商品id的集合
+	 * @param layoutType
+	 * @return
+	 */
+	public List<Long> recommendGoodsId(LayoutType layoutType){
+		return plateCategoryMapper.plateGoodsId(layoutType.toString());
+	}
+	
+	/**
+	 * 根据类型查询所有的商品版块
+	 * @return
+	 */
+	public List<PlateCategory> searchAll(){
 		return plateCategoryMapper.searchAll();
 	}
 	
