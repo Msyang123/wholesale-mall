@@ -197,7 +197,7 @@ public class PayService {
      * 微信开票支付签名
      * @return String
      */
-    public String wxInvoicePay(String ipAddress,String openId,int invoiceFee,String userAgent,String invoiceCode,WeChatUtil weChatUtil) throws Exception {
+    public String wxInvoicePay(String ipAddress,String openId,int invoiceFee,String userAgent,String invoiceCode,String attach,WeChatUtil weChatUtil) throws Exception {
         Map<String, Object> ret = new HashMap<>();
         ret.put("state", "failure");
         if (StringUtils.isEmpty(openId)) {
@@ -223,7 +223,7 @@ public class PayService {
         packageParams.put("mch_id", weChatUtil.getProperties().getWeChatPay().getPartnerId());
         packageParams.put("nonce_str", nonce);// 随机串
         packageParams.put("body", "水果熟了 - 批发商城用户开票");// 商品描述
-        packageParams.put("attach", "zz");// 附加数据
+        packageParams.put("attach", attach);// 附加数据
         packageParams.put("out_trade_no", invoiceCode);// 商户订单号
         packageParams.put("total_fee", invoiceFee);// 微信支付金额单位为（分）
         packageParams.put("time_expire", timeExpire);

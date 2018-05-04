@@ -22,6 +22,8 @@ public interface InvoiceMapper {
 
     Invoice findInvoiceByCode(String invoiceCode);
 
+    Invoice listByorderCodesLike(String orderCode);
+
     int updateInvoiceByCode(Invoice invoice);
 
     List<Invoice> list(Invoice invoice);

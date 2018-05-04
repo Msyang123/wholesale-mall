@@ -75,7 +75,7 @@ public class InvoiceApi {
         return ResponseEntity.ok(invoice);
     }
 
-    @PostMapping("/applyInvoice")
+    /*@PostMapping("/applyInvoice")
     @ApiOperation(value = "申请开票")
     public ResponseEntity applyInvoice(@RequestBody Invoice invoice){
         int result=invoiceService.applyInvoice(invoice);
@@ -83,7 +83,7 @@ public class InvoiceApi {
             return ResponseEntity.ok(result);
         }
         return ResponseEntity.badRequest().body("开票失败");
-    }
+    }*/
 
     @GetMapping("/invoice/{invoiceCode}")
     @ApiOperation(value = "开票信息查询")

@@ -77,13 +77,6 @@ public class CurrencyPayApi {
         return ResponseEntity.badRequest().body("余额支付订单失败");
     }
 
-  /*  @GetMapping("/balance/{userId}")
-    @ApiOperation(value = "余额收支明细")
-    public ResponseEntity<ArrayObject> getBalanceRecord(@PathVariable("userId") Integer userId) {
-        List<PaymentLog> paymentLogList = payService.getBalanceRecord(userId);//待测
-        return ResponseEntity.ok(ArrayObject.of(paymentLogList));
-    }*/
-
     @PutMapping("/debtorderpay/{orderDebtCode}")
     @ApiOperation(value = "余额支付账款订单", response = String.class)
     public ResponseEntity debtorderPay(@PathVariable("orderDebtCode") String orderDebtCode){
@@ -101,6 +94,7 @@ public class CurrencyPayApi {
         //余额支付账款订单支付
         int payResult=payService.currencyPay(debtOrder);
         if(payResult>0){
+            //修改账款订单为已支付
             return ResponseEntity.ok(debtOrder);
         }
         return ResponseEntity.badRequest().body("余额支付账款订单失败");
@@ -122,6 +116,7 @@ public class CurrencyPayApi {
 
         int payResult=payService.currencyPay(invoice);
         if(payResult>0){
+            //设置发票已开票
             return ResponseEntity.ok(invoice);
         }
         return ResponseEntity.badRequest().body("余额支付发票失败");

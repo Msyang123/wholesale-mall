@@ -2,6 +2,7 @@ package com.lhiot.mall.wholesale.pay.api;
 
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
+import com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
@@ -10,6 +11,8 @@ import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.service.PayService;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
+import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.service.UserService;
 import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
 import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
 import com.lhiot.mall.wholesale.user.wechat.XPathParser;
@@ -23,6 +26,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
 import java.util.Objects;
 
 @Slf4j
@@ -41,11 +47,14 @@ public class WxPayApi {
 	private final WeChatUtil weChatUtil;
 
     private final SnowflakeId snowflakeId;
+    
+    private final UserService userService;
 
 
 
 	@Autowired
-	public WxPayApi(PayService payService,PaymentLogService paymentLogService,OrderService orderService,DebtOrderService debtOrderService,InvoiceService invoiceService, PaymentProperties properties,SnowflakeId snowflakeId){
+	public WxPayApi(PayService payService,PaymentLogService paymentLogService,OrderService orderService,DebtOrderService debtOrderService,InvoiceService invoiceService, PaymentProperties properties,SnowflakeId snowflakeId,
+                    UserService userService){
 
         this.payService = payService;
         this.paymentLogService=paymentLogService;
@@ -54,6 +63,7 @@ public class WxPayApi {
         this.invoiceService=invoiceService;
         this.weChatUtil = new WeChatUtil(properties);
         this.snowflakeId=snowflakeId;
+        this.userService= userService;
 	}
 	
     @GetMapping("/orderpay/sign")
@@ -126,23 +136,19 @@ public class WxPayApi {
 
     @GetMapping("/invoicepay/sign")
     @ApiOperation(value = "微信发票支付签名", response = String.class)
-    public ResponseEntity<String> invoicepaySign(HttpServletRequest request,@RequestParam("openId") String openId,@RequestParam("invoiceCode") String invoiceCode) throws Exception {
-        //依据发票业务编码查询发票信息
-        Invoice invoice= invoiceService.findInvoiceByCode(invoiceCode);
-        if(Objects.isNull(invoice)){
-            return ResponseEntity.badRequest().body("未找到开票信息");
-        }else if(Objects.equals(invoice.getInvoiceStatus(),"yes")){
-            return ResponseEntity.badRequest().body("已经开票，请勿重复支付");
+    public ResponseEntity<String> invoicepaySign(HttpServletRequest request,@RequestParam("openId") String openId,@RequestParam("orderCodes") String orderCodes) throws Exception {
+        //TODO 依据orderCodes 查询发票信息 拒绝重复开票
+        for(String item:orderCodes.split(",")){
+            Invoice invoice= invoiceService.listByorderCodesLike(orderCodes);
+            if(Objects.nonNull(invoice)){
+                return ResponseEntity.badRequest().body("订单编码("+item+")已经开票，请勿重复开票");
+            }
         }
-        //查询支付记录 防止重复支付
-        PaymentLog paymentLog=paymentLogService.getPaymentLog(invoiceCode);
-        //判断重复支付
-        if(Objects.nonNull(paymentLog)){
-            return ResponseEntity.badRequest().body("已经支付，请勿重复支付");
-        }
-
-        String wxInvoiceSignStr=payService.wxInvoicePay(getRemoteAddr(request),openId,invoice.getTaxFee(),getUserAgent(request),invoiceCode,weChatUtil);
-        //FIXME 写发票签名日志
+        //查询所有的订单计算税费
+        int orderTotal=100;
+        int taxFee=new BigDecimal(orderTotal).multiply(new BigDecimal(0.0336)).setScale(0, RoundingMode.DOWN).intValue();
+        String wxInvoiceSignStr=payService.wxInvoicePay(getRemoteAddr(request),openId,taxFee,getUserAgent(request),snowflakeId.stringId(),"附加发票相关信息包括发票抬头信息",weChatUtil);
+        //回调再写发票信息到数据库中
         return ResponseEntity.ok(wxInvoiceSignStr);
     }
 
@@ -154,12 +160,38 @@ public class WxPayApi {
         XPathWrapper wrap = new XPathWrapper(xpath);
         String resultCode = wrap.get("result_code");
         if ("SUCCESS".equalsIgnoreCase(resultCode)) {
-            String userId = wrap.get("attach");
+            String attach = wrap.get("attach");
+            String openid= wrap.get("openid");
             String totalFee = wrap.get("total_fee");
             int fee = Integer.parseInt(totalFee);
-            //获取传达的附加参数获取用户信息
-            log.info("userId:"+userId+"fee:"+fee);
-            boolean myDoIsOk=true;//我们处理的业务
+            //获取传达的附加参数获取发票信息
+            log.info("attach:"+attach+"fee:"+fee);
+            long nvoiceTitleId=Long.valueOf(attach);
+            User user= userService.searchUserByOpenid(openid);
+            //依据附加参数查询发票抬头信息
+            InvoiceTitle invoiceTitle= invoiceService.selectInvoiceTitle(nvoiceTitleId);
+            //创建发票信息
+            Invoice invoice=new Invoice();
+                    
+            invoice.setInvoiceTitleId(invoiceTitle.getId());
+            invoice.setTaxpayerNumber(invoiceTitle.getTaxpayerNumber());
+            invoice.setCompanyName(invoiceTitle.getCompanyName());
+            invoice.setContactName(invoiceTitle.getContactName());
+            invoice.setContactPhone(invoiceTitle.getContactPhone());
+           /* invoice.setInvoiceFee();
+            invoice.setInvoiceTax();*/
+            invoice.setTaxFee(fee);
+            invoice.setAddressArea(invoiceTitle.getAddressArea());
+            invoice.setAddressDetail(invoiceTitle.getAddressDetail());
+            invoice.setBankName(invoiceTitle.getBankName());
+            invoice.setBankCardCode(invoiceTitle.getBankCardCode());
+            invoice.setCreateTime(new Timestamp(System.currentTimeMillis()));
+            /*invoice.setInvoiceOrderIds();
+            invoice.setInvoiceCode();*/
+            invoice.setUserId(user.getId());
+                    
+            int result=invoiceService.applyInvoice(invoice);
+            boolean myDoIsOk=result>0;//我们处理的业务
             if (myDoIsOk) {
                 //广播订单支付成功true, "success"
                 ResponseEntity.ok("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
