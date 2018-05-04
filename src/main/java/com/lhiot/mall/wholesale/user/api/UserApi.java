@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.user.api;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
@@ -37,6 +38,8 @@ import javax.validation.constraints.NotNull;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,12 +106,13 @@ public class UserApi {
         return ResponseEntity.ok(userService.users(param.getLikeName()));
     }
     /***********************************************微信授权登录***********************************************/
+
     //第一步
     @GetMapping("/weixin/login")
-    @ApiOperation(value = "微信oauth鉴权登录 获取authorize url用于前端跳转", response = User.class)
-    public ResponseEntity weixinLogin() {
+    @ApiOperation(value = "微信oauth鉴权登录 获取authorize url用于前端跳转", response = String.class)
+    public ResponseEntity<String> weixinLogin(@RequestParam("uri") String uri) throws UnsupportedEncodingException {
         String requestUrl = MessageFormat.format(weChatUtil.OAUTH2_URL, weChatUtil.getProperties().getWeChatOauth().getAppId(),
-                weChatUtil.getProperties().getWeChatOauth().getAppRedirectUri(),"snsapi_userinfo");
+                URLEncoder.encode(weChatUtil.getProperties().getWeChatOauth().getAppRedirectUri(),"UTF-8"),"snsapi_userinfo",uri);
         return ResponseEntity.ok(requestUrl);
     }
     private static Map<String,AccessToken> wxSignleUserMap=new HashMap<String,AccessToken>();
@@ -116,9 +120,11 @@ public class UserApi {
     //通过code换取网页授权access_token
     @GetMapping("/weixin/authorize")
     @ApiOperation(value = "微信oauth鉴权登录 authorize back之后处理业务", response = String.class)
-    public ResponseEntity weixinAuthorize(HttpServletRequest request) throws IOException{
+    public void weixinAuthorize(HttpServletRequest request,HttpServletResponse response) throws IOException{
         Map<String,String> resultMap= paramsToMap(request);
         String code=resultMap.get("code");
+        String clientUri=resultMap.get("state");
+        log.info("clientUri:"+clientUri);
         AccessToken accessToken=weChatUtil.getAccessTokenByCode(weChatUtil.getProperties().getWeChatOauth().getAppId(),weChatUtil.getProperties().getWeChatOauth().getAppSecret(),code);
         log.info("weixinAuthorize:"+accessToken);
         //判断是否在数据库中存在此记录，如果存在直接登录，否则就注册用户微信信息
@@ -128,23 +134,26 @@ public class UserApi {
         wxSignleUserMap.put(accessToken.getOpenId(),accessToken);
         //FIXME redis缓存 refresh_token一个月
         wxRefreshTokenMap.put(accessToken.getOpenId(),accessToken.getRefreshToken());
-        //FIXME 如果用户存在就不做处理 否则插入数据库
-
-
-
+        //如果用户存在就不做处理 否则插入数据库
+        if(clientUri.indexOf("?")!=-1){
+            clientUri=clientUri+"&openid="+accessToken.getOpenId();
+        }else{
+            clientUri=clientUri+"?openid="+accessToken.getOpenId();
+        }
         List<User> users= userService.users(accessToken.getOpenId());
         if(users.size()>0){
             //检查手机号等相关信息用于判断是否需要设置手机号等
             User findUser= users.get(0);
-            return ResponseEntity.ok("{'openid':"+accessToken.getOpenId()+"}");
+            //return ResponseEntity.ok("{'openid':"+accessToken.getOpenId()+"}");
+            response.sendRedirect(weChatUtil.getProperties().getWeChatOauth().getClientRedirectUrl()+clientUri);
+            return;
         }
-        //FIXME 此项需要写入数据库中
-        /*User user=new User();
-        user.setName(accessToken.getOpenId());
-        if (userService.save(user)) {
-            return ResponseEntity.created(URI.create("/user/weixin/detial/" + openIdAfterMd5)).build();//此处只返回资源地址，不返回用户详细相关信息
-        }*/
-        return ResponseEntity.badRequest().body("创建微信用户失败");
+        //写入数据库中
+        String weixinUserInfo=weChatUtil.getOauth2UserInfo(accessToken.getOpenId(),accessToken.getAccessToken());
+        User user=userService.convert(weixinUserInfo);
+        userService.save(user);
+        response.sendRedirect(weChatUtil.getProperties().getWeChatOauth().getClientRedirectUrl()+clientUri);
+        return;
     }
 
     @GetMapping("/weixin/detial")

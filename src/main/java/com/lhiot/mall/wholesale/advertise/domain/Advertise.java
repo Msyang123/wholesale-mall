@@ -37,6 +37,7 @@ public class Advertise {
 	@ApiModelProperty(notes="结束时间",dataType="String")
 	private String endTime;
 	
+	@JsonProperty("createTime")
 	@ApiModelProperty(notes="创建时间",dataType="String")
 	private String createAt;
 	

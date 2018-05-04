@@ -12,6 +12,13 @@
             #{item}
         </foreach>
     </select>
+    <!--微信用户关注后保存-->
+    <insert id="save" parameterType="com.lhiot.mall.wholesale.user.domain.User" useGeneratedKeys="true">
+        INSERT INTO t_whs_user (sex,city,register_time,nickname,open_id,union_id,user_status,
+                        profile_photo,address_detail
+                ) VALUES (#{sex},#{city},#{registerTime},#{nickname},#{openid},#{unionid},'uncertified',
+                      #{profilePhoto},#{addressDetail})
+    </insert>
 
     <update id="updateUserStatus" parameterType="long">
         UPDATE t_whs_user SET user_status = 1

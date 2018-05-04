@@ -37,12 +37,13 @@
 	<!-- lynn 2018/4/19根据商品id查询商品 -->
 	<select id="searchByIds" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
 		select <include refid="goodsStandardColumn"/>, <include refid="goodsColumn"/>,<include refid="unitColumn"/>,
-		<include refid="categoryColumn"/>,t5.unit_name as baseUnitName
+		<include refid="categoryColumn"/>,t5.unit_name as baseUnitName,t6.unit_name as goodsUnit
 		from t_whs_goods_standard t1
 		left join t_whs_goods t2 on t1.goods_id = t2.id
 		left join t_whs_goods_unit t3 on t1.unit_code = t3.id
 		left join t_whs_goods_category t4 on t2.category_id = t4.id
 		left join t_whs_goods_unit t5 on t2.base_unit = t5.id
+		left join t_whs_goods_unit t6 on t1.unit_code = t6.id
 		where t1.id in 
 		<foreach collection="list" item="item" open="(" separator="," close=")">
 			#{item}

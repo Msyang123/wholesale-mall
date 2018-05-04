@@ -1,5 +1,7 @@
 package com.lhiot.mall.wholesale.coupon.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -15,6 +17,10 @@ public class CouponEntity {
 	
 	@ApiModelProperty(notes="优惠券配置编号",dataType="Long")
 	private Long couponConfigId;
+	
+	@JsonProperty("title")
+	@ApiModelProperty(notes="优惠券名字",dataType="String")
+	private String couponName;
 	
 	@ApiModelProperty(notes="用户编号",dataType="Long")
 	private Long userId;
@@ -34,9 +40,16 @@ public class CouponEntity {
 	@ApiModelProperty(notes="使用时间",dataType="String")
 	private String useTime;
 	
-	@ApiModelProperty(notes="优惠券金额",dataType="String")
-	private String couponFee;
+	@ApiModelProperty(notes="优惠券金额",dataType="Integer")
+	private Integer couponFee;
 	
-	@ApiModelProperty(notes="满减金额",dataType="String")
-	private String fullFee;
+	@ApiModelProperty(notes="满减金额",dataType="Integer")
+	private Integer fullFee;
+	
+	@JsonProperty("desc")
+	@ApiModelProperty(notes="优惠券描述",dataType="String")
+	private String couponDes;
+	
+	@ApiModelProperty(notes="是否可用",dataType="Boolean")
+	private Boolean isValidate = false;
 }

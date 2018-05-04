@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -58,5 +59,37 @@ public class SalesUserService {
 
     public List<ShopResult> searchShopInfo(long salesId){
         return salesUserMapper.searchShopInfo(salesId);
+    }
+
+
+    /***************后台管理系统*******************/
+    public int create(SalesUser salesUser){
+        return this.salesUserMapper.create(salesUser);
+    }
+
+    public int updateById(SalesUser salesUser){
+        return this.salesUserMapper.updateById(salesUser);
+    }
+
+    public int deleteByIds(String ids){
+        List<String> idList = Arrays.asList(ids.split(","));
+        return this.salesUserMapper.deleteByIds(idList);
+    }
+
+    public List<SalesUser> list(SalesUser salesUser){
+        return this.salesUserMapper.list(salesUser);
+    }
+
+    public List<SalesUser> page(Map<String,Object> param){
+        return this.salesUserMapper.page(param);
+    }
+
+
+    public SalesUser findById(Long id){
+        return this.salesUserMapper.findById(id);
+    }
+
+    public SalesUser findCode(String code){
+        return this.salesUserMapper.findCode(code);
     }
 }

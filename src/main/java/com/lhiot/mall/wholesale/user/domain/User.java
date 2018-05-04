@@ -39,6 +39,12 @@ public class User {
     @JsonProperty("nickname")
     private String nickname;
 
+    @JsonProperty("openid")
+    private String openid;
+
+    @JsonProperty("unionid")
+    private String unionid;
+
     @JsonProperty("balance")
     private int balance;
 

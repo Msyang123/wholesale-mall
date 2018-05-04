@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.StringUtils;
-import com.lhiot.mall.wholesale.activity.domain.Activity;
 import com.lhiot.mall.wholesale.activity.domain.ActivityPeriodsType;
 import com.lhiot.mall.wholesale.activity.domain.ActivityType;
 import com.lhiot.mall.wholesale.activity.domain.FlashActivity;
@@ -186,6 +185,7 @@ public class FlashsaleService {
 					flg.setGoodsImage(gs.getGoodsImage());
 					flg.setGoodsName(gs.getGoodsName());
 					flg.setPrice(gs.getGoodsPrice());
+					flg.setGoodsUnit(gs.getGoodsUnit());
 				}
 			}
 		}
@@ -196,7 +196,7 @@ public class FlashsaleService {
 	 * @param type
 	 * @return
 	 */
-	public FlashActivityGoods falshGoods(ActivityPeriodsType activityPeriodsType){
+	public FlashActivityGoods flashGoods(ActivityPeriodsType activityPeriodsType){
 		FlashActivityGoods flashActivityGoods = null;
 		ActivityType flasesale = ActivityType.flashsale;
 		//获取开启抢购活动
@@ -218,7 +218,7 @@ public class FlashsaleService {
 			int goodsStock = flashsaleGoods.getGoodsStock();
 			Map<String,Object> flashsaleProgress = this.flashsaleProgress(flashsaleGoods.getId(), goodsStock);
 			flashsaleGoods.setProgress(flashsaleProgress.get("progress").toString());
-			flashsaleGoods.setRemainNum(flashsaleProgress.get("remainNum").toString());
+			flashsaleGoods.setRemain(flashsaleProgress.get("remainNum").toString());
 		}
 		//组装商品信息
 		this.contructData(flashGoods);

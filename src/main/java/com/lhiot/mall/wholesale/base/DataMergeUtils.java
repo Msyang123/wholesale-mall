@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 public class DataMergeUtils {
 
-    public static <T> List<T> dataMerge(List<Object> list1, List<Object> list2, String mainId, String subId, Class<T> resultType) {
+    public static <T> List<T> dataMerge(List<?> list1, List<?> list2, String mainId, String subId, Class<T> resultType) {
         if (CollectionUtils.isEmpty(list1)) {
             return new ArrayList<>(0);
         }
