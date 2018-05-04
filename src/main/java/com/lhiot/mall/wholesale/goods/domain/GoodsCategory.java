@@ -1,7 +1,6 @@
 package com.lhiot.mall.wholesale.goods.domain;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -19,6 +18,7 @@ public class GoodsCategory {
 	@ApiModelProperty(notes="商品分类父ID",dataType="Long")
 	private Long parentId;
 	
+	@JsonProperty("name")
 	@ApiModelProperty(notes="分类名称",dataType="String")
 	private String categoryName;
 	
@@ -31,9 +31,10 @@ public class GoodsCategory {
 	@ApiModelProperty(notes="等级",dataType="Integer")
 	private Integer levels;
 	
+	@JsonProperty("src")
+	@ApiModelProperty(notes="等级",dataType="String")
+	private String image;
+	
 	@ApiModelProperty(notes="父分类编码",dataType="String")
 	private String parentCategoryCode;
-
-	@ApiModelProperty(notes="分类下的商品",dataType="String")
-	List<Goods> categoryGoods = new ArrayList<>();
 }

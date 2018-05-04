@@ -3,13 +3,18 @@ package com.lhiot.mall.wholesale.user.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.base.StringReplaceUtil;
+import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.user.domain.*;
 import com.lhiot.mall.wholesale.user.mapper.UserMapper;
+import com.sgsl.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -20,13 +25,11 @@ public class UserService {
 
     private final UserMapper userMapper;
     private final SalesUserService salesUserService;
-    private final SnowflakeId snowflakeId;
 
     @Autowired
     public UserService(UserMapper userMapper, SalesUserService salesUserService,SnowflakeId snowflakeId) {
         this.userMapper = userMapper;
         this.salesUserService = salesUserService;
-        this.snowflakeId = snowflakeId;
     }
 
     public List<User> search(List ids) {
@@ -46,15 +49,22 @@ public class UserService {
     }
 
     public boolean saveOrUpdateAddress(UserAddress userAddress) {
-        if (userAddress.getIsDefault() == 0) {
+        if ("yes".equals(userAddress.getIsDefault())) {
             userMapper.updateDefaultAddress(userAddress.getUserId());
         }
         UserAddress pojo = userMapper.userAddress(userAddress.getId());
         if (Objects.nonNull(pojo)) {
             return userMapper.updateAddress(userAddress) > 0;
         } else {
+            userAddress.setIsDefault("no");
             return userMapper.insertAddress(userAddress) > 0;
         }
+    }
+
+    public boolean updateDefault(UserAddress userAddress){
+        userMapper.updateDefaultAddress(userAddress.getUserId());
+        userAddress.setIsDefault("yes");
+        return userMapper.updateAddress(userAddress)>0;
     }
 
     public List<UserAddress> searchAddressList(long userId) {
@@ -88,6 +98,14 @@ public class UserService {
     }
 
     /**
+     * 微信关注注册用户信息
+     * @param user
+     * @return
+     */
+    public int save(User user){
+        return userMapper.save(user);
+    }
+    /**
      * 通过微信返回用户详细信息转换成系统用户
      * @param userStr
      * @return
@@ -95,46 +113,37 @@ public class UserService {
     public User convert(String userStr) throws IOException {
         ObjectMapper om = new ObjectMapper();
         Map<String,String> wxUserMap=om.readValue(userStr, Map.class);
+        //{    "openid":" OPENID",
+        // " nickname": NICKNAME,
+        // "sex":"1",
+        // "province":"PROVINCE"
+        // "city":"CITY",
+        // "country":"COUNTRY",
+        // "headimgurl":    "http://wx.qlogo.cn/mmopen/g3MonUZtNHkdmzicIlibx6iaFqAc56vxLSUfpb6n5WKSYVY0ChQKkiaJSgQ1dZuTOgvLLrhJbERQQ
+        //4eMsv84eavHiaiceqxibJxCfHe/46",
+        //"privilege":[ "PRIVILEGE1" "PRIVILEGE2"     ],
+        // "unionid": "o6_bmasdasdsad6_2sgVt7hMZOPfL"
+        //}
+        User user=new User();
+        LocalDate currentTime = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyy-MM-dd HH:mm:ss");
+        user.setRegisterTime(formatter.format(currentTime));
 
-        List<User> users=users(wxUserMap.get("openid"));
-        if (users.size()==0)
-            return null;
-        User returnUser=users.get(0);
-        returnUser.setNickname(wxUserMap.get("nickname"));
+        String nickname=StringReplaceUtil.replaceByte4(StringReplaceUtil.replaceEmoji(wxUserMap.get("nickname")));
+        user.setNickname(nickname);
 
-        //FIXME 相关其余信息等user 全部完善再赋值
-        /*
+        user.setSex(wxUserMap.get("sex"));
+        user.setProfilePhoto(wxUserMap.get("headimgurl"));
 
-        String unionid = userJson.getString("unionid");
-        if (StringUtil.isNull(nickname)) {
-            return user;
-        }
-        if ("byte".equals(this.filterEmoji)) {
-            nickname = replaceByte4(nickname);
-        }
-        if ("regular".equals(this.filterEmoji)) {
-            nickname = replaceEmoji(nickname);
-        }
+        String address = wxUserMap.get("country") + " " + wxUserMap.get("province") + " " + wxUserMap.get("city");
+        user.setAddressDetail(address);
 
-        if(StringUtil.isNotNull(nickname)){
-            user.set("nickname", nickname);
-            logger.debug("=======授权用户：" + nickname + "======");
-        }
-        if(StringUtil.isNotNull(userJson.get("sex")+"")){
-            user.set("sex", userJson.get("sex"));
-        }
-        if(StringUtil.isNotNull(userJson.get("headimgurl")+"")){
-            user.set("user_img_id", userJson.get("headimgurl"));
-        }
-        String address = userJson.get("country") + " " + userJson.get("province") + " " + userJson.get("city");
-        if(StringUtil.isNotNull(address)){
-            user.set("user_address", address);
-        }
+        String unionid = wxUserMap.get("unionid");
 
-        if(StringUtil.isNotNull(unionid)){
-            user.set("union_id", unionid);
-        }*/
-        return returnUser;
+        if(StringUtils.isNotBlank(unionid)){
+            user.setUnionid(unionid);
+        }
+        return user;
     }
     public List<User> users(String userName) {
         return userMapper.search(userName);
@@ -165,6 +174,22 @@ public class UserService {
      */
     public List<User> users(List<Long> userIds){
     	return userMapper.searchInbatch(userIds);
+    }
+
+    public List<PaymentLog> getBalanceRecord(Integer userId){
+        return userMapper.getBalanceRecord(userId);
+    }
+
+    public UserAddress searchAddressListYes(long userId) {
+        return userMapper.searchAddressListYes(userId);
+    }
+
+    public List<UserAddress> searchAddressListNO(long userId) {
+        return userMapper.searchAddressListNo(userId);
+    }
+
+    public Integer debtFee(long userId){
+        return userMapper.debtFee(userId);
     }
 
     //后台管理 根据用户手机号或用户名分页查询用户信息

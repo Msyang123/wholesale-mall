@@ -39,7 +39,7 @@ public class DemandGoods {
     @JsonProperty("comments")
     private String comments;
 
-    @JsonProperty("contactPhone")
+    @JsonProperty("phone ")
     private String contactPhone;
 
     @JsonProperty("userId")

@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.common.wrapper.ArrayObject;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
+import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.service.DebtOrderService;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.setting.service.SettingService;
@@ -52,10 +54,10 @@ public class OrderApi {
     @PostMapping("/myOrders/{userId}")
     @ApiOperation(value = "我的订单列表")
     public ResponseEntity<ArrayObject> queryMyOrders(@PathVariable("userId") long userId
-            , @RequestParam(required = false) String payType, @RequestParam(required = false) String payStatus,@RequestParam String orderStatus){
+            , @RequestParam(required = false) String settlementType, @RequestParam(required = false) String payStatus,@RequestParam String orderStatus){
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setUserId(userId);
-        orderDetail.setSettlementType(payType);
+        orderDetail.setSettlementType(settlementType);
         orderDetail.setPayStatus(payStatus);
         orderDetail.setOrderStatus(orderStatus);
         List<OrderDetail> orderDetailList = orderService.searchOrders(orderDetail);
@@ -63,8 +65,8 @@ public class OrderApi {
             return ResponseEntity.ok(ArrayObject.of(new ArrayList<OrderDetail>()));
         }else {
             for (OrderDetail order:orderDetailList){
-                Integer checkStatus = orderService.searchOutstandingAccountsOrder(order.getOrderCode());
-                order.setCheckStatus(""); //FIXME 改为String 类型  order.setCheckStatus(checkStatus);
+                String checkStatus = orderService.searchOutstandingAccountsOrder(order.getOrderCode());
+                order.setCheckStatus(checkStatus);
                 List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
                 order.setOrderGoodsList(goods);
             }
@@ -107,10 +109,13 @@ public class OrderApi {
 
     @GetMapping("/invoice/orders/{userId}")
     @ApiOperation(value = "查询可开发票的订单列表")
-    public ResponseEntity<ArrayObject> invoiceOrders(@PathVariable("userId") @NotNull long userId) {
+    public ResponseEntity<ArrayObject> invoiceOrders(@PathVariable("userId") @NotNull long userId,
+                                                     @RequestParam String payStatus,@RequestParam String orderStatus) {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setUserId(userId);
-        List <OrderDetail> orders = orderService.searchOrders(orderDetail);
+        orderDetail.setPayStatus(payStatus);
+        orderDetail.setOrderStatus(orderStatus);
+        List <OrderDetail> orders = orderService.searchAfterSaleOrder(orderDetail);
         List<OrderDetail> orderResults=new ArrayList<OrderDetail>();
         if (orders.isEmpty()){
             return ResponseEntity.ok(ArrayObject.of(new ArrayList<>()));
@@ -118,8 +123,8 @@ public class OrderApi {
         String time = DateFormatUtil.format1(new java.util.Date());
         Timestamp currentTime = Timestamp.valueOf(time);
         for (OrderDetail order:orders) {
-            //FIXME 改为枚举   if (order.getOrderStatus()==4&&order.getPayStatus()==0&&order.getAfterSaleTime().before(currentTime)){
-            if (order.getOrderStatus()=="" &&order.getPayStatus()==""&&order.getAfterSaleTime().before(currentTime)){
+            //发票订单是收货已付款且过售后时间的订单
+            if ("received".equals(order.getOrderStatus())&&"paid".equals(order.getPayStatus())&&order.getAfterSaleTime().before(currentTime)){
                 List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
                 if (goods.isEmpty()){
                     orderDetail.setOrderGoodsList(new ArrayList<OrderGoods>());
@@ -150,7 +155,7 @@ public class OrderApi {
         return ResponseEntity.ok(100);
     }
 
-    @GetMapping("/orders/aftersale/{userId}")
+    @GetMapping("/orders/after-sale/{userId}")
     @ApiOperation(value = "查询售后订单")
     public ResponseEntity<ArrayObject> queryAfterSale(@PathVariable("userId") @NotNull long userId
             ,@RequestParam String orderStatus, @RequestParam String payStatus) {

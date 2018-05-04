@@ -42,7 +42,7 @@ public class PlateCategoryService {
 	 */
 	public boolean create(PlateCategory plateCategory){
 		if(this.existRollingLayout()){
-			plateCategory.setLayout(LayoutType.tilesLayout.toString());
+			plateCategory.setLayout(LayoutType.tile.toString());
 		}
 		return plateCategoryMapper.insert(plateCategory)>0;
 	}
@@ -67,7 +67,7 @@ public class PlateCategoryService {
 	 */
 	public boolean update(PlateCategory plateCategory){
 		if(this.existRollingLayout()){
-			plateCategory.setLayout(LayoutType.tilesLayout.toString());
+			plateCategory.setLayout(LayoutType.roll.toString());
 		}
 		return plateCategoryMapper.update(plateCategory)>0;
 	}
@@ -82,10 +82,27 @@ public class PlateCategoryService {
 	}
 	
 	/**
-	 * 查询所有的商品版块
+	 * 根据类型查询所有的商品版块
 	 * @return
 	 */
-	public List<PlateCategory> search(){
+	public List<PlateCategory> search(String layoutType){
+		return plateCategoryMapper.searchByType(layoutType);
+	}
+	
+	/**
+	 * 推荐商品id的集合
+	 * @param layoutType
+	 * @return
+	 */
+	public List<Long> recommendGoodsId(LayoutType layoutType){
+		return plateCategoryMapper.plateGoodsId(layoutType.toString());
+	}
+	
+	/**
+	 * 根据类型查询所有的商品版块
+	 * @return
+	 */
+	public List<PlateCategory> searchAll(){
 		return plateCategoryMapper.searchAll();
 	}
 	
@@ -128,7 +145,7 @@ public class PlateCategoryService {
 			categoryTree.setId(p.getId());
 			categoryTree.setPId(p.getParentId());
 			categoryTree.setName(p.getPlateName());
-			categoryTree.setParentClassName(p.getParentPlateNameName());
+			categoryTree.setParentClassName(p.getParentPlateName());
 			categoryTree.setIsParent(p.getParentId().toString().equals("0")?true:false);
 			categoryTree.setLevel(p.getLevels());
 			result.add(categoryTree);

@@ -1,14 +1,10 @@
 package com.lhiot.mall.wholesale.order.mapper;
 
-import java.util.List;
-
-import com.lhiot.mall.wholesale.order.domain.SoldQuantity;
+import com.lhiot.mall.wholesale.order.domain.*;
+import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import org.apache.ibatis.annotations.Mapper;
 
-import com.lhiot.mall.wholesale.order.domain.OrderDetail;
-import com.lhiot.mall.wholesale.order.domain.OrderGoods;
-import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
-import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
+import java.util.List;
 
 
 @Mapper
@@ -18,7 +14,7 @@ public interface OrderMapper {
     List<OrderDetail> searchOrdersByOrderCodes(List<String> orderCodes);
     List<OrderGoods> searchOrderGoods(long orderId);
 
-    Integer searchOutstandingAccountsOrder(String orderCode);
+    String searchOutstandingAccountsOrder(String orderCode);
 
     OrderDetail searchOrder(String orderCode);
 
@@ -66,5 +62,13 @@ public interface OrderMapper {
 
     OrderDetail order(OrderDetail orderDetail);
 
+    List<OrderDetail> lateOrders(OrderParam orderParam);
+
+    OrderDetail lateOneOrder(long userId);
+
+    Integer lateOrdersFee(OrderParam orderParam);
+
     OrderDetail select(long id);
+
+
 }

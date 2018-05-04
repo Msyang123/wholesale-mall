@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import com.lhiot.mall.wholesale.order.domain.OrderGoods;
+import com.lhiot.mall.wholesale.order.domain.OrderParam;
 import com.lhiot.mall.wholesale.base.DataMergeUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.demand.domain.DemandGoods;
@@ -70,7 +72,7 @@ public class OrderService {
         return orderMapper.searchOrderGoods(orderId);
     }
 
-    public Integer searchOutstandingAccountsOrder(String orderCode){
+    public String searchOutstandingAccountsOrder(String orderCode){
         return orderMapper.searchOutstandingAccountsOrder(orderCode);
     }
 
@@ -130,7 +132,7 @@ public class OrderService {
 
        //FIXME 查询支付日志
 
-        switch (orderDetail.getSettlementType()) {
+         switch (orderDetail.getSettlementType()) {
             //1货到付款
             case "cod":
                 //直接取消掉订单就可以了
@@ -283,6 +285,17 @@ public class OrderService {
         return orderMapper.order(orderDetail);
     }
 
+    public List<OrderDetail> lateOrders(OrderParam orderParam){
+        return orderMapper.lateOrders(orderParam);
+    }
+
+    public OrderDetail lateOneOrder(long userId){
+        return orderMapper.lateOneOrder(userId);
+    }
+
+    public Integer lateOrdersFee(OrderParam orderParam) {
+        return orderMapper.lateOrdersFee(orderParam);
+    }
     /**
      * 后台管理--查询订单详情
      * @return

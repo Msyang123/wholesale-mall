@@ -10,7 +10,7 @@ import org.springframework.core.io.Resource;
 @ConfigurationProperties(prefix = PaymentProperties.PROPERTIES_PREFIX)
 public class PaymentProperties {
 
-    public static final String PROPERTIES_PREFIX = "food-see.payment";
+    public static final String PROPERTIES_PREFIX = "wholesale-mall.payment";
     /**
      * 编码
      */
@@ -49,6 +49,10 @@ public class PaymentProperties {
          * authorize回调地址
          */
         private String appRedirectUri;
+        /**
+         * 跳转到前端页面的域名
+         */
+        private String clientRedirectUrl;
     }
 
     private WeChatPayConfig weChatPay;

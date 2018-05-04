@@ -33,14 +33,15 @@ public class OrderDetail {
     @JsonProperty("status")
     private String orderStatus;
 
+    //订单当前状态 用于修改的时候约束条件
     @JsonProperty("currentOrderStatus")
     private String currentOrderStatus;
 
     @JsonProperty("auditStatus")
     private String checkStatus;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @JsonProperty("createTime")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Timestamp createTime;
 
     @JsonProperty("total")
@@ -58,15 +59,15 @@ public class OrderDetail {
     @JsonProperty("comments")
     private String remarks;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @JsonProperty("afterSaleTime")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Timestamp afterSaleTime;
 
     @JsonProperty("hdStatus")
     private String hdStatus;//发送订单到海鼎是否成功0成功1失败
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @JsonProperty("deliveryTime")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Timestamp deliveryTime;
 
     @JsonProperty("deliveryFee")
@@ -87,7 +88,7 @@ public class OrderDetail {
     @JsonProperty("phone")
     private String phone;
 
-    @JsonProperty("payableFee")
+    @JsonProperty("needPay")
     private  Integer payableFee;
 
     @JsonProperty("addressDetail")

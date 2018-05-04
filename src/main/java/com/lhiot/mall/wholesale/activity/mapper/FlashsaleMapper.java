@@ -3,6 +3,7 @@ package com.lhiot.mall.wholesale.activity.mapper;
 import java.util.List;
 import java.util.Map;
 
+import com.lhiot.mall.wholesale.activity.domain.Activity;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.lhiot.mall.wholesale.activity.domain.FlashActivity;
@@ -27,8 +28,10 @@ public interface FlashsaleMapper {
     int pageQueryCount(ActivityGirdParam param);
     
     //统计抢购商品数量
-    int flashGoodsRecord(Long activityId);
+    Integer flashGoodsRecord(Long activityId);
     
     //统计用户的抢购商品数量
-    int userRecord(Map<String,Object> map);
+    Integer userRecord(Map<String,Object> map);
+
+
 }

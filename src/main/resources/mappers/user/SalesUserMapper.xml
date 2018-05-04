@@ -70,4 +70,103 @@
         </trim>
     </select>
 
+    <select id="searchShopInfo" parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.ShopResult">
+        select u.id userId,u.shop_name,u.user_name,u.phone,u.register_time,u.address_detail from t_whs_salesuser s
+        LEFT JOIN t_whs_salesuser_relation r on s.id=r.salesman_id
+        LEFT JOIN t_whs_user u on u.id=r.user_id
+       <!-- <trim prefix="where" prefixOverrides="and">-->
+            and r.audit_status='agree'
+            and s.id=#{salesId}
+        <!--</trim>-->
+    </select>
+
+    <select id="login" parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
+        select * from t_whs_salesuser where acount=#{acount}
+    </select>
+
+
+    <!--管理系统-->
+
+    <!--新增业务员信息表-->
+    <insert keyProperty="id" useGeneratedKeys="true" parameterType="com.lhiot.mall.wholesale.user.domain.SalesUser" id="create">
+        insert into t_whs_salesuser(
+        <trim suffixOverrides=","> id, open_id, union_id, salesman_name, salesman_phone, salesman_password, salesman_head_image, create_person, create_at, invite_code,acount,sales_status, </trim>
+        )VALUES (
+        <trim suffixOverrides=","> #{id}, #{openId}, #{unionId}, #{salesmanName}, #{salesmanPhone}, #{salesmanPassword}, #{salesmanHeadImage}, #{createPerson}, now(), #{inviteCode}, #{acount},#{salesStatus},</trim>
+        )
+    </insert>
+
+    <!--修改业务员信息表-->
+    <update parameterType="com.lhiot.mall.wholesale.user.domain.SalesUser" id="updateById">
+        update t_whs_salesuser
+        <set>
+            <if test="id!=null"> id = #{id}, </if>
+            <if test="openId!=null"> open_id = #{openId}, </if>
+            <if test="unionId!=null"> union_id = #{unionId}, </if>
+            <if test="salesmanName!=null"> salesman_name = #{salesmanName}, </if>
+            <if test="salesmanPhone!=null"> salesman_phone = #{salesmanPhone}, </if>
+            <if test="salesmanPassword!=null"> salesman_password = #{salesmanPassword}, </if>
+            <if test="salesmanHeadImage!=null"> salesman_head_image = #{salesmanHeadImage}, </if>
+            <if test="createPerson!=null"> create_person = #{createPerson}, </if>
+            <if test="createAt!=null"> create_at = #{createAt}, </if>
+            <if test="inviteCode!=null"> invite_code = #{inviteCode}, </if>
+            <if test="acount!=null"> acount = #{acount} </if>
+            <if test="salesStatus!=null"> sales_status = #{salesStatus} </if>
+        </set>
+        where id=#{id}
+    </update>
+
+    <!--依据编号删除业务员信息表-->
+    <delete parameterType="java.util.List" id="deleteByIds">
+        delete from t_whs_salesuser where id in
+        <foreach close=")" separator="," open="(" item="id" collection="list"> #{id} </foreach>
+    </delete>
+
+    <!--查询业务员信息表-->
+    <select parameterType="com.lhiot.mall.wholesale.user.domain.SalesUser" id="list" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
+        select * from t_whs_salesuser
+        <where>
+            <if test="id!=0 and id!=null"> and id = #{id} </if>
+            <if test="openId!=null and openId!='null' and openId!=''"> and open_id = #{openId} </if>
+            <if test="unionId!=null and unionId!='null' and unionId!=''"> and union_id = #{unionId} </if>
+            <if test="salesmanName!=null and salesmanName!='null' and salesmanName!=''"> and salesman_name = #{salesmanName} </if>
+            <if test="salesmanPhone!=null and salesmanPhone!='null' and salesmanPhone!=''"> and salesman_phone = #{salesmanPhone} </if>
+            <if test="salesmanPassword!=null and salesmanPassword!='null' and salesmanPassword!=''"> and salesman_password = #{salesmanPassword} </if>
+            <if test="salesmanHeadImage!=null and salesmanHeadImage!='null' and salesmanHeadImage!=''"> and salesman_head_image = #{salesmanHeadImage} </if>
+            <if test="createPerson!=0 and createPerson!=null"> and create_person = #{createPerson} </if>
+            <if test="createAt!=null and createAt!='null' and createAt!=''"> and create_at = #{createAt} </if>
+            <if test="inviteCode!=null and inviteCode!='null' and inviteCode!=''"> and invite_code = #{inviteCode} </if>
+            <if test="acount!=null and acount!='null' and acount!=''"> and acount = #{acount} </if>
+            <if test="salesStatus!=null and salesStatus!='null' and salesStatus!=''"> and sales_status = #{salesStatus} </if>
+        </where>
+
+    </select>
+
+    <!--分页查询业务员信息表-->
+    <select parameterType="map" id="page" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
+      select * from t_whs_salesuser
+        <where>
+            <if test="id!=0 and id!=null"> and id = #{id} </if>
+            <if test="openId!=null and openId!='null' and openId!=''"> and open_id = #{openId} </if>
+            <if test="unionId!=null and unionId!='null' and unionId!=''"> and union_id = #{unionId} </if>
+            <if test="salesmanName!=null and salesmanName!='null' and salesmanName!=''"> and salesman_name like CONCAT('%',#{salesmanName},'%') </if>
+            <if test="salesmanPhone!=null and salesmanPhone!='null' and salesmanPhone!=''"> and salesman_phone like CONCAT('%',#{salesmanPhone},'%') </if>
+            <if test="salesmanPassword!=null and salesmanPassword!='null' and salesmanPassword!=''"> and salesman_password = #{salesmanPassword} </if>
+            <if test="salesmanHeadImage!=null and salesmanHeadImage!='null' and salesmanHeadImage!=''"> and salesman_head_image = #{salesmanHeadImage} </if>
+            <if test="createPerson!=0 and createPerson!=null"> and create_person = #{createPerson} </if>
+            <if test="createAt!=null and createAt!='null' and createAt!=''"> and create_at = #{createAt} </if>
+            <if test="inviteCode!=null and inviteCode!='null' and inviteCode!=''"> and invite_code = #{inviteCode} </if>
+            <if test="acount!=null and acount!='null' and acount!=''"> and acount = #{acount} </if>
+            <if test="salesStatus!=null and salesStatus!='null' and salesStatus!=''"> and sales_status = #{salesStatus} </if>
+        </where>
+    </select>
+
+    <select parameterType="Long" id="findById" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
+     select * from t_whs_salesuser where id=#{0}
+    </select>
+
+    <select parameterType="String" id="findCode" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
+        select * from t_whs_salesuser where invite_code=#{inviteCode}
+    </select>
+
 </mapper>

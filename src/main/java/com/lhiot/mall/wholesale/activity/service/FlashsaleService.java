@@ -8,18 +8,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.lhiot.mall.wholesale.activity.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.StringUtils;
-import com.lhiot.mall.wholesale.activity.domain.Activity;
-import com.lhiot.mall.wholesale.activity.domain.ActivityPeriodsType;
-import com.lhiot.mall.wholesale.activity.domain.ActivityType;
-import com.lhiot.mall.wholesale.activity.domain.FlashActivity;
-import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
-import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 import com.lhiot.mall.wholesale.activity.mapper.FlashsaleMapper;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
@@ -186,6 +181,7 @@ public class FlashsaleService {
 					flg.setGoodsImage(gs.getGoodsImage());
 					flg.setGoodsName(gs.getGoodsName());
 					flg.setPrice(gs.getGoodsPrice());
+					flg.setGoodsUnit(gs.getGoodsUnit());
 				}
 			}
 		}
@@ -196,26 +192,21 @@ public class FlashsaleService {
 	 * @param type
 	 * @return
 	 */
-	public FlashActivityGoods falshGoods(ActivityPeriodsType activityPeriodsType){
-		Activity activity = null;
+	public FlashActivityGoods flashGoods(ActivityPeriodsType activityPeriodsType){
+		FlashActivityGoods flashActivityGoods = null;
 		ActivityType flasesale = ActivityType.flashsale;
 		//获取开启抢购活动
 		if(activityPeriodsType.equals(ActivityPeriodsType.current)){
-			activity = activityService.currentActivity(flasesale);
+			flashActivityGoods = activityService.currentActivity(flasesale);
 		}else if(activityPeriodsType.equals(ActivityPeriodsType.next)){
-			activity = activityService.nextActivity(flasesale);
+			flashActivityGoods = activityService.nextActivity(flasesale);
 		}
-		if(Objects.isNull(activity)){
+		if(Objects.isNull(flashActivityGoods)){
 			return null;
 		}
-		//设置活动信息
-		FlashActivityGoods flashActivityGoods = new FlashActivityGoods();
-		flashActivityGoods.setActivity(activity);
-		
 		//查询活动商品
-		List<FlashsaleGoods> flashGoods = flashsaleMapper.search(activity.getId());
+		List<FlashsaleGoods> flashGoods = flashsaleMapper.search(flashActivityGoods.getId());
 		if(flashGoods.isEmpty()){
-			flashActivityGoods.setFlashGoods(new ArrayList<>());
 			return flashActivityGoods;
 		}
 		//查询并设置抢购进度
@@ -223,11 +214,11 @@ public class FlashsaleService {
 			int goodsStock = flashsaleGoods.getGoodsStock();
 			Map<String,Object> flashsaleProgress = this.flashsaleProgress(flashsaleGoods.getId(), goodsStock);
 			flashsaleGoods.setProgress(flashsaleProgress.get("progress").toString());
-			flashsaleGoods.setRemainNum(flashsaleProgress.get("remainNum").toString());
+			flashsaleGoods.setRemain(flashsaleProgress.get("remainNum").toString());
 		}
 		//组装商品信息
 		this.contructData(flashGoods);
-		flashActivityGoods.setFlashGoods(flashGoods);
+		flashActivityGoods.setProList(flashGoods);
 		return flashActivityGoods;
 	}
 	
@@ -239,7 +230,7 @@ public class FlashsaleService {
 	public Map<String,Object> flashsaleProgress(Long id,Integer goodsStock){
 		int progress = 0;
 		Integer sum = flashsaleMapper.flashGoodsRecord(id);
-		if(Objects.isNull(sum)){
+		if(Objects.equals(0, sum)){
 			return ImmutableMap.of("progress", progress, "remainNum", goodsStock);
 		}
 		BigDecimal b1 = new BigDecimal(sum*100);
@@ -254,8 +245,11 @@ public class FlashsaleService {
 	 * @param activityId
 	 * @return
 	 */
-	public int userRecords(Long userId,Long activityId){
+	public Integer userRecords(Long userId,Long activityId){
 		Map<String,Object> param = ImmutableMap.of("userId", userId, "activityId", activityId);
 		return flashsaleMapper.userRecord(param);
 	}
+
+
+
 }

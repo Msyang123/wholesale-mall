@@ -13,4 +13,7 @@ public class GoodsMinPrice {
 
 	@ApiModelProperty(notes="价格区间中最低的价格",dataType="Integer")
 	private Integer minPrice;
+	
+	@ApiModelProperty(notes="价格区间中最高的价格",dataType="Integer")
+	private Integer maxPrice;
 }

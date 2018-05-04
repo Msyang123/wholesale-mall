@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.lhiot.mall.wholesale.goods.mapper.GoodsCategoryMapper">
 	<sql id="categoryColumn">
-		id,parent_id as parentId,category_name as categoryName,category_code as categoryCode
+		id,parent_id as parentId,category_name as categoryName,category_code as categoryCode,image
 	</sql>
 	
 	<!-- lynn后台管理 新增2018/4/19 -->
@@ -64,6 +64,7 @@
 				parent_id = '0'
 			</if>
 		</trim>
+		order by rank asc
 	</select>
 	
 	<!-- lynn后台管理 查询所有用作下拉框2018/4/19 -->

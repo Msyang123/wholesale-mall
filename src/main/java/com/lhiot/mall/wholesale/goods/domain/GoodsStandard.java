@@ -36,11 +36,8 @@ public class GoodsStandard {
 	@ApiModelProperty(notes="原价",dataType="Integer")
 	private Integer price;
 	
-	@ApiModelProperty(notes="是否上架 ",dataType="Boolean")
-	private Boolean ifVaild;
-	
-	@ApiModelProperty(notes="是否上架 ",dataType="Integer")
-	private Integer vaild;
+	@ApiModelProperty(notes="是否上架 ",dataType="String")
+	private String vaild;
 	
 	@ApiModelProperty(notes="海鼎商品sku_id",dataType="String")
 	private String hdSkuId;
@@ -61,7 +58,7 @@ public class GoodsStandard {
 	private String goodsImage;
 	
 	@ApiModelProperty(notes="商品规格单位名称",dataType="String")
-	private String goodsUnitName;
+	private String goodsUnit;
 	
 	@ApiModelProperty(notes="商品基础单位名称",dataType="String")
 	private String baseUnitName;

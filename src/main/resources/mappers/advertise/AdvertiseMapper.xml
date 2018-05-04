@@ -4,7 +4,7 @@
 	<sql id="advertiseColumn">
 		id,title,link_url as linkUrl,advertment_position as advertmentPosition,advertment_image as advertmentImage,
 		date_format(begin_time,'%Y-%m-%d %h:%i:%s') as beginTime,date_format(end_time,'%Y-%m-%d %h:%i:%s') as endTime,
-		date_format(create_at,'%Y-%m-%d %h:%i:%s') as createAt,is_vaild as isVaild
+		date_format(create_at,'%Y-%m-%d %h:%i:%s') as createAt,vaild
 	</sql>
 	
 	<!-- lynn 2018/4/19根据商品id查询广告 -->
@@ -22,7 +22,7 @@
 				<if test="advertmentImage != null and advertmentImage != ''">advertment_image,</if>
 				<if test="beginTime != null and beginTime != ''">begin_time,</if>
 				<if test="endTime != null and endTime != ''">end_time,</if>
-				<if test="vaild != null">is_vaild,</if>
+				<if test="vaild != null">vaild,</if>
 				create_at,
 			</trim>
 		)
@@ -50,7 +50,7 @@
 			<if test="advertmentImage != null and advertmentImage != ''">advertment_image=#{advertmentImage},</if>
 			<if test="beginTime != null and beginTime != ''">begin_time=#{beginTime},</if>
 			<if test="endTime != null and endTime != ''">end_time=#{endTime},</if>
-			<if test="vaild != null">is_vaild=#{vaild},</if>
+			<if test="vaild != null">vaild=#{vaild},</if>
 		</trim>
 		where id = #{id}
 	</update>
@@ -70,7 +70,7 @@
 			<if test="advertmentPosition != null and advertmentPosition != ''">
 				and advertment_position=#{advertmentPosition}
 			</if>
-			<if test="isVaild != null and isVaild != ''">and is_vaild = #{isVaild}</if>
+			<if test="isVaild != null and isVaild != ''">and vaild = #{isVaild}</if>
 			<if test="title != null and title !=''">and title = #{title}</if>
 		</trim>
 	</select>
@@ -83,7 +83,7 @@
 			<if test="advertmentPosition != null and advertmentPosition != ''">
 				and advertment_position=#{advertmentPosition}
 			</if>
-			<if test="isVaild != null and isVaild != ''">and is_vaild = #{isVaild}</if>
+			<if test="isVaild != null and isVaild != ''">and vaild = #{isVaild}</if>
 			<if test="title != null and title !=''">and title = #{title}</if>
 		</trim>
 		<include refid="common.pager"></include>
@@ -94,7 +94,7 @@
 		select <include refid="advertiseColumn"/> 
 		from t_whs_advertisement 
 		where advertment_position = #{0} 
-		and is_vaild = '1' 
+		and vaild = 'yes' 
 		and now() BETWEEN begin_time and end_time 
 		order by begin_time limit 6
 	</select>

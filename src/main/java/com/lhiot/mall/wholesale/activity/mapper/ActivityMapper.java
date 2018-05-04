@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.lhiot.mall.wholesale.activity.domain.Activity;
+import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 
 @Mapper
@@ -28,8 +29,10 @@ public interface ActivityMapper {
     int pageQueryCount(ActivityGirdParam activityGirdParam);
     
     //查询当前开启的活动
-    Activity currentActivity(String type);
+    FlashActivityGoods currentActivity(String type);
     
     //查询下期开启的活动
-    Activity nextActivity(Map<String,Object> map);
+    FlashActivityGoods nextActivity(Map<String,Object> map);
+
+    Activity flashActivity(Long activityId);
 }

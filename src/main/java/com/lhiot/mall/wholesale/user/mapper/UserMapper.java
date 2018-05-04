@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.user.mapper;
 
 
+import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.domain.UserAddress;
@@ -16,6 +17,8 @@ public interface UserMapper {
     List<User> search(String userName);
 
     int updateUserStatus(long id);
+
+    int save(User user);
 
     User user(long id);
 
@@ -47,4 +50,11 @@ public interface UserMapper {
     
     List<User> searchInbatch(List<Long> userIds);
 
+    List <PaymentLog> getBalanceRecord(Integer userId);
+
+    UserAddress searchAddressListYes(long userId);
+
+    List<UserAddress> searchAddressListNo(long userId);
+
+    Integer debtFee(long userId);
 }
