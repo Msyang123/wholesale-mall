@@ -94,9 +94,9 @@ public class PlateCategoryService {
 	 * @param layoutType
 	 * @return
 	 */
-	public Long recommendPlateId(String layoutType){
+	public Long recommendPlateId(LayoutType layoutType){
 		Long plateId = 0l;
-		List<PlateCategory> list = plateCategoryMapper.searchByType(layoutType);
+		List<PlateCategory> list = plateCategoryMapper.searchByType(layoutType.toString());
 		if(list.isEmpty()){
 			return plateId;
 		}
