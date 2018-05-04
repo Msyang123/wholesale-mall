@@ -15,10 +15,10 @@ import lombok.ToString;
 public class InvoiceTitle {
 
     @JsonProperty("id")
-    private long id;
+    private Long id;
 
     @JsonProperty("userId")
-    private long userId;
+    private Long userId;
 
     @JsonProperty("taxpayerNumber")
     private String taxpayerNumber;

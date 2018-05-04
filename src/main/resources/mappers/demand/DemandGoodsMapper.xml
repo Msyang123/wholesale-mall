@@ -20,28 +20,28 @@
 		<trim prefix="where" prefixOverrides="and">
             <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
             <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
-            <if test="userIds != null">
-				and t1.user_id in
-				<foreach collection="userIds" item="item" open="(" separator="," close=")">
-					#{item}
-				</foreach>
-			</if>
+            <if test="userIds != null and userIds.size()>0">
+                and t1.user_id in
+                <foreach collection="userIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
 		</trim>
 	</select>
 
 	<!-- 后台管理 分页查询新品需求 -->
 	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.demand.domain.gridparam.DemandGoodsGridParam"
-			resultType="com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult">
+			resultType="com.lhiot.mall.wholesale.demand.domain.DemandGoods">
 		select <include refid="demandGoodsColumn"/>
 		from t_whs_demand_goods t1
         <trim prefix="where" prefixOverrides="and">
             <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
             <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
-            <if test="userIds != null and userIds != ''">
-                    and t1.user_id in
-                    <foreach collection="userIds" item="userId" open="(" separator="," close=")">
-                        #{userId}
-                    </foreach>
+            <if test="userIds != null and userIds.size()>0">
+                and t1.user_id in
+                <foreach collection="userIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </trim>
 		<include refid="common.pager"></include>

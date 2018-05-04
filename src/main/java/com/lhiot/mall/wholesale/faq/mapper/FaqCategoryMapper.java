@@ -13,4 +13,6 @@ public interface FaqCategoryMapper {
     int pageQueryCount();
 
     int insertFaqCategory(FaqCategory faqCategory);
+
+    List<FaqCategory> searchFaqCategory();
 }

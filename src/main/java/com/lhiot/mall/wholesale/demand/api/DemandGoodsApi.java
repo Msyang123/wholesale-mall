@@ -12,6 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -29,7 +32,7 @@ public class DemandGoodsApi {
 
     @PostMapping("/demandgoods/grid")
     @ApiOperation(value = "后台管理-分页查询新品需求", response = PageQueryObject.class)
-    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) DemandGoodsGridParam param) {
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) DemandGoodsGridParam param) throws IntrospectionException, InstantiationException, IllegalAccessException, InvocationTargetException {
         return ResponseEntity.ok(demandGoodsService.pageQuery(param));
     }
 
