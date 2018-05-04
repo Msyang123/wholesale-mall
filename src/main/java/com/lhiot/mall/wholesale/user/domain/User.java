@@ -49,18 +49,13 @@ public class User {
     private String userName;
 
     @JsonProperty("user_status")
-    private int userStatus;
+    private String userStatus;
+
     @JsonProperty("profile_photo")
     private String profilePhoto;
 
     @JsonProperty("supplier")
     private String supplier;
-
-    @JsonProperty("START")
-    private int START;
-
-    @JsonProperty("ROWS")
-    private int ROWS;
 
     @JsonProperty("city")
     private String city;

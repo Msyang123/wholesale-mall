@@ -19,7 +19,7 @@ import java.sql.Timestamp;
 public class DemandGoods {
 
     @JsonProperty("id")
-    private long id;
+    private Long id;
 
     @JsonProperty("goodsName")
     private String goodsName;
@@ -34,7 +34,7 @@ public class DemandGoods {
     private String supplier;
 
     @JsonProperty("referencePrice")
-    private int referencePrice;
+    private Integer referencePrice;
 
     @JsonProperty("comments")
     private String comments;
@@ -43,7 +43,7 @@ public class DemandGoods {
     private String contactPhone;
 
     @JsonProperty("userId")
-    private long userId;
+    private Long userId;
 
     @JsonProperty("createTime")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

@@ -2,11 +2,16 @@ package com.lhiot.mall.wholesale.demand.service;
 
 import com.leon.microx.util.SnowflakeId;
 
+import com.lhiot.mall.wholesale.base.DataMergeUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.demand.domain.DemandGoods;
 import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
 import com.lhiot.mall.wholesale.demand.domain.gridparam.DemandGoodsGridParam;
 import com.lhiot.mall.wholesale.demand.mapper.DemandGoodsMapper;
+import com.lhiot.mall.wholesale.order.domain.DebtOrder;
+import com.lhiot.mall.wholesale.order.domain.DebtOrderResult;
+import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
+import com.lhiot.mall.wholesale.order.domain.gridparam.DebtOrderGridParam;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.mapper.UserMapper;
 import com.lhiot.mall.wholesale.user.service.UserService;
@@ -14,6 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -38,57 +46,73 @@ public class DemandGoodsService {
     }
 
     /**
-     * 分页查询
+     * 后台管理系统--分页查询新品需求信息
+     * @param param
      * @return
      */
-    public PageQueryObject pageQuery(DemandGoodsGridParam param){
-        //根据参数（手机号或姓名）获取用户信息
-        User userParam=new User();
-        userParam.setNamePhone(param.getNamePhone());
-        List<User> userList = userService.searchByPhoneOrName(userParam);
-        PageQueryObject result = new PageQueryObject();
-        //如果用户信息不为空，根据用户ids查询新品需求
-        if(userList != null){
-            Long[] userIds = new Long[userList.size()];
-            int i=0;
-            for (User user:userList){
-                userIds[i]=user.getId();
-                i++;
-            }
-            param.setUserIds(userIds);
-            int count = demandGoodsMapper.pageQueryCount(param);
-            int page = param.getPage();
-            int rows = param.getRows();
+    public PageQueryObject pageQuery(DemandGoodsGridParam param) throws InvocationTargetException, IntrospectionException, InstantiationException, IllegalAccessException {
+        String namePhone = param.getNamePhone();
+        User userParam = new User();
+        userParam.setNamePhone(namePhone);
+        List<DemandGoods> demandGoodsList = new ArrayList<DemandGoods>();
+        List<User> userList = new ArrayList<User>();
+        List<DemandGoodsResult> demandGoodsResults = new ArrayList<>();
+        int count = 0;
+        int page = param.getPage();
+        int rows = param.getRows();
+        //总记录数
+        int totalPages = 0;
+        if(namePhone == null ){//未传手机号/用户名 查询条件,先根据条件查询分页的新品需求列表及用户ids，再根据ids查询用户信息列表
+            count = demandGoodsMapper.pageQueryCount(param);
             //起始行
             param.setStart((page-1)*rows);
             //总记录数
-            int totalPages = (count%rows==0?count/rows:count/rows+1);
+            totalPages = (count%rows==0?count/rows:count/rows+1);
             if(totalPages < page){
                 page = 1;
                 param.setPage(page);
                 param.setStart(0);
             }
-            List<DemandGoodsResult> demandGoodsResultList = demandGoodsMapper.pageQuery(param);
-            //如果新品需求信息不为空，根据id匹配信息
-            if (demandGoodsResultList != null) {
-                for (DemandGoodsResult demandGoodsResult : demandGoodsResultList) {
-                    Long demandGoodsUserId = demandGoodsResult.getUserId();
-                    for (User user : userList) {
-                        Long uId = user.getId();
-                        if (Objects.equals(demandGoodsUserId, uId)) {
-                            demandGoodsResult.setPhone(user.getPhone());
-                            demandGoodsResult.setShopName(user.getShopName());
-                            demandGoodsResult.setUserName(user.getUserName());
-                            demandGoodsResult.setCreateTime(demandGoodsResult.getCreateTime().toString());
-                            result.setRows(demandGoodsResultList);
-                        }
+            demandGoodsList = demandGoodsMapper.pageQuery(param);
+            List<Long> userIds = new ArrayList<Long>();
+            if(demandGoodsList != null && demandGoodsList.size() > 0){//查询新品需求对应的用户ID列表与新品需求ID列表
+                for(DemandGoods demandGoods : demandGoodsList){
+                    long userId = demandGoods.getUserId();
+                    if(!userIds.contains(userId)){//用户id去重
+                        userIds.add(userId);
                     }
                 }
             }
-            result.setPage(page);
-            result.setRecords(rows);
-            result.setTotal(totalPages);
+            userList = userService.search(userIds);//根据用户ID列表查询用户信息
+        }else{//传了手机号查询条件，先根据条件查询用户列表及用户ids，再根据ids和新品需求其他信息查询新品需求信息列表
+            userList = userService.searchByPhoneOrName(userParam);
+            List<Long> userIds = new ArrayList<Long>();
+            if(userList != null && userList.size() > 0){
+                for(User user : userList){
+                    userIds.add(user.getId());
+                }
+                param.setUserIds(userIds);
+                count = demandGoodsMapper.pageQueryCount(param);
+                //起始行
+                param.setStart((page-1)*rows);
+                //总记录数
+                totalPages = (count%rows==0?count/rows:count/rows+1);
+                if(totalPages < page){
+                    page = 1;
+                    param.setPage(page);
+                    param.setStart(0);
+                }
+                demandGoodsList = demandGoodsMapper.pageQuery(param);//根据用户ID列表及其他查询条件查询用户信息
+            }
         }
+        PageQueryObject result = new PageQueryObject();
+        if(demandGoodsList != null && demandGoodsList.size() > 0){//如果新品需求信息不为空,将新品需求列表与用户信息列表进行行数据组装
+            demandGoodsResults = DataMergeUtils.dataMerge(demandGoodsList,userList,"userId","id",DemandGoodsResult.class);
+        }
+        result.setPage(page);
+        result.setRecords(rows);
+        result.setTotal(totalPages);
+        result.setRows(demandGoodsResults);//将查询记录放入返回参数中
         return result;
     }
 

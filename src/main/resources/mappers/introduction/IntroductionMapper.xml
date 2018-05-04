@@ -36,7 +36,7 @@
 			<if test="content != null and content != ''">content=#{content},</if>
 			<if test="createPerson != null and createPerson != ''">create_person=#{createPerson},</if>
 			<if test="serviceStatus != null and serviceStatus != ''">service_status=#{serviceStatus},</if>
-			<if test="create != null">create_time=#{createTime,jdbcType=TIMESTAMP},</if>
+			<if test="createTime != null">create_time=#{createTime,jdbcType=TIMESTAMP},</if>
   		</trim>
 		where id = #{id}
 	</update>
@@ -51,7 +51,7 @@
 			<if test="content != null and content != ''">content,</if>
 			<if test="createPerson != null and createPerson != ''">create_person,</if>
 			<if test="serviceStatus != null and serviceStatus != ''">service_status,</if>
-			create_time
+			<if test="createTime != null">create_time,</if>
 		</trim>
 		)
 		values(
@@ -62,6 +62,7 @@
 			<if test="content != null and content != ''">#{content},</if>
 			<if test="createPerson != null and createPerson != ''">#{createPerson},</if>
 			<if test="serviceStatus != null and serviceStatus != ''">#{serviceStatus},</if>
+			<if test="createTime != null">#{createTime,jdbcType=TIMESTAMP},</if>
 			now()
 		</trim>
 		)

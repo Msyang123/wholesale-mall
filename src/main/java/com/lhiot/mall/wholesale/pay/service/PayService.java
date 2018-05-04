@@ -452,6 +452,7 @@ public class PayService {
         updateUser.setBalance(needPayFee);//需要扣除的值
         boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
         if(updateResult){
+
             invoice.setInvoiceStatus("yes");//开票状态 0未开 1已付款 2已开
             invoiceService.updateInvoiceByCode(invoice);
 

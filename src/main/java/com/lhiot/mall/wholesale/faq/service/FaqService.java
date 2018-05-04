@@ -29,10 +29,6 @@ public class FaqService {
         this.faqMapper = faqMapper;
     }
 
-    public List<FaqCategory> searchFaqCategory(){
-        return faqMapper.searchFaqCategory();
-    }
-
     public List<Faq> searchFaq(long faqCategoryId){
         return faqMapper.searchFaq(faqCategoryId);
     }
@@ -49,7 +45,8 @@ public class FaqService {
         if (faq.getId()>0){
             return faqMapper.updateFaq(faq);
         }else {
-            faq.setId(faqMapper.pageQueryCount()+1);
+            //FIXME 自增后不需要再setId
+            //faq.setId(faqMapper.pageQueryCount()+1);
             return faqMapper.insertFaq(faq);
         }
     }

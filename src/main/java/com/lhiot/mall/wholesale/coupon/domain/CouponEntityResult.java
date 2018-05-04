@@ -46,8 +46,8 @@ public class CouponEntityResult {
 	@ApiModelProperty(notes="用户名称",dataType="String")
 	private String userName;
 	
-	@ApiModelProperty(notes="会员状态 0临时会员 1正式会员（审核通过）",dataType="Integer")
-	private Integer userStatus;
+	@ApiModelProperty(notes="会员状态 0临时会员 1正式会员（审核通过）",dataType="String")
+	private String userStatus;
 	
 	@ApiModelProperty(notes="用户状态",dataType="String")
 	private String phone;

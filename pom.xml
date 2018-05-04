@@ -49,7 +49,7 @@
 		<dependency>
 			<groupId>com.leon.microx.util</groupId>
 			<artifactId>microx-utils</artifactId>
-			<version>20180323</version>
+			<version>20180422</version>
 		</dependency>
 		<!-- web -->
 		<dependency>
