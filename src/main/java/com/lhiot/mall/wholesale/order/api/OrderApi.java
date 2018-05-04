@@ -115,7 +115,7 @@ public class OrderApi {
         orderDetail.setUserId(userId);
         orderDetail.setPayStatus(payStatus);
         orderDetail.setOrderStatus(orderStatus);
-        List <OrderDetail> orders = orderService.searchOrders(orderDetail);
+        List <OrderDetail> orders = orderService.searchAfterSaleOrder(orderDetail);
         List<OrderDetail> orderResults=new ArrayList<OrderDetail>();
         if (orders.isEmpty()){
             return ResponseEntity.ok(ArrayObject.of(new ArrayList<>()));
