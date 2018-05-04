@@ -17,7 +17,7 @@ public interface RewardConfigMapper {
     
     void removeInbatch(List<Long> ids);
 
-    List<RewardCoupon> selectByActivity(long activityId);
+    List<RewardCoupon> selectByActivity(Long activityId);
     
     List<RewardConfig> search(List<Long> ids);
     //分页查询分类
