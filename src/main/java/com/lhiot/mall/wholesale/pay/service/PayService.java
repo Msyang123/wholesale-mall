@@ -3,6 +3,7 @@ package com.lhiot.mall.wholesale.pay.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.leon.microx.common.exception.ServiceException;
+import com.lhiot.mall.wholesale.base.StringReplaceUtil;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
@@ -505,7 +506,7 @@ public class PayService {
         returnData.setDeliveryTime(sdf.format(orderDetail.getDeliveryTime()));
 
         //需要去除掉特殊的表情符号
-        String replacedUsername=replaceEmoji(replaceByte4(user.getUserName()));
+        String replacedUsername=StringReplaceUtil.replaceEmoji(StringReplaceUtil.replaceByte4(user.getUserName()));
         returnData.setNickname(replacedUsername);
         returnData.setPhoneNum(user.getPhone());
         //设置订单门店 测试环境设置的只有一个
@@ -513,7 +514,7 @@ public class PayService {
         returnData.setStoreId("07310106");
         returnData.setStoreName("水果熟了-左家塘店");
         //备注
-        returnData.setNRemark(replaceEmoji(replaceByte4(orderDetail.getRemarks()))+"配送时间："+returnData.getDeliveryTime());
+        returnData.setNRemark(StringReplaceUtil.replaceEmoji(StringReplaceUtil.replaceByte4(orderDetail.getRemarks()))+"配送时间："+returnData.getDeliveryTime());
         //设置订单商品
         for(OrderGoods item:orderDetail.getOrderGoodsList()){
             ProductsData productsData=new ProductsData();
@@ -528,44 +529,6 @@ public class PayService {
             returnData.getProductsData().add(productsData);
         }
         return returnData;
-    }
-
-    public static String replaceByte4(String str) {
-        if (str==null||"".equals(str.trim())) {
-            return "";
-        }
-        try {
-            byte[] conbyte = str.getBytes();
-            for (int i = 0; i < conbyte.length; i++) {
-                if ((conbyte[i] & 0xF8) == 0xF0) {// 如果是4字节字符
-                    for (int j = 0; j < 4; j++) {
-                        conbyte[i + j] = 0x30;// 将当前字符变为“0000”
-                    }
-                    i += 3;
-                }
-            }
-            str = new String(conbyte);
-            return str.replaceAll("0000", "");
-        } catch (Throwable e) {
-            return "";
-        }
-    }
-    public static String replaceEmoji(String str) {
-        if (str==null||"".equals(str.trim())) {
-            return "";
-        }
-        try {
-            Pattern emoji = Pattern.compile("[\ud83c\udc00-\ud83c\udfff]|[\ud83d\udc00-\ud83d\udfff]|[\u2600-\u27ff]",
-                    Pattern.UNICODE_CASE | Pattern.CASE_INSENSITIVE);
-            Matcher emojiMatcher = emoji.matcher(str);
-            if (emojiMatcher.find()) {
-                String temp = str.substring(emojiMatcher.start(), emojiMatcher.end());
-                str = str.replaceAll(temp, "");
-            }
-            return str;
-        } catch (Throwable e) {
-            return "";
-        }
     }
 
 }
