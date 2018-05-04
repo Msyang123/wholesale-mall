@@ -20,6 +20,7 @@ import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
 import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
 import com.lhiot.mall.wholesale.goods.domain.GoodsMinPrice;
+import com.lhiot.mall.wholesale.goods.domain.LayoutType;
 import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.GoodsMapper;
@@ -233,8 +234,8 @@ public class GoodsService {
 	 * @param plateId
 	 * @return
 	 */
-	public List<PlateCategory> plateGoodses(){
-		List<PlateCategory> plateCategories = plateCategoryService.search();
+	public List<PlateCategory> plateGoodses(LayoutType layoutType){
+		List<PlateCategory> plateCategories = plateCategoryService.search(layoutType.toString());
 		if(plateCategories.isEmpty()){
 			return plateCategories;
 		}

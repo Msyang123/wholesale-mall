@@ -24,6 +24,7 @@ import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
 import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
 import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
 import com.lhiot.mall.wholesale.goods.domain.InventoryResult;
+import com.lhiot.mall.wholesale.goods.domain.LayoutType;
 import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
 import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
@@ -38,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping
 public class GoodsApi {
-	
+	private static final Integer FIRST = 0;//第一个节点
 	private final GoodsService goodsService;
 
 	private final GoodsPriceRegionService goodsPriceRegionService;
@@ -131,4 +132,10 @@ public class GoodsApi {
     public ResponseEntity<PlateCategory> findGoodsByKeyword(@PathVariable("plateId") Long plateId) {
         return ResponseEntity.ok(goodsService.plateGoods(plateId));
     }
+	
+/*	@GetMapping("/goods/plate/recommend")
+    @ApiOperation(value = "推荐商品列表" ,response= PlateCategory.class)
+    public ResponseEntity<PlateCategory> recommendList() {
+        return ResponseEntity.ok(goodsService.plateGoodses(LayoutType.list).get(FIRST));
+    }*/
 }
