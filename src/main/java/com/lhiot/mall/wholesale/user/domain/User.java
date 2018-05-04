@@ -54,7 +54,7 @@ public class User {
     @JsonProperty("userName")
     private String userName;
 
-    @JsonProperty("user_status")
+    @JsonProperty("userStatus")
     private String userStatus;
 
     @JsonProperty("profilePhoto")
