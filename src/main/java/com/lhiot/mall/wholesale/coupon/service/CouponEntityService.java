@@ -208,5 +208,10 @@ public class CouponEntityService {
 		}
 		return availables;
 	}
+/*	
+	
+	public List<CouponEntity> contructUserCoupon(Long userId,List<Long> ){
+		
+	}*/
 }
 
