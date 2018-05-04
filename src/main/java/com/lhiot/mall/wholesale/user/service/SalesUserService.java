@@ -41,8 +41,8 @@ public class SalesUserService {
         return salesUserMapper.searchSalesUser(id);
     }
 
-    public SalesUser searchSalesUserCode(String code){
-        return salesUserMapper.searchSalesUserCode(code);
+    public SalesUser searchSalesUserByOpenid(String openid){
+        return salesUserMapper.searchSalesUserByOpenid(openid);
     }
 
     public int insertRelation(SalesUserRelation salesUserRelation){

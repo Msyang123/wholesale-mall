@@ -18,8 +18,8 @@
         <include refid="common.pager"/>
     </select>
 
-    <select id="searchSalesUserCode" parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
-        select * from t_whs_salesuser where invite_code=#{0}
+    <select id="searchSalesUserByOpenid" parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
+        select * from t_whs_salesuser where open_id=#{0}
     </select>
 
     <update id="updateUserSaleRelationship" parameterType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation">

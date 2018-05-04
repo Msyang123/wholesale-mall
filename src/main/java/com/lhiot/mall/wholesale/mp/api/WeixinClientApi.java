@@ -1,40 +1,24 @@
 package com.lhiot.mall.wholesale.mp.api;
 
-import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.util.ImmutableMap;
 import com.lhiot.mall.wholesale.base.MySecurity;
-import com.lhiot.mall.wholesale.order.domain.OrderDetail;
-import com.lhiot.mall.wholesale.order.domain.OrderParam;
-import com.lhiot.mall.wholesale.order.service.OrderService;
-import com.lhiot.mall.wholesale.user.domain.SalesUser;
-import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
-import com.lhiot.mall.wholesale.user.domain.ShopResult;
-import com.lhiot.mall.wholesale.user.domain.User;
-import com.lhiot.mall.wholesale.user.service.SalesUserService;
-import com.lhiot.mall.wholesale.user.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @Api(description = "微信公众平台对接接口")
 @Slf4j
 @RestController
-@RequestMapping("/weixin")
 public class WeixinClientApi {
 
 
 
     @GetMapping("/sign")
-    @ApiOperation(value = "查询业务员信息")
+    @ApiOperation(value = "微信发送的Token验证")
     public String getSign(@RequestParam("signature") String signature,
                                              @RequestParam("timestamp") String timestamp,
                                              @RequestParam("nonce") String nonce,
@@ -61,7 +45,7 @@ public class WeixinClientApi {
     }
 
     @PostMapping("/sign")
-    @ApiOperation(value = "门店管理")
+    @ApiOperation(value = "微信发送的信息响应")
     public void postSign(@RequestBody String msg) {
        log.info(msg);
     }

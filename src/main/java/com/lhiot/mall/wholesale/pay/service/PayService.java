@@ -229,7 +229,7 @@ public class PayService {
         packageParams.put("time_expire", timeExpire);
         packageParams.put("spbill_create_ip", ipAddress);// 订单生成的机器ip
         // IP
-        packageParams.put("notify_url", weChatUtil.getProperties().getWeChatPay().getRechargeNotifyUrl());// 支付完成后微信发给该链接信息，可以判断会员是否支付成功，改变订单状态等。
+        packageParams.put("notify_url", weChatUtil.getProperties().getWeChatPay().getInvoiceNotifyUrl());// 支付完成后微信发给该链接信息，可以判断会员是否支付成功，改变订单状态等。
         packageParams.put("trade_type", "JSAPI");
         packageParams.put("openid", openId);
         String sign = weChatUtil.createSign(weChatUtil.getProperties().getWeChatPay().getPartnerKey(), packageParams); // 获取签名
@@ -299,7 +299,7 @@ public class PayService {
         packageParams.put("time_expire", timeExpire);
         packageParams.put("spbill_create_ip", ipAddress);// 订单生成的机器ip
         // IP
-        packageParams.put("notify_url", weChatUtil.getProperties().getWeChatPay().getRechargeNotifyUrl());// 支付完成后微信发给该链接信息，可以判断会员是否支付成功，改变订单状态等。
+        packageParams.put("notify_url", weChatUtil.getProperties().getWeChatPay().getOrderOfflineNotifyUrl());// 支付完成后微信发给该链接信息，可以判断会员是否支付成功，改变订单状态等。
         packageParams.put("trade_type", "JSAPI");
         packageParams.put("openid", openId);
         String sign = weChatUtil.createSign(weChatUtil.getProperties().getWeChatPay().getPartnerKey(), packageParams); // 获取签名

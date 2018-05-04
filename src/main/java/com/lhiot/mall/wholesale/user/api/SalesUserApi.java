@@ -98,12 +98,11 @@ public class SalesUserApi {
         return ResponseEntity.ok(ArrayObject.of(shopResultList));
     }
 
-    /*@GetMapping("/page")
-    @ApiOperation(value = "业务员账号登陆接口")
-    public ResponseEntity<SalesUser> salesLogin(@RequestParam String acount,@RequestParam String salesmanPassword){
-
-        return ResponseEntity.ok(SalesUser);
-    }*/
+    @GetMapping("/detial/{openid}")
+    @ApiOperation(value = "依据openid查询业务员详细信息")
+    public ResponseEntity<SalesUser> detial(@RequestParam("openid") String openid){
+        return ResponseEntity.ok(salesUserService.searchSalesUserByOpenid(openid));
+    }
 
 
     /***************************************后台管理系统接口***********************************************/
