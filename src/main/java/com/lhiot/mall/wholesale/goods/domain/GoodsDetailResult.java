@@ -18,4 +18,8 @@ public class GoodsDetailResult {
     @ApiModelProperty(notes = "抢购信息", dataType = "GoodsFlashsale")
     @JsonProperty("flash")
     private GoodsFlashsale goodsFlashsale;
+
+    @JsonProperty("extraSrc")
+    private String otherImage;
+
 }

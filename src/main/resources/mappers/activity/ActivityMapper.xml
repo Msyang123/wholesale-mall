@@ -117,4 +117,8 @@
 		and start_time &gt; #{time}
 		order by start_time limit 1
 	</select>
+
+	<select id="flashActivity" parameterType="long" resultType="com.lhiot.mall.wholesale.activity.domain.Activity">
+		select start_time,end_time from t_whs_activity where id=#{0}
+	</select>
 </mapper>

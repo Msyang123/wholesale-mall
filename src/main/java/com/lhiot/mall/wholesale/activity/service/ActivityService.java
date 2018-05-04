@@ -108,7 +108,7 @@ public class ActivityService {
 	 * @param list
 	 * @return
 	 */
-	public boolean canDelete(String ids){
+	/*public boolean canDelete(String ids){
 		boolean success = true;
 		if(StringUtils.isBlank(ids)){
 			success = false;
@@ -130,7 +130,7 @@ public class ActivityService {
 			}
 		}
 		return success;
-	}
+	}*/
 	
 	/**
 	 * 判断是否可以添加或者修改活动，同一种活动同一时间
@@ -183,5 +183,8 @@ public class ActivityService {
 				"time", curActivity.getEndTime());
 		return activityMapper.nextActivity(param);
 	}
-	
+
+	public Activity flashGoods(Long activityId){
+		return activityMapper.flashActivity(activityId);
+	}
 }

@@ -98,12 +98,28 @@ public class SalesUserApi {
         return ResponseEntity.ok(ArrayObject.of(shopResultList));
     }
 
-    /*@GetMapping("/page")
+    @GetMapping("/login")
     @ApiOperation(value = "业务员账号登陆接口")
-    public ResponseEntity<SalesUser> salesLogin(@RequestParam String acount,@RequestParam String salesmanPassword){
+    public ResponseEntity salesLogin(@RequestParam String acount,@RequestParam String salesmanPassword){
+        SalesUser salesUser=salesUserService.login(acount);
+        if (salesUser==null){
+            return ResponseEntity.badRequest().body("账号不存在");
+        }
+        if (salesmanPassword.equals(salesUser.getSalesmanPassword())){
+            return ResponseEntity.ok().body("登陆成功");
+        }
+        return ResponseEntity.badRequest().body("密码错误");
+    }
 
-        return ResponseEntity.ok(SalesUser);
-    }*/
+    @GetMapping("/salesman")
+    @ApiOperation(value = "业务员主页信息")
+    public ResponseEntity<SalesUser> salesman(@RequestParam long userId){
+        SalesUser salesUser = salesUserService.findById(userId);
+        if (salesUser==null){
+            return ResponseEntity.ok(new SalesUser());
+        }
+        return ResponseEntity.ok(salesUser);
+    }
 
 
     /***************************************后台管理系统接口***********************************************/

@@ -33,4 +33,6 @@ public interface ActivityMapper {
     
     //查询下期开启的活动
     FlashActivityGoods nextActivity(Map<String,Object> map);
+
+    Activity flashActivity(Long activityId);
 }
