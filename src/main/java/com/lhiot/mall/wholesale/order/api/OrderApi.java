@@ -51,15 +51,16 @@ public class OrderApi {
         this.settingService = settingService;
     }
 
-    @PostMapping("/myOrders/{userId}")
+    @GetMapping("/my-orders/{userId}")
     @ApiOperation(value = "我的订单列表")
-    public ResponseEntity<ArrayObject> queryMyOrders(@PathVariable("userId") long userId
-            , @RequestParam(required = false) String settlementType, @RequestParam(required = false) String payStatus,@RequestParam String orderStatus){
+    public ResponseEntity<ArrayObject> queryMyOrders(@PathVariable("userId") long userId, @RequestParam(required = false) String orderStatus,
+                                                     @RequestParam(defaultValue="1") Integer page,@RequestParam(defaultValue="10") Integer rows){
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setUserId(userId);
-        orderDetail.setSettlementType(settlementType);
-        orderDetail.setPayStatus(payStatus);
         orderDetail.setOrderStatus(orderStatus);
+        orderDetail.setPage(page);
+        orderDetail.setStart((page-1)*rows);
+        orderDetail.setRows(rows);
         List<OrderDetail> orderDetailList = orderService.searchOrders(orderDetail);
         if (orderDetailList.isEmpty()){
             return ResponseEntity.ok(ArrayObject.of(new ArrayList<OrderDetail>()));
@@ -75,7 +76,7 @@ public class OrderApi {
     }
 
 
-    @GetMapping("/myOrder/{orderCode}")
+    @GetMapping("/my-order/{orderCode}")
     @ApiOperation(value = "根据订单编号查询订单详情")
     public ResponseEntity<OrderDetail> queryOrder(@PathVariable("orderCode") String orderCode){
         OrderDetail orderDetail = orderService.searchOrder(orderCode);
@@ -109,12 +110,15 @@ public class OrderApi {
 
     @GetMapping("/invoice/orders/{userId}")
     @ApiOperation(value = "查询可开发票的订单列表")
-    public ResponseEntity<ArrayObject> invoiceOrders(@PathVariable("userId") @NotNull long userId,
-                                                     @RequestParam String payStatus,@RequestParam String orderStatus) {
+    public ResponseEntity<ArrayObject> invoiceOrders(@PathVariable("userId") @NotNull long userId,@RequestParam(defaultValue="1") Integer page,
+                                                     @RequestParam(defaultValue="10") Integer rows) {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setUserId(userId);
-        orderDetail.setPayStatus(payStatus);
-        orderDetail.setOrderStatus(orderStatus);
+        orderDetail.setPayStatus("paid");
+        orderDetail.setOrderStatus("received");
+        orderDetail.setPage(page);
+        orderDetail.setRows(rows);
+        orderDetail.setStart((page-1)*rows);
         List <OrderDetail> orders = orderService.searchAfterSaleOrder(orderDetail);
         List<OrderDetail> orderResults=new ArrayList<OrderDetail>();
         if (orders.isEmpty()){
@@ -127,9 +131,9 @@ public class OrderApi {
             if ("received".equals(order.getOrderStatus())&&"paid".equals(order.getPayStatus())&&order.getAfterSaleTime().before(currentTime)){
                 List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
                 if (goods.isEmpty()){
-                    orderDetail.setOrderGoodsList(new ArrayList<OrderGoods>());
+                    order.setOrderGoodsList(new ArrayList<OrderGoods>());
                 }else {
-                    orderDetail.setOrderGoodsList(goods);
+                    order.setOrderGoodsList(goods);
                 }
                 orderResults.add(order);
             }
@@ -137,7 +141,7 @@ public class OrderApi {
         return ResponseEntity.ok(ArrayObject.of(orderResults));
     }
 
-    @GetMapping("/order/distribution/{fee}")
+    @GetMapping("/distribution/{fee}")
     @ApiOperation(value = "查询配送费")
     public  ResponseEntity<Integer> distribution(@PathVariable("fee") @NotNull Integer fee) throws Exception{
         ParamConfig paramConfig = settingService.searchConfigParam("distributionFeeSet");
@@ -155,14 +159,17 @@ public class OrderApi {
         return ResponseEntity.ok(100);
     }
 
-    @GetMapping("/orders/after-sale/{userId}")
+    @GetMapping("/after-sale/{userId}")
     @ApiOperation(value = "查询售后订单")
-    public ResponseEntity<ArrayObject> queryAfterSale(@PathVariable("userId") @NotNull long userId
-            ,@RequestParam String orderStatus, @RequestParam String payStatus) {
+    public ResponseEntity<ArrayObject> queryAfterSale(@PathVariable("userId") @NotNull long userId,@RequestParam(defaultValue="1") Integer page,
+                                                      @RequestParam(defaultValue="10") Integer rows) {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setUserId(userId);
-        orderDetail.setOrderStatus(orderStatus);
-        orderDetail.setPayStatus(payStatus);
+        orderDetail.setOrderStatus("received");
+        orderDetail.setPayStatus("paid");
+        orderDetail.setPage(page);
+        orderDetail.setRows(rows);
+        orderDetail.setStart((page-1)*rows);
         List <OrderDetail> orders = orderService.searchAfterSaleOrder(orderDetail);
         if (orders.isEmpty()){
             return ResponseEntity.ok(ArrayObject.of(new ArrayList<>()));
@@ -170,11 +177,16 @@ public class OrderApi {
         String time = DateFormatUtil.format1(new java.util.Date());
         Timestamp currentTime = Timestamp.valueOf(time);
         for (OrderDetail order:orders) {
+            if (order.getAfterSaleTime().after(currentTime)){
+                order.setExpire("no");
+            }else{
+                order.setExpire("yes");
+            }
             List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
             if (goods.isEmpty()){
-                orderDetail.setOrderGoodsList(new ArrayList<OrderGoods>());
+                order.setOrderGoodsList(new ArrayList<OrderGoods>());
             }else {
-                orderDetail.setOrderGoodsList(goods);
+                order.setOrderGoodsList(goods);
             }
         }
         return ResponseEntity.ok(ArrayObject.of(orders));
@@ -186,7 +198,7 @@ public class OrderApi {
 
         SalesUserRelation salesUserRelation=new SalesUserRelation();
         salesUserRelation.setUserId(orderDetail.getUserId());
-        salesUserRelation.setCheck(1);//通过审核
+        salesUserRelation.setAuditStatus("agree");//通过审核
         SalesUserRelation salesUserRelationResult=salesUserService.searchSaleRelationship(salesUserRelation);
         if(Objects.nonNull(salesUserRelationResult)){
             //设置订单业务员编码
