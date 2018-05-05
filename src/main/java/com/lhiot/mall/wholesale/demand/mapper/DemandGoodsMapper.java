@@ -15,7 +15,7 @@ public interface DemandGoodsMapper {
     DemandGoodsResult select(long id);
 
     //分页查询新品需求
-    List<DemandGoodsResult> pageQuery(DemandGoodsGridParam param);
+    List<DemandGoods> pageQuery(DemandGoodsGridParam param);
 
     //查询分类的总记录数
     int pageQueryCount(DemandGoodsGridParam param);

@@ -49,6 +49,7 @@ public class OfflinePayApi {
         debtOrder.setCheckStatus(""); //FIXME 改为枚举   debtOrder.setCheckStatus(1);
         int result=debtOrderService.updateDebtOrderByCode(debtOrder);
         if(result>0){
+            //修改账款订单状态
             return ResponseEntity.ok(debtOrder);
         }
         return ResponseEntity.badRequest().body("线下支付账款订单提交审核失败");

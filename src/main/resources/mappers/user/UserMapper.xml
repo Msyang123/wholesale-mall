@@ -3,7 +3,7 @@
 <mapper namespace="com.lhiot.mall.wholesale.user.mapper.UserMapper">
 
     <sql id="userInfo">
-        id,phone,shop_name,user_name,city,address_detail,register_time,balance,profile_photo
+        id,phone,shop_name,user_name,city,address_detail,register_time,balance,profile_photo,user_status
     </sql>
 
     <select id="search"  parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.user.domain.User">
@@ -12,6 +12,11 @@
             #{item}
         </foreach>
     </select>
+
+    <select id="searchUserByOpenid"  parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.User">
+        SELECT <include refid="userInfo" /> FROM T_WHS_USER WHERE open_id=#{0}
+    </select>
+
     <!--微信用户关注后保存-->
     <insert id="save" parameterType="com.lhiot.mall.wholesale.user.domain.User" useGeneratedKeys="true">
         INSERT INTO t_whs_user (sex,city,register_time,nickname,open_id,union_id,user_status,

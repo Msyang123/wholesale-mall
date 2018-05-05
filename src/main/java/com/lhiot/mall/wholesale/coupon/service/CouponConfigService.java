@@ -9,8 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.coupon.domain.ActivityCoupon;
 import com.lhiot.mall.wholesale.coupon.domain.CouponConfig;
-import com.lhiot.mall.wholesale.coupon.domain.CouponPlate;
 import com.lhiot.mall.wholesale.coupon.domain.gridparam.CouponGridParam;
 import com.lhiot.mall.wholesale.coupon.mapper.CouponConfigMapper;
 
@@ -88,6 +88,24 @@ public class CouponConfigService {
 		result.setRecords(rows);
 		result.setTotal(totalPages);
 		return result;
+	}
+	
+	/**
+	 * 优惠券配置查询
+	 * @param ids
+	 * @return
+	 */
+	public List<CouponConfig> couponConfigs(List<Long> ids){
+		return couponConfigMapper.search(ids);
+	}
+	
+	/**
+	 * 查询活动配置的优惠券
+	 * @param activityId
+	 * @return
+	 */
+	public List<ActivityCoupon> activityCoupons(Long activityId){
+		return couponConfigMapper.activityCoupon(activityId);
 	}
 }
 

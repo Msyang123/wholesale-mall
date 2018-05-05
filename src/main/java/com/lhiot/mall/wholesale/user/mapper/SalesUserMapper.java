@@ -18,7 +18,7 @@ public interface SalesUserMapper {
 
     SalesUser searchSalesUser(long id);
 
-    SalesUser searchSalesUserCode(String code);
+    SalesUser searchSalesUserByOpenid(String openid);
 
     int insertRelation(SalesUserRelation salesUserRelation);
 

@@ -3,16 +3,12 @@
 <mapper namespace="com.lhiot.mall.wholesale.faq.mapper.FaqMapper">
     <sql id="faqColumn">
         t1.id as id,t1.faq_category_id as faqCategoryId,t1.title as title,t1.content as content,
-        t1.rank_num as rankNum,t1.link_url as linkUrl,DATE_FORMAT(t1.create_time,'%Y-%m-%d %H:%i:%s') as createTime,t1.create_person as createPerson
+        t1.rank_num as rankNum,t1.link_url as linkUrl,DATE_FORMAT(t1.create_time,'%Y-%m-%d %H:%i:%s') as createTime,t1.create_person as createPerson,t1.faq_status as faqStatus
     </sql>
 
     <sql id="faqCategoryColumn">
         t2.faq_category_name as faqCategoryName
     </sql>
-
-    <select id="searchFaqCategory"  resultType="com.lhiot.mall.wholesale.faq.domain.FaqCategory">
-        select * from t_whs_faq_category
-    </select>
 
     <select id="searchFaq"  parameterType="long" resultType="com.lhiot.mall.wholesale.faq.domain.Faq">
         select * from t_whs_faq where faq_category_id=#{0}
@@ -20,9 +16,8 @@
 
     <!-- 根据id查询FAQ信息 -->
     <select id="select" parameterType="long" resultType="com.lhiot.mall.wholesale.faq.domain.Faq">
-        SELECT <include refid="faqColumn"/>,<include refid="faqCategoryColumn"/>
+        SELECT <include refid="faqColumn"/>
         FROM t_whs_faq t1
-        LEFT JOIN t_whs_faq_category t2 on t1.faq_category_id = t2.id
         WHERE t1.id = #{0}
     </select>
 
@@ -31,7 +26,7 @@
         select count(t1.id) from t_whs_faq t1
     </select>
 
-    <!-- 后台管理 分页查询-新品需求表详情 -->
+    <!-- 后台管理 分页查询FAQ表详情 -->
     <select id="pageQuery" parameterType="com.lhiot.mall.wholesale.faq.domain.gridparam.FaqGridParam"
             resultType="com.lhiot.mall.wholesale.faq.domain.Faq">
         select <include refid="faqColumn"/>,<include refid="faqCategoryColumn"/>
@@ -79,6 +74,7 @@
             <if test="linkUrl != null and linkUrl != ''">link_url=#{linkUrl},</if>
             <if test="createTime != null">create_time=#{createTime,jdbcType=TIMESTAMP},</if>
             <if test="createPerson != null and createPerson != ''">create_person=#{createPerson},</if>
+            <if test="faqStatus != null and faqStatus != ''">faq_status=#{faqStatus},</if>
         </trim>
         where id = #{id}
     </update>

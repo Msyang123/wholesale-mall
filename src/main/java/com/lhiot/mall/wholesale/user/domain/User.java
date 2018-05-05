@@ -55,7 +55,7 @@ public class User {
     private String userName;
 
     @JsonProperty("userStatus")
-    private int userStatus;
+    private String userStatus;
 
     @JsonProperty("profilePhoto")
     private String profilePhoto;
@@ -64,10 +64,10 @@ public class User {
     private String supplier;
 
     @JsonProperty("start")
-    private int start;
+    private Integer start;
 
     @JsonProperty("rows")
-    private int rows;
+    private Integer rows;
 
     @JsonProperty("city")
     private String city;

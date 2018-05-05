@@ -1,12 +1,12 @@
 package com.lhiot.mall.wholesale.introduction.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-
 import java.sql.Timestamp;
 
 
@@ -17,10 +17,10 @@ import java.sql.Timestamp;
 @EqualsAndHashCode(callSuper = false)
 public class Introduction {
     @JsonProperty("id")
-    private long id;
+    private Long id;
 
     @JsonProperty("serviceType")
-    private Integer serviceType;
+    private String serviceType;
 
     @JsonProperty("serviceTitle")
     private String serviceTitle;
@@ -29,12 +29,13 @@ public class Introduction {
     private String content;
 
     @JsonProperty("createTime")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Timestamp createTime;
 
     @JsonProperty("createPerson")
     private String createPerson;
 
     @JsonProperty("serviceStatus")
-    private Integer serviceStatus;
+    private String serviceStatus;
 
 }

@@ -19,7 +19,7 @@ import java.util.List;
 public class FaqCategory {
 
     @JsonProperty("id")
-    private long id;
+    private Long id;
 
     @JsonProperty("faqCategoryName")
     private String faqCategoryName;

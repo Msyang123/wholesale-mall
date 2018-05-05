@@ -1,7 +1,6 @@
 package com.lhiot.mall.wholesale.user.api;
 
 import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.util.ImmutableMap;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderParam;
 import com.lhiot.mall.wholesale.order.service.OrderService;
@@ -11,6 +10,7 @@ import com.lhiot.mall.wholesale.user.domain.ShopResult;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
+import com.sgsl.util.ImmutableMap;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -110,7 +110,11 @@ public class SalesUserApi {
         }
         return ResponseEntity.ok(ArrayObject.of(resultList));
     }
-
+    @GetMapping("/detial/{openid}")
+    @ApiOperation(value = "依据openid查询业务员详细信息")
+    public ResponseEntity<SalesUser> detial(@RequestParam("openid") String openid) {
+        return ResponseEntity.ok(salesUserService.searchSalesUserByOpenid(openid));
+    }
     @GetMapping("/login")
     @ApiOperation(value = "业务员账号登陆接口")
     public ResponseEntity salesLogin(@RequestParam String acount,@RequestParam String salesmanPassword){

@@ -5,7 +5,10 @@ import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.base.StringReplaceUtil;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
-import com.lhiot.mall.wholesale.user.domain.*;
+import com.lhiot.mall.wholesale.user.domain.SalesUser;
+import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
+import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import com.lhiot.mall.wholesale.user.mapper.UserMapper;
 import com.sgsl.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +47,10 @@ public class UserService {
         return userMapper.user(id);
     }
 
+    public User searchUserByOpenid(String openid) {
+        return userMapper.searchUserByOpenid(openid);
+    }
+
     public boolean updateUser(User user) {
         return userMapper.updateUser(user) > 0;
     }
@@ -80,7 +87,7 @@ public class UserService {
     }
 
     public boolean register(User user, String code) {
-        SalesUser salesUser = salesUserService.searchSalesUserCode(code);
+        SalesUser salesUser = salesUserService.findCode(code);
         if (Objects.isNull(salesUser)) {
             throw new ServiceException("不是有效的业务员");
         }

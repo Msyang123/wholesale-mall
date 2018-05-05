@@ -88,7 +88,6 @@
                     contact_name,
                     contact_phone,
                     invoice_fee,
-                    invoice_type,
                     invoice_tax,
                     tax_fee,
                     address_area,
@@ -106,7 +105,6 @@
                     #{contactName},
                     #{contactPhone},
                     #{invoiceFee},
-                    #{invoiceType},
                     #{invoiceTax},
                     #{taxFee},
                     #{addressArea},
@@ -135,6 +133,10 @@
     </update>
     <select id="findInvoiceByCode" parameterType="String" resultType="com.lhiot.mall.wholesale.invoice.domain.Invoice">
         select * from t_whs_invoice  where invoice_code=#{0}
+    </select>
+
+    <select id="listByorderCodesLike" parameterType="String" resultType="com.lhiot.mall.wholesale.invoice.domain.Invoice">
+        select * from t_whs_invoice  where invoice_order_ids  like CONCAT('%',#{0},'%')
     </select>
 
     <!--查询发票信息表-->

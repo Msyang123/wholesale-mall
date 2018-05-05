@@ -268,7 +268,7 @@ public class OrderService {
                 for (PaymentLog paymentLog : paymentLogList) {
                     Long pOrderId = paymentLog.getOrderId();
                     if (Objects.equals(orderId, pOrderId)) {
-                        orderGridResult.setPaymentTime(paymentLog.getPaymentTime().toString());
+                        orderGridResult.setPaymentTime(paymentLog.getPaymentTime());
                         break;
                     }
                 }
