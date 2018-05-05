@@ -197,7 +197,7 @@ public class PayService {
      * 微信开票支付签名
      * @return String
      */
-    public String wxInvoicePay(String ipAddress,String openId,int invoiceFee,String userAgent,String invoiceCode,WeChatUtil weChatUtil) throws Exception {
+    public String wxInvoicePay(String ipAddress,String openId,int invoiceFee,String userAgent,String invoiceCode,String attach,WeChatUtil weChatUtil) throws Exception {
         Map<String, Object> ret = new HashMap<>();
         ret.put("state", "failure");
         if (StringUtils.isEmpty(openId)) {
@@ -223,13 +223,13 @@ public class PayService {
         packageParams.put("mch_id", weChatUtil.getProperties().getWeChatPay().getPartnerId());
         packageParams.put("nonce_str", nonce);// 随机串
         packageParams.put("body", "水果熟了 - 批发商城用户开票");// 商品描述
-        packageParams.put("attach", "zz");// 附加数据
+        packageParams.put("attach", attach);// 附加数据
         packageParams.put("out_trade_no", invoiceCode);// 商户订单号
         packageParams.put("total_fee", invoiceFee);// 微信支付金额单位为（分）
         packageParams.put("time_expire", timeExpire);
         packageParams.put("spbill_create_ip", ipAddress);// 订单生成的机器ip
         // IP
-        packageParams.put("notify_url", weChatUtil.getProperties().getWeChatPay().getRechargeNotifyUrl());// 支付完成后微信发给该链接信息，可以判断会员是否支付成功，改变订单状态等。
+        packageParams.put("notify_url", weChatUtil.getProperties().getWeChatPay().getInvoiceNotifyUrl());// 支付完成后微信发给该链接信息，可以判断会员是否支付成功，改变订单状态等。
         packageParams.put("trade_type", "JSAPI");
         packageParams.put("openid", openId);
         String sign = weChatUtil.createSign(weChatUtil.getProperties().getWeChatPay().getPartnerKey(), packageParams); // 获取签名
@@ -299,7 +299,7 @@ public class PayService {
         packageParams.put("time_expire", timeExpire);
         packageParams.put("spbill_create_ip", ipAddress);// 订单生成的机器ip
         // IP
-        packageParams.put("notify_url", weChatUtil.getProperties().getWeChatPay().getRechargeNotifyUrl());// 支付完成后微信发给该链接信息，可以判断会员是否支付成功，改变订单状态等。
+        packageParams.put("notify_url", weChatUtil.getProperties().getWeChatPay().getOrderOfflineNotifyUrl());// 支付完成后微信发给该链接信息，可以判断会员是否支付成功，改变订单状态等。
         packageParams.put("trade_type", "JSAPI");
         packageParams.put("openid", openId);
         String sign = weChatUtil.createSign(weChatUtil.getProperties().getWeChatPay().getPartnerKey(), packageParams); // 获取签名

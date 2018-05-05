@@ -22,6 +22,8 @@ public interface UserMapper {
 
     User user(long id);
 
+    User searchUserByOpenid(String openId);
+
     int updateUser(User user);
 
     int insertAddress(UserAddress userAddress);
