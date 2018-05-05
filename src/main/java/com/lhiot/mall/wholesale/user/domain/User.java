@@ -63,11 +63,11 @@ public class User {
     @JsonProperty("supplier")
     private String supplier;
 
-    @JsonProperty("START")
-    private int START;
+    @JsonProperty("start")
+    private int start;
 
-    @JsonProperty("ROWS")
-    private int ROWS;
+    @JsonProperty("rows")
+    private int rows;
 
     @JsonProperty("city")
     private String city;

@@ -227,7 +227,7 @@ public class UserApi {
         return ResponseEntity.ok("删除成功");
     }
 
-    @GetMapping("/{userId}/addresses1")
+/*    @GetMapping("/{userId}/addresses1")
     @ApiOperation(value = "我的地址列表11111", response = UserAddress.class, responseContainer = "List")
     public ResponseEntity<ArrayObject> userAddresses(@PathVariable("userId") @NotNull long userId) {
         List<UserAddress> addresses = userService.searchAddressList(userId);
@@ -240,7 +240,7 @@ public class UserApi {
             }
         }
         return ResponseEntity.ok(ArrayObject.of(addresses));
-    }
+    }*/
 
     @GetMapping("/{userId}/addresses")
     @ApiOperation(value = "我的地址列表", response = UserAddress.class, responseContainer = "List")
@@ -318,10 +318,10 @@ public class UserApi {
         }
     }
 
-    @GetMapping("/seller/{sellerId}/approved")
+    @GetMapping("/seller/{userId}/approved")
     @ApiOperation("查询是否是审核通过的商户")
-    public ResponseEntity<SalesUserRelation> sellerApproved(@PathVariable("sellerId") @NotNull long sellerId) {
-        return ResponseEntity.ok(salesUserService.isSeller(sellerId));
+    public ResponseEntity<SalesUserRelation> sellerApproved(@PathVariable("userId") @NotNull long userId) {
+        return ResponseEntity.ok(salesUserService.isSeller(userId));
     }
 
 

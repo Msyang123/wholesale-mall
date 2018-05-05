@@ -20,10 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Api(description = "业务员接口")
 @Slf4j
@@ -46,8 +43,8 @@ public class SalesUserApi {
 
     @GetMapping("/{id}/search/{approved}/sellers")
     @ApiOperation(value = "根据业务员ID查询是否审核通过或者未审核的商户")
-    public ResponseEntity<List<User>> isCheck(@PathVariable @NotNull Integer id, @PathVariable Integer approved, @RequestParam Integer page, @RequestParam Integer rows) {
-        Map<String, Object> param = ImmutableMap.of("id", id, "isCheck", approved, "START", (page - 1) * rows, "ROWS", rows);
+    public ResponseEntity<List<User>> isCheck(@PathVariable @NotNull Integer id, @PathVariable String approved, @RequestParam Integer page, @RequestParam Integer rows) {
+        Map<String, Object> param = ImmutableMap.of("id", id, "check", approved, "start", (page - 1) * rows, "rows", rows);
         List<SalesUserRelation> salesUserRelations = salesUserService.selectRelation(param);
         if (salesUserRelations.isEmpty()) {
             return ResponseEntity.ok(new ArrayList<>());
@@ -69,16 +66,15 @@ public class SalesUserApi {
     @GetMapping("/{salesId}/shopInfo")
     @ApiOperation(value = "门店管理")
     public ResponseEntity<ArrayObject> shopInfo(@PathVariable("salesId") Long salesId, @RequestParam Integer dayNum) {
-        List<ShopResult> shopResultList = salesUserService.searchShopInfo(salesId);//查询门店基本信息
-        if(shopResultList.isEmpty()){
-            return ResponseEntity.ok(ArrayObject.of(new ArrayList<ShopResult>()));
+        List<ShopResult> shopResults = salesUserService.searchShopInfo(salesId);//查询门店基本信息
+        if(shopResults.isEmpty()){
+            ResponseEntity.ok(ArrayObject.of(new ArrayList<ShopResult>()));
         }
-        for (ShopResult result:shopResultList){
+        for (ShopResult result:shopResults){
             System.out.println(result.getUserId());
             OrderDetail orderDetail = orderService.lateOneOrder(result.getUserId());//最近一单消费记录
             OrderParam param = new OrderParam();//传参对象
             if (orderDetail!=null){
-                param.setDayNum(dayNum);
                 param.setId(result.getUserId());
                 result.setLateOrdersFee(orderDetail.getPayableFee());//最近一单的消费金额
                 result.setLateTime(orderDetail.getCreateTime());//最近一单的下单时间
@@ -93,9 +89,26 @@ public class SalesUserApi {
             }else{
                 result.setLateOrdersFee(0);//最近一单的消费金额
                 result.setLateTime(null);//最近一单的下单时间
+                result.setOrdersTotalFee(0);//最近下单总金额
+                result.setOrderTotal(0);//订单数
             }
         }
-        return ResponseEntity.ok(ArrayObject.of(shopResultList));
+
+        List<ShopResult> resultList = new ArrayList<ShopResult>();//创建一个未下单的容器
+        if (shopResults.isEmpty()){
+            return ResponseEntity.ok(ArrayObject.of(new ArrayList<ShopResult>()));
+        }
+
+        OrderParam param = new OrderParam();
+        for (ShopResult shopResult:shopResults) {
+            param.setId(shopResult.getUserId());
+            param.setDayNum(dayNum);
+            OrderDetail order = orderService.userOrder(param);
+            if (order==null){
+                resultList.add(shopResult);
+            }
+        }
+        return ResponseEntity.ok(ArrayObject.of(resultList));
     }
 
     @GetMapping("/login")

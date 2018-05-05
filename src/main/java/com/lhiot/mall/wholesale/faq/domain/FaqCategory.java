@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.faq.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
@@ -26,6 +27,7 @@ public class FaqCategory {
     @JsonProperty("faqList")
     private List<Faq> faqList;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @JsonProperty("faqCategoryCreateTime")
     private Timestamp createTime;
 

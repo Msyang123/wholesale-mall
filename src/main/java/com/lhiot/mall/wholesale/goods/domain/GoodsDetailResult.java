@@ -19,7 +19,5 @@ public class GoodsDetailResult {
     @JsonProperty("flash")
     private GoodsFlashsale goodsFlashsale;
 
-    @JsonProperty("extraSrc")
-    private String otherImage;
 
 }

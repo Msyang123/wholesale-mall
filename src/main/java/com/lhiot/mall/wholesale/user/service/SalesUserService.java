@@ -1,6 +1,9 @@
 package com.lhiot.mall.wholesale.user.service;
 
 import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
+import com.lhiot.mall.wholesale.order.domain.OrderParam;
+import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.ShopResult;
@@ -10,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +25,7 @@ public class SalesUserService {
     private final SnowflakeId snowflakeId;
 
     private final SalesUserMapper salesUserMapper;
+
 
     @Autowired
     public SalesUserService(SqlSession sqlSession, SnowflakeId snowflakeId, SalesUserMapper salesUserMapper) {
@@ -96,4 +101,40 @@ public class SalesUserService {
     public SalesUser login(String acount){
         return this.salesUserMapper.login(acount);
     }
+
+    /**
+     * 门店管理信息
+     * @param salesId
+     * @return
+     */
+   /* public List<ShopResult> shopResultList(Long salesId){
+        List<ShopResult> shopResults = salesUserMapper.searchShopInfo(salesId);//查询门店基本信息
+        if(shopResults.isEmpty()){
+            return new ArrayList<ShopResult>();
+        }
+        for (ShopResult result:shopResults){
+            System.out.println(result.getUserId());
+            OrderDetail orderDetail = orderService.lateOneOrder(result.getUserId());//最近一单消费记录
+            OrderParam param = new OrderParam();//传参对象
+            if (orderDetail!=null){
+                param.setId(result.getUserId());
+                result.setLateOrdersFee(orderDetail.getPayableFee());//最近一单的消费金额
+                result.setLateTime(orderDetail.getCreateTime());//最近一单的下单时间
+                List<OrderDetail> orderDetailList = orderService.lateOrders(param);
+                if (orderDetailList.isEmpty()){
+                    result.setOrdersTotalFee(0);//最近下单总金额
+                    result.setOrderTotal(0);//订单数
+                }else{
+                    result.setOrdersTotalFee(orderService.lateOrdersFee(param));//最近下单总金额
+                    result.setOrderTotal(orderDetailList.size());//订单数
+                }
+            }else{
+                result.setLateOrdersFee(0);//最近一单的消费金额
+                result.setLateTime(null);//最近一单的下单时间
+                result.setOrdersTotalFee(0);//最近下单总金额
+                result.setOrderTotal(0);//订单数
+            }
+        }
+        return shopResults;
+    }*/
 }

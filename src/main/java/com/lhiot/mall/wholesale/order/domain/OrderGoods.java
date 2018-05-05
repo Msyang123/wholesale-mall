@@ -25,7 +25,7 @@ public class OrderGoods {
     @JsonProperty("orderId")
     private long orderId;
 
-    @JsonProperty("quanity")
+    @JsonProperty("num")
     private int quanity;
 
     @JsonProperty("price")
@@ -54,9 +54,6 @@ public class OrderGoods {
 
     @JsonProperty("src")
     private String goodsImage;
-
-    @JsonProperty("num")
-    private int number;
 
     @JsonProperty("hdSkuId")
     private String hdSkuId;

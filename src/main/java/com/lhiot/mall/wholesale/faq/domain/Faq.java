@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.faq.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
@@ -34,6 +35,7 @@ public class Faq {
     @JsonProperty("linkUrl")
     private String linkUrl;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @JsonProperty("createTime")
     private Timestamp createTime;
 

@@ -63,7 +63,7 @@
             <if test="addressArea !=null and addressArea !=''">
                 ,address_area=#{addressArea}
             </if>
-            <if test="contactName !=null and contactName !=''">t_whs_invoice
+            <if test="contactName !=null and contactName !=''">
                 ,contact_name=#{contactName}
             </if>
             <if test="contactPhone !=null and contactPhone !=''">

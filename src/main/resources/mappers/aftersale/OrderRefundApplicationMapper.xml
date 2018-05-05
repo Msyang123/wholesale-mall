@@ -50,20 +50,16 @@
         </set>
         where id=#{id}
     </update>
-    <select id="orderRefundApplicationList" parameterType="long"
+    <select id="orderRefundApplicationList" parameterType="java.lang.Long"
             resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
-        select * from t_whs_order_refund_application
-        <where>
-           <if test="userId!=null and userId!=0">
-              and user_id=#{userId}
+        select application_type,exist_problem,other_problem,refund_evidence,audit_status,
+        order_discount_fee,delivery_fee,comments,order_id,user_id
+        from t_whs_order_refund_application
+        <trim prefix="where" prefixOverrides="and">
+           <if test="_parameter!=null and _parameter!=0">
+              and user_id=#{_parameter}
            </if>
-            <if test="orderId!=null and orderId!=0">
-                and  order_id=#{orderId}
-            </if>
-            <if test="id!=null and id!=0">
-                and id=#{id}
-            </if>
-        </where>
+        </trim>
     </select>
 
 </mapper>

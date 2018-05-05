@@ -37,7 +37,7 @@ public interface GoodsMapper {
 
     List<GoodsInfo> inventoryList(long userId);
 
-    List<GoodsInfo> recommendList(long plateId);
+    List<GoodsInfo> recommendList(List<Long> plateIds);
     
     List<Goods> categoryGoods(Long categoryId);
     

@@ -19,13 +19,13 @@ import java.util.List;
 public class OrderRefundApplication {
 
     @JsonProperty("id")
-    private long id;
+    private Long id;
 
-    @JsonProperty("refundType")
-    private int refundType;
+    @JsonProperty("applicationType")
+    private String applicationType;
 
     @JsonProperty("existProblem")
-    private int existProblem;
+    private String existProblem;
 
     @JsonProperty("otherProblem")
     private String otherProblem;
@@ -33,14 +33,11 @@ public class OrderRefundApplication {
     @JsonProperty("refundEvidence")
     private String refundEvidence;
 
-    @JsonProperty("verifyStatus")
-    private int verifyStatus;
-
     @JsonProperty("orderDiscountFee")
-    private int orderDiscountFee;
+    private Integer orderDiscountFee;
 
     @JsonProperty("deliveryFee")
-    private int deliveryFee;
+    private Integer deliveryFee;
 
     @JsonProperty("comments")
     private String comments;
@@ -49,9 +46,12 @@ public class OrderRefundApplication {
     private String orderId;
 
     @JsonProperty("userId")
-    private long userId;
+    private Long userId;
 
     @JsonProperty("orderGoodsList")
     private List<OrderGoods> orderGoodsList;
+
+    @JsonProperty("auditStatus")
+    private String auditStatus;
 
 }

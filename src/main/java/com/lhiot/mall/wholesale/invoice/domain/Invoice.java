@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.invoice.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import io.swagger.annotations.ApiModel;
@@ -60,12 +61,14 @@ public class Invoice {
     @JsonProperty("taxFee")
     private int taxFee;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @JsonProperty("createTime")
     private Timestamp createTime;
 
     @JsonProperty("invoiceStatus")
     private String invoiceStatus;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @JsonProperty("invoicePrintTime")
     private Timestamp invoicePrintTime;
 
@@ -80,4 +83,7 @@ public class Invoice {
 
     @JsonProperty("orderDetail")
     private OrderDetail orderDetail;
+
+    @JsonProperty("orderNumber")
+    private Integer orderNumber;
 }
