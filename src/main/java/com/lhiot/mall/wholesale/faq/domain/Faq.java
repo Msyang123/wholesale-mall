@@ -35,6 +35,7 @@ public class Faq {
     @JsonProperty("linkUrl")
     private String linkUrl;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @JsonProperty("createTime")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Timestamp createTime;

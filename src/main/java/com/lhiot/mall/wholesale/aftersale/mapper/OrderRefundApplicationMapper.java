@@ -8,10 +8,9 @@ import java.util.List;
 @Mapper
 public interface OrderRefundApplicationMapper {
 
-
     int create(OrderRefundApplication orderRefundApplication);
 
     int updateById(OrderRefundApplication orderRefundApplication);
 
-    List<OrderRefundApplication> orderRefundApplicationList(long userId);
+    List<OrderRefundApplication> orderRefundApplicationList(Long userId);
 }

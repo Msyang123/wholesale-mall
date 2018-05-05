@@ -94,4 +94,17 @@ public class OrderDetail {
     @JsonProperty("addressDetail")
     private String addressDetail;
 
+    @JsonProperty("expire")
+    private String expire;//是否已过期 yes no
+
+    @JsonProperty("start")
+    private Integer start;
+
+    @JsonProperty("rows")
+    private Integer rows;
+
+    private String sidx;
+
+    private Integer page;
+
 }

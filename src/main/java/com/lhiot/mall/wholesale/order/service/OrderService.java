@@ -316,4 +316,8 @@ public class OrderService {
         }
         return orderDetail;
     }
+
+    public OrderDetail userOrder(OrderParam orderParam){
+        return orderMapper.userOrder(orderParam);
+    }
 }

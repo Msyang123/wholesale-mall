@@ -1,15 +1,21 @@
 package com.lhiot.mall.wholesale.user.api;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.encoder.QRCode;
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.common.wrapper.ArrayObject;
-import com.lhiot.mall.wholesale.base.QRCodeUtil;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
-import com.lhiot.mall.wholesale.user.domain.*;
+import com.lhiot.mall.wholesale.base.QRCodeUtil;
+import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
+import com.lhiot.mall.wholesale.user.domain.SearchUser;
+import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
 import com.lhiot.mall.wholesale.user.wechat.*;
@@ -221,7 +227,7 @@ public class UserApi {
         return ResponseEntity.ok(token);
     }
 
-    @GetMapping("/wechat/jsapi/ticket")
+    @GetMapping("/weixin/jsapi/ticket")
     @ApiOperation(value = "微信oauth jsapiTicket", response = JsapiTicket.class)
     public ResponseEntity<JsapiPaySign> jsapiTicket(@RequestParam("url") String url)  throws IOException {
         RMapCache<String,Object> cache=  redissonClient.getMapCache("token");
@@ -289,7 +295,7 @@ public class UserApi {
         return ResponseEntity.ok("删除成功");
     }
 
-   /* @GetMapping("/{userId}/addresses1")
+    @GetMapping("/{userId}/addresses1")
     @ApiOperation(value = "我的地址列表11111", response = UserAddress.class, responseContainer = "List")
     public ResponseEntity<ArrayObject> userAddresses(@PathVariable("userId") @NotNull long userId) {
         List<UserAddress> addresses = userService.searchAddressList(userId);
@@ -302,11 +308,11 @@ public class UserApi {
             }
         }
         return ResponseEntity.ok(ArrayObject.of(addresses));
-    }*/
+    }
 
     @GetMapping("/{userId}/addresses")
     @ApiOperation(value = "我的地址列表", response = UserAddress.class, responseContainer = "List")
-    public ResponseEntity<ArrayObject> userAddresses(@PathVariable("userId") @NotNull long userId) {
+    public ResponseEntity<ArrayObject> userAddresses1(@PathVariable("userId") @NotNull long userId) {
         //List<UserAddress> addresses = userService.searchAddressList(userId);
         UserAddress userAddressYes = userService.searchAddressListYes(userId);
         List<UserAddress> userAddressNo = userService.searchAddressListNO(userId);
@@ -338,7 +344,7 @@ public class UserApi {
     }
 
     @PostMapping("/set-default")
-    @ApiOperation("设置默认地址")
+    @ApiOperation("设置默认接口")
     public ResponseEntity setDefault(@RequestBody UserAddress userAddress) {
         if (userService.updateDefault(userAddress)) {
             return ResponseEntity.ok(userAddress);

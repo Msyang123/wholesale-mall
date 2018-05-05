@@ -23,10 +23,10 @@ public class GoodsInfo {
     private Integer price;
 
     @JsonProperty("minPrice")
-    private Integer maxPrice;
+    private Integer minPrice;
 
     @JsonProperty("maxPrice")
-    private Integer minPrice;
+    private Integer maxPrice;
 
     @JsonProperty("unit")
     private String unitName;

@@ -1,11 +1,17 @@
 package com.lhiot.mall.wholesale.coupon.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -241,8 +247,10 @@ public class CouponEntityService {
 			return params;
 		}
 		//将用户id配置优惠券参数中
+		List<CouponEntity> temp = null;
 		for(Long userId : userIds){
-			for(CouponEntity couponEntity : couponEntities){
+			temp = this.cloneList(couponEntities);
+			for(CouponEntity couponEntity : temp){
 				couponEntity.setUserId(userId);
 				params.add(couponEntity);
 			}
@@ -358,5 +366,21 @@ public class CouponEntityService {
 		failureUser = StringUtils.collectionToDelimitedString(failure,",");
 		return failureUser;
 	}
+    
+	/**
+	 * 深度拷贝一个对象
+	 * @param source
+	 * @return
+	 */
+    public List<CouponEntity> cloneList(List<CouponEntity> source){
+    	List<CouponEntity> result = new ArrayList<>();
+    	CouponEntity target = null;
+    	for(CouponEntity coupon : source){
+    		target = new CouponEntity();
+    		BeanUtils.copyProperties(coupon, target);
+    		result.add(target);
+    	}
+    	return result;
+    }
 }
 

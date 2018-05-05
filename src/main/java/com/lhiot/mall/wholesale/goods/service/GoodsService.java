@@ -132,8 +132,9 @@ public class GoodsService {
 		return goodsMapper.inventoryList(userId);
 	}
 
-	public List<GoodsInfo> recommendList(long plateId){
-		return goodsMapper.inventoryList(plateId);
+	public List<GoodsInfo> recommendList(){
+		List<Long> plateIds=plateCategoryService.recommendGoodsId(LayoutType.list);
+		return goodsMapper.recommendList(plateIds);
 	}
 	
 	/**
