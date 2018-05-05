@@ -38,6 +38,9 @@ public class DebtOrder {
     @JsonProperty("checkStatus")
     private String checkStatus;
 
+    @JsonProperty("paymentType")
+    private String paymentType;
+
     @JsonProperty("paymentEvidence")
     private String paymentEvidence;
 

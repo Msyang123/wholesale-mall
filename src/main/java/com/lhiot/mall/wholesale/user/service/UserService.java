@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -119,7 +120,7 @@ public class UserService {
      */
     public User convert(String userStr) throws IOException {
         ObjectMapper om = new ObjectMapper();
-        Map<String,String> wxUserMap=om.readValue(userStr, Map.class);
+        Map<String,Object> wxUserMap=om.readValue(userStr, Map.class);
         //{    "openid":" OPENID",
         // " nickname": NICKNAME,
         // "sex":"1",
@@ -132,28 +133,38 @@ public class UserService {
         // "unionid": "o6_bmasdasdsad6_2sgVt7hMZOPfL"
         //}
         User user=new User();
-        LocalDate currentTime = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyy-MM-dd HH:mm:ss");
-        user.setRegisterTime(formatter.format(currentTime));
+        user.setRegisterTime(new Timestamp(System.currentTimeMillis()));
 
-        String nickname=StringReplaceUtil.replaceByte4(StringReplaceUtil.replaceEmoji(wxUserMap.get("nickname")));
+        String nickname=StringReplaceUtil.replaceByte4(StringReplaceUtil.replaceEmoji(wxUserMap.get("nickname").toString()));
         user.setNickname(nickname);
 
-        user.setSex(wxUserMap.get("sex"));
-        user.setProfilePhoto(wxUserMap.get("headimgurl"));
+
+        String sex=String.valueOf(wxUserMap.get("sex"));
+        switch (sex){
+            case "0":
+                user.setSex("female");
+                break;
+            case "1":
+                user.setSex("male");
+                break;
+            default:
+                user.setSex("unknown");
+                break;
+        }
+
+        user.setProfilePhoto(wxUserMap.get("headimgurl").toString());
 
         String address = wxUserMap.get("country") + " " + wxUserMap.get("province") + " " + wxUserMap.get("city");
         user.setAddressDetail(address);
 
-        String unionid = wxUserMap.get("unionid");
+        String unionid = (String)wxUserMap.get("unionid");
 
         if(StringUtils.isNotBlank(unionid)){
             user.setUnionid(unionid);
         }
+
+        user.setOpenid(String.valueOf(wxUserMap.get("openid")));
         return user;
-    }
-    public List<User> users(String userName) {
-        return userMapper.search(userName);
     }
     
     /**

@@ -7,7 +7,8 @@
     t1.order_ids as orderIds,t1.remarks as remarks
     </sql>
 
-    <insert id="save" parameterType="com.lhiot.mall.wholesale.order.domain.DebtOrder">
+    <insert id="save" parameterType="com.lhiot.mall.wholesale.order.domain.DebtOrder"  useGeneratedKeys="true"
+            keyProperty="id">
         insert into t_whs_debt_order (
                 check_time,
                 order_debt_code,
@@ -24,14 +25,17 @@
     <update id="updateDebtOrderByCode" parameterType="com.lhiot.mall.wholesale.order.domain.DebtOrder">
         update t_whs_debt_order
         <set>
-            <if test="checkStatus != null and checkStatus !=0">
+            <if test="checkStatus != null and checkStatus !=''">
              check_status=#{checkStatus},
             </if>
-            <if test="paymentEvidence != null and paymentEvidence !=0">
+            <if test="paymentEvidence != null and paymentEvidence !=''">
                 payment_evidence=#{paymentEvidence},
             </if>
             <if test="checkTime != null">
                 check_time=#{checkTime},
+            </if>
+            <if test="paymentType != null">
+                payment_type=#{paymentType},
             </if>
         </set>
         where order_debt_code=#{orderDebtCode}
@@ -41,6 +45,12 @@
         select id,check_time,order_debt_code,user_id,create_time,
                 debt_fee,check_status,payment_evidence,order_ids
         from t_whs_debt_order where order_debt_code=#{orderDebtCode}
+    </select>
+
+    <select id="findByOrderIdLike" parameterType="String" resultType="com.lhiot.mall.wholesale.order.domain.DebtOrder">
+        select id,check_time,order_debt_code,user_id,create_time,
+                debt_fee,check_status,payment_evidence,order_ids
+        from t_whs_debt_order where order_ids=CONCAT('%',#{0},'%')
     </select>
 
     <!-- 后台管理 分页查询总数 -->

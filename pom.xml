@@ -74,6 +74,11 @@
             <artifactId>redis-spring-boot-starter</artifactId>
             <version>${microx.version}</version>
         </dependency>
+        <!-- mq -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
         <!-- swagger -->
         <dependency>
             <groupId>com.leon.microx.common</groupId>
