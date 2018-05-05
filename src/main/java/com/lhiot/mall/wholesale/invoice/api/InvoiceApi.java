@@ -87,7 +87,7 @@ public class InvoiceApi {
 
     @GetMapping("/invoice/{invoiceCode}")
     @ApiOperation(value = "开票信息查询")
-    public ResponseEntity applyInvoice(@PathVariable("invoiceCode") String invoiceCode){
+    public ResponseEntity findInvoiceBycode(@PathVariable("invoiceCode") String invoiceCode){
         if(StringUtils.isEmpty(invoiceCode)){
             return ResponseEntity.badRequest().body("请传入发票编码");
         }

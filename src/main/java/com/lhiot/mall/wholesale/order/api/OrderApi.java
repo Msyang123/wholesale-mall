@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.MQDefaults;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
@@ -14,6 +17,7 @@ import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,12 +47,18 @@ public class OrderApi {
     private final SalesUserService salesUserService;
     private final SettingService settingService;
 
+    private final RabbitTemplate rabbit;
+
+    private final SnowflakeId snowflakeId;
+
     @Autowired
-    public OrderApi(OrderService orderService, DebtOrderService debtOrderService, SalesUserService salesUserService, SettingService settingService) {
+    public OrderApi(OrderService orderService, DebtOrderService debtOrderService, SalesUserService salesUserService, SettingService settingService,RabbitTemplate rabbit,SnowflakeId snowflakeId) {
         this.orderService = orderService;
         this.debtOrderService=debtOrderService;
         this.salesUserService=salesUserService;
         this.settingService = settingService;
+        this.rabbit=rabbit;
+        this.snowflakeId=snowflakeId;
     }
 
     @PostMapping("/myOrders/{userId}")
@@ -182,7 +192,7 @@ public class OrderApi {
 
     @PostMapping("/create")
     @ApiOperation(value = "创建订单")
-    public ResponseEntity<Integer> create(@RequestBody OrderDetail orderDetail){
+    public ResponseEntity create(@RequestBody OrderDetail orderDetail) throws JsonProcessingException {
 
         SalesUserRelation salesUserRelation=new SalesUserRelation();
         salesUserRelation.setUserId(orderDetail.getUserId());
@@ -192,18 +202,22 @@ public class OrderApi {
             //设置订单业务员编码
             orderDetail.setSalesmanId(salesUserRelationResult.getSalesmanId());
         }
-        Integer result = orderService.create(orderDetail);
         //FIXME 创建的时候发送创建广播消息 用于优惠券设置无效
-        //fixme mq设置三十分钟失效
+        //FIXME 判断库存 减库存
+        if(Objects.equals(orderDetail.getSettlementType(),"cod")){  //改为枚举
+            orderDetail.setOrderStatus("undelivery");//待收货
+            //FIXME 直接发送总仓
 
-        if(orderDetail.getSettlementType()== ""){  //FIXME 改为枚举 if(orderDetail.getSettlementType()==1){
-            DebtOrder debtOrder=new DebtOrder();
-            //FIXME 需要赋值
-            debtOrderService.create(debtOrder);
-            //FIXME 改为枚举    orderDetail.setOrderStatus(3);//待收货
-            orderDetail.setOrderStatus("");//待收货
+        }else{
+            orderDetail.setOrderStatus("unpaid");//待付款
         }
-        return ResponseEntity.ok(result);
+        //mq设置三十分钟失效
+        rabbit.convertAndSend(MQDefaults.DIRECT_EXCHANGE_NAME, MQDefaults.DLX_QUEUE_NAME, JacksonUtils.toJson(orderDetail), message -> {
+            message.getMessageProperties().setExpiration(String.valueOf(1 * 60 * 1000));
+            return message;
+        });
+        orderService.create(orderDetail);
+        return ResponseEntity.ok(orderDetail);
     }
 
     @PutMapping("/cancel/unpay/{orderCode}")

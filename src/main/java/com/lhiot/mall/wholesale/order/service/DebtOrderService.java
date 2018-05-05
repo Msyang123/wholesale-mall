@@ -51,6 +51,8 @@ public class DebtOrderService {
      */
     public int create(DebtOrder debtOrder){
         //产生欠款账款订单编码
+
+        debtOrder.setCheckStatus("unpaid");//未支付
         debtOrder.setOrderDebtCode(snowflakeId.stringId());
         debtOrder.setCreateTime(new Timestamp(System.currentTimeMillis()));
         debtOrder.setCheckStatus("unpaid");//未提交审核
@@ -74,6 +76,16 @@ public class DebtOrderService {
     public DebtOrder findByCode(String debtOrderCode){
         return debtOrderMapper.findByCode(debtOrderCode);
     }
+
+    /**
+     * 依据订单号模糊查找账款订单
+     * @param orderCode
+     * @return
+     */
+    public DebtOrder findByOrderIdLike(String orderCode){
+        return debtOrderMapper.findByOrderIdLike(orderCode);
+    }
+
 
     /**
      * 后台管理系统--分页查询账款订单信息
