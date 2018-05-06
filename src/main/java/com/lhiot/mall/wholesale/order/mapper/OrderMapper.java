@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.order.mapper;
 
+import com.lhiot.mall.wholesale.faq.domain.FaqCategory;
 import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import org.apache.ibatis.annotations.Mapper;
@@ -12,6 +13,7 @@ public interface OrderMapper {
     List<OrderDetail> searchOrders(OrderDetail orderDetail);
 
     List<OrderDetail> searchOrdersByOrderCodes(List<String> orderCodes);
+
     List<OrderGoods> searchOrderGoods(long orderId);
 
     String searchOutstandingAccountsOrder(String orderCode);
@@ -20,6 +22,8 @@ public interface OrderMapper {
 
     OrderDetail searchOrderById(long orderId);
 
+
+    OrderDetail select(long id);
     /**
      * 后台管理--分页查询订单
      * @param param
@@ -68,7 +72,9 @@ public interface OrderMapper {
 
     Integer lateOrdersFee(OrderParam orderParam);
 
-    OrderDetail select(long id);
-
-
+    /**
+     * 后台管理--查询订单状态、支付状态、支付类型
+     * @return
+     */
+    List<OrderStatusResult> searchOrderStatus();
 }

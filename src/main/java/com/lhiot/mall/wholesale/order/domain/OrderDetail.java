@@ -79,6 +79,7 @@ public class OrderDetail {
     @JsonProperty("proList")
     private List<OrderGoods> orderGoodsList;
 
+    //后台管理系统 所需用户信息
     @JsonProperty("shopName")
     private String shopName;
 
@@ -93,5 +94,14 @@ public class OrderDetail {
 
     @JsonProperty("addressDetail")
     private String addressDetail;
+
+    //后台管理系统 所需订单信息
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonProperty("paymentTime")
+    private Timestamp paymentTime;
+
+    //后台管理系统 所需业务员信息
+    @JsonProperty("salesmanName")
+    private String salesmanName;
 
 }

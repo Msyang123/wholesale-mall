@@ -10,6 +10,7 @@ import java.util.Objects;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.faq.domain.FaqCategory;
 import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
@@ -242,8 +243,15 @@ public class OrderApi {
 
     @GetMapping("/detail/{id}")
     @ApiOperation(value = "后台管理-根据订单id查看订单详情",response = OrderGridResult.class)
-    public  ResponseEntity<OrderDetail> demandGoodsDetail(@PathVariable("id") Long id){
+    public  ResponseEntity<OrderDetail> detail(@PathVariable("id") Long id){
         return ResponseEntity.ok(orderService.detail(id));
+    }
+
+    @GetMapping("/orderstatus")
+    @ApiOperation(value = "后台管理系统----查询订单状态、支付类型、支付状态")
+    public ResponseEntity<List<OrderStatusResult>> searchOrderStatus() {
+        List<OrderStatusResult> orderStatusResultList = orderService.searchOrderStatus();
+        return ResponseEntity.ok(orderStatusResultList);
     }
 
 }

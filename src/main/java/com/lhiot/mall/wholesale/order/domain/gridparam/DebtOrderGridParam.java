@@ -26,6 +26,12 @@ public class DebtOrderGridParam extends PageObject{
     @JsonProperty("checkStatus")
     private String checkStatus;
 
+    @JsonProperty("createTimeBegin")
+    private String createTimeBegin;
+
+    @JsonProperty("createTimeEnd")
+    private String createTimeEnd;
+
     @ApiModelProperty(notes="分页查询开始页面",dataType="Integer")
     private Integer start;
 

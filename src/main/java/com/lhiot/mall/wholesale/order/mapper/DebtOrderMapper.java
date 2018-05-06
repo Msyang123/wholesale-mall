@@ -55,5 +55,5 @@ public interface DebtOrderMapper {
      * @param id
      * @return
      */
-    DebtOrderResult select(long id);
+    DebtOrderResult searchDebtOrderById(long id);
 }

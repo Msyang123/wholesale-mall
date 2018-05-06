@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.order.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
@@ -18,25 +19,30 @@ import java.util.List;
 public class DebtOrder {
 
     @JsonProperty("id")
-    private long id;
+    private Long id;
 
     @JsonProperty("checkTime")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Timestamp checkTime;
 
     @JsonProperty("orderDebtCode")
     private String orderDebtCode;
 
     @JsonProperty("userId")
-    private long userId;
+    private Long userId;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @JsonProperty("createTime")
     private Timestamp createTime;
 
     @JsonProperty("debtFee")
-    private int debtFee;
+    private Integer debtFee;
 
     @JsonProperty("checkStatus")
     private String checkStatus;
+
+    @JsonProperty("paymentType")
+    private String paymentType;
 
     @JsonProperty("paymentEvidence")
     private String paymentEvidence;

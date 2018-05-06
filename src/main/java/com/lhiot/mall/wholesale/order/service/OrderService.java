@@ -9,14 +9,12 @@ import java.util.Objects;
 
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.domain.OrderParam;
-import com.lhiot.mall.wholesale.base.DataMergeUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.demand.domain.DemandGoods;
-import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
-import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
+import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,6 +39,8 @@ public class OrderService {
 
     private final UserService userService;
 
+    private final SalesUserService salesUserService;
+
     private final HaiDingClient hdClient;
 
     private final WeChatUtil weChatUtil;
@@ -50,10 +50,11 @@ public class OrderService {
     private final SnowflakeId snowflakeId;
 
     @Autowired
-    public OrderService(OrderMapper orderMapper, UserService userService, HaiDingClient hdClient, PaymentLogService paymentLogService,
+    public OrderService(OrderMapper orderMapper, UserService userService, SalesUserService salesUserService, HaiDingClient hdClient, PaymentLogService paymentLogService,
                         PaymentProperties paymentProperties, SnowflakeId snowflakeId) {
         this.orderMapper = orderMapper;
         this.userService = userService;
+        this.salesUserService = salesUserService;
         this.hdClient=hdClient;
         this.weChatUtil=new WeChatUtil(paymentProperties);
         this.paymentLogService=paymentLogService;
@@ -257,7 +258,6 @@ public class OrderService {
                         orderGridResult.setPhone(user.getPhone());
                         orderGridResult.setShopName(user.getShopName());
                         orderGridResult.setUserName(user.getUserName());
-                        orderGridResult.setCreateTime(orderGridResult.getCreateTime().toString());
                         break;
                     }
                 }
@@ -302,16 +302,39 @@ public class OrderService {
      */
     public OrderDetail detail(Long id) {
         //账款订单详情信息
-        OrderDetail orderDetail = orderMapper.select(id);
+        OrderDetail orderDetail = orderMapper.searchOrderById(id);
         if (Objects.nonNull(orderDetail)) {
-            User user = userService.user(orderDetail.getUserId()); //用户信息
+            //用户信息
+            User user = userService.user(orderDetail.getUserId());
             if (Objects.nonNull(user)) {
                 orderDetail.setShopName(user.getShopName());
                 orderDetail.setUserName(user.getUserName());
                 orderDetail.setPhone(user.getPhone());
                 orderDetail.setAddressDetail(user.getAddressDetail());
             }
+            //支付信息
+            PaymentLog paymentLog = paymentLogService.getPaymentLog(orderDetail.getOrderCode());
+            if (Objects.nonNull(paymentLog)) {
+                orderDetail.setPaymentTime(paymentLog.getPaymentTime());
+            }
+            //业务员信息
+            SalesUser salesUser = salesUserService.findById(orderDetail.getSalesmanId());
+            if (Objects.nonNull(salesUser)) {
+                orderDetail.setSalesmanName(salesUser.getSalesmanName());
+            }
+            //商品信息
+            List<OrderGoods> orderGoods = orderMapper.searchOrderGoods(orderDetail.getId());
+            if (Objects.nonNull(orderGoods)) {
+                orderDetail.setOrderGoodsList(orderGoods);
+            }
         }
         return orderDetail;
+    }
+    /**
+     * 后台管理--查询订单状态、支付状态、支付类型
+     * @return
+     */
+    public List<OrderStatusResult> searchOrderStatus() {
+        return orderMapper.searchOrderStatus();
     }
 }
