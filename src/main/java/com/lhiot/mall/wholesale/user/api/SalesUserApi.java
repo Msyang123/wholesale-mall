@@ -1,6 +1,9 @@
 package com.lhiot.mall.wholesale.user.api;
 
 import com.leon.microx.common.wrapper.ArrayObject;
+import com.lhiot.mall.wholesale.coupon.domain.CouponConfig;
+import com.lhiot.mall.wholesale.coupon.domain.ReleaseCouponParam;
+import com.lhiot.mall.wholesale.coupon.service.CouponConfigService;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderParam;
 import com.lhiot.mall.wholesale.order.service.OrderService;
@@ -14,12 +17,15 @@ import com.sgsl.util.ImmutableMap;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.WebResource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.NotNull;
-import java.sql.Timestamp;
 import java.util.*;
 
 @Api(description = "业务员接口")
@@ -34,11 +40,17 @@ public class SalesUserApi {
 
     private final OrderService orderService;
 
+    private final CouponConfigService couponConfigService;
+
     @Autowired
-    public SalesUserApi(SalesUserService salesUserService, UserService userService, OrderService orderService) {
+    private RestTemplate restTemplate;
+
+    @Autowired
+    public SalesUserApi(SalesUserService salesUserService, UserService userService, OrderService orderService, CouponConfigService couponConfigService) {
         this.salesUserService = salesUserService;
         this.userService = userService;
         this.orderService = orderService;
+        this.couponConfigService = couponConfigService;
     }
 
     @GetMapping("/{id}/search/{approved}/sellers")
@@ -110,11 +122,13 @@ public class SalesUserApi {
         }
         return ResponseEntity.ok(ArrayObject.of(resultList));
     }
+
     @GetMapping("/detial/{openid}")
     @ApiOperation(value = "依据openid查询业务员详细信息")
     public ResponseEntity<SalesUser> detial(@RequestParam("openid") String openid) {
         return ResponseEntity.ok(salesUserService.searchSalesUserByOpenid(openid));
     }
+
     @GetMapping("/login")
     @ApiOperation(value = "业务员账号登陆接口")
     public ResponseEntity salesLogin(@RequestParam String acount,@RequestParam String salesmanPassword){
@@ -136,6 +150,33 @@ public class SalesUserApi {
             return ResponseEntity.ok(new SalesUser());
         }
         return ResponseEntity.ok(salesUser);
+    }
+    @PostMapping("/check/{salesId}/{userId}")
+    @ApiOperation(value = "业务员门店审核")
+    public ResponseEntity check(@PathVariable("salesId")Long salesId,@PathVariable("userId") Long userId,@RequestParam String checkStatus){
+       SalesUserRelation salesUserRelation = new SalesUserRelation();
+       salesUserRelation.setAuditStatus(checkStatus);
+       salesUserRelation.setUserId(userId);
+       salesUserRelation.setSalesmanId(salesId);
+            if (Objects.equals(salesUserRelation.getAuditStatus(),"yes")){
+                if (salesUserService.updateUserSaleRelationship(salesUserRelation)>0){//关系表改状态
+                    if (userService.updateUserStatus(salesUserRelation.getUserId())>0){//用户表改已认证或未认证
+                        StringBuilder ids = new StringBuilder();//夺取券包IDs
+                        List<CouponConfig> configs = couponConfigService.couponConfig("activity");
+                        for (CouponConfig coupon:configs) {
+                            ids.append(coupon.getId()).append(",");
+                        }
+                        System.out.println(ids.substring(0,ids.length()-1));
+                       /* Map<String,Object> param = new HashMap<String,Object>();
+                        param.put("couponConfigIds",ids.substring(0,ids.length()-1));
+                        param.put("phone",userService.user(userId).getPhone());
+                        Object o =restTemplate.exchange("http://localhost:3051/coupon", HttpMethod.POST, new HttpEntity<>(param), String.class);
+                        System.out.println(o.toString()+" =================================");*/
+                    }
+                }
+            }
+
+        return ResponseEntity.ok("");
     }
 
 

@@ -23,8 +23,8 @@
     </select>
 
     <update id="updateUserSaleRelationship" parameterType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation">
-        UPDATE t_whs_salesuser_relation set  check = #{check}
-        where user_id=#{userId}
+        UPDATE t_whs_salesuser_relation set  audit_status = #{auditStatus}
+        where user_id=#{userId} and salesman_id=#{salesmanId}
     </update>
 
     <!-- 添加一条商户与业务员关联未审核的数据 -->
