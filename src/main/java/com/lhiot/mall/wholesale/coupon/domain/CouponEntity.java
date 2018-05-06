@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.coupon.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModel;
@@ -52,4 +53,8 @@ public class CouponEntity {
 	
 	@ApiModelProperty(notes="是否可用",dataType="Boolean")
 	private Boolean isValidate = false;
+	
+	@JsonIgnore
+	@ApiModelProperty(notes="有效天数",dataType="Integer")
+	private Integer vaildDays;
 }

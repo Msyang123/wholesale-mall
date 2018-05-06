@@ -2,6 +2,7 @@ package com.lhiot.mall.wholesale.order.service;
 
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -91,6 +92,7 @@ public class OrderService {
     public int create(OrderDetail orderDetail){
         //产生订单编码
         orderDetail.setOrderCode(snowflakeId.stringId());
+        orderDetail.setCreateTime(new Timestamp(System.currentTimeMillis()));
         orderMapper.save(orderDetail);
         //将保存的订单id赋值到订单商品中
         orderDetail.getOrderGoodsList().forEach(item->{
@@ -336,5 +338,9 @@ public class OrderService {
      */
     public List<OrderStatusResult> searchOrderStatus() {
         return orderMapper.searchOrderStatus();
+    }
+
+    public OrderDetail userOrder(OrderParam orderParam){
+        return orderMapper.userOrder(orderParam);
     }
 }

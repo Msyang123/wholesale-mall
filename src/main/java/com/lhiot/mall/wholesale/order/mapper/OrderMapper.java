@@ -22,8 +22,6 @@ public interface OrderMapper {
 
     OrderDetail searchOrderById(long orderId);
 
-
-    OrderDetail select(long id);
     /**
      * 后台管理--分页查询订单
      * @param param
@@ -71,6 +69,11 @@ public interface OrderMapper {
     OrderDetail lateOneOrder(long userId);
 
     Integer lateOrdersFee(OrderParam orderParam);
+
+    OrderDetail select(long id);
+
+    OrderDetail userOrder(OrderParam orderParam);
+
 
     /**
      * 后台管理--查询订单状态、支付状态、支付类型

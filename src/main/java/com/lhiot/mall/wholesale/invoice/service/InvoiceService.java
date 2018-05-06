@@ -61,6 +61,16 @@ public class InvoiceService {
     }
 
     /**
+     * 依据订单code模糊查询发票信息
+     * @param orderCode
+     * @return
+     */
+    public Invoice listByorderCodesLike(String orderCode){
+        return invoiceMapper.listByorderCodesLike(orderCode);
+    }
+
+
+    /**
      * 修改发票信息
      * @param invoice
      * @return

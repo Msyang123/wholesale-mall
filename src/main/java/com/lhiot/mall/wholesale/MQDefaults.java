@@ -1,11 +1,13 @@
 package com.lhiot.mall.wholesale;
 
 public interface MQDefaults {
-    String CONFIG_PREFIX = "message-queue";
 
-    String DELAY_EXCHANGE_NAME = "delay.direct.exchange";
+    String DIRECT_EXCHANGE_NAME = "direct-exchange";//延迟队列信道
 
-    String MATCH_EXCHANGE_NAME = "match.direct.exchange";
+    String DLX_QUEUE_NAME = "dlx-queue";//延迟队列队列名
+
+    String REPEAT_QUEUE_NAME ="repeat-queue";//转发队列队列名
+
 
     /**
      * 是否持久化

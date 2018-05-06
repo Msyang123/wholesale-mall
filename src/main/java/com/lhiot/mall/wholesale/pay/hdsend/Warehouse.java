@@ -1,8 +1,12 @@
 package com.lhiot.mall.wholesale.pay.hdsend;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sgsl.hd.autoconfigure.HaiDingProperties;
 import com.sgsl.util.IOUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -15,9 +19,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+@Service
+@Slf4j
 public class Warehouse {
-    //222.240.36.154:7280
-    String h4rest="http://172.16.10.109:7280/h4rest-server/rest/h5rest-server/core";
+
+    @Autowired
+    private HaiDingProperties properties;
+    //String h4rest="http://172.16.10.109:7280/h4rest-server/rest/h5rest-server/core";
 
     private static final Charset charset = Charset.forName("UTF-8");
     private String apiUser="test01",apiPass="AePq88kJbleNGUDT";
@@ -32,7 +40,7 @@ public class Warehouse {
     public String h4Request(String method,String api,String data) throws Exception {
         Authenticator.setDefault(
                 new MyAuthenticator());
-        URL url = new URL(h4rest+api);
+        URL url = new URL(properties.getH4rest()+api);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod(method.toUpperCase());
         connection.setDoOutput(true);

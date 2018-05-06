@@ -34,7 +34,7 @@ public class User {
 
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @JsonProperty("registerTime")
-    private String registerTime;
+    private Timestamp registerTime;
 
     @JsonProperty("nickname")
     private String nickname;
@@ -54,7 +54,7 @@ public class User {
     @JsonProperty("userName")
     private String userName;
 
-    @JsonProperty("user_status")
+    @JsonProperty("userStatus")
     private String userStatus;
 
     @JsonProperty("profilePhoto")

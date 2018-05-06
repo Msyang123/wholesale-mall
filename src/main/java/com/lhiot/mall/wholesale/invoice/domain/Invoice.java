@@ -68,6 +68,7 @@ public class Invoice {
     @JsonProperty("invoiceStatus")
     private String invoiceStatus;
 
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @JsonProperty("invoicePrintTime")
     private Timestamp invoicePrintTime;
 
@@ -86,4 +87,6 @@ public class Invoice {
     @JsonProperty("rejectReason")
     private String rejectReason;
 
+    @JsonProperty("orderNumber")
+    private Integer orderNumber;
 }

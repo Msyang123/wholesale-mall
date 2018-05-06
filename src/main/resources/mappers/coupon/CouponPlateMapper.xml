@@ -8,18 +8,18 @@
 	</sql>
 	
 	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.coupon.domain.CouponPlate">
-		select <include refid="CouponPlateColumn"/> from t_coupon_plate where id = #{0}
+		select <include refid="CouponPlateColumn"/> from t_whs_coupon_plate where id = #{0}
 	</select>
 	
 	<!-- lynn 2018/4/19根据 新增-->
 	<insert id="insert" parameterType="com.lhiot.mall.wholesale.coupon.domain.CouponPlate">
-		insert into t_coupon_plate (coupon_name,coupon_fee,full_fee,coupon_type,vaild)
+		insert into t_whs_coupon_plate (coupon_name,coupon_fee,full_fee,coupon_type,vaild)
 		values(#{couponName},#{couponFee},#{fullFee},#{couponType},#{vaildInt})
 	</insert>
 	
 	<!-- lynn 2018/4/19根据 修改数量 -->
 	<update id="update" parameterType="com.lhiot.mall.wholesale.coupon.domain.CouponPlate">
-		update t_coupon_plate 
+		update t_whs_coupon_plate 
 		<trim prefix="set" suffixOverrides=",">
 			<if test="couponName != null and couponName != ''">coupon_name=#{couponName},</if>
 			<if test="couponFee != null and couponFee != ''">coupon_fee=#{couponFee},</if>
@@ -32,7 +32,7 @@
 	
 	<!-- lynn 2018/4/19根据商品id 删除商品 -->
 	<delete id="removeInbatch" parameterType="java.util.List">
-		delete from t_coupon_plate where id in
+		delete from t_whs_coupon_plate where id in
 		<foreach collection="list" item = "item" open="(" separator="," close=")">
 			#{item}
 		</foreach>
@@ -41,7 +41,7 @@
 	<!-- lynn后台管理 分页查询2018/4/19 -->
 	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.coupon.domain.gridparam.CouponGridParam" 
 		resultType="Integer">
-		select count(id) from t_coupon_plate 
+		select count(id) from t_whs_coupon_plate 
 		<trim prefix="where" prefixOverrides="and">
 			<if test="couponName != null and couponName != ''"> 
 				and coupon_name like concat('%',#{couponName},'%')
@@ -54,7 +54,7 @@
 	<!-- lynn后台管理 分页查询2018/4/19 -->
 	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.coupon.domain.gridparam.CouponGridParam" 
 		resultType="com.lhiot.mall.wholesale.coupon.domain.CouponPlate">
-		select <include refid="CouponPlateColumn"/> from t_coupon_plate
+		select <include refid="CouponPlateColumn"/> from t_whs_coupon_plate
 		<trim prefix="where" prefixOverrides="and">
 			<if test="couponName != null and couponName != ''"> 
 				and coupon_name like concat('%',#{couponName},'%')

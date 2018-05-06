@@ -15,7 +15,7 @@
    <select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.coupon.domain.CouponConfig">
 		select <include refid="CouponConfigColumn"/>,<include refid="CouponPlateColumn"/>
 		from t_whs_coupon_config t1
-		left join t_coupon_plate t2 on t1.coupon_id = t2.id
+		left join t_whs_coupon_plate t2 on t1.coupon_id = t2.id
 		where t1.id = #{0}
 	</select> 
 	
@@ -71,5 +71,40 @@
 			<if test="couponType != null and couponType != ''">and coupon_type=#{couponType}</if>
 		</trim>
 		<include refid="common.pager"></include>
+	</select>
+	
+	<!-- lynn18/05/04 批量查询优惠券信息 -->
+	<select id="search" parameterType="java.util.List" 
+		resultType="com.lhiot.mall.wholesale.coupon.domain.CouponConfig">
+		select <include refid="CouponConfigColumn"/>,<include refid="CouponPlateColumn"/>
+		from t_whs_coupon_config t1
+		left join t_whs_coupon_plate t2 on t1.coupon_id = t2.id
+		<trim prefix="where" prefixOverrides="and">
+			<if test="_parameter != null">
+				t1.id in
+				<foreach collection="list" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+			and 1=1
+		</trim>
+	</select>
+	
+	<!-- lynn活动优惠券查询 -->
+	<select id="activityCoupon" parameterType="Long" 
+		resultType="com.lhiot.mall.wholesale.coupon.domain.ActivityCoupon">
+		select t1.id,t1.coupon_config_id as couponConfigId,t1.reward_amount as rewardAmount,
+		t2.vaild_days as vaildDays,
+		t3.coupon_fee as couponFee,t3.full_fee as fullFee
+		from t_whs_reward_config t1
+		LEFT JOIN t_whs_coupon_config t2 ON t1.coupon_config_id = t2.id
+		LEFT JOIN t_whs_coupon_plate t3 ON t2.coupon_id = t3.id
+		where t1.activity_id = #{0}
+	</select>
+
+	<!-- 活动优惠券配置查询 -->
+	<select id="couponConfig" parameterType="String"
+			resultType="com.lhiot.mall.wholesale.coupon.domain.CouponConfig">
+		select * from t_whs_coupon_config where coupon_type=#{couponType}
 	</select>
 </mapper>

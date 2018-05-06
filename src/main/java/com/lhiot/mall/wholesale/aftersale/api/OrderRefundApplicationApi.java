@@ -19,7 +19,7 @@ import java.util.List;
 @Api(description = "订单售后接口")
 @Slf4j
 @RestController
-@RequestMapping("/aftersale")
+@RequestMapping("/after-sale")
 public class OrderRefundApplicationApi {
 
     private final OrderRefundApplicationService orderRefundApplicationService;
@@ -44,9 +44,9 @@ public class OrderRefundApplicationApi {
         return ResponseEntity.ok(orderRefundApplicationService.updateById(orderRefundApplication));
     }
 
-    @PostMapping("/list/{userId}")
+    @GetMapping("/list/{userId}")
     @ApiOperation(value = "售后申请列表")
-    public ResponseEntity<ArrayObject> orderRefundApplicationList(@PathVariable long userId) {
+    public ResponseEntity<ArrayObject> orderRefundApplicationList(@PathVariable("userId") Long userId) {
         List<OrderRefundApplication> orderRefundApplicationList = orderRefundApplicationService.orderRefundApplicationList(userId);
         for (OrderRefundApplication orderRefund : orderRefundApplicationList) {
             OrderDetail orderDetail = orderService.searchOrder(orderRefund.getOrderId());

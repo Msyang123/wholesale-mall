@@ -12,10 +12,7 @@ import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.base.QRCodeUtil;
-import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
-import com.lhiot.mall.wholesale.user.domain.SearchUser;
-import com.lhiot.mall.wholesale.user.domain.User;
-import com.lhiot.mall.wholesale.user.domain.UserAddress;
+import com.lhiot.mall.wholesale.user.domain.*;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
 import com.lhiot.mall.wholesale.user.wechat.*;
@@ -24,6 +21,8 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RMapCache;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
@@ -35,16 +34,15 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.sql.Timestamp;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Api(description ="用户接口")
 @Slf4j
@@ -60,12 +58,15 @@ public class UserApi {
 
     private final RestTemplate restTemplate;
 
+    private final RedissonClient redissonClient;
+
     @Autowired
-    public UserApi(UserService userService,SalesUserService salesUserService,PaymentProperties properties,RestTemplate restTemplate) {
+    public UserApi(UserService userService, SalesUserService salesUserService, PaymentProperties properties, RestTemplate restTemplate, RedissonClient redissonClient) {
         this.userService = userService;
         this.salesUserService = salesUserService;
         this.weChatUtil = new WeChatUtil(properties);
         this.restTemplate=restTemplate;
+        this.redissonClient = redissonClient;
     }
 
     /*@PostMapping("/user")
@@ -100,93 +101,157 @@ public class UserApi {
         return ResponseEntity.ok(userService.user(id));
     }
 
-    @PostMapping("/search")
+    /*@PostMapping("/search")
     @ApiOperation(value = "新建一个查询，用于返回用户列表", response = User.class, responseContainer = "List")
     public ResponseEntity<List<User>> search(@RequestBody(required = false) SearchUser param) {
         return ResponseEntity.ok(userService.users(param.getLikeName()));
-    }
+    }*/
     /***********************************************微信授权登录***********************************************/
 
-    //第一步
-    @GetMapping("/weixin/login")
+    //第一步 userType 0商户 1业务员
+    @GetMapping("/wechat/login")
     @ApiOperation(value = "微信oauth鉴权登录 获取authorize url用于前端跳转", response = String.class)
-    public ResponseEntity<String> weixinLogin(@RequestParam("uri") String uri) throws UnsupportedEncodingException {
+    public ResponseEntity<String> weixinLogin(@RequestParam("uri") String uri,@RequestParam("userType") String userType) throws UnsupportedEncodingException {
         String requestUrl = MessageFormat.format(weChatUtil.OAUTH2_URL, weChatUtil.getProperties().getWeChatOauth().getAppId(),
-                URLEncoder.encode(weChatUtil.getProperties().getWeChatOauth().getAppRedirectUri(),"UTF-8"),"snsapi_userinfo",uri);
+                URLEncoder.encode(weChatUtil.getProperties().getWeChatOauth().getAppRedirectUri(),"UTF-8"),"snsapi_userinfo",uri+"|"+userType);
         return ResponseEntity.ok(requestUrl);
     }
-    private static Map<String,AccessToken> wxSignleUserMap=new HashMap<String,AccessToken>();
-    private static Map<String,String> wxRefreshTokenMap=new HashMap<String,String>();
     //通过code换取网页授权access_token
-    @GetMapping("/weixin/authorize")
+    @GetMapping("/wechat/authorize")
     @ApiOperation(value = "微信oauth鉴权登录 authorize back之后处理业务", response = String.class)
     public void weixinAuthorize(HttpServletRequest request,HttpServletResponse response) throws IOException{
         Map<String,String> resultMap= paramsToMap(request);
         String code=resultMap.get("code");
-        String clientUri=resultMap.get("state");
-        log.info("clientUri:"+clientUri);
+        String state=resultMap.get("state");
+        String[] states=state.split("\\|");
+        String clientUri=states[0];
+        String userType=states[1];
+        log.info("state:"+state);
         AccessToken accessToken=weChatUtil.getAccessTokenByCode(weChatUtil.getProperties().getWeChatOauth().getAppId(),weChatUtil.getProperties().getWeChatOauth().getAppSecret(),code);
         log.info("weixinAuthorize:"+accessToken);
         //判断是否在数据库中存在此记录，如果存在直接登录，否则就注册用户微信信息
-        //需要将access_token(2小时) 和 refresh_token （1个月）做为session缓存起来
 
-        //以加密openId做为redis key
-        wxSignleUserMap.put(accessToken.getOpenId(),accessToken);
-        //FIXME redis缓存 refresh_token一个月
-        wxRefreshTokenMap.put(accessToken.getOpenId(),accessToken.getRefreshToken());
+
+        RMapCache<String,String> cache=  redissonClient.getMapCache("userToken");
+        //将access_token(2小时) 缓存起来
+        cache.put("accessToken"+accessToken.getOpenId(),accessToken.getAccessToken(),2, TimeUnit.HOURS);
+        //redis缓存 refresh_token一个月
+        cache.put("refreshToken"+accessToken.getOpenId(),accessToken.getRefreshToken(),30, TimeUnit.DAYS);
+
         //如果用户存在就不做处理 否则插入数据库
         if(clientUri.indexOf("?")!=-1){
-            clientUri=clientUri+"&openid="+accessToken.getOpenId();
+            clientUri=accessToken.getOpenId()+"?userType="+userType+"&clientUri="+clientUri;
         }else{
-            clientUri=clientUri+"?openid="+accessToken.getOpenId();
+            clientUri=accessToken.getOpenId()+"?userType="+userType+"&clientUri="+clientUri;
         }
-        List<User> users= userService.users(accessToken.getOpenId());
-        if(users.size()>0){
-            //检查手机号等相关信息用于判断是否需要设置手机号等
-            User findUser= users.get(0);
-            //return ResponseEntity.ok("{'openid':"+accessToken.getOpenId()+"}");
-            response.sendRedirect(weChatUtil.getProperties().getWeChatOauth().getClientRedirectUrl()+clientUri);
+        if(Objects.equals("0",userType)){
+            //商户
+            User searchUser= userService.searchUserByOpenid(accessToken.getOpenId());
+            if(searchUser==null){
+                //写入数据库中
+                String weixinUserInfo=weChatUtil.getOauth2UserInfo(accessToken.getOpenId(),accessToken.getAccessToken());
+                User user=userService.convert(weixinUserInfo);
+                userService.save(user);
+            }
+            log.info("商户sendRedirect:"+weChatUtil.getProperties().getWeChatOauth().getAppFrontUri()+clientUri);
+            response.sendRedirect(weChatUtil.getProperties().getWeChatOauth().getAppFrontUri()+clientUri);
+            return;
+        }else{
+            //业务员
+            /*SalesUser salesUser= salesUserService.searchSalesUserByOpenid(accessToken.getOpenId());
+            if(Objects.isNull(salesUser)){
+                //写入数据库中
+                String weixinUserInfo=weChatUtil.getOauth2UserInfo(accessToken.getOpenId(),accessToken.getAccessToken());
+                //转换微信用户信息
+                User user=userService.convert(weixinUserInfo);
+                salesUser=new SalesUser();
+                salesUser.setOpenId(user.getOpenid());
+                salesUser.setSalesmanHeadImage(user.getProfilePhoto());
+                salesUser.setCreateAt(new Timestamp(System.currentTimeMillis()));
+                salesUser.setSalesmanName(user.getNickname());
+                salesUserService.create(salesUser);
+            }*/
+            log.info("业务员sendRedirect:"+weChatUtil.getProperties().getWeChatOauth().getAppFrontUri()+clientUri);
+            response.sendRedirect(weChatUtil.getProperties().getWeChatOauth().getAppFrontUri()+clientUri);
             return;
         }
-        //写入数据库中
-        String weixinUserInfo=weChatUtil.getOauth2UserInfo(accessToken.getOpenId(),accessToken.getAccessToken());
-        User user=userService.convert(weixinUserInfo);
-        userService.save(user);
-        response.sendRedirect(weChatUtil.getProperties().getWeChatOauth().getClientRedirectUrl()+clientUri);
-        return;
     }
 
-    @GetMapping("/weixin/detial")
-    @ApiOperation(value = "微信 通过openId获取用户详细信息", response = User.class)
-    public ResponseEntity getWxUserDetial(@PathVariable String openIdAfterMd5 ) throws IOException {
-        AccessToken accessToken=wxSignleUserMap.get(openIdAfterMd5);
-        //FIXME 如果不存在说明redis缓存时间已经到达，需要通过调用weChatUtil.refreshAccessToken()获取
-        if(accessToken==null){
-            String refreshToken=String.valueOf(wxRefreshTokenMap.get(openIdAfterMd5));
+    @GetMapping("/wechat/detial/{openid}")
+    @ApiOperation(value = "微信 通过openId获取商户详细信息", response = User.class)
+    public ResponseEntity detial(@PathVariable("openid") String openid ) throws IOException {
+        RMapCache<String,String> cache=  redissonClient.getMapCache("userToken");
+        //获取access_token(2小时) 缓存
+        String accessToken=cache.get("accessToken"+openid);
+
+        //如果不存在说明redis缓存时间已经到达，需要通过调用weChatUtil.refreshAccessToken()获取
+        if(StringUtils.isEmpty(accessToken)){
+            //获取redis缓存 refresh_token
+            String refreshToken=cache.get("refreshToken"+openid);
             if(StringUtils.isEmpty(refreshToken)){
-                return ResponseEntity.badRequest().body("refreshToken失效 需要重新授权 请求/weixin/login获取调整链接");
+                //TODO 需要和前端协商处理此问题 可以考虑前端缓存超时时间
+                return ResponseEntity.badRequest().body("refreshToken失效 需要重新授权 请求/wechat/login获取调整链接");
             }
             //重新刷新accessToken 并放入redis 缓存中
-            accessToken=weChatUtil.refreshAccessToken(refreshToken);
-            wxSignleUserMap.put(openIdAfterMd5,accessToken);
+            AccessToken getAccessToken=weChatUtil.refreshAccessToken(refreshToken);
+            //将access_token(2小时) 缓存起来
+            cache.put("accessToken"+getAccessToken.getOpenId(),getAccessToken.getAccessToken(),2, TimeUnit.HOURS);
+            accessToken=getAccessToken.getAccessToken();
         }
-        String result=weChatUtil.getOauth2UserInfo(accessToken.getOpenId(),accessToken.getAccessToken());
+        String result=weChatUtil.getOauth2UserInfo(openid,accessToken);
         //将返回结果转换成用户对象
-        return ResponseEntity.ok(userService.convert(result));
+        User wxUser=userService.convert(result);
+        //查询数据库相关信息
+        User dbUser= userService.searchUserByOpenid(openid);
+        wxUser.setRegisterTime(dbUser.getRegisterTime());
+        wxUser.setBalance(dbUser.getBalance());
+        wxUser.setId(dbUser.getId());
+        wxUser.setPhone(dbUser.getPhone());
+        wxUser.setUserStatus(dbUser.getUserStatus());
+        wxUser.setDebtFee(userService.debtFee(dbUser.getId()));//账款订单金额
+        return ResponseEntity.ok(wxUser);
     }
-    @GetMapping("/weixin/token")
-    @ApiOperation(value = "微信oauth Token", response = Token.class)
+    @GetMapping("/wechat/token")
+    @ApiOperation(value = "微信oauth Token 全局缓存的", response = Token.class)
     public ResponseEntity<Token> token() throws IOException {
-        Token token = weChatUtil.getToken();
+        RMapCache<String,Token> cache=  redissonClient.getMapCache("token");
+        Token token=cache.get("token");
+        //先从缓存中获取 如果为空再去微信服务器获取
+        if(Objects.isNull(token)){
+            token = weChatUtil.getToken();
+            cache.put("token",token,2, TimeUnit.HOURS);//缓存2小时
+        }
         return ResponseEntity.ok(token);
     }
 
     @GetMapping("/weixin/jsapi/ticket")
     @ApiOperation(value = "微信oauth jsapiTicket", response = JsapiTicket.class)
-    public ResponseEntity<JsapiTicket> jsapiTicket()  throws IOException {
-        Token token = weChatUtil.getToken();
-        JsapiTicket ticket = weChatUtil.getJsapiTicket(token.getAccessToken());
-        return ResponseEntity.ok(ticket);
+    public ResponseEntity<JsapiPaySign> jsapiTicket(@RequestParam("url") String url)  throws IOException {
+        RMapCache<String,Object> cache=  redissonClient.getMapCache("token");
+        Token token=(Token)cache.get("token");
+        //先从缓存中获取 如果为空再去微信服务器获取
+        if(Objects.isNull(token)){
+            token = weChatUtil.getToken();
+            cache.put("token",token,2, TimeUnit.HOURS);//缓存2小时
+        }
+        //获取缓存中的js ticket (2小时) 缓存
+        JsapiTicket ticket=(JsapiTicket)cache.get("ticket");
+        if(Objects.isNull(ticket)){
+            ticket = weChatUtil.getJsapiTicket(token.getAccessToken());
+            cache.put("ticket",ticket,2, TimeUnit.HOURS);//缓存2小时
+        }
+
+        String timestamp = Long.toString(System.currentTimeMillis() / 1000);
+        String nonceStr = UUID.randomUUID().toString();
+        String decodedUrl = URLDecoder.decode(url, "UTF-8");
+        String signature = weChatUtil.getSignature(ticket.getTicket(), timestamp, nonceStr, decodedUrl);
+        //构造jsapi返回结果
+        JsapiPaySign jsapiPaySign=new JsapiPaySign();
+        jsapiPaySign.setAppId(weChatUtil.getProperties().getWeChatOauth().getAppId());
+        jsapiPaySign.setNonceStr(nonceStr);
+        jsapiPaySign.setTimestamp(timestamp);
+        jsapiPaySign.setSignature(signature);
+        return ResponseEntity.ok(jsapiPaySign);
     }
     private Map<String, String> paramsToMap(HttpServletRequest request) {
         Map<String, String> params = new HashMap<>();

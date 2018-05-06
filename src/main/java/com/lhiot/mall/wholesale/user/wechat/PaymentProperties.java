@@ -46,13 +46,14 @@ public class PaymentProperties {
         private String appSecret;
 
         /**
-         * authorize回调地址
+         * 授权后跳转到的地址
          */
         private String appRedirectUri;
+
         /**
-         * 跳转到前端页面的域名
+         * 调整到前端页面的地址
          */
-        private String clientRedirectUrl;
+        private String appFrontUri;
     }
 
     private WeChatPayConfig weChatPay;
@@ -84,6 +85,16 @@ public class PaymentProperties {
          * 异步订单回调地址
          */
         private String orderNotifyUrl;
+
+        /**
+         * 异步发票回调地址
+         */
+        private String invoiceNotifyUrl;
+
+        /**
+         * 异步账款订单回调地址
+         */
+        private String orderOfflineNotifyUrl;
 
         /**
          * 支付换算
