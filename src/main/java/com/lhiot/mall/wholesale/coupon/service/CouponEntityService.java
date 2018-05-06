@@ -313,8 +313,7 @@ public class CouponEntityService {
 	
 	/**
 	 * 手动发券
-	 * @param phones
-	 * @param couponConfigIds
+	 * @param param
 	 * @return
 	 */
 	public String realeaseCupon(ReleaseCouponParam param){

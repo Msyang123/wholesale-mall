@@ -61,7 +61,6 @@ public class Invoice {
     @JsonProperty("taxFee")
     private int taxFee;
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @JsonProperty("createTime")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Timestamp createTime;
