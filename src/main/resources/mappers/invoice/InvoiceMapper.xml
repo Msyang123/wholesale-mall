@@ -5,7 +5,7 @@
        t1.id as id,t1.invoice_title_id as invoiceTitleId,t1.taxpayer_number as taxpayerNumber,t1.company_name as companyName,t1.contact_name as contactName,
     t1.contact_phone as contactPhone,t1.invoice_fee as invoiceFee,t1.invoice_tax as invoiceTax,t1.tax_fee as taxFee,t1.address_area as addressArea,t1.address_detail as addressDetail,
     t1.bank_name as bankName,t1.bank_card_code as bankCardCode,t1.create_time as createTime,t1.invoice_status as invoiceStatus,t1.invoice_print_time as invoicePrintTime,
-    t1.invoice_order_ids as invoiceOrderIds,t1.invoice_code as invoiceCode,t1.user_id as userId
+    t1.invoice_order_ids as invoiceOrderIds,t1.invoice_code as invoiceCode,t1.user_id as userId,t1.reject_reason as rejectReason
     </sql>
 
     <!-- 新增发票抬头 -->
@@ -194,10 +194,20 @@
     </select>
 
     <!-- 后台管理 修改开票状态 -->
-    <update id="updateInvoiceStatus" parameterType="com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle">
+    <update id="updateInvoiceStatus" parameterType="com.lhiot.mall.wholesale.invoice.domain.Invoice">
         UPDATE t_whs_invoice
-        SET invoice_status = "yes"
+        <trim prefix="set" suffixOverrides=",">
+            <if test="invoiceStatus != null and invoiceStatus != ''">invoice_status=#{invoiceStatus},</if>
+        </trim>
         where id=#{id}
     </update>
 
+    <!-- 后台管理 修改开票状态 -->
+    <update id="updateInvoiceReason" parameterType="com.lhiot.mall.wholesale.invoice.domain.Invoice">
+        UPDATE t_whs_invoice
+        <trim prefix="set" suffixOverrides=",">
+            <if test="rejectReason != null and rejectReason != ''">reject_reason=#{rejectReason},</if>
+        </trim>
+        where id=#{id}
+    </update>
 </mapper>

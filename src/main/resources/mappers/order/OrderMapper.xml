@@ -3,10 +3,10 @@
 <mapper namespace="com.lhiot.mall.wholesale.order.mapper.OrderMapper">
     <sql id="orderColumn">
         t1.id as id,t1.order_code as orderCode,t1.user_id as userId,t1.salesman_id as salesmanId,t1.total_fee as totalFee,
-    t1.create_time as createTime,t1.order_status as orderStatus,t1.order_coupon as orderCoupon,t1.discount_fee as discountFee,
-    t1.payable_fee as payableFee,t1.hd_status as hdStatus,t1.delivery_time as deliveryTime,t1.delivery_fee as deliveryFee,
+    DATE_FORMAT(t1.create_time,'%Y-%m-%d %H:%i:%s') as createTime,t1.order_status as orderStatus,t1.order_coupon as orderCoupon,t1.discount_fee as discountFee,
+    t1.payable_fee as payableFee,t1.hd_status as hdStatus,DATE_FORMAT(t1.delivery_time,'%Y-%m-%d %H:%i:%s') as deliveryTime,t1.delivery_fee as deliveryFee,
     t1.remarks as remarks,t1.settlement_type as settlementType,t1.pay_status as payStatus,t1.delivery_address as deliveryAddress,
-    t1.receive_time as receiveTime,t1.after_sale_time as afterSale_Time
+    DATE_FORMAT(t1.receive_time,'%Y-%m-%d %H:%i:%s') as receiveTime,DATE_FORMAT(t1.after_sale_time,'%Y-%m-%d %H:%i:%s') as afterSale_Time
     </sql>
 
     <!-- 查询订单信息 -->
@@ -131,7 +131,7 @@
         </trim>
     </select>
 
-    <!-- 后台管理 分页查询-订单表查询 -->
+    <!-- 后台管理 分页查询-查询订单列表 -->
     <select id="pageQuery" parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam"
             resultType="com.lhiot.mall.wholesale.order.domain.OrderGridResult">
         select <include refid="orderColumn"/>
@@ -139,11 +139,11 @@
         <trim prefix="where" prefixOverrides="and">
             <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
             <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
-            <if test="orderCode != null and orderCode != ''">and t1.order_code = #{orderCode}</if>
+            <if test="orderCode != null and orderCode != ''">and t1.order_code like CONCAT('%', #{orderCode},'%')</if>
             <if test="orderStatus != null and orderStatus != ''">and t1.order_status = #{orderStatus}</if>
             <if test="payStatus != null and payStatus != ''">and t1.pay_status = #{payStatus}</if>
             <if test="settlementType != null and settlementType != ''">and t1.settlement_type = #{settlementType}</if>
-            <if test="id != null and id != ''">and t1.id = #{id}</if>
+            <if test="id != null and id != ''">and t1.id  like CONCAT('%',  #{id},'%')</if>
             <if test="userIds != null and userIds.size()>0">
                 and t1.user_id in
                 <foreach collection="userIds" item="item" open="(" separator="," close=")">
@@ -189,9 +189,15 @@
     </select>
 
     <!-- 后台管理  根据id查询订单详情 -->
-    <select id="select" parameterType="long" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+    <select id="searchOrderById" parameterType="long" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
         SELECT <include refid="orderColumn"/>
         FROM t_whs_order t1
         WHERE t1.id = #{0}
+    </select>
+
+    <!-- 后台管理系统查找订单状态、支付状态、支付类型 -->
+    <select id="searchOrderStatus"  resultType="com.lhiot.mall.wholesale.order.domain.OrderStatusResult">
+        select t1.order_status as orderStatus,t1.pay_status as payStatus,t1.settlement_type as settlementType
+        from t_whs_order t1
     </select>
 </mapper>

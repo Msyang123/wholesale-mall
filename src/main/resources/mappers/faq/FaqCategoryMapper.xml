@@ -32,6 +32,7 @@
     )
     </insert>
 
+    <!-- 后台管理系统查找FAQ分类 -->
     <select id="searchFaqCategory"  resultType="com.lhiot.mall.wholesale.faq.domain.FaqCategory">
         select <include refid="faqCategoryColumn"/>
         from t_whs_faq_category t1
