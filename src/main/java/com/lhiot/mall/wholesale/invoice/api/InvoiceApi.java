@@ -114,22 +114,32 @@ public class InvoiceApi {
         return ResponseEntity.ok(ArrayObject.of(invoiceList));
     }
 
-    @PostMapping("/invoices/grid")
+    @PostMapping("/invoice/grid")
     @ApiOperation(value = "后台管理-分页查询开票信息", response = PageQueryObject.class)
     public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) InvoiceGridParam param) {
         return ResponseEntity.ok(invoiceService.pageQuery(param));
     }
 
-    @GetMapping("/invoices/detail/{id}")
+    @GetMapping("/invoice/detail/{id}")
     @ApiOperation(value = "后台管理-开票信息详情页面",response = Invoice.class)
-    public  ResponseEntity<Invoice> demandGoodsDetail(@PathVariable("id") Long id){
+    public  ResponseEntity<Invoice> detail(@PathVariable("id") Long id){
         return ResponseEntity.ok(invoiceService.detail(id));
     }
 
-    @PutMapping("/updateInvoiceStatus")
+    @PutMapping("invoice/updateinvoicestatus")
     @ApiOperation(value = "后台管理-修改开票状态")
-    public ResponseEntity updateInvoiceStatus(@RequestBody(required = true) long id){
-        if (invoiceService.updateInvoiceStatus(id)>0){
+    public ResponseEntity updateInvoiceStatus(@RequestBody Invoice invoice){
+        if (invoiceService.updateInvoiceStatus(invoice)>0){
+            return ResponseEntity.ok().body("修改完成");
+        }else{
+            return ResponseEntity.badRequest().body("修改失败");
+        }
+    }
+
+    @PutMapping("invoice/rejectinvoice")
+    @ApiOperation(value = "后台管理-修改驳回原因")
+    public ResponseEntity updateInvoiceReason(@RequestBody Invoice invoice){
+        if (invoiceService.updateInvoiceReason(invoice)>0){
             return ResponseEntity.ok().body("修改完成");
         }else{
             return ResponseEntity.badRequest().body("修改失败");

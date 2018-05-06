@@ -113,7 +113,17 @@ public class InvoiceService {
      * 修改开票状态
      * @return
      */
-    public int updateInvoiceStatus(Long id) {
-        return invoiceMapper.updateInvoiceStatus(id);
+    public int updateInvoiceStatus(Invoice invoice) {
+        //开票状态改为已开票
+        invoice.setInvoiceStatus("yes");
+        return invoiceMapper.updateInvoiceStatus(invoice);
+    }
+
+    /**
+     * 修改驳回原因
+     * @return
+     */
+    public int updateInvoiceReason(Invoice invoice) {
+        return invoiceMapper.updateInvoiceReason(invoice);
     }
 }
