@@ -36,6 +36,13 @@ public interface DebtOrderMapper {
     DebtOrder findByCode(String debtOrderCode);
 
     /**
+     * 依据订单号模糊查找账号订单
+     * @param orderCode
+     * @return
+     */
+    DebtOrder findByOrderIdLike(String orderCode);
+
+    /**
      * 后台管理--分页查询欠款订单总数
      * @param param
      * @return

@@ -14,7 +14,7 @@ public interface UserMapper {
 
     List<User> search(List ids);
 
-    List<User> search(String userName);
+    /*List<User> search(String userName);*/
 
     Integer updateUserStatus(long id);
 

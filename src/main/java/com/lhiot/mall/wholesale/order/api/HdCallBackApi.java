@@ -61,7 +61,7 @@ public class HdCallBackApi {
             // 依据订单编码查询订单
             OrderDetail order= orderService.searchOrder(orderCode);
 
-            rabbit.convertAndSend(MQDefaults.DELAY_EXCHANGE_NAME, "retry-order-resendhd", "延迟信息发送测试",
+            rabbit.convertAndSend(MQDefaults.DIRECT_EXCHANGE_NAME, "retry-order-resendhd", "延迟信息发送测试",
                     message -> {
                         // 10秒钟
                         message.getMessageProperties().setExpiration("10000");

@@ -24,16 +24,16 @@ spring:
     username: guest
     password: guest
 # mq队列配置
-message-queue:
-  rabbit:
-    delay-queue:
-      dlx-queue-forward:
+#message-queue:
+#  rabbit:
+#    delay-queue:
+#      dlx-queue-forward:
 #        retry-order-resendhd:
 #          forward-queue-name: order-resendhd-deal
-    match-queue:
+#    match-queue:
 #      queue-bind-routing-key:
 #        user-register-receive: user.register.route
-    publishers:
+#    publishers:
       #订单退款退货
 #      publish-received-refund:
 #        - order-back-refund
@@ -57,7 +57,7 @@ wholesale-mall:
       app-id: wx8521acbe400f89e3
       app-secret: 5176ebed12516da3cabb3a4d0e6d3ad6
       app-redirect-uri: https://online.food-see.com/user/wechat/authorize
-      app-front-uri: https://online.food-see.com/weixin
+      app-front-uri: https://online.food-see.com/weixin/
     we-chat-pay:
       partner-id: 1497940112
       partner-key: aZ2J68OrUnvkNtTdSasGLBnGRjceHRS2

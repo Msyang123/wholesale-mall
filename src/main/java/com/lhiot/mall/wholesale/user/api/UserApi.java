@@ -37,6 +37,7 @@ import javax.validation.constraints.NotNull;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
@@ -100,11 +101,11 @@ public class UserApi {
         return ResponseEntity.ok(userService.user(id));
     }
 
-    @PostMapping("/search")
+    /*@PostMapping("/search")
     @ApiOperation(value = "新建一个查询，用于返回用户列表", response = User.class, responseContainer = "List")
     public ResponseEntity<List<User>> search(@RequestBody(required = false) SearchUser param) {
         return ResponseEntity.ok(userService.users(param.getLikeName()));
-    }
+    }*/
     /***********************************************微信授权登录***********************************************/
 
     //第一步 userType 0商户 1业务员
@@ -131,7 +132,7 @@ public class UserApi {
         //判断是否在数据库中存在此记录，如果存在直接登录，否则就注册用户微信信息
 
 
-        RMapCache<String,String> cache=  redissonClient.getMapCache("refreshToken");
+        RMapCache<String,String> cache=  redissonClient.getMapCache("userToken");
         //将access_token(2小时) 缓存起来
         cache.put("accessToken"+accessToken.getOpenId(),accessToken.getAccessToken(),2, TimeUnit.HOURS);
         //redis缓存 refresh_token一个月
@@ -139,24 +140,25 @@ public class UserApi {
 
         //如果用户存在就不做处理 否则插入数据库
         if(clientUri.indexOf("?")!=-1){
-            clientUri=clientUri+"&openid="+accessToken.getOpenId()+"&userType="+userType;
+            clientUri=accessToken.getOpenId()+"?userType="+userType+"&clientUri="+clientUri;
         }else{
-            clientUri=clientUri+"?openid="+accessToken.getOpenId()+"&userType="+userType;
+            clientUri=accessToken.getOpenId()+"?userType="+userType+"&clientUri="+clientUri;
         }
         if(Objects.equals("0",userType)){
             //商户
-            List<User> users= userService.users(accessToken.getOpenId());
-            if(users==null || users.isEmpty()){
+            User searchUser= userService.searchUserByOpenid(accessToken.getOpenId());
+            if(searchUser==null){
                 //写入数据库中
                 String weixinUserInfo=weChatUtil.getOauth2UserInfo(accessToken.getOpenId(),accessToken.getAccessToken());
                 User user=userService.convert(weixinUserInfo);
                 userService.save(user);
             }
+            log.info("商户sendRedirect:"+weChatUtil.getProperties().getWeChatOauth().getAppFrontUri()+clientUri);
             response.sendRedirect(weChatUtil.getProperties().getWeChatOauth().getAppFrontUri()+clientUri);
             return;
         }else{
-            //业务员 必定不会为空 因为后台已经注册
-            SalesUser salesUser= salesUserService.searchSalesUserByOpenid(accessToken.getOpenId());
+            //业务员
+            /*SalesUser salesUser= salesUserService.searchSalesUserByOpenid(accessToken.getOpenId());
             if(Objects.isNull(salesUser)){
                 //写入数据库中
                 String weixinUserInfo=weChatUtil.getOauth2UserInfo(accessToken.getOpenId(),accessToken.getAccessToken());
@@ -168,7 +170,8 @@ public class UserApi {
                 salesUser.setCreateAt(new Timestamp(System.currentTimeMillis()));
                 salesUser.setSalesmanName(user.getNickname());
                 salesUserService.create(salesUser);
-            }
+            }*/
+            log.info("业务员sendRedirect:"+weChatUtil.getProperties().getWeChatOauth().getAppFrontUri()+clientUri);
             response.sendRedirect(weChatUtil.getProperties().getWeChatOauth().getAppFrontUri()+clientUri);
             return;
         }
@@ -177,7 +180,7 @@ public class UserApi {
     @GetMapping("/wechat/detial/{openid}")
     @ApiOperation(value = "微信 通过openId获取商户详细信息", response = User.class)
     public ResponseEntity detial(@PathVariable("openid") String openid ) throws IOException {
-        RMapCache<String,String> cache=  redissonClient.getMapCache("refreshToken");
+        RMapCache<String,String> cache=  redissonClient.getMapCache("userToken");
         //获取access_token(2小时) 缓存
         String accessToken=cache.get("accessToken"+openid);
 
@@ -186,6 +189,7 @@ public class UserApi {
             //获取redis缓存 refresh_token
             String refreshToken=cache.get("refreshToken"+openid);
             if(StringUtils.isEmpty(refreshToken)){
+                //TODO 需要和前端协商处理此问题 可以考虑前端缓存超时时间
                 return ResponseEntity.badRequest().body("refreshToken失效 需要重新授权 请求/wechat/login获取调整链接");
             }
             //重新刷新accessToken 并放入redis 缓存中
@@ -208,18 +212,46 @@ public class UserApi {
         return ResponseEntity.ok(wxUser);
     }
     @GetMapping("/wechat/token")
-    @ApiOperation(value = "微信oauth Token", response = Token.class)
+    @ApiOperation(value = "微信oauth Token 全局缓存的", response = Token.class)
     public ResponseEntity<Token> token() throws IOException {
-        Token token = weChatUtil.getToken();
+        RMapCache<String,Token> cache=  redissonClient.getMapCache("token");
+        Token token=cache.get("token");
+        //先从缓存中获取 如果为空再去微信服务器获取
+        if(Objects.isNull(token)){
+            token = weChatUtil.getToken();
+            cache.put("token",token,2, TimeUnit.HOURS);//缓存2小时
+        }
         return ResponseEntity.ok(token);
     }
 
     @GetMapping("/weixin/jsapi/ticket")
     @ApiOperation(value = "微信oauth jsapiTicket", response = JsapiTicket.class)
-    public ResponseEntity<JsapiTicket> jsapiTicket()  throws IOException {
-        Token token = weChatUtil.getToken();
-        JsapiTicket ticket = weChatUtil.getJsapiTicket(token.getAccessToken());
-        return ResponseEntity.ok(ticket);
+    public ResponseEntity<JsapiPaySign> jsapiTicket(@RequestParam("url") String url)  throws IOException {
+        RMapCache<String,Object> cache=  redissonClient.getMapCache("token");
+        Token token=(Token)cache.get("token");
+        //先从缓存中获取 如果为空再去微信服务器获取
+        if(Objects.isNull(token)){
+            token = weChatUtil.getToken();
+            cache.put("token",token,2, TimeUnit.HOURS);//缓存2小时
+        }
+        //获取缓存中的js ticket (2小时) 缓存
+        JsapiTicket ticket=(JsapiTicket)cache.get("ticket");
+        if(Objects.isNull(ticket)){
+            ticket = weChatUtil.getJsapiTicket(token.getAccessToken());
+            cache.put("ticket",ticket,2, TimeUnit.HOURS);//缓存2小时
+        }
+
+        String timestamp = Long.toString(System.currentTimeMillis() / 1000);
+        String nonceStr = UUID.randomUUID().toString();
+        String decodedUrl = URLDecoder.decode(url, "UTF-8");
+        String signature = weChatUtil.getSignature(ticket.getTicket(), timestamp, nonceStr, decodedUrl);
+        //构造jsapi返回结果
+        JsapiPaySign jsapiPaySign=new JsapiPaySign();
+        jsapiPaySign.setAppId(weChatUtil.getProperties().getWeChatOauth().getAppId());
+        jsapiPaySign.setNonceStr(nonceStr);
+        jsapiPaySign.setTimestamp(timestamp);
+        jsapiPaySign.setSignature(signature);
+        return ResponseEntity.ok(jsapiPaySign);
     }
     private Map<String, String> paramsToMap(HttpServletRequest request) {
         Map<String, String> params = new HashMap<>();
