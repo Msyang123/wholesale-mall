@@ -3,13 +3,14 @@
 <mapper namespace="com.lhiot.mall.wholesale.coupon.mapper.CouponConfigMapper">
 	
 <sql id="CouponConfigColumn">
-		t1.id,t1.coupon_id as couponId ,date_format(t1.effective_time,'%Y-%m-%d %h:%i:%s') as effectiveTime,
+		t1.id,t1.coupon_id as couponId ,date_format(t1.effective_time,'%Y-%m-%d %h:%i:%s') as effectiveTime,t1.coupon_type as couponType,
 		date_format(t1.failure_time,'%Y-%m-%d %h:%i:%s') as failureTime,t1.vaild_days as vaildDays,t1.coupon_des as couponDes
 	</sql>
 	
 	<sql id="CouponPlateColumn">
-		t2.coupon_name as couponName ,t2.coupon_fee as couponFee,t2.full_fee as fullFee,t2.coupon_type as couponType,
-		t2.vaild
+		t2.coupon_name as couponName ,t2.coupon_fee as couponFee,t2.full_fee as fullFee,
+		FORMAT(full_fee/100.0,2) as fullFeeDispaly,FORMAT(coupon_fee/100.0,2) as couponFeeDisplay,
+		t2.vaild,t2.coupon_type as plateType
 	</sql>
 	
    <select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.coupon.domain.CouponConfig">
@@ -21,8 +22,8 @@
 	
 	<!-- lynn 2018/4/19根据 新增-->
 	<insert id="insert" parameterType="com.lhiot.mall.wholesale.coupon.domain.CouponConfig">
-		insert into t_whs_coupon_config (coupon_id,effective_time,failure_time,vaild_days,coupon_des)
-		values(#{couponId},#{effectiveTime},#{failureTime},#{vaildDays},#{couponDes})
+		insert into t_whs_coupon_config (coupon_id,effective_time,failure_time,vaild_days,coupon_des,coupon_type)
+		values(#{couponId},#{effectiveTime},#{failureTime},#{vaildDays},#{couponDes},#{couponType})
 	</insert>
 	
 	<!-- lynn 2018/4/19根据 修改 -->
@@ -34,6 +35,7 @@
 			<if test="failureTime != null and failureTime != ''">failure_time=#{failureTime},</if>
 			<if test="vaildDays != null and vaildDays != ''">vaild_days=#{vaildDays},</if>
 			<if test="couponDes != null and couponDes != ''">coupon_des=#{couponDes},</if>
+			<if test="couponType != null and couponType != ''">coupon_type=#{couponType},</if>
 		</trim>
 		where id = #{id}
 	</update>
@@ -50,12 +52,14 @@
 	<select id="pageQueryCount" 
 		parameterType="com.lhiot.mall.wholesale.coupon.domain.gridparam.CouponGridParam" 
 		resultType="Integer">
-		select count(id) from t_whs_coupon_config 
+		select count(t1.id) from t_whs_coupon_config t1
+		left join t_whs_coupon_plate t2 on t1.coupon_id = t2.id
 		<trim prefix="where" prefixOverrides="and">
 			<if test="couponName != null and couponName != ''"> 
-				and coupon_name like concat('%',#{couponName},'%')
+				and t2.coupon_name like concat('%',#{couponName},'%')
 			</if>
-			<if test="couponType != null and couponType != ''">and coupon_type=#{couponType}</if>
+			<if test="couponType != null and couponType != ''">and t1.coupon_type=#{couponType}</if>
+			<if test="couponTypePlate != null and couponTypePlate !=''">and t2.coupon_type=#{couponTypePlate}</if>
 		</trim>
 	</select>
 	
@@ -63,12 +67,15 @@
 	<select id="pageQuery" 
 		parameterType="com.lhiot.mall.wholesale.coupon.domain.gridparam.CouponGridParam" 
 		resultType="com.lhiot.mall.wholesale.coupon.domain.CouponConfig">
-		select <include refid="CouponConfigColumn"/> from t_whs_coupon_config
+		select <include refid="CouponConfigColumn"/>,<include refid="CouponPlateColumn"/>
+		from t_whs_coupon_config t1
+		left join t_whs_coupon_plate t2 on t1.coupon_id = t2.id
 		<trim prefix="where" prefixOverrides="and">
 			<if test="couponName != null and couponName != ''"> 
-				and coupon_name like concat('%',#{couponName},'%')
+				and t2.coupon_name like concat('%',#{couponName},'%')
 			</if>
-			<if test="couponType != null and couponType != ''">and coupon_type=#{couponType}</if>
+			<if test="couponType != null and couponType != ''">and t1.coupon_type=#{couponType}</if>
+			<if test="couponTypePlate != null and couponTypePlate !=''">and t2.coupon_type=#{couponTypePlate}</if>
 		</trim>
 		<include refid="common.pager"></include>
 	</select>
@@ -106,5 +113,14 @@
 	<select id="couponConfig" parameterType="String"
 			resultType="com.lhiot.mall.wholesale.coupon.domain.CouponConfig">
 		select * from t_whs_coupon_config where coupon_type=#{couponType}
+	</select>
+	
+	<!-- 根据优惠券模板id查询优惠券，用来判断模板是否可以被删除 -->
+	<select id="searchByCouponId" parameterType="Long" 
+		resultType="com.lhiot.mall.wholesale.coupon.domain.CouponConfig">
+		select <include refid="CouponConfigColumn"/>,<include refid="CouponPlateColumn"/>
+		from t_whs_coupon_config t1
+		left join t_whs_coupon_plate t2 on t1.coupon_id = t2.i
+		where coupon_id = #{0}
 	</select>
 </mapper>
