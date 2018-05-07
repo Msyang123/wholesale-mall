@@ -66,7 +66,7 @@ public class IndexService {
 		}
 		
 		//获取首页弹窗广告
-		List<Advertise> popups = advertiseService.findByType(AdvertiseType.popup);
+		List<Advertise> popups = advertiseService.findByType(AdvertiseType.poppup);
 		if(!popups.isEmpty()){
 			index.setAdvBanner(popups.get(FIRST_INDEX));
 		}
