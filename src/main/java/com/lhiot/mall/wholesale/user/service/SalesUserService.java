@@ -22,6 +22,7 @@ public class SalesUserService {
 
     private final SalesUserMapper salesUserMapper;
 
+
     @Autowired
     public SalesUserService(SqlSession sqlSession, SnowflakeId snowflakeId, SalesUserMapper salesUserMapper) {
         this.snowflakeId = snowflakeId;
@@ -61,6 +62,18 @@ public class SalesUserService {
         return salesUserMapper.searchShopInfo(salesId);
     }
 
+    /**
+     * 门店审核
+     * @param salesUserRelation
+     * @return
+     */
+   /* public boolean userCheck(SalesUserRelation salesUserRelation){
+        if (salesUserMapper.updateUserSaleRelationship(salesUserRelation)>0){
+            userService.updateUserStatus(salesUserRelation.getUserId());
+        }
+        return false;
+    }*/
+
 
     /***************后台管理系统*******************/
     public int create(SalesUser salesUser){
@@ -96,4 +109,5 @@ public class SalesUserService {
     public SalesUser login(String acount){
         return this.salesUserMapper.login(acount);
     }
+
 }

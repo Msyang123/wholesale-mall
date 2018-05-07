@@ -119,16 +119,15 @@ public class GoodsApi {
             goodsDetailResult.setGoodsFlashsale(goodsFlashsale);
         }
         goodsDetailResult.setGoodsInfo(goodsInfo);
-        goodsDetailResult.setOtherImage(goodsInfo.getOtherImage());
         return ResponseEntity.ok(goodsDetailResult);
     }
 
-    @PostMapping("/inventoryList")
+    @GetMapping("/inventory-list")
     @ApiOperation(value = "常用清单商品列表")
-    public ResponseEntity<InventoryResult> inventoryList(@RequestParam("userId") Long userId, @RequestParam("plateId") Long plateId){
+    public ResponseEntity<InventoryResult> inventoryList(@RequestParam("userId") Long userId){
 	    InventoryResult inventoryResult = new InventoryResult();
 	    List<GoodsInfo> inventoryList = goodsService.inventoryList(userId);
-        inventoryResult.setRecommendList(goodsService.recommendList(plateId));
+        inventoryResult.setRecommendList(goodsService.recommendList());
         inventoryResult.setInventoryList(inventoryList);
 	    return ResponseEntity.ok(inventoryResult);
     }

@@ -70,5 +70,7 @@ public interface OrderMapper {
 
     OrderDetail select(long id);
 
+    OrderDetail userOrder(OrderParam orderParam);
+
 
 }

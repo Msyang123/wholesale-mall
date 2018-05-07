@@ -24,6 +24,7 @@ import java.util.List;
 @Api(description ="开票接口")
 @Slf4j
 @RestController
+@RequestMapping("/invoice")
 public class InvoiceApi {
 
     private final InvoiceService invoiceService;
@@ -37,13 +38,13 @@ public class InvoiceApi {
         this.orderService=orderService;
     }
 
-    @GetMapping("/invoiceTitle/{id}")
+    @GetMapping("/search/{userId}")
     @ApiOperation(value = "查询发票抬头信息")
-    public ResponseEntity<InvoiceTitle> invoiceTile(@PathVariable @NotNull long id) {
-        return ResponseEntity.ok(invoiceService.selectInvoiceTitle(id));
+    public ResponseEntity<InvoiceTitle> invoiceTile(@PathVariable @NotNull long userId) {
+        return ResponseEntity.ok(invoiceService.selectInvoiceTitle(userId));
     }
 
-    @PutMapping("/saveOrUpdateInvoiceTitle")
+    @PostMapping("/create/title")
     @ApiOperation(value = "新增/修改发票信息")
     public ResponseEntity saveOrUpdateInvoiceTitle(@RequestBody InvoiceTitle invoiceTitle){
         if (invoiceService.saveOrUpdateInvoiceTitle(invoiceTitle)>0){
@@ -53,7 +54,7 @@ public class InvoiceApi {
         }
     }
 
-    @GetMapping("/saveOrUpdateInvoiceTitle")
+    @GetMapping("/order-need-invoice")
     @ApiOperation(value = "显示订单开票相关信息")
     public ResponseEntity orderNeedInvoice(@RequestParam("orderCodes") String orderCodes){
         if (StringUtils.isEmpty(orderCodes)){
@@ -75,7 +76,7 @@ public class InvoiceApi {
         return ResponseEntity.ok(invoice);
     }
 
-    /*@PostMapping("/applyInvoice")
+    @PostMapping("/apply-invoice")
     @ApiOperation(value = "申请开票")
     public ResponseEntity applyInvoice(@RequestBody Invoice invoice){
         int result=invoiceService.applyInvoice(invoice);
@@ -83,18 +84,18 @@ public class InvoiceApi {
             return ResponseEntity.ok(result);
         }
         return ResponseEntity.badRequest().body("开票失败");
-    }*/
+    }
 
-    @GetMapping("/invoice/{invoiceCode}")
+    @GetMapping("/{invoiceCode}")
     @ApiOperation(value = "开票信息查询")
-    public ResponseEntity applyInvoice(@PathVariable("invoiceCode") String invoiceCode){
+    public ResponseEntity findInvoiceBycode(@PathVariable("invoiceCode") String invoiceCode){
         if(StringUtils.isEmpty(invoiceCode)){
             return ResponseEntity.badRequest().body("请传入发票编码");
         }
         return ResponseEntity.ok(invoiceService.findInvoiceByCode(invoiceCode));
     }
 
-    @GetMapping("/invoices/{userId}")
+    @GetMapping("/record/{userId}")
     @ApiOperation(value = "开票信息记录查询")
     public ResponseEntity<ArrayObject> invoiceRecord(@PathVariable("userId") long userId){
         Invoice invoice = new Invoice();
@@ -114,19 +115,19 @@ public class InvoiceApi {
         return ResponseEntity.ok(ArrayObject.of(invoiceList));
     }
 
-    @PostMapping("/invoices/grid")
+    @PostMapping("/grid")
     @ApiOperation(value = "后台管理-分页查询开票信息", response = PageQueryObject.class)
     public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) InvoiceGridParam param) {
         return ResponseEntity.ok(invoiceService.pageQuery(param));
     }
 
-    @GetMapping("/invoices/detail/{id}")
+    @GetMapping("/detail/{id}")
     @ApiOperation(value = "后台管理-开票信息详情页面",response = Invoice.class)
     public  ResponseEntity<Invoice> demandGoodsDetail(@PathVariable("id") Long id){
         return ResponseEntity.ok(invoiceService.detail(id));
     }
 
-    @PutMapping("/updateInvoiceStatus")
+    @PutMapping("/status")
     @ApiOperation(value = "后台管理-修改开票状态")
     public ResponseEntity updateInvoiceStatus(@RequestBody(required = true) long id){
         if (invoiceService.updateInvoiceStatus(id)>0){

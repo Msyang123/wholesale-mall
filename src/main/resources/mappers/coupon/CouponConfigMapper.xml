@@ -101,4 +101,10 @@
 		LEFT JOIN t_whs_coupon_plate t3 ON t2.coupon_id = t3.id
 		where t1.activity_id = #{0}
 	</select>
+
+	<!-- 活动优惠券配置查询 -->
+	<select id="couponConfig" parameterType="String"
+			resultType="com.lhiot.mall.wholesale.coupon.domain.CouponConfig">
+		select * from t_whs_coupon_config where coupon_type=#{couponType}
+	</select>
 </mapper>

@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.MQDefaults;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
@@ -14,6 +17,7 @@ import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,23 +47,30 @@ public class OrderApi {
     private final SalesUserService salesUserService;
     private final SettingService settingService;
 
+    private final RabbitTemplate rabbit;
+
+    private final SnowflakeId snowflakeId;
+
     @Autowired
-    public OrderApi(OrderService orderService, DebtOrderService debtOrderService, SalesUserService salesUserService, SettingService settingService) {
+    public OrderApi(OrderService orderService, DebtOrderService debtOrderService, SalesUserService salesUserService, SettingService settingService,RabbitTemplate rabbit,SnowflakeId snowflakeId) {
         this.orderService = orderService;
         this.debtOrderService=debtOrderService;
         this.salesUserService=salesUserService;
         this.settingService = settingService;
+        this.rabbit=rabbit;
+        this.snowflakeId=snowflakeId;
     }
 
-    @PostMapping("/myOrders/{userId}")
+    @GetMapping("/my-orders/{userId}")
     @ApiOperation(value = "我的订单列表")
-    public ResponseEntity<ArrayObject> queryMyOrders(@PathVariable("userId") long userId
-            , @RequestParam(required = false) String settlementType, @RequestParam(required = false) String payStatus,@RequestParam String orderStatus){
+    public ResponseEntity<ArrayObject> queryMyOrders(@PathVariable("userId") long userId, @RequestParam(required = false) String orderStatus,
+                                                     @RequestParam(defaultValue="1") Integer page,@RequestParam(defaultValue="10") Integer rows){
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setUserId(userId);
-        orderDetail.setSettlementType(settlementType);
-        orderDetail.setPayStatus(payStatus);
         orderDetail.setOrderStatus(orderStatus);
+        orderDetail.setPage(page);
+        orderDetail.setStart((page-1)*rows);
+        orderDetail.setRows(rows);
         List<OrderDetail> orderDetailList = orderService.searchOrders(orderDetail);
         if (orderDetailList.isEmpty()){
             return ResponseEntity.ok(ArrayObject.of(new ArrayList<OrderDetail>()));
@@ -75,7 +86,7 @@ public class OrderApi {
     }
 
 
-    @GetMapping("/myOrder/{orderCode}")
+    @GetMapping("/my-order/{orderCode}")
     @ApiOperation(value = "根据订单编号查询订单详情")
     public ResponseEntity<OrderDetail> queryOrder(@PathVariable("orderCode") String orderCode){
         OrderDetail orderDetail = orderService.searchOrder(orderCode);
@@ -109,12 +120,15 @@ public class OrderApi {
 
     @GetMapping("/invoice/orders/{userId}")
     @ApiOperation(value = "查询可开发票的订单列表")
-    public ResponseEntity<ArrayObject> invoiceOrders(@PathVariable("userId") @NotNull long userId,
-                                                     @RequestParam String payStatus,@RequestParam String orderStatus) {
+    public ResponseEntity<ArrayObject> invoiceOrders(@PathVariable("userId") @NotNull long userId,@RequestParam(defaultValue="1") Integer page,
+                                                     @RequestParam(defaultValue="10") Integer rows) {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setUserId(userId);
-        orderDetail.setPayStatus(payStatus);
-        orderDetail.setOrderStatus(orderStatus);
+        orderDetail.setPayStatus("paid");
+        orderDetail.setOrderStatus("received");
+        orderDetail.setPage(page);
+        orderDetail.setRows(rows);
+        orderDetail.setStart((page-1)*rows);
         List <OrderDetail> orders = orderService.searchAfterSaleOrder(orderDetail);
         List<OrderDetail> orderResults=new ArrayList<OrderDetail>();
         if (orders.isEmpty()){
@@ -127,9 +141,9 @@ public class OrderApi {
             if ("received".equals(order.getOrderStatus())&&"paid".equals(order.getPayStatus())&&order.getAfterSaleTime().before(currentTime)){
                 List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
                 if (goods.isEmpty()){
-                    orderDetail.setOrderGoodsList(new ArrayList<OrderGoods>());
+                    order.setOrderGoodsList(new ArrayList<OrderGoods>());
                 }else {
-                    orderDetail.setOrderGoodsList(goods);
+                    order.setOrderGoodsList(goods);
                 }
                 orderResults.add(order);
             }
@@ -137,7 +151,7 @@ public class OrderApi {
         return ResponseEntity.ok(ArrayObject.of(orderResults));
     }
 
-    @GetMapping("/order/distribution/{fee}")
+    @GetMapping("/distribution/{fee}")
     @ApiOperation(value = "查询配送费")
     public  ResponseEntity<Integer> distribution(@PathVariable("fee") @NotNull Integer fee) throws Exception{
         ParamConfig paramConfig = settingService.searchConfigParam("distributionFeeSet");
@@ -155,14 +169,17 @@ public class OrderApi {
         return ResponseEntity.ok(100);
     }
 
-    @GetMapping("/orders/after-sale/{userId}")
+    @GetMapping("/after-sale/{userId}")
     @ApiOperation(value = "查询售后订单")
-    public ResponseEntity<ArrayObject> queryAfterSale(@PathVariable("userId") @NotNull long userId
-            ,@RequestParam String orderStatus, @RequestParam String payStatus) {
+    public ResponseEntity<ArrayObject> queryAfterSale(@PathVariable("userId") @NotNull long userId,@RequestParam(defaultValue="1") Integer page,
+                                                      @RequestParam(defaultValue="10") Integer rows) {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setUserId(userId);
-        orderDetail.setOrderStatus(orderStatus);
-        orderDetail.setPayStatus(payStatus);
+        orderDetail.setOrderStatus("received");
+        orderDetail.setPayStatus("paid");
+        orderDetail.setPage(page);
+        orderDetail.setRows(rows);
+        orderDetail.setStart((page-1)*rows);
         List <OrderDetail> orders = orderService.searchAfterSaleOrder(orderDetail);
         if (orders.isEmpty()){
             return ResponseEntity.ok(ArrayObject.of(new ArrayList<>()));
@@ -170,11 +187,16 @@ public class OrderApi {
         String time = DateFormatUtil.format1(new java.util.Date());
         Timestamp currentTime = Timestamp.valueOf(time);
         for (OrderDetail order:orders) {
+            if (order.getAfterSaleTime().after(currentTime)){
+                order.setExpire("no");
+            }else{
+                order.setExpire("yes");
+            }
             List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
             if (goods.isEmpty()){
-                orderDetail.setOrderGoodsList(new ArrayList<OrderGoods>());
+                order.setOrderGoodsList(new ArrayList<OrderGoods>());
             }else {
-                orderDetail.setOrderGoodsList(goods);
+                order.setOrderGoodsList(goods);
             }
         }
         return ResponseEntity.ok(ArrayObject.of(orders));
@@ -182,28 +204,32 @@ public class OrderApi {
 
     @PostMapping("/create")
     @ApiOperation(value = "创建订单")
-    public ResponseEntity<Integer> create(@RequestBody OrderDetail orderDetail){
+    public ResponseEntity create(@RequestBody OrderDetail orderDetail) throws JsonProcessingException {
 
         SalesUserRelation salesUserRelation=new SalesUserRelation();
         salesUserRelation.setUserId(orderDetail.getUserId());
-        salesUserRelation.setCheck(1);//通过审核
+        salesUserRelation.setAuditStatus("agree");//通过审核
         SalesUserRelation salesUserRelationResult=salesUserService.searchSaleRelationship(salesUserRelation);
         if(Objects.nonNull(salesUserRelationResult)){
             //设置订单业务员编码
             orderDetail.setSalesmanId(salesUserRelationResult.getSalesmanId());
         }
-        Integer result = orderService.create(orderDetail);
         //FIXME 创建的时候发送创建广播消息 用于优惠券设置无效
-        //fixme mq设置三十分钟失效
+        //FIXME 判断库存 减库存
+        if(Objects.equals(orderDetail.getSettlementType(),"cod")){  //改为枚举
+            orderDetail.setOrderStatus("undelivery");//待收货
+            //FIXME 直接发送总仓
 
-        if(orderDetail.getSettlementType()== ""){  //FIXME 改为枚举 if(orderDetail.getSettlementType()==1){
-            DebtOrder debtOrder=new DebtOrder();
-            //FIXME 需要赋值
-            debtOrderService.create(debtOrder);
-            //FIXME 改为枚举    orderDetail.setOrderStatus(3);//待收货
-            orderDetail.setOrderStatus("");//待收货
+        }else{
+            orderDetail.setOrderStatus("unpaid");//待付款
         }
-        return ResponseEntity.ok(result);
+        //mq设置三十分钟失效
+        rabbit.convertAndSend(MQDefaults.DIRECT_EXCHANGE_NAME, MQDefaults.DLX_QUEUE_NAME, JacksonUtils.toJson(orderDetail), message -> {
+            message.getMessageProperties().setExpiration(String.valueOf(1 * 60 * 1000));
+            return message;
+        });
+        orderService.create(orderDetail);
+        return ResponseEntity.ok(orderDetail);
     }
 
     @PutMapping("/cancel/unpay/{orderCode}")
