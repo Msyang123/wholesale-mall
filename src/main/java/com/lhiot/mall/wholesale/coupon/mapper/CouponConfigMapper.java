@@ -31,4 +31,7 @@ public interface CouponConfigMapper {
     List<ActivityCoupon> activityCoupon(Long activityId);
 
     List<CouponConfig> couponConfig(String couponType);
+    
+    //根据优惠券模块id查询优惠券配置
+    List<CouponConfig> searchByCouponId(Long id);
 }
