@@ -23,9 +23,8 @@ public class Advertise {
 	@ApiModelProperty(notes="链接地址",dataType="String")
 	private String linkUrl;
 	
-	@JsonIgnore
-	@ApiModelProperty(notes="广告位置 0广告弹窗 1首页轮播图 2限时抢购 3底部banner图",dataType="AdvertiseType")
-	private AdvertiseType advertmentPosition;
+	@ApiModelProperty(notes="广告位置 0广告弹窗 1首页轮播图 2限时抢购 3底部banner图",dataType="String")
+	private String advertmentPosition;
 	
 	@JsonProperty("src")
 	@ApiModelProperty(notes="图片地址",dataType="String")
@@ -41,7 +40,6 @@ public class Advertise {
 	@ApiModelProperty(notes="创建时间",dataType="String")
 	private String createAt;
 	
-	@JsonIgnore
 	@ApiModelProperty(notes="是否有效 no无效 yes有效",dataType="String")
 	private String vaild;
 }

@@ -46,7 +46,7 @@ public class CouponPlateService {
 	}
 	
 	/**
-	 * 修改广告
+	 * 修改
 	 * @param goodsUnit
 	 * @return
 	 */

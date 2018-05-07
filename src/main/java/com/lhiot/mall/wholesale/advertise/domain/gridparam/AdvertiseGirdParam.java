@@ -15,8 +15,8 @@ public class AdvertiseGirdParam extends PageObject {
 	@ApiModelProperty(notes="广告位置 0广告弹窗 1首页轮播图 2限时抢购 3底部banner图",dataType="String")
 	private String advertmentPosition;
 	
-	@ApiModelProperty(notes="是否有效 0无效 1有效",dataType="String")
-	private String isVaild;
+	@ApiModelProperty(notes="是否有效 no无效 yes有效",dataType="String")
+	private String vaild;
 	
 	@ApiModelProperty(notes="标题",dataType="String")
 	private String title;
