@@ -15,7 +15,7 @@
 	</sql>
 	
 	<sql id="unitColumn">
-		t3.id as unitCode ,t3.unit_name as goodsUnitName
+		t3.id as unitCode ,t3.unit_name as goodsUnit
 	</sql>
 	
 	<sql id="categoryColumn">
@@ -49,25 +49,6 @@
 			#{item}
 		</foreach>
 	</select> 
-	
-	<!-- lynn 2018/4/19根据根据关键词查询商品详情 -->
-	<select id="fuzzySearch" parameterType="map" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
-		select <include refid="goodsStandardColumn"/>, <include refid="goodsColumn"/>,<include refid="unitColumn"/>,
-		<include refid="categoryColumn"/>
-		from t_whs_goods_standard t1
-		left join t_whs_goods t2 on t1.goods_id = t2.id
-		left join t_whs_goods_unit t3 on t1.unit_code = t3.id
-		left join t_whs_goods_category t4 on t2.category_id = t4.id
-		left jion t_whs_goods_keywords t5 on t1.id = t5.mapping_id
-		<trim prefix="where" prefixOverrides="and">
-			<if test="keyword != null and keyword != ''">
-				and t5.keyword like CONCAT('%',#{keyword},'%')
-			</if>
-			<if test="kwType != null and kwType != ''">
-				and t5.kw_type =#{keyword}
-			</if>
-		</trim>
-	</select>
 	
 	<!-- lynn 2018/4/19根据商品id 新增商品 -->
 	<insert id="insert" parameterType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
@@ -136,7 +117,7 @@
 		<trim prefix="where" prefixOverrides="and">
 			<if test="barCode != null and barCode != ''">and t1.bar_code=#{goodsCode}</if>
 			<if test="goodsName != null and goodsName != ''">and t2.goods_name like CONCAT('%',#{goodsName},'%')</if>
-			<if test="ifVaild != null">and t1.vaild = #{vaild}</if>
+			<if test="vaild != null and vaild != ''">and t1.vaild = #{vaild}</if>
 			<if test="minPrice != null and minPrice != ''">and t1.price &gt;= #{minPrice}</if>
 			<if test="maxPrice != null and maxPrice != ''">and t1.price &lt;= #{maxPrice}</if>
 		</trim>
@@ -154,10 +135,24 @@
 		<trim prefix="where" prefixOverrides="and">
 			<if test="barCode != null and barCode != ''">and t1.bar_code=#{goodsCode}</if>
 			<if test="goodsName != null and goodsName != ''">and t2.goods_name like CONCAT('%',#{goodsName},'%')</if>
-			<if test="ifVaild != null">and t1.vaild = #{vaild}</if>
+			<if test="vaild != null and vaild != ''">and t1.vaild = #{vaild}</if>
 			<if test="minPrice != null and minPrice != ''">and t1.price &gt;= #{minPrice}</if>
 			<if test="maxPrice != null and maxPrice != ''">and t1.price &lt;= #{maxPrice}</if>
 		</trim>
 		<include refid="common.pager"></include>
+	</select>
+	
+	<!-- 根据条件查询商品规格 -->
+	<select id="selectByOthers" parameterType="com.lhiot.mall.wholesale.goods.domain.QueryParam"
+		resultType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
+		select <include refid="goodsStandardColumn"/> from t_whs_goods_standard t1
+		<trim prefix="where">
+			<if test="barCode !=null and barCode !=''">
+				bar_code = #{barCode}
+			</if>
+			<if test="cards !=null and cards !=''">
+				goods_id = #{cards}
+			</if>
+		</trim>
 	</select>
 </mapper>

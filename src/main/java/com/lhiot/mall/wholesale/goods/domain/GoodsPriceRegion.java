@@ -22,6 +22,9 @@ public class GoodsPriceRegion {
 	@JsonProperty("price")
 	@ApiModelProperty(notes="价格",dataType="Integer")
 	private Integer price;
+	
+	@ApiModelProperty(notes="后台管理",dataType="String")
+	private String priceDisplay;
 
 	@JsonProperty("categoryId")
 	@ApiModelProperty(notes="商品分类id",dataType="Long")
