@@ -115,7 +115,7 @@
 		left join t_whs_goods_unit t3 on t1.unit_code = t3.id
 		left join t_whs_goods_category t4 on t2.category_id = t4.id
 		<trim prefix="where" prefixOverrides="and">
-			<if test="barCode != null and barCode != ''">and t1.bar_code=#{goodsCode}</if>
+			<if test="barCode != null and barCode != ''">and t1.bar_code=#{barCode}</if>
 			<if test="goodsName != null and goodsName != ''">and t2.goods_name like CONCAT('%',#{goodsName},'%')</if>
 			<if test="vaild != null and vaild != ''">and t1.vaild = #{vaild}</if>
 			<if test="minPrice != null and minPrice != ''">and t1.price &gt;= #{minPrice}</if>
@@ -133,7 +133,7 @@
 		left join t_whs_goods_unit t3 on t1.unit_code = t3.id
 		left join t_whs_goods_category t4 on t2.category_id = t4.id
 		<trim prefix="where" prefixOverrides="and">
-			<if test="barCode != null and barCode != ''">and t1.bar_code=#{goodsCode}</if>
+			<if test="barCode != null and barCode != ''">and t1.bar_code=#{barCode}</if>
 			<if test="goodsName != null and goodsName != ''">and t2.goods_name like CONCAT('%',#{goodsName},'%')</if>
 			<if test="vaild != null and vaild != ''">and t1.vaild = #{vaild}</if>
 			<if test="minPrice != null and minPrice != ''">and t1.price &gt;= #{minPrice}</if>

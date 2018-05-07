@@ -15,8 +15,8 @@ public class KeywordsGirdParam extends PageObject {
 	@ApiModelProperty(notes="关键词",dataType="String")
 	private String keyword;
 	
-	@ApiModelProperty(notes="是否为热搜商品",dataType="Integer")
-	private Integer hotSearch;
+	@ApiModelProperty(notes="是否为热搜商品",dataType="String")
+	private String hotSearch;
 	
 	@ApiModelProperty(notes="是否为热搜商品",dataType="String")
 	private String kwType;
