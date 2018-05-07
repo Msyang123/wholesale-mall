@@ -23,4 +23,7 @@ public class PriceRegionGirdParam extends PageObject {
 	
 	@ApiModelProperty(notes="商品单位名称",dataType="Integer")
 	private Integer start;
+	
+	@ApiModelProperty(notes="商品规格id",dataType="Long")
+	private Long standardId;
 }

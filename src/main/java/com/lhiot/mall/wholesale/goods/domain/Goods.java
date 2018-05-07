@@ -46,7 +46,6 @@ public class Goods {
 	@ApiModelProperty(notes="商品描述",dataType="String")
 	private String goodsDes;
 	
-	
 	@ApiModelProperty(notes="商品详情图片s",dataType="String")
 	private String goodsImages;
 	
