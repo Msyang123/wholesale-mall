@@ -114,6 +114,9 @@ public class OrderService {
         }
         orderDetail.setPayStatus("unpaid");
         //FIXME 创建的时候发送创建广播消息 用于优惠券设置无效
+        if(orderDetail.getOrderCoupon()!=0){
+
+        }
         //FIXME 判断库存 减库存
         if(Objects.equals(orderDetail.getSettlementType(),"cod")){  //改为枚举
             orderDetail.setOrderStatus("undelivery");//待收货

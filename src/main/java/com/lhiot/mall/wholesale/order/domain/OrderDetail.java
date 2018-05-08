@@ -100,6 +100,9 @@ public class OrderDetail {
     @JsonProperty("hdCode")
     private String hdCode;
 
+    @JsonProperty("orderCoupon")
+    private Integer orderCoupon;//优惠券
+
     @JsonProperty("start")
     private Integer start;
 

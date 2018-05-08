@@ -55,7 +55,6 @@ public class DebtOrderService {
         debtOrder.setCheckStatus("unpaid");//未支付
         debtOrder.setOrderDebtCode(snowflakeId.stringId());
         debtOrder.setCreateTime(new Timestamp(System.currentTimeMillis()));
-        debtOrder.setCheckStatus("unpaid");//未提交审核
         return debtOrderMapper.save(debtOrder);
     }
 
