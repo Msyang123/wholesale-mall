@@ -14,7 +14,7 @@ public interface SalesUserMapper {
 
     List<SalesUserRelation> selectRelation(Map<String,Object> param);
 
-    int updateUserSaleRelationship(SalesUserRelation salesUserRelation);
+    Integer updateUserSaleRelationship(SalesUserRelation salesUserRelation);
 
     SalesUser searchSalesUser(long id);
 

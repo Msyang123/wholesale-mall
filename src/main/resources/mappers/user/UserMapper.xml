@@ -26,7 +26,7 @@
     </insert>
 
     <update id="updateUserStatus" parameterType="long">
-        UPDATE t_whs_user SET user_status = 1
+        UPDATE t_whs_user SET user_status = 'certified'
         WHERE id = #{id}
     </update>
 

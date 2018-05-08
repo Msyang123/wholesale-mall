@@ -1,10 +1,5 @@
 package com.lhiot.mall.wholesale.coupon.service;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -313,8 +308,7 @@ public class CouponEntityService {
 	
 	/**
 	 * 手动发券
-	 * @param phones
-	 * @param couponConfigIds
+	 * @param param
 	 * @return
 	 */
 	public String realeaseCupon(ReleaseCouponParam param){

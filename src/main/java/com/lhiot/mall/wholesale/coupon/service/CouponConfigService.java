@@ -48,7 +48,7 @@ public class CouponConfigService {
 	
 	/**
 	 * 修改广告
-	 * @param goodsUnit
+	 * @param couponConfig
 	 * @return
 	 */
 	public boolean update(CouponConfig couponConfig){
@@ -106,6 +106,19 @@ public class CouponConfigService {
 	 */
 	public List<ActivityCoupon> activityCoupons(Long activityId){
 		return couponConfigMapper.activityCoupon(activityId);
+	}
+
+	public List<CouponConfig> couponConfig(String couponType){
+		return couponConfigMapper.couponConfig(couponType);
+	}
+	
+	/**
+	 * 是否存在当前类型的优惠券配置
+	 * @param couponId
+	 * @return
+	 */
+	public List<CouponConfig> existConfig(Long couponId){
+		return couponConfigMapper.searchByCouponId(couponId);
 	}
 }
 
