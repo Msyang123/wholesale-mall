@@ -3,10 +3,26 @@ package com.lhiot.mall.wholesale.order.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.common.wrapper.ArrayObject;
+import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.order.domain.Distribution;
+import com.lhiot.mall.wholesale.order.domain.*;
+import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
+import com.lhiot.mall.wholesale.order.service.DebtOrderService;
+import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
+import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
+import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
+import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
+import com.lhiot.mall.wholesale.user.service.SalesUserService;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.leon.microx.common.exception.ServiceException;
+import com.leon.microx.common.wrapper.ArrayObject;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
@@ -38,11 +54,28 @@ public class OrderApi {
     private final OrderService orderService;
     private final SettingService settingService;
 
+    private final PaymentLogService paymentLogService;
+
+    private final RabbitTemplate rabbit;
+
+    private final SnowflakeId snowflakeId;
+
+    private final SalesUserService salesUserService;
+
+    private final DebtOrderService debtOrderService;
 
     @Autowired
-    public OrderApi(OrderService orderService,SettingService settingService) {
+    public OrderApi(OrderService orderService, DebtOrderService debtOrderService, SalesUserService salesUserService,
+                SettingService settingService, PaymentLogService paymentLogService, RabbitTemplate rabbit, SnowflakeId snowflakeId) {
+
         this.orderService = orderService;
         this.settingService = settingService;
+        this.paymentLogService = paymentLogService;
+        this.rabbit=rabbit;
+        this.snowflakeId=snowflakeId;
+        this.salesUserService=salesUserService;
+        this.debtOrderService=debtOrderService;
+
     }
 
     @GetMapping("/my-orders/{userId}")
@@ -69,13 +102,39 @@ public class OrderApi {
         return ResponseEntity.ok(ArrayObject.of(orderDetailList));
     }
 
+    @GetMapping("/debtorders/{userId}")
+    @ApiOperation(value = "账款订单列表")
+    public ResponseEntity<ArrayObject> debtOrders(@PathVariable("userId") long userId,@RequestParam(defaultValue="1") Integer page,@RequestParam(defaultValue="10") Integer rows){
+        OrderDetail orderDetail = new OrderDetail();
+        orderDetail.setUserId(userId);
+        orderDetail.setSettlementType("cod");
+        orderDetail.setPayStatus("unpaid");
+        orderDetail.setPage(page);
+        orderDetail.setStart((page-1)*rows);
+        orderDetail.setRows(rows);
+        List<OrderDetail> orderDetailList = orderService.searchOrders(orderDetail);
+        if (orderDetailList.isEmpty()){
+            return ResponseEntity.ok(ArrayObject.of(new ArrayList<OrderDetail>()));
+        }else {
+            for (OrderDetail order:orderDetailList){
+                String checkStatus = orderService.searchOutstandingAccountsOrder(order.getOrderCode());
+                order.setCheckStatus(checkStatus);
+                List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
+                order.setOrderGoodsList(goods);
+            }
+        }
+        return ResponseEntity.ok(ArrayObject.of(orderDetailList));
+    }
+
 
     @GetMapping("/my-order/{orderCode}")
     @ApiOperation(value = "根据订单编号查询订单详情")
     public ResponseEntity<OrderDetail> queryOrder(@PathVariable("orderCode") String orderCode){
         OrderDetail orderDetail = orderService.searchOrder(orderCode);
+        PaymentLog paymentLog = paymentLogService.getPaymentLog(orderCode);
+        orderDetail.setPayType(paymentLog.getPaymentType());
         if (Objects.isNull(orderDetail)){
-            throw new ServiceException("没有该订单信息");
+           return ResponseEntity.badRequest().body(orderDetail);
         }
         List<OrderGoods> goods = orderService.searchOrderGoods(orderDetail.getId());
         if (goods.isEmpty()){
@@ -152,6 +211,8 @@ public class OrderApi {
         }
         return ResponseEntity.ok(100);
     }
+
+
 
     @GetMapping("/after-sale/{userId}")
     @ApiOperation(value = "查询售后订单")

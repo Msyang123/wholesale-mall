@@ -425,6 +425,18 @@ public class PayService {
             paymentLog.setPaymentFrom("order");//支付来源于 order-订单 debt-账款 invoice-发票 recharge-充值
             paymentLog.setTotalFee(needPayFee);
             paymentLogService.insertPaymentLog(paymentLog);
+           /* paymentLog.setPaymentOrderType(0);
+            paymentLog.setPaymentStep(1);//0签名 1余额支付 2账款订单未支付 3账款订单已支付 4支付回调 5充值回调 6欠款订单支付回调  7 发票支付回调
+            paymentLog.setOrderCode(orderDetail.getOrderCode());
+            paymentLog.setOrderId(orderDetail.getId());
+            paymentLog.setUserId(orderDetail.getUserId());
+            paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
+            paymentLog.setPaymentFrom(0);//支付来源于 0订单 1发票
+            paymentLog.setTotalFee(needPayFee);
+            paymentLogMapper.insertPaymentLog(paymentLog);*/
+            //修改订单并且发送海鼎订单
+            orderDetail.setOrderStatus("undelivery");//已付款状态
+            orderDetail.setCurrentOrderStatus("unpaid");//待付款状态
             return 1;
         }else{
             throw new ServiceException("扣除用户余额失败");
@@ -463,6 +475,14 @@ public class PayService {
             paymentLog.setOrderId(debtOrder.getId());
             paymentLog.setUserId(debtOrder.getUserId());
             paymentLog.setPaymentFrom("debt");//支付来源：order-订单 debt-账款 invoice-发票 recharge-充值
+           /* paymentLog.setPaymentOrderType(0);
+            paymentLog.setPaymentStep(3);//0签名 1余额支付 2账款订单未支付 3账款订单已支付 4支付回调 5充值回调 6欠款订单支付回调  7 发票支付回调
+            paymentLog.setOrderCode(debtOrder.getOrderDebtCode());
+            paymentLog.setOrderId(debtOrder.getId());
+            paymentLog.setUserId(debtOrder.getUserId());
+            paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
+            paymentLog.setPaymentFrom(0);//支付来源于 0订单 1发票
+            paymentLog.setPaymentOrderType(1);//订单类型 0线上订单 1账款订单*/
             paymentLog.setTotalFee(needPayFee);
             paymentLogService.insertPaymentLog(paymentLog);
             return 1;
@@ -504,6 +524,14 @@ public class PayService {
             paymentLog.setUserId(invoice.getUserId());
             paymentLog.setPaymentFrom("invoice");//支付来源：order-订单 debt-账款 invoice-发票 recharge-充值
             paymentLog.setPaymentType("balance");//支付类型：balance-余额支付 wechat-微信 offline-线下支付
+           /* paymentLog.setPaymentOrderType(0);
+            paymentLog.setPaymentStep(1);//0签名 1余额支付 2账款订单未支付 3账款订单已支付 4支付回调 5充值回调 6欠款订单支付回调  7 发票支付回调
+            paymentLog.setOrderCode(invoice.getInvoiceCode());
+            paymentLog.setOrderId(invoice.getId());
+            paymentLog.setUserId(invoice.getUserId());
+            paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
+            paymentLog.setPaymentFrom(1);//支付来源于 0订单 1发票
+            paymentLog.setPaymentOrderType(2);//订单类型 0线上订单 1账款订单 2发票*/
             paymentLog.setTotalFee(needPayFee);
             paymentLogService.insertPaymentLog(paymentLog);
             return 1;
@@ -568,7 +596,7 @@ public class PayService {
         returnData.setNickname(replacedUsername);
         returnData.setPhoneNum(user.getPhone());
         //设置订单门店 测试环境设置的只有一个
-        //TODO 正式环境需要提供门店编码替换
+        //正式环境需要提供门店编码替换
         returnData.setStoreId("07310106");
         returnData.setStoreName("水果熟了-左家塘店");
         //备注
@@ -578,7 +606,7 @@ public class PayService {
             ProductsData productsData=new ProductsData();
             productsData.setProductCode(item.getHdSkuId());
             productsData.setProductName(item.getGoodsName());
-            //FIXME 待验证 可能可以不传递
+            //待验证 可能可以不传递
             //XXX 待验证amount 和productAmount 是否正确
             productsData.setAmount((double)item.getQuanity());//数量
             productsData.setProductAmount(item.getStandardWeight().doubleValue());//重量

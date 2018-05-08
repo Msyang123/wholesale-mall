@@ -80,4 +80,6 @@ public class User {
     /*public enum Sex {
         MALE, FEMALE, UNKNOWN
     }*/
+    @JsonProperty("auditStatus")
+    private String auditStatus;
 }

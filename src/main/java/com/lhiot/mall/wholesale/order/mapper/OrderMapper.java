@@ -5,6 +5,7 @@ import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import java.util.Map;
 
 
 @Mapper
@@ -78,6 +79,5 @@ public interface OrderMapper {
     OrderDetail select(long id);
 
     OrderDetail userOrder(OrderParam orderParam);
-
 
 }

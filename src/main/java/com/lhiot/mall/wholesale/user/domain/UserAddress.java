@@ -36,5 +36,5 @@ public class UserAddress {
     private Long userId;
 
     @JsonProperty("name")
-    private String userName;
+    private String contactsName;
 }

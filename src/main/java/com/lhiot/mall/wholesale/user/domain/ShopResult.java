@@ -36,7 +36,7 @@ public class ShopResult {
     @JsonProperty("address")
     private String addressDetail;
 
-    @JsonProperty("province")
+    @JsonProperty("city")
     private String city;
 
     @JsonProperty("orderTotal")

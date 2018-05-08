@@ -180,6 +180,13 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="orderIds != null and orderIds.size()>0">
+                and t1.order_code in
+                <foreach collection="orderIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+
         </trim>
         <include refid="common.pager"></include>
     </select>
@@ -229,7 +236,7 @@
     <select id="userOrder" parameterType="com.lhiot.mall.wholesale.order.domain.OrderParam" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
         select * from t_whs_order where user_id=#{id}
         <choose>
-            <when test="dayNum!=null and dayNum!=0">
+            <when test="dayNum!=null and dayNum!=1">
               and DATE_SUB(CURDATE(),INTERVAL #{dayNum} DAY) &lt;= create_time limit 1
             </when>
             <otherwise>
@@ -237,4 +244,16 @@
             </otherwise>
         </choose>
     </select>
+
+    <!--分页查询订单信息-->
+
+   <!-- <select parameterType="map" id="page" resultType="com.lhiot.mall.wholesale.aftersale.domain.Order">
+        select o.* from t_whs_order_refund_application a
+        LEFT JOIN t_whs_order o on a.order_id=o.order_code
+        <where>
+            <if test="orderCode!=null and orderCode!='null' and orderCode!=''"> and o.order_code = #{orderCode} </if>
+        </where>
+    </select>-->
 </mapper>
+
+

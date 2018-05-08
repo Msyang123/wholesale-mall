@@ -434,4 +434,9 @@ public class OrderService {
     public OrderDetail userOrder(OrderParam orderParam){
         return orderMapper.userOrder(orderParam);
     }
+
+    public List<OrderGridResult> orderGridData(OrderGridParam param){
+        return orderMapper.pageQuery(param);
+    }
+
 }
