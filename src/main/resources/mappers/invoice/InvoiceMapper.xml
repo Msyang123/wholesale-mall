@@ -42,7 +42,7 @@
 
     <!-- 查询发票抬头 -->
     <select id="selectInvoiceTitle"  parameterType="long" resultType="com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle">
-       select * from t_whs_invoice_title where user_id=#{0}
+       select * from t_whs_invoice_title where user_id=#{0} ORDER BY create_time desc limit 1
     </select>
 
     <update id="updateInvoiceTitle" parameterType="com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle">
@@ -131,7 +131,7 @@
         </set>
         where invoice_code=#{invoiceCode}
     </update>
-    <select id="findInvoiceByCode" parameterType="String" resultType="com.lhiot.mall.wholesale.invoice.domain.Invoice">
+    <select id="findInvoiceByCode" parameterType="Long" resultType="com.lhiot.mall.wholesale.invoice.domain.Invoice">
         select * from t_whs_invoice  where invoice_code=#{0}
     </select>
 

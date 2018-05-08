@@ -1,8 +1,8 @@
 package com.lhiot.mall.wholesale.pay.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.leon.microx.common.exception.ServiceException;
+import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.StringReplaceUtil;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
@@ -12,11 +12,12 @@ import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.service.DebtOrderService;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
-import com.lhiot.mall.wholesale.pay.mapper.PaymentLogMapper;
+import com.lhiot.mall.wholesale.pay.hdsend.Inventory;
+import com.lhiot.mall.wholesale.pay.hdsend.Warehouse;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.service.UserService;
 import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
-import com.sgsl.hd.client.HaiDingClient;
+import com.sgsl.auditing.MD5;
 import com.sgsl.hd.client.vo.OrderReduceData;
 import com.sgsl.hd.client.vo.ProductsData;
 import lombok.extern.slf4j.Slf4j;
@@ -26,12 +27,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.sql.Timestamp;
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @Transactional
@@ -39,21 +38,21 @@ import java.util.regex.Pattern;
 public class PayService {
 
     private ObjectMapper om = new ObjectMapper();
-    private final PaymentLogMapper paymentLogMapper;
+    private final PaymentLogService paymentLogService;
     private final UserService userService;
     private final OrderService orderService;
     private final DebtOrderService debtOrderService;
     private final InvoiceService invoiceService;
-    private final HaiDingClient hdClient;
+    private final Warehouse warehouse;
 
     @Autowired
-    public PayService(PaymentLogMapper paymentLogMapper,UserService userService,OrderService orderService,DebtOrderService debtOrderService,InvoiceService invoiceService,HaiDingClient hdClient){
-        this.paymentLogMapper=paymentLogMapper;
+    public PayService(PaymentLogService paymentLogService,UserService userService,OrderService orderService,DebtOrderService debtOrderService,InvoiceService invoiceService,Warehouse warehouse){
+        this.paymentLogService=paymentLogService;
         this.userService=userService;
         this.orderService=orderService;
         this.debtOrderService=debtOrderService;
         this.invoiceService=invoiceService;
-        this.hdClient=hdClient;
+        this.warehouse=warehouse;
     }
     /**
      * 微信充值支付签名
@@ -63,7 +62,12 @@ public class PayService {
         Map<String, Object> ret = new HashMap<>();
         ret.put("state", "failure");
         if (StringUtils.isEmpty(openId)) {
-            ret.put("msg", "用户ID为空！");
+            ret.put("msg", "用户信息为空！");
+            return om.writeValueAsString(ret);
+        }
+        User user= userService.searchUserByOpenid(openId);
+        if(Objects.isNull(user)){
+            ret.put("msg", "未找到用户信息！");
             return om.writeValueAsString(ret);
         }
 
@@ -85,7 +89,7 @@ public class PayService {
         packageParams.put("mch_id", weChatUtil.getProperties().getWeChatPay().getPartnerId());
         packageParams.put("nonce_str", nonce);// 随机串
         packageParams.put("body", "水果熟了 - 批发商城用户充值");// 商品描述
-        packageParams.put("attach", "yy");// 附加数据
+        packageParams.put("attach", user.getId());// 附加数据 用户id
         packageParams.put("out_trade_no", rechargeCode);// 商户订单号
         packageParams.put("total_fee", rechargeFee);// 微信支付金额单位为（分）
         packageParams.put("time_expire", timeExpire);
@@ -351,26 +355,77 @@ public class PayService {
         }
         User updateUser=new User();
         updateUser.setId(orderDetail.getUserId());
-        updateUser.setBalance(needPayFee);//需要扣除的值
+        updateUser.setBalance(-needPayFee);//需要扣除的值
         boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
         if(updateResult){
-            //发送海鼎订单信息 测试环境发送到左家塘店
-            //需要配置海鼎相关配置到yml中
-            OrderReduceData reduceData = null;
-            try {
-                reduceData = hdReduce(orderDetail,user);
-            } catch (Exception e) {
-                throw new ServiceException("订单转换门店发送数据失败");
-            }
-            if(reduceData!=null&&!hdClient.orderReduce(reduceData)){
-                //fixme 海鼎没有发送成功 重试处理
-            }
+            //FIXME 发送订单到海鼎总仓
+            Inventory inventory=new Inventory();
+            inventory.setUuid(UUID.randomUUID().toString());
+            inventory.setSenderCode("9646");
+            inventory.setSenderWrh("07310101");
+            inventory.setReceiverCode(null);
+            inventory.setContactor("老曹");
+            inventory.setPhoneNumber("18888888888");
+            inventory.setDeliverAddress("五一大道98号");
+            inventory.setRemark("快点送");
+            inventory.setOcrDate(new Date());
+            inventory.setFiller("填单人");
+            inventory.setSeller("销售员");
+            inventory.setSouceOrderCls("批发商城");
+            inventory.setNegInvFlag("1");
+            inventory.setMemberCode(null);
+            inventory.setFreight(new BigDecimal(21.3));
 
-            orderService.updateOrderStatus(orderDetail);
+            //清单
+            List<Inventory.WholeSaleDtl> wholeSaleDtlList=new ArrayList<>();
+            Inventory.WholeSaleDtl wholeSaleDtl1=inventory.new WholeSaleDtl();
+            wholeSaleDtl1.setSkuId("010100100011");
+            wholeSaleDtl1.setQty(new BigDecimal(3));
+            wholeSaleDtl1.setPrice(new BigDecimal(100.1));
+            wholeSaleDtl1.setTotal(null);
+            wholeSaleDtl1.setFreight(null);
+            wholeSaleDtl1.setPayAmount(new BigDecimal((99.1)));
+            wholeSaleDtl1.setUnitPrice(null);
+            wholeSaleDtl1.setPriceAmount(new BigDecimal(200.1));
+            wholeSaleDtl1.setBuyAmount(new BigDecimal(99.2));
+            wholeSaleDtl1.setBusinessDiscount(new BigDecimal(0.1));
+            wholeSaleDtl1.setPlatformDiscount(new BigDecimal(0));
+            wholeSaleDtl1.setQpc(new BigDecimal(5));
+            wholeSaleDtl1.setQpcStr("1*5");
+
+            wholeSaleDtlList.add(wholeSaleDtl1);
+            inventory.setProducts(wholeSaleDtlList);
+
+            List<Inventory.Pay> pays=new ArrayList<>();
+            Inventory.Pay pay=inventory.new Pay();
+
+            pay.setTotal(new BigDecimal(234.56));
+            pay.setPayName("现金支付");
+            pays.add(pay);
+            inventory.setPays(pays);
+
+            String hdCode=warehouse.savenew2state(inventory);
+            log.info(hdCode);
+            //获取海鼎总仓返回的订单号
+            //TODO 修改订单并且发送海鼎总仓订单
+            //修改订单状态为已支付状态
+            orderDetail.setHdCode(hdCode);//总仓编码
+            orderDetail.setHdStatus("success");//海鼎发送成功
+            orderDetail.setOrderStatus("undelivery");//待发货状态
+
+            orderService.updateOrder(orderDetail);
 
             PaymentLog paymentLog=new PaymentLog();
             //写入日志
-            paymentLog.setPaymentOrderType(0);
+            paymentLog.setPaymentType("balance");//balance-余额支付 wechat-微信 offline-线下支付
+            paymentLog.setPaymentStep("paid");//sign-签名成功 paid-支付成功
+            paymentLog.setOrderCode(orderDetail.getOrderCode());
+            paymentLog.setOrderId(orderDetail.getId());
+            paymentLog.setUserId(orderDetail.getUserId());
+            paymentLog.setPaymentFrom("order");//支付来源于 order-订单 debt-账款 invoice-发票 recharge-充值
+            paymentLog.setTotalFee(needPayFee);
+            paymentLogService.insertPaymentLog(paymentLog);
+           /* paymentLog.setPaymentOrderType(0);
             paymentLog.setPaymentStep(1);//0签名 1余额支付 2账款订单未支付 3账款订单已支付 4支付回调 5充值回调 6欠款订单支付回调  7 发票支付回调
             paymentLog.setOrderCode(orderDetail.getOrderCode());
             paymentLog.setOrderId(orderDetail.getId());
@@ -378,12 +433,10 @@ public class PayService {
             paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
             paymentLog.setPaymentFrom(0);//支付来源于 0订单 1发票
             paymentLog.setTotalFee(needPayFee);
-            paymentLogMapper.insertPaymentLog(paymentLog);
+            paymentLogMapper.insertPaymentLog(paymentLog);*/
             //修改订单并且发送海鼎订单
             orderDetail.setOrderStatus("undelivery");//已付款状态
             orderDetail.setCurrentOrderStatus("unpaid");//待付款状态
-
-            //修改订单状态为已支付状态
             return 1;
         }else{
             throw new ServiceException("扣除用户余额失败");
@@ -408,7 +461,7 @@ public class PayService {
         }
         User updateUser=new User();
         updateUser.setId(debtOrder.getUserId());
-        updateUser.setBalance(needPayFee);//需要扣除的值
+        updateUser.setBalance(-needPayFee);//需要扣除的值
         boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
         if(updateResult){
             debtOrder.setCheckStatus("unaudited");//设置审核中
@@ -416,16 +469,22 @@ public class PayService {
 
             PaymentLog paymentLog=new PaymentLog();
             //写入日志
-            paymentLog.setPaymentOrderType(0);
+            paymentLog.setPaymentType("balance");//支付类型：balance-余额支付 wechat-微信 offline-线下支付
+            paymentLog.setPaymentStep("paid");//支付步骤：sign-签名成功 paid-支付成功
+            paymentLog.setOrderCode(debtOrder.getOrderDebtCode());
+            paymentLog.setOrderId(debtOrder.getId());
+            paymentLog.setUserId(debtOrder.getUserId());
+            paymentLog.setPaymentFrom("debt");//支付来源：order-订单 debt-账款 invoice-发票 recharge-充值
+           /* paymentLog.setPaymentOrderType(0);
             paymentLog.setPaymentStep(3);//0签名 1余额支付 2账款订单未支付 3账款订单已支付 4支付回调 5充值回调 6欠款订单支付回调  7 发票支付回调
             paymentLog.setOrderCode(debtOrder.getOrderDebtCode());
             paymentLog.setOrderId(debtOrder.getId());
             paymentLog.setUserId(debtOrder.getUserId());
             paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
             paymentLog.setPaymentFrom(0);//支付来源于 0订单 1发票
-            paymentLog.setPaymentOrderType(1);//订单类型 0线上订单 1账款订单
+            paymentLog.setPaymentOrderType(1);//订单类型 0线上订单 1账款订单*/
             paymentLog.setTotalFee(needPayFee);
-            paymentLogMapper.insertPaymentLog(paymentLog);
+            paymentLogService.insertPaymentLog(paymentLog);
             return 1;
         }else{
             throw new ServiceException("扣除用户余额失败");
@@ -450,7 +509,7 @@ public class PayService {
         }
         User updateUser=new User();
         updateUser.setId(invoice.getUserId());
-        updateUser.setBalance(needPayFee);//需要扣除的值
+        updateUser.setBalance(-needPayFee);//需要扣除的值
         boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
         if(updateResult){
 
@@ -459,22 +518,48 @@ public class PayService {
 
             PaymentLog paymentLog=new PaymentLog();
             //写入日志
-            paymentLog.setPaymentOrderType(0);
+            paymentLog.setPaymentStep("paid");//支付步骤：sign-签名成功 paid-支付成功
+            paymentLog.setOrderCode(invoice.getInvoiceCode());
+            paymentLog.setOrderId(invoice.getId());
+            paymentLog.setUserId(invoice.getUserId());
+            paymentLog.setPaymentFrom("invoice");//支付来源：order-订单 debt-账款 invoice-发票 recharge-充值
+            paymentLog.setPaymentType("balance");//支付类型：balance-余额支付 wechat-微信 offline-线下支付
+           /* paymentLog.setPaymentOrderType(0);
             paymentLog.setPaymentStep(1);//0签名 1余额支付 2账款订单未支付 3账款订单已支付 4支付回调 5充值回调 6欠款订单支付回调  7 发票支付回调
             paymentLog.setOrderCode(invoice.getInvoiceCode());
             paymentLog.setOrderId(invoice.getId());
             paymentLog.setUserId(invoice.getUserId());
             paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
             paymentLog.setPaymentFrom(1);//支付来源于 0订单 1发票
-            paymentLog.setPaymentOrderType(2);//订单类型 0线上订单 1账款订单 2发票
+            paymentLog.setPaymentOrderType(2);//订单类型 0线上订单 1账款订单 2发票*/
             paymentLog.setTotalFee(needPayFee);
-            paymentLogMapper.insertPaymentLog(paymentLog);
+            paymentLogService.insertPaymentLog(paymentLog);
             return 1;
         }else{
             throw new ServiceException("扣除用户余额失败");
         }
     }
 
+    /**
+     * 微信回调计算签名
+     * @param parameters
+     * @param partnerKey
+     * @return
+     */
+    public String createSign(final SortedMap<Object, Object> parameters, String partnerKey) {
+        StringBuilder sb = new StringBuilder();
+        Set<Map.Entry<Object, Object>> es = parameters.entrySet();
+        for (Map.Entry<Object, Object> entry : es) {
+            String k = (String) entry.getKey();
+            Object v = entry.getValue();
+            if (null != v && !"".equals(v) && !"sign".equals(k) && !"key".equals(k)) {
+                sb.append(k).append("=").append(v).append("&");
+            }
+        }
+        sb.append("key=").append(partnerKey);
+        String sign = MD5.md5Hex(sb.toString());
+        return sign.toUpperCase();
+    }
     /**
      * 海鼎减库存
      * @param orderDetail
@@ -511,7 +596,7 @@ public class PayService {
         returnData.setNickname(replacedUsername);
         returnData.setPhoneNum(user.getPhone());
         //设置订单门店 测试环境设置的只有一个
-        //TODO 正式环境需要提供门店编码替换
+        //正式环境需要提供门店编码替换
         returnData.setStoreId("07310106");
         returnData.setStoreName("水果熟了-左家塘店");
         //备注
@@ -521,7 +606,7 @@ public class PayService {
             ProductsData productsData=new ProductsData();
             productsData.setProductCode(item.getHdSkuId());
             productsData.setProductName(item.getGoodsName());
-            //FIXME 待验证 可能可以不传递
+            //待验证 可能可以不传递
             //XXX 待验证amount 和productAmount 是否正确
             productsData.setAmount((double)item.getQuanity());//数量
             productsData.setProductAmount(item.getStandardWeight().doubleValue());//重量

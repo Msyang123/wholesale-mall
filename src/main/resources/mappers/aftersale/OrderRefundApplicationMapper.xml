@@ -62,4 +62,15 @@
         </trim>
     </select>
 
+
+    <!--后台管理系统 -查询售后申请表-->
+    <select parameterType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication" id="list" resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
+        select * from t_whs_order_refund_application
+        <trim prefix="where" prefixOverrides="and">
+            <if test="userId!=null and userId!=0">
+                and user_id=#{userId}
+            </if>
+        </trim>
+    </select>
+
 </mapper>

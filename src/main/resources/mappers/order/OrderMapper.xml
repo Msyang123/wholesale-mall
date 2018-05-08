@@ -40,7 +40,7 @@
     <select id="searchOrder"  parameterType="String" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
         select id,order_code orderCode,IFNULL(discount_fee,0) discountFee,settlement_type settlementType,pay_status payStatus,user_id
         ,order_status orderStatus,create_time createTime,IFNULL(total_fee,0) totalFee,IFNULL(payable_fee,0) payableFee,remarks,
-        hd_status,delivery_time,IFNULL(delivery_fee,0) deliveryFee,delivery_address
+        hd_status,delivery_time,IFNULL(delivery_fee,0) deliveryFee,delivery_address,hd_code
         from t_whs_order o where o.order_code = #{orderCode}
     </select>
 
@@ -73,12 +73,12 @@
         insert into t_whs_order (order_code,user_id,
                         salesman_id,total_fee,create_time,order_status,order_coupon,discount_fee,payable_fee,
                         hd_status,delivery_time,delivery_fee,remarks,settlement_type,pay_status,delivery_address,receive_time,hd_status,
-                        delivery_time,delivery_fee.delivery_address
+                        delivery_time,delivery_fee,delivery_address,hd_code
                         ) VALUES
           (#{orderCode},#{userId},
               #{salesmanId},#{orderTotal},#{createTime},#{orderStatus},#{orderCoupon},#{discountFee},#{orderNeedFee},
               #{hdStatus},#{deliveryTime},#{deliveryFee},#{remarks},#{settlementType},#{payStatus},#{deliveryAddress},#{receiveTime},
-              #{hdStatus},#{deliveryTime},#{deliveryFee},#{deliveryAddress}
+              #{hdStatus},#{deliveryTime},#{deliveryFee},#{deliveryAddress},#{hdCode}
           )
     </insert>
 
@@ -96,6 +96,35 @@
     <update id="updateOrderStatusByCode" parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
         UPDATE t_whs_order set order_status=#{orderStatus} where order_status=#{currentOrderStaus} and order_code=#{orderCode}
     </update>
+    <!--依据订单编码修改订单信息-->
+    <update id="updateOrder" parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        UPDATE t_whs_order
+        <set>
+            <if test="hdCode!=null and hdCode!=''">
+                hd_code=#{hdCode},
+            </if>
+            <if test="remarks!=null and remarks!=''">
+                remarks=#{remarks},
+            </if>
+            <if test="payStatus!=null and payStatus!=''">
+                pay_status=#{payStatus},
+            </if>
+            <if test="receiveTime!=null">
+                receive_time=#{receiveTime},
+            </if>
+            <if test="payStatus!=null and payStatus!=''">
+                pay_status=#{payStatus},
+            </if>
+            <if test="hdStatus!=null and hdStatus!=''">
+                hd_status=#{hdStatus},
+            </if>
+            <if test="orderStatus!=null and orderStatus!=''">
+                order_status=#{orderStatus},
+            </if>
+        </set>
+         where order_code=#{orderCode}
+    </update>
+
     
     <!-- 统计商品的售卖数量 -->
     <select id="soldQuantity" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.order.domain.SoldQuantity">
@@ -151,6 +180,13 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="orderIds != null and orderIds.size()>0">
+                and t1.order_code in
+                <foreach collection="orderIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+
         </trim>
         <include refid="common.pager"></include>
     </select>
@@ -200,7 +236,7 @@
     <select id="userOrder" parameterType="com.lhiot.mall.wholesale.order.domain.OrderParam" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
         select * from t_whs_order where user_id=#{id}
         <choose>
-            <when test="dayNum!=null and dayNum!=0">
+            <when test="dayNum!=null and dayNum!=1">
               and DATE_SUB(CURDATE(),INTERVAL #{dayNum} DAY) &lt;= create_time limit 1
             </when>
             <otherwise>
@@ -208,4 +244,16 @@
             </otherwise>
         </choose>
     </select>
+
+    <!--分页查询订单信息-->
+
+   <!-- <select parameterType="map" id="page" resultType="com.lhiot.mall.wholesale.aftersale.domain.Order">
+        select o.* from t_whs_order_refund_application a
+        LEFT JOIN t_whs_order o on a.order_id=o.order_code
+        <where>
+            <if test="orderCode!=null and orderCode!='null' and orderCode!=''"> and o.order_code = #{orderCode} </if>
+        </where>
+    </select>-->
 </mapper>
+
+

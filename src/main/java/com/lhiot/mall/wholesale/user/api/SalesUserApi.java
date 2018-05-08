@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.user.api;
 
 import com.leon.microx.common.wrapper.ArrayObject;
+import com.leon.microx.common.wrapper.ResultObject;
 import com.lhiot.mall.wholesale.coupon.domain.CouponConfig;
 import com.lhiot.mall.wholesale.coupon.domain.ReleaseCouponParam;
 import com.lhiot.mall.wholesale.coupon.service.CouponConfigService;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.NotNull;
+import java.lang.reflect.Array;
 import java.util.*;
 
 @Api(description = "业务员接口")
@@ -55,17 +57,27 @@ public class SalesUserApi {
 
     @GetMapping("/{id}/search/{approved}/sellers")
     @ApiOperation(value = "根据业务员ID查询是否审核通过或者未审核的商户")
-    public ResponseEntity<List<User>> isCheck(@PathVariable @NotNull Integer id, @PathVariable String approved, @RequestParam Integer page, @RequestParam Integer rows) {
+    public ResponseEntity<ArrayObject> isCheck(@PathVariable @NotNull Integer id, @PathVariable String approved, @RequestParam Integer page, @RequestParam Integer rows) {
         Map<String, Object> param = ImmutableMap.of("id", id, "check", approved, "start", (page - 1) * rows, "rows", rows);
         List<SalesUserRelation> salesUserRelations = salesUserService.selectRelation(param);
         if (salesUserRelations.isEmpty()) {
-            return ResponseEntity.ok(new ArrayList<>());
+            return ResponseEntity.ok(ArrayObject.of(new ArrayList<>()));
         }
         List ids = new ArrayList();
         for (SalesUserRelation salesUserRelation : salesUserRelations) {
             ids.add(salesUserRelation.getUserId());
         }
-        return ResponseEntity.ok(userService.search(ids));
+        List<User> users = userService.search(ids);
+        List<User> sellers = new ArrayList<User>();
+        for (User user :users){
+            for (SalesUserRelation salesUserRelation:salesUserRelations) {
+                if (Objects.equals(user.getId(),salesUserRelation.getUserId())){
+                    user.setAuditStatus(salesUserRelation.getAuditStatus());
+                }
+            }
+            sellers.add(user);
+        }
+        return ResponseEntity.ok(ArrayObject.of(sellers));
     }
 
 
@@ -110,6 +122,10 @@ public class SalesUserApi {
         if (shopResults.isEmpty()){
             return ResponseEntity.ok(ArrayObject.of(new ArrayList<ShopResult>()));
         }
+        if (dayNum==0){
+            //全部门店
+            return ResponseEntity.ok(ArrayObject.of(shopResults));
+        }
 
         OrderParam param = new OrderParam();
         for (ShopResult shopResult:shopResults) {
@@ -129,17 +145,17 @@ public class SalesUserApi {
         return ResponseEntity.ok(salesUserService.searchSalesUserByOpenid(openid));
     }
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     @ApiOperation(value = "业务员账号登陆接口")
-    public ResponseEntity salesLogin(@RequestParam String acount,@RequestParam String salesmanPassword){
-        SalesUser salesUser=salesUserService.login(acount);
+    public ResponseEntity salesLogin(@RequestParam String account,@RequestParam String psw){
+        SalesUser salesUser=salesUserService.login(account);
         if (salesUser==null){
-            return ResponseEntity.badRequest().body("账号不存在");
+            return ResponseEntity.badRequest().body(ResultObject.of("账号不存在"));
         }
-        if (salesmanPassword.equals(salesUser.getSalesmanPassword())){
-            return ResponseEntity.ok().body("登陆成功");
+        if (psw.equals(salesUser.getSalesmanPassword())){
+            return ResponseEntity.ok().body(salesUser);
         }
-        return ResponseEntity.badRequest().body("密码错误");
+        return ResponseEntity.badRequest().body(ResultObject.of("密码错误"));
     }
 
     @GetMapping("/salesman")
@@ -158,7 +174,7 @@ public class SalesUserApi {
        salesUserRelation.setAuditStatus(checkStatus);
        salesUserRelation.setUserId(userId);
        salesUserRelation.setSalesmanId(salesId);
-            if (Objects.equals(salesUserRelation.getAuditStatus(),"yes")){
+            //if (Objects.equals(salesUserRelation.getAuditStatus(),"agree")){
                 if (salesUserService.updateUserSaleRelationship(salesUserRelation)>0){//关系表改状态
                     if (userService.updateUserStatus(salesUserRelation.getUserId())>0){//用户表改已认证或未认证
                         StringBuilder ids = new StringBuilder();//夺取券包IDs
@@ -174,9 +190,9 @@ public class SalesUserApi {
                         System.out.println(o.toString()+" =================================");*/
                     }
                 }
-            }
+          //  }
 
-        return ResponseEntity.ok("");
+        return ResponseEntity.ok("操作成功");
     }
 
 

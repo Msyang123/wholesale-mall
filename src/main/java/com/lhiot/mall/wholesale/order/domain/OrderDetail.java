@@ -27,7 +27,7 @@ public class OrderDetail {
     @JsonProperty("salesmanId")
     private Long salesmanId;
 
-    @JsonProperty("payType")
+    @JsonProperty("orderType")
     private String settlementType;
 
     @JsonProperty("status")
@@ -53,8 +53,11 @@ public class OrderDetail {
     @JsonProperty("userId")
     private Long userId;
 
-    @JsonProperty("payStatus")
+    @JsonProperty("paidType")
     private String payStatus;
+
+    @JsonProperty("payType")
+    private String payType;
 
     @JsonProperty("comments")
     private String remarks;
@@ -96,6 +99,12 @@ public class OrderDetail {
 
     @JsonProperty("expire")
     private String expire;//是否已过期 yes no
+
+    @JsonProperty("hdCode")
+    private String hdCode;
+
+    @JsonProperty("orderCoupon")
+    private Integer orderCoupon;//优惠券
 
     @JsonProperty("start")
     private Integer start;
