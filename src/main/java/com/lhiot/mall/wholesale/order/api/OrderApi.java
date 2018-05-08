@@ -1,24 +1,21 @@
 package com.lhiot.mall.wholesale.order.api;
 
-import java.beans.IntrospectionException;
-import java.lang.reflect.InvocationTargetException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.leon.microx.common.exception.ServiceException;
+import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.util.SnowflakeId;
-import com.lhiot.mall.wholesale.MQDefaults;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.order.domain.Distribution;
 import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
+import com.lhiot.mall.wholesale.order.service.DebtOrderService;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
+import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -28,15 +25,25 @@ import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
-import com.lhiot.mall.wholesale.order.service.DebtOrderService;
+import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
+import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.service.OrderService;
+import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.setting.service.SettingService;
-import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
+import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @Api(description ="订单接口")
 @Slf4j
@@ -45,8 +52,6 @@ import javax.validation.constraints.NotNull;
 public class OrderApi {
 
     private final OrderService orderService;
-    private final DebtOrderService debtOrderService;
-    private final SalesUserService salesUserService;
     private final SettingService settingService;
 
     private final PaymentLogService paymentLogService;
@@ -55,15 +60,22 @@ public class OrderApi {
 
     private final SnowflakeId snowflakeId;
 
+    private final SalesUserService salesUserService;
+
+    private final DebtOrderService debtOrderService;
+
     @Autowired
-    public OrderApi(OrderService orderService, DebtOrderService debtOrderService, SalesUserService salesUserService, SettingService settingService, PaymentLogService paymentLogService, RabbitTemplate rabbit, SnowflakeId snowflakeId) {
+    public OrderApi(OrderService orderService, DebtOrderService debtOrderService, SalesUserService salesUserService,
+                SettingService settingService, PaymentLogService paymentLogService, RabbitTemplate rabbit, SnowflakeId snowflakeId) {
+
         this.orderService = orderService;
-        this.debtOrderService=debtOrderService;
-        this.salesUserService=salesUserService;
         this.settingService = settingService;
         this.paymentLogService = paymentLogService;
         this.rabbit=rabbit;
         this.snowflakeId=snowflakeId;
+        this.salesUserService=salesUserService;
+        this.debtOrderService=debtOrderService;
+
     }
 
     @GetMapping("/my-orders/{userId}")
@@ -238,29 +250,6 @@ public class OrderApi {
     @PostMapping("/create")
     @ApiOperation(value = "创建订单")
     public ResponseEntity create(@RequestBody OrderDetail orderDetail) throws JsonProcessingException {
-
-        SalesUserRelation salesUserRelation=new SalesUserRelation();
-        salesUserRelation.setUserId(orderDetail.getUserId());
-        salesUserRelation.setAuditStatus("agree");//通过审核
-        SalesUserRelation salesUserRelationResult=salesUserService.searchSaleRelationship(salesUserRelation);
-        if(Objects.nonNull(salesUserRelationResult)){
-            //设置订单业务员编码
-            orderDetail.setSalesmanId(salesUserRelationResult.getSalesmanId());
-        }
-        //FIXME 创建的时候发送创建广播消息 用于优惠券设置无效
-        //FIXME 判断库存 减库存
-        if(Objects.equals(orderDetail.getSettlementType(),"cod")){  //改为枚举
-            orderDetail.setOrderStatus("undelivery");//待收货
-            //FIXME 直接发送总仓
-
-        }else{
-            orderDetail.setOrderStatus("unpaid");//待付款
-        }
-        //mq设置三十分钟失效
-        rabbit.convertAndSend(MQDefaults.DIRECT_EXCHANGE_NAME, MQDefaults.DLX_QUEUE_NAME, JacksonUtils.toJson(orderDetail), message -> {
-            message.getMessageProperties().setExpiration(String.valueOf(1 * 60 * 1000));
-            return message;
-        });
         orderService.create(orderDetail);
         return ResponseEntity.ok(orderDetail);
     }
@@ -275,20 +264,19 @@ public class OrderApi {
 
     @PutMapping("/cancel/payed/{orderCode}")
     @ApiOperation(value = "取消待收货订单")
-    public ResponseEntity<Integer> cancelPayedOrder(@PathVariable("orderCode") String orderCode){
+    public ResponseEntity cancelPayedOrder(@PathVariable("orderCode") String orderCode){
         //判断订单类型来确定退款方式
         //需求 当天可以自己任意取消支付订单，订单为全部商品,最后取消海鼎订单 超过指定时间，需要后台审核订单，审核走售后流程
         OrderDetail orderDetail = orderService.searchOrder(orderCode);
         if (Objects.isNull(orderDetail)){
-            throw new ServiceException("没有该订单信息");
+            return ResponseEntity.badRequest().body("没有该订单信息");
         }
-        //FIXME 改为枚举     if(orderDetail.getOrderStatus()!=3){
-        if(orderDetail.getOrderStatus()!=""){
-            throw new ServiceException("非待收货订单状态");
+        if(!Objects.equals(orderDetail.getOrderStatus(),"undelivery")){
+            return ResponseEntity.badRequest().body("非待收货订单状态");
         }
         //FIXME 改为枚举      if(orderDetail.getPayStatus()!=0){
-        if(orderDetail.getPayStatus()!=""){
-            throw new ServiceException("订单未支付");
+        if(Objects.equals("unpaid",orderDetail.getPayStatus())){
+            return ResponseEntity.badRequest().body("订单未支付");
         }
        return ResponseEntity.ok(orderService.cancelPayedOrder(orderDetail));
     }

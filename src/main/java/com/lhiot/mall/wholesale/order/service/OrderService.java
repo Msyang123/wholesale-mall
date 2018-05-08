@@ -2,9 +2,13 @@ package com.lhiot.mall.wholesale.order.service;
 
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.lhiot.mall.wholesale.MQDefaults;
+import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.domain.OrderParam;
 import com.lhiot.mall.wholesale.base.DataMergeUtils;
@@ -14,8 +18,14 @@ import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
 import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
+import com.lhiot.mall.wholesale.pay.hdsend.Abolish;
+import com.lhiot.mall.wholesale.pay.hdsend.Inventory;
+import com.lhiot.mall.wholesale.pay.hdsend.Warehouse;
+import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +49,6 @@ public class OrderService {
 
     private final UserService userService;
 
-    private final HaiDingClient hdClient;
 
     private final WeChatUtil weChatUtil;
 
@@ -47,15 +56,24 @@ public class OrderService {
 
     private final SnowflakeId snowflakeId;
 
+    private final Warehouse warehouse;
+
+    private final SalesUserService salesUserService;
+
+    private final RabbitTemplate rabbit;
+
     @Autowired
-    public OrderService(OrderMapper orderMapper, UserService userService, HaiDingClient hdClient, PaymentLogService paymentLogService,
-                        PaymentProperties paymentProperties, SnowflakeId snowflakeId) {
+    public OrderService(OrderMapper orderMapper, UserService userService, PaymentLogService paymentLogService,
+                        PaymentProperties paymentProperties, SnowflakeId snowflakeId,Warehouse warehouse,
+                        SalesUserService salesUserService,RabbitTemplate rabbit) {
         this.orderMapper = orderMapper;
         this.userService = userService;
-        this.hdClient=hdClient;
         this.weChatUtil=new WeChatUtil(paymentProperties);
         this.paymentLogService=paymentLogService;
         this.snowflakeId=snowflakeId;
+        this.warehouse=warehouse;
+        this.salesUserService=salesUserService;
+        this.rabbit=rabbit;
     }
 
     public List<OrderDetail> searchOrders(OrderDetail orderDetail){
@@ -85,7 +103,86 @@ public class OrderService {
     public List<OrderDetail> searchAfterSaleOrder(OrderDetail orderDetail) {
         return orderMapper.searchAfterSaleOrders(orderDetail);
     }
-    public int create(OrderDetail orderDetail){
+    public int create(OrderDetail orderDetail) throws JsonProcessingException {
+        SalesUserRelation salesUserRelation=new SalesUserRelation();
+        salesUserRelation.setUserId(orderDetail.getUserId());
+        salesUserRelation.setAuditStatus("agree");//通过审核
+        SalesUserRelation salesUserRelationResult=salesUserService.searchSaleRelationship(salesUserRelation);
+        if(Objects.nonNull(salesUserRelationResult)){
+            //设置订单业务员编码
+            orderDetail.setSalesmanId(salesUserRelationResult.getSalesmanId());
+        }
+        orderDetail.setPayStatus("unpaid");
+        //FIXME 创建的时候发送创建广播消息 用于优惠券设置无效
+        if(orderDetail.getOrderCoupon()!=0){
+
+        }
+        //FIXME 判断库存 减库存
+        if(Objects.equals(orderDetail.getSettlementType(),"cod")){  //改为枚举
+            orderDetail.setOrderStatus("undelivery");//待收货
+            //FIXME 直接发送总仓
+            Inventory inventory=new Inventory();
+            inventory.setUuid(UUID.randomUUID().toString());
+            inventory.setSenderCode("9646");
+            inventory.setSenderWrh("07310101");
+            inventory.setReceiverCode(null);
+            inventory.setContactor("老曹");
+            inventory.setPhoneNumber("18888888888");
+            inventory.setDeliverAddress("五一大道98号");
+            inventory.setRemark("快点送");
+            inventory.setOcrDate(new Date());
+            inventory.setFiller("填单人");
+            inventory.setSeller("销售员");
+            inventory.setSouceOrderCls("批发商城");
+            inventory.setNegInvFlag("1");
+            inventory.setMemberCode(null);
+            inventory.setFreight(new BigDecimal(21.3));
+
+            //清单
+            List<Inventory.WholeSaleDtl> wholeSaleDtlList=new ArrayList<>();
+            Inventory.WholeSaleDtl wholeSaleDtl1=inventory.new WholeSaleDtl();
+            wholeSaleDtl1.setSkuId("010100100011");
+            wholeSaleDtl1.setQty(new BigDecimal(3));
+            wholeSaleDtl1.setPrice(new BigDecimal(100.1));
+            wholeSaleDtl1.setTotal(null);
+            wholeSaleDtl1.setFreight(null);
+            wholeSaleDtl1.setPayAmount(new BigDecimal((99.1)));
+            wholeSaleDtl1.setUnitPrice(null);
+            wholeSaleDtl1.setPriceAmount(new BigDecimal(200.1));
+            wholeSaleDtl1.setBuyAmount(new BigDecimal(99.2));
+            wholeSaleDtl1.setBusinessDiscount(new BigDecimal(0.1));
+            wholeSaleDtl1.setPlatformDiscount(new BigDecimal(0));
+            wholeSaleDtl1.setQpc(new BigDecimal(5));
+            wholeSaleDtl1.setQpcStr("1*5");
+
+            wholeSaleDtlList.add(wholeSaleDtl1);
+            inventory.setProducts(wholeSaleDtlList);
+
+            List<Inventory.Pay> pays=new ArrayList<>();
+            Inventory.Pay pay=inventory.new Pay();
+
+            pay.setTotal(new BigDecimal(234.56));
+            pay.setPayName("现金支付");
+            pays.add(pay);
+            inventory.setPays(pays);
+
+            String hdCode=warehouse.savenew2state(inventory);
+            log.info(hdCode);
+
+            //修改订单状态为已支付状态
+            orderDetail.setHdCode(hdCode);//总仓编码
+            orderDetail.setHdStatus("success");//海鼎发送成功
+            orderDetail.setOrderStatus("undelivery");//待发货状态
+
+        }else{
+            orderDetail.setOrderStatus("unpaid");//待付款
+            //mq设置三十分钟失效
+            rabbit.convertAndSend(MQDefaults.DIRECT_EXCHANGE_NAME, MQDefaults.DLX_QUEUE_NAME, JacksonUtils.toJson(orderDetail), message -> {
+                message.getMessageProperties().setExpiration(String.valueOf(1 * 60 * 1000));
+                return message;
+            });
+        }
+
         //产生订单编码
         orderDetail.setOrderCode(snowflakeId.stringId());
         orderDetail.setCreateTime(new Timestamp(System.currentTimeMillis()));
@@ -118,6 +215,16 @@ public class OrderService {
     public int updateOrderStatus(OrderDetail orderDetail){
         return orderMapper.updateOrderStatusByCode(orderDetail);
     }
+
+    /**
+     * 修改订单状态
+     * @param orderDetail
+     * @return
+     */
+    public int updateOrder(OrderDetail orderDetail){
+        return orderMapper.updateOrder(orderDetail);
+    }
+
     /**
      * 取消已支付订单 需要调用仓库取消掉订单
      * @param orderDetail
@@ -126,7 +233,17 @@ public class OrderService {
     public int cancelPayedOrder(OrderDetail orderDetail){
 
        PaymentLog paymentLog= paymentLogService.getPaymentLog(orderDetail.getOrderCode());
-       String cancelResult= hdClient.cancelOrder(orderDetail.getOrderCode(),"当天无条件退货");
+
+       if(Objects.isNull(paymentLog)){
+           throw new ServiceException("未找到支付记录");
+       }
+       //退货到总仓
+        /**********批发单服务-作废**********************************/
+        Abolish abolish=new Abolish();
+        abolish.setId(orderDetail.getHdCode());
+        abolish.setSrcCls("批发商城");
+        abolish.setOper("退货管理员");
+        String cancelResult=warehouse.abolish(abolish);
        log.info(cancelResult);
 
        //FIXME 查询支付日志

@@ -10,8 +10,8 @@ import lombok.Data;
 public class JsapiPaySign {
 	 /** 
      * app应用id
-     */  
-    private String appId;
+     */
+    private String appid;
     /** 
      * 时间（秒）
      */  
