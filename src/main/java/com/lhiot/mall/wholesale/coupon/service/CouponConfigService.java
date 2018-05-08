@@ -111,5 +111,14 @@ public class CouponConfigService {
 	public List<CouponConfig> couponConfig(String couponType){
 		return couponConfigMapper.couponConfig(couponType);
 	}
+	
+	/**
+	 * 是否存在当前类型的优惠券配置
+	 * @param couponId
+	 * @return
+	 */
+	public List<CouponConfig> existConfig(Long couponId){
+		return couponConfigMapper.searchByCouponId(couponId);
+	}
 }
 

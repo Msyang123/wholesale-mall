@@ -3,8 +3,6 @@ package com.lhiot.mall.wholesale.goods.domain;
 import java.math.BigDecimal;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

@@ -30,8 +30,8 @@ public interface PlateCategoryMapper {
     //查询分类的总记录数
     int pageQueryCount();
     
-    //判断是否存在滚动布局的版块
-    int rollongLayout();
+    //判断是否存在指定布局的版块
+    int layout(String type);
     //获取版块的商品id
     List<Long> plateGoodsId(String type);
 }
