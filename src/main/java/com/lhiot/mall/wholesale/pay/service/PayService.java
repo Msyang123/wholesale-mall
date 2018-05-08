@@ -370,14 +370,14 @@ public class PayService {
 
             PaymentLog paymentLog=new PaymentLog();
             //写入日志
-            paymentLog.setPaymentOrderType(0);
+           /* paymentLog.setPaymentOrderType(0);
             paymentLog.setPaymentStep(1);//0签名 1余额支付 2账款订单未支付 3账款订单已支付 4支付回调 5充值回调 6欠款订单支付回调  7 发票支付回调
             paymentLog.setOrderCode(orderDetail.getOrderCode());
             paymentLog.setOrderId(orderDetail.getId());
             paymentLog.setUserId(orderDetail.getUserId());
             paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
             paymentLog.setPaymentFrom(0);//支付来源于 0订单 1发票
-            paymentLog.setTotalFee(needPayFee);
+            paymentLog.setTotalFee(needPayFee);*/
             paymentLogMapper.insertPaymentLog(paymentLog);
             //修改订单并且发送海鼎订单
             orderDetail.setOrderStatus("undelivery");//已付款状态
@@ -416,14 +416,14 @@ public class PayService {
 
             PaymentLog paymentLog=new PaymentLog();
             //写入日志
-            paymentLog.setPaymentOrderType(0);
+           /* paymentLog.setPaymentOrderType(0);
             paymentLog.setPaymentStep(3);//0签名 1余额支付 2账款订单未支付 3账款订单已支付 4支付回调 5充值回调 6欠款订单支付回调  7 发票支付回调
             paymentLog.setOrderCode(debtOrder.getOrderDebtCode());
             paymentLog.setOrderId(debtOrder.getId());
             paymentLog.setUserId(debtOrder.getUserId());
             paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
             paymentLog.setPaymentFrom(0);//支付来源于 0订单 1发票
-            paymentLog.setPaymentOrderType(1);//订单类型 0线上订单 1账款订单
+            paymentLog.setPaymentOrderType(1);//订单类型 0线上订单 1账款订单*/
             paymentLog.setTotalFee(needPayFee);
             paymentLogMapper.insertPaymentLog(paymentLog);
             return 1;
@@ -459,14 +459,14 @@ public class PayService {
 
             PaymentLog paymentLog=new PaymentLog();
             //写入日志
-            paymentLog.setPaymentOrderType(0);
+           /* paymentLog.setPaymentOrderType(0);
             paymentLog.setPaymentStep(1);//0签名 1余额支付 2账款订单未支付 3账款订单已支付 4支付回调 5充值回调 6欠款订单支付回调  7 发票支付回调
             paymentLog.setOrderCode(invoice.getInvoiceCode());
             paymentLog.setOrderId(invoice.getId());
             paymentLog.setUserId(invoice.getUserId());
             paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
             paymentLog.setPaymentFrom(1);//支付来源于 0订单 1发票
-            paymentLog.setPaymentOrderType(2);//订单类型 0线上订单 1账款订单 2发票
+            paymentLog.setPaymentOrderType(2);//订单类型 0线上订单 1账款订单 2发票*/
             paymentLog.setTotalFee(needPayFee);
             paymentLogMapper.insertPaymentLog(paymentLog);
             return 1;

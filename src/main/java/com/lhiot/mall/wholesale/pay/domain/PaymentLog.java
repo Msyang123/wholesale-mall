@@ -42,13 +42,13 @@ public class PaymentLog {
     private String bankName;
 
     @JsonProperty("paymentFrom")
-    private int paymentFrom;
+    private String paymentFrom;
 
     @JsonProperty("paymentStep")
-    private int paymentStep;
+    private String paymentStep;
 
-    @JsonProperty("paymentOrderType")
-    private int paymentOrderType;
+    @JsonProperty("paymentType")
+    private String paymentType;
 
     @JsonProperty("paymentTime")
     private Timestamp paymentTime;

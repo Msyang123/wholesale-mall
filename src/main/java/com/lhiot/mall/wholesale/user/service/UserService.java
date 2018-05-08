@@ -100,6 +100,15 @@ public class UserService {
             throw new ServiceException("不是有效的业务员");
         }
         if (this.updateUser(user)) {
+            /*UserAddress userAddress = new UserAddress();
+            userAddress.setPhone(user.getPhone());
+            userAddress.setIsDefault("yes");
+            userAddress.setContactsName(user.getUserName());
+            userAddress.setAddressArea(user.getCity());
+            userAddress.setAddressDetail(user.getAddressDetail());
+            userAddress.setUserId(user.getId());
+            userAddress.setSex(user.getSex());*/
+
             SalesUserRelation salesUserRelation = new SalesUserRelation();
             salesUserRelation.setUserId(user.getId());
             salesUserRelation.setSalesmanId(salesUser.getId());
