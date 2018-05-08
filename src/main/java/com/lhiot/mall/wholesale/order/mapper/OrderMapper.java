@@ -57,6 +57,13 @@ public interface OrderMapper {
      */
     int updateOrderStatusByCode(OrderDetail orderDetail);
 
+    /**
+     * 依据订单号修改订单信息
+     * @return
+     */
+    int updateOrder(OrderDetail orderDetail);
+
+
     //统计商品的售卖数量，根据商品ids
     List<SoldQuantity> soldQuantity(List<Long> goodsIds);
 

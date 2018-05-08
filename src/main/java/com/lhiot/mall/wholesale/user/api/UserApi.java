@@ -1,19 +1,15 @@
 package com.lhiot.mall.wholesale.user.api;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.encoder.QRCode;
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.common.wrapper.ArrayObject;
-import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.base.QRCodeUtil;
+import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
-import com.lhiot.mall.wholesale.user.domain.SearchUser;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
@@ -27,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -42,7 +39,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -63,8 +59,11 @@ public class UserApi {
 
     private final RedissonClient redissonClient;
 
+
     @Autowired
-    public UserApi(UserService userService, SalesUserService salesUserService, PaymentProperties properties, RestTemplate restTemplate, RedissonClient redissonClient) {
+    public UserApi(UserService userService, SalesUserService salesUserService,
+                   PaymentProperties properties, RestTemplate restTemplate,
+                   RedissonClient redissonClient) {
         this.userService = userService;
         this.salesUserService = salesUserService;
         this.weChatUtil = new WeChatUtil(properties);
@@ -180,9 +179,9 @@ public class UserApi {
         }
     }
 
-    @GetMapping("/wechat/detial/{openid}")
+    @GetMapping("/wechat/detail/{openid}")
     @ApiOperation(value = "微信 通过openId获取商户详细信息", response = User.class)
-    public ResponseEntity detial(@PathVariable("openid") String openid ) throws IOException {
+    public ResponseEntity detail(@PathVariable("openid") String openid ) throws IOException {
         RMapCache<String,String> cache=  redissonClient.getMapCache("userToken");
         //获取access_token(2小时) 缓存
         String accessToken=cache.get("accessToken"+openid);
@@ -227,7 +226,7 @@ public class UserApi {
         return ResponseEntity.ok(token);
     }
 
-    @GetMapping("/weixin/jsapi/ticket")
+    @GetMapping("/wechat/jsapi/ticket")
     @ApiOperation(value = "微信oauth jsapiTicket", response = JsapiTicket.class)
     public ResponseEntity<JsapiPaySign> jsapiTicket(@RequestParam("url") String url)  throws IOException {
         RMapCache<String,Object> cache=  redissonClient.getMapCache("token");
@@ -250,7 +249,7 @@ public class UserApi {
         String signature = weChatUtil.getSignature(ticket.getTicket(), timestamp, nonceStr, decodedUrl);
         //构造jsapi返回结果
         JsapiPaySign jsapiPaySign=new JsapiPaySign();
-        jsapiPaySign.setAppId(weChatUtil.getProperties().getWeChatOauth().getAppId());
+        jsapiPaySign.setAppid(weChatUtil.getProperties().getWeChatOauth().getAppId());
         jsapiPaySign.setNonceStr(nonceStr);
         jsapiPaySign.setTimestamp(timestamp);
         jsapiPaySign.setSignature(signature);
@@ -295,24 +294,9 @@ public class UserApi {
         return ResponseEntity.ok("删除成功");
     }
 
-    @GetMapping("/{userId}/addresses1")
-    @ApiOperation(value = "我的地址列表11111", response = UserAddress.class, responseContainer = "List")
-    public ResponseEntity<ArrayObject> userAddresses(@PathVariable("userId") @NotNull long userId) {
-        List<UserAddress> addresses = userService.searchAddressList(userId);
-        List<UserAddress> list = userService.searchAddressList(userId);
-        for (UserAddress userAddress:addresses) {
-            if ("yes".equals(userAddress.getIsDefault())){
-                list.add(0,userAddress);
-            }else{
-                list.add(userAddress);
-            }
-        }
-        return ResponseEntity.ok(ArrayObject.of(addresses));
-    }
-
     @GetMapping("/{userId}/addresses")
     @ApiOperation(value = "我的地址列表", response = UserAddress.class, responseContainer = "List")
-    public ResponseEntity<ArrayObject> userAddresses1(@PathVariable("userId") @NotNull long userId) {
+    public ResponseEntity<ArrayObject> userAddresses(@PathVariable("userId") @NotNull long userId) {
         //List<UserAddress> addresses = userService.searchAddressList(userId);
         UserAddress userAddressYes = userService.searchAddressListYes(userId);
         List<UserAddress> userAddressNo = userService.searchAddressListNO(userId);
@@ -374,9 +358,13 @@ public class UserApi {
     public ResponseEntity register(@RequestBody @NotNull User user, @RequestParam("code") String code,@RequestParam("verifCode") String verifCode) {
 
         try {
-            String redisKey=user.getPhone() + ":user:register";
-            //TODO 需要通过redis客户端获取验证码code 然后比较传递的code与redis中存储的是否一致
-
+            String verifiKey=MessageFormat.format("sendsms:{0}:{1}",user.getPhone(),"verification");
+            //FIXME 会序列化成对象 采用最新方案直接验证
+            String redisVerifCode=null;//=String.valueOf(redisTemplate.opsForValue().get(verifiKey));
+            //需要通过redis客户端获取验证码code 然后比较传递的code与redis中存储的是否一致
+            if(!Objects.equals(redisVerifCode,verifCode)){
+                return ResponseEntity.badRequest().body("手机验证码不正确");
+            }
             if (userService.register(user, code)) {
                 return ResponseEntity.ok().build();
             }

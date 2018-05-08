@@ -97,6 +97,9 @@ public class OrderDetail {
     @JsonProperty("expire")
     private String expire;//是否已过期 yes no
 
+    @JsonProperty("hdCode")
+    private String hdCode;
+
     @JsonProperty("start")
     private Integer start;
 
