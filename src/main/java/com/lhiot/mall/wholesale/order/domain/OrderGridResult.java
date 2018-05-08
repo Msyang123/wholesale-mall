@@ -56,4 +56,9 @@ public class OrderGridResult {
 
     @JsonProperty("orderStatus")
     private String orderStatus;
+
+    @JsonProperty("payStatus")
+    private String payStatus;
+
+
 }
