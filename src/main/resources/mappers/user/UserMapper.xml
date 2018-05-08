@@ -80,6 +80,7 @@
             <if test="addressDetail != null and addressDetail != ''">address_detail,</if>
             <if test="isDefault != null">is_default,</if>
             <if test="userId != null and userId != ''">user_id,</if>
+            <if test="contactsName != null and contactsName != ''">contacts_name,</if>
         </trim>
         )
         values(
@@ -90,6 +91,7 @@
             <if test="addressDetail != null and addressDetail != ''">#{addressDetail},</if>
             <if test="isDefault != null">#{isDefault},</if>
             <if test="userId != null and userId != ''">#{userId},</if>
+            <if test="contactsName != null and contactsName != ''">#{userId},</if>
         </trim>
         )
     </insert>
@@ -116,33 +118,32 @@
             <if test="userId !=null and userId !=''">
                 ,user_id=#{userId}
             </if>
+            <if test="contactsName !=null and contactsName !=''">
+                ,contacts_name=#{contactsName}
+            </if>
         </trim>
         where id=#{id}
     </update>
 
     <!-- 查询当前用户所有地址 -->
     <select id="searchAddressList"  parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.UserAddress">
-        select a.*,u.user_name from t_whs_user_address a
-        LEFT JOIN t_whs_user u on a.user_id=u.id
+        select a.* from t_whs_user_address a
         where a.user_id=#{userId} ORDER BY a.id desc
     </select>
 
     <select id="searchAddressListYes"  parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.UserAddress">
-        select a.*,u.user_name from t_whs_user_address a
-        LEFT JOIN t_whs_user u on a.user_id=u.id
+        select a.* from t_whs_user_address a
         where a.user_id=#{userId} and is_default='yes'
     </select>
 
     <select id="searchAddressListNo"  parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.UserAddress">
-        select a.*,u.user_name from t_whs_user_address a
-        LEFT JOIN t_whs_user u on a.user_id=u.id
+        select a.* from t_whs_user_address a
         where a.user_id=#{userId} and is_default='no' ORDER BY a.id desc
     </select>
 
     <!-- 查询地址 -->
     <select id="userAddress"  parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.UserAddress">
-        select a.id,a.sex,a.phone,a.address_area,a.address_detail,a.user_id,u.user_name from t_whs_user_address a
-        LEFT JOIN t_whs_user u on a.user_id=u.id
+        select a.id,a.sex,a.phone,a.address_area,a.address_detail,a.user_id,a.contacts_name from t_whs_user_address a
         where a.id=#{id}
     </select>
 

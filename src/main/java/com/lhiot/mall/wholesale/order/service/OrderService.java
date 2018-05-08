@@ -3,10 +3,7 @@ package com.lhiot.mall.wholesale.order.service;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.domain.OrderParam;
@@ -320,4 +317,9 @@ public class OrderService {
     public OrderDetail userOrder(OrderParam orderParam){
         return orderMapper.userOrder(orderParam);
     }
+
+    public List<OrderGridResult> orderGridData(OrderGridParam param){
+        return orderMapper.pageQuery(param);
+    }
+
 }

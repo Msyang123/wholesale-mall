@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Api(description ="开票接口")
@@ -46,11 +47,11 @@ public class InvoiceApi {
 
     @PostMapping("/create/title")
     @ApiOperation(value = "新增/修改发票信息")
-    public ResponseEntity saveOrUpdateInvoiceTitle(@RequestBody InvoiceTitle invoiceTitle){
+    public ResponseEntity<Boolean> saveOrUpdateInvoiceTitle(@RequestBody InvoiceTitle invoiceTitle){
         if (invoiceService.saveOrUpdateInvoiceTitle(invoiceTitle)>0){
-            return ResponseEntity.ok().body("新增/修改完成");
+            return ResponseEntity.ok(true);
         }else{
-            return ResponseEntity.badRequest().body("新增/修改失败");
+            return ResponseEntity.ok(false);
         }
     }
 
@@ -87,12 +88,24 @@ public class InvoiceApi {
     }
 
     @GetMapping("/{invoiceCode}")
-    @ApiOperation(value = "开票信息查询")
-    public ResponseEntity findInvoiceBycode(@PathVariable("invoiceCode") String invoiceCode){
+    @ApiOperation(value = "开票信息查询(发票详情)")
+    public ResponseEntity findInvoiceBycode(@PathVariable("invoiceCode") Long invoiceCode){
         if(StringUtils.isEmpty(invoiceCode)){
             return ResponseEntity.badRequest().body("请传入发票编码");
         }
-        return ResponseEntity.ok(invoiceService.findInvoiceByCode(invoiceCode));
+        Invoice invoice = invoiceService.findInvoiceByCode(invoiceCode);
+        List<OrderDetail> orderDetailList = new ArrayList<OrderDetail>();
+        OrderDetail orderDetail = new OrderDetail();
+        for (String item:invoice.getInvoiceOrderIds().split(",")){
+            orderDetail.setOrderCode(item);
+            OrderDetail order  = orderService.order(orderDetail);
+            List<OrderGoods> orderGoodsList = orderService.searchOrderGoods(order.getId());
+            order.setOrderGoodsList(orderGoodsList);
+            orderDetailList.add(order);
+        }
+        invoice.setOrderDetailList(orderDetailList);
+
+        return ResponseEntity.ok(invoice);
     }
 
     @GetMapping("/record/{userId}")
@@ -102,6 +115,7 @@ public class InvoiceApi {
         invoice.setUserId(userId);
         List<Invoice> invoiceList = invoiceService.list(invoice);
         OrderDetail orderDetail = new OrderDetail();
+        List<OrderDetail> orderDetailList = new ArrayList<OrderDetail>();
         for (Invoice item: invoiceList) {
             String orders = item.getInvoiceOrderIds();
             for (String orderCode:orders.split(",")) {
@@ -109,8 +123,10 @@ public class InvoiceApi {
                 OrderDetail order  = orderService.order(orderDetail);
                 List<OrderGoods> orderGoodsList = orderService.searchOrderGoods(order.getId());
                 order.setOrderGoodsList(orderGoodsList);
-                item.setOrderDetail(order);
+                orderDetailList.add(order);
+                item.setOrderDetailList(orderDetailList);
             }
+
         }
         return ResponseEntity.ok(ArrayObject.of(invoiceList));
     }

@@ -71,7 +71,7 @@
     </select>
 
     <select id="searchShopInfo" parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.ShopResult">
-        select u.id userId,u.shop_name,u.user_name,u.phone,u.register_time,u.address_detail from t_whs_salesuser s
+        select u.id userId,u.shop_name,u.user_name,u.phone,u.register_time,u.city,u.address_detail addressDetail from t_whs_salesuser s
         LEFT JOIN t_whs_salesuser_relation r on s.id=r.salesman_id
         LEFT JOIN t_whs_user u on u.id=r.user_id
         where r.audit_status='agree'
@@ -79,7 +79,7 @@
     </select>
 
     <select id="login" parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
-        select * from t_whs_salesuser where acount=#{acount}
+        select * from t_whs_salesuser where account=#{account}
     </select>
 
 

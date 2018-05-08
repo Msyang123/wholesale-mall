@@ -163,7 +163,7 @@ public class CurrencyPayApi {
 
     @PutMapping("/invoice-pay/{invoiceCode}")
     @ApiOperation(value = "余额支付发票", response = String.class)
-    public ResponseEntity invoicePay(@PathVariable("invoiceCode") String invoiceCode) {
+    public ResponseEntity invoicePay(@PathVariable("invoiceCode") Long invoiceCode) {
         //依据发票业务编码查询发票信息
         Invoice invoice= invoiceService.findInvoiceByCode(invoiceCode);
         if(Objects.isNull(invoice)){

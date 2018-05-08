@@ -1,6 +1,8 @@
 package com.lhiot.mall.wholesale.user.domain;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -19,37 +21,41 @@ public class SalesUser {
     @JsonProperty("id")
     private long id;
 
+    @JsonIgnore
     @JsonProperty("openId")
     private String openId;
 
+    @JsonIgnore
     @JsonProperty("unionId")
     private String unionId;
 
-    @JsonProperty("salesmanName")
+    @JsonProperty("name")
     private String salesmanName;
 
-    @JsonProperty("salesmanPhone")
+    @JsonProperty("phone")
     private String salesmanPhone;
 
-    @JsonProperty("salesmanPassword")
+    @JsonProperty("psw")
     private String salesmanPassword;
 
-    @JsonProperty("salesmanHeadImage")
+    @JsonProperty("src")
     private String salesmanHeadImage;
 
+    @JsonIgnore
     @JsonProperty("createPerson")
     private int createPerson;
 
-    @JsonProperty("createAt")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonProperty("createTime")
     private Timestamp createAt;
 
     @JsonProperty("inviteCode")
     private String inviteCode;
 
-    @JsonProperty("acount")
-    private String acount;
+    @JsonProperty("account")
+    private String account;
 
-    @JsonProperty("salesStatus")
+    @JsonProperty("status")
     private String salesStatus;
 
 }
