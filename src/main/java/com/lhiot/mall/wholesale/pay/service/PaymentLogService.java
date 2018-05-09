@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @Service
@@ -28,6 +29,25 @@ public class PaymentLogService {
      */
     public PaymentLog getPaymentLog(String orderCode){
         return paymentLogMapper.getPaymentLog(orderCode);
+    }
+
+    /**
+     * 添加日志
+     * @param paymentLog
+     * @return
+     */
+    public int insertPaymentLog(PaymentLog paymentLog){
+        paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
+        return paymentLogMapper.insertPaymentLog(paymentLog);
+    }
+
+    /**
+     * 回调修改日志
+     * @return
+     */
+    public int updatePaymentLog(PaymentLog paymentLog){
+        paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
+        return paymentLogMapper.updatePaymentLog(paymentLog);
     }
 
     /**

@@ -25,7 +25,7 @@ public class CouponConfig {
 	@ApiModelProperty(notes="满减金额",dataType="String")
 	private Integer fullFee;
 	
-	@ApiModelProperty(notes="优惠券种类 all-全品类 single-单品类",dataType="String")
+	@ApiModelProperty(notes="配置种类 artificial-手动发券 activity-活动发券",dataType="String")
 	private String couponType;
 	
 	@ApiModelProperty(notes="有效时间",dataType="String")
@@ -39,4 +39,12 @@ public class CouponConfig {
 	
 	@ApiModelProperty(notes="优惠券描述",dataType="String")
 	private String couponDes;
+	
+	@ApiModelProperty(notes="面减金额，用户后台管理，冗余字段",dataType="String")
+	private String fullFeeDispaly;
+	
+	@ApiModelProperty(notes="优惠券面值，用户后台管理，冗余字段",dataType="String")
+	private String couponFeeDisplay;
+	@ApiModelProperty(notes="优惠券种类 all-全品类 single-单品类",dataType="String")
+	private String plateType;
 }

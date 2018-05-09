@@ -48,8 +48,8 @@ public class PaymentLog {
     @JsonProperty("paymentStep")
     private String paymentStep;
 
-    @JsonProperty("paymentOrderType")
-    private String paymentOrderType;
+    @JsonProperty("paymentType")
+    private String paymentType;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @JsonProperty("paymentTime")

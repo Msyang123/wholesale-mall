@@ -1,6 +1,8 @@
 package com.lhiot.mall.wholesale.aftersale.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
@@ -48,8 +50,13 @@ public class OrderRefundApplication {
     @JsonProperty("userId")
     private Long userId;
 
-    @JsonProperty("orderGoodsList")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonProperty("createTime")
+    private Timestamp orderCreateTime;
+
+    @JsonProperty("proList")
     private List<OrderGoods> orderGoodsList;
+    //private OrderDetail orderDetail;
 
     @JsonProperty("auditStatus")
     private String auditStatus;

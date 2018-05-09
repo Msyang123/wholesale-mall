@@ -11,6 +11,7 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 @ToString
@@ -82,7 +83,7 @@ public class Invoice {
     private Long userId;
 
     @JsonProperty("orderDetail")
-    private OrderDetail orderDetail;
+    private List<OrderDetail> orderDetailList;
 
     @JsonProperty("rejectReason")
     private String rejectReason;

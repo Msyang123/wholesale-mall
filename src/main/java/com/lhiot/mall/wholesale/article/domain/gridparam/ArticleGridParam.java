@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.article.domain.gridparam;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.leon.microx.common.wrapper.PageObject;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -18,6 +19,14 @@ public class ArticleGridParam extends PageObject {
 
     @ApiModelProperty(notes="文章类别",dataType="String")
     private Integer articleType;
+
+    @ApiModelProperty(notes="创建时间起",dataType="String")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private String createTimeBegin;
+
+    @ApiModelProperty(notes="创建时间止",dataType="String")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private String createTimeEnd;
 
     @ApiModelProperty(notes="分页查询开始页面",dataType="Integer")
     private Integer start;

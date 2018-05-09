@@ -34,4 +34,8 @@ public class OrderRefundApplicationService {
         return this.orderRefundApplicationMapper.orderRefundApplicationList(userId);
     }
 
+    public List<OrderRefundApplication> list(OrderRefundApplication orderRefundApplication){
+        return this.orderRefundApplicationMapper.list(orderRefundApplication);
+    }
+
 }

@@ -193,7 +193,7 @@ public class FlashsaleService {
 	 * @return
 	 */
 	public FlashActivityGoods flashGoods(ActivityPeriodsType activityPeriodsType){
-		FlashActivityGoods flashActivityGoods = null;
+		FlashActivityGoods flashActivityGoods = new FlashActivityGoods();
 		ActivityType flasesale = ActivityType.flashsale;
 		//获取开启抢购活动
 		if(activityPeriodsType.equals(ActivityPeriodsType.current)){
@@ -202,7 +202,7 @@ public class FlashsaleService {
 			flashActivityGoods = activityService.nextActivity(flasesale);
 		}
 		if(Objects.isNull(flashActivityGoods)){
-			return null;
+			return flashActivityGoods;
 		}
 		//查询活动商品
 		List<FlashsaleGoods> flashGoods = flashsaleMapper.search(flashActivityGoods.getId());

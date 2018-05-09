@@ -1,10 +1,5 @@
 package com.lhiot.mall.wholesale.coupon.service;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +20,7 @@ import com.lhiot.mall.wholesale.coupon.domain.CouponConfig;
 import com.lhiot.mall.wholesale.coupon.domain.CouponEntity;
 import com.lhiot.mall.wholesale.coupon.domain.CouponEntityResult;
 import com.lhiot.mall.wholesale.coupon.domain.CouponStatusType;
+import com.lhiot.mall.wholesale.coupon.domain.CouponType;
 import com.lhiot.mall.wholesale.coupon.domain.ReleaseCouponParam;
 import com.lhiot.mall.wholesale.coupon.domain.UserCouponParam;
 import com.lhiot.mall.wholesale.coupon.domain.gridparam.CouponGridParam;
@@ -73,7 +69,7 @@ public class CouponEntityService {
 	}
 	
 	/**
-	 * 修改广告
+	 * 修改优惠券状态
 	 * @param goodsUnit
 	 * @return
 	 */
@@ -100,17 +96,16 @@ public class CouponEntityService {
 	 */
 	public PageQueryObject pageQuery(CouponGridParam param){
 		String phone = param.getPhone();
-		List<Long> userIds = null;
+		List<Long> userIds = new ArrayList<>();;
 		//通过电话号码查询
 		if(StringUtils.isNotBlank(phone)){
 			//根据电话查询用户信息
 			List<User> users = userService.fuzzySearch(phone);
-			userIds = new ArrayList<>();
 			for(User user : users){
 				userIds.add(user.getId());
 			}
 		}
-		if(null != userIds){
+		if(!userIds.isEmpty()){
 			param.setUserIds(userIds);
 		}
 		int count = couponEntityMapper.pageQueryCount(param);
@@ -127,7 +122,10 @@ public class CouponEntityService {
 		}
 		List<CouponEntityResult> coupongEntities = couponEntityMapper.pageQuery(param);
 		List<Long> uIds = this.userIds(coupongEntities);
-		List<User> users = userService.users(uIds);
+		List<User> users = new ArrayList<>();
+		if(!uIds.isEmpty()){
+			users = userService.users(uIds);
+		}
 		//组装用户数据
 		this.constructUser(users, coupongEntities);
 		PageQueryObject result = new PageQueryObject();
@@ -240,6 +238,7 @@ public class CouponEntityService {
 			param.setCouponFee(cf.getCouponFee());
 			param.setFullFee(cf.getFullFee());
 			param.setVaildDays(cf.getVaildDays());
+			param.setCouponFrom(CouponType.artificial.toString());
 			couponEntities.add(param);
 		}
 		
@@ -284,6 +283,7 @@ public class CouponEntityService {
 			coupon.setFullFee(ac.getFullFee());
 			coupon.setVaildDays(ac.getVaildDays());
 			coupon.setUserId(userId);
+			coupon.setCouponFrom(CouponType.activity.toString());
 			//多种优惠券
 			for(int i=0;i< count;i++){
 				params.add(coupon);

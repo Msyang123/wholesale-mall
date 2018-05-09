@@ -30,19 +30,19 @@ public class ArticleApi {
     }
 
     @GetMapping("/article/{id}")
-    @ApiOperation(value = "根据ID查询新闻文章", response = Introduction.class)
+    @ApiOperation(value = "后台管理系统--根据ID查询新闻文章", response = Introduction.class)
     public ResponseEntity<Article> introduction(@PathVariable("id") Long id) {
         return ResponseEntity.ok(articleService.article(id));
     }
 
     @PostMapping("/article/grid")
-    @ApiOperation(value = "新建一个查询，分页查询新闻文章", response = PageQueryObject.class)
+    @ApiOperation(value = "后台管理系统--新建一个查询，分页查询新闻文章", response = PageQueryObject.class)
     public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) ArticleGridParam param) {
         return ResponseEntity.ok(articleService.pageQuery(param));
     }
 
     @PutMapping("/article/addorupdate")
-    @ApiOperation("新增/修改新闻文章")
+    @ApiOperation("后台管理系统---新增/修改新闻文章")
     public ResponseEntity saveAddress(@RequestBody Article article) {
         article.setCreateTime(new Timestamp(new Date().getTime()));
         if (articleService.saveOrUpdateArticle(article)>0) {

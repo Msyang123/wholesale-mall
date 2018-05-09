@@ -13,10 +13,7 @@ import com.lhiot.mall.wholesale.pay.service.PayService;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.service.UserService;
-import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
-import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
-import com.lhiot.mall.wholesale.user.wechat.XPathParser;
-import com.lhiot.mall.wholesale.user.wechat.XPathWrapper;
+import com.lhiot.mall.wholesale.user.wechat.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -25,11 +22,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @Api(description = "微信支付接口")
@@ -77,42 +73,9 @@ public class WxPayApi {
     	return ResponseEntity.ok(wxOrderSignStr);
     }
 
-    @GetMapping("/rechargepay/sign")
-    @ApiOperation(value = "微信充值支付签名", response = String.class)
-    public ResponseEntity<String> rechargepaySign(HttpServletRequest request,@RequestParam("openId") String openId,@RequestParam("rechargeFee") int rechargeFee) throws Exception {
-
-        String wxRechargeSignStr=payService.wxRechargePay(getRemoteAddr(request),openId,rechargeFee,getUserAgent(request),snowflakeId.stringId(),weChatUtil);
-        //FIXME 写充值签名日志
-        return ResponseEntity.ok(wxRechargeSignStr);
-    }
-
     @PostMapping("/order/notify")
     @ApiOperation(value = "微信订单支付回调", response = String.class)
     public ResponseEntity<String> orderNotify(HttpServletRequest request) throws Exception {
-        log.info("========支付成功，后台回调=======");
-        XPathParser xpath = weChatUtil.getParametersByWeChatCallback(request);
-        XPathWrapper wrap = new XPathWrapper(xpath);
-        String resultCode = wrap.get("result_code");
-        if ("SUCCESS".equalsIgnoreCase(resultCode)) {
-            String userId = wrap.get("attach");
-            String totalFee = wrap.get("total_fee");
-            int fee = Integer.parseInt(totalFee);
-            //获取传达的附加参数获取用户信息
-           log.info("userId:"+userId+"fee:"+fee);
-           boolean myDoIsOk=true;//我们处理的业务
-            if (myDoIsOk) {
-               //广播订单支付成功true, "success"
-                ResponseEntity.ok("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                                + "<xml><return_code><![CDATA[SUCCESS]]></return_code>"
-                                + "<return_msg><![CDATA[OK]]></return_msg></xml>");
-            }
-        }
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/recharge/notify")
-    @ApiOperation(value = "微信充值支付回调", response = String.class)
-    public ResponseEntity<String> rechargeNotify(HttpServletRequest request) throws Exception {
         log.info("========支付成功，后台回调=======");
         XPathParser xpath = weChatUtil.getParametersByWeChatCallback(request);
         XPathWrapper wrap = new XPathWrapper(xpath);
@@ -126,7 +89,89 @@ public class WxPayApi {
             boolean myDoIsOk=true;//我们处理的业务
             if (myDoIsOk) {
                 //广播订单支付成功true, "success"
-                ResponseEntity.ok("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                return ResponseEntity.ok("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                        + "<xml><return_code><![CDATA[SUCCESS]]></return_code>"
+                        + "<return_msg><![CDATA[OK]]></return_msg></xml>");
+            }
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/rechargepay/sign")
+    @ApiOperation(value = "微信充值支付签名", response = String.class)
+    public ResponseEntity<String> rechargepaySign(HttpServletRequest request,@RequestParam("openId") String openId,@RequestParam("rechargeFee") int rechargeFee) throws Exception {
+	    User user= userService.searchUserByOpenid(openId);
+	    if (Objects.isNull(user)){
+	        return ResponseEntity.badRequest().body("微信("+openId+")用户不存在");
+        }
+
+	    String rechargeCode=snowflakeId.stringId();
+        String wxRechargeSignStr=payService.wxRechargePay(getRemoteAddr(request),openId,rechargeFee,getUserAgent(request),rechargeCode,weChatUtil);
+        //写充值签名日志
+
+        PaymentLog paymentLog=new PaymentLog();
+        paymentLog.setPaymentType("wechat");//balance-余额支付 wechat-微信 offline-线下支付
+        paymentLog.setPaymentStep("sign");//sign-签名成功 paid-支付成功
+        paymentLog.setOrderCode(rechargeCode);
+        paymentLog.setUserId(user.getId());
+        paymentLog.setPaymentFrom("recharge");//支付来源于 order-订单 debt-账款 invoice-发票 recharge-充值
+        paymentLog.setTotalFee(rechargeFee);
+        paymentLogService.insertPaymentLog(paymentLog);
+        return ResponseEntity.ok(wxRechargeSignStr);
+    }
+
+    @PostMapping("/recharge/notify")
+    @ApiOperation(value = "微信充值支付回调", response = String.class)
+    public ResponseEntity<String> rechargeNotify(HttpServletRequest request) throws Exception {
+        log.info("========支付成功，后台回调=======");
+        boolean myDoIsOk=true;//我们处理的业务
+        XPathParser xpath = weChatUtil.getParametersByWeChatCallback(request);
+        XPathWrapper wrap = new XPathWrapper(xpath);
+        String resultCode = wrap.get("result_code");
+        //获取签名的单号
+        String orderId = wrap.get("out_trade_no");
+        List<XNode> nodes=xpath.evalNodes("//xml/*");
+        SortedMap<Object,Object> parameters=new TreeMap();
+        for (XNode node:nodes){
+            parameters.put(node.name(),node.body());
+        }
+        //计算签名
+        String signResult=payService.createSign(parameters,weChatUtil.getProperties().getWeChatPay().getPartnerKey());
+        log.info("signResult:"+signResult);
+        log.info("urlsign:"+wrap.get("sign"));
+        if ("SUCCESS".equalsIgnoreCase(resultCode)&&Objects.equals(signResult,wrap.get("sign"))) {
+            String userId = wrap.get("attach");
+            String totalFee = wrap.get("total_fee");
+            int fee = Integer.parseInt(totalFee);
+            //获取传达的附加参数获取用户信息
+            log.info("userId:"+userId+"fee:"+fee);
+            User user= userService.user(Long.valueOf(userId));
+            log.info("user:"+user);
+            PaymentLog paymentLog =paymentLogService.getPaymentLog(orderId);
+            log.info("paymentLog:"+paymentLog);
+
+            myDoIsOk=myDoIsOk&&Objects.nonNull(user)&&Objects.nonNull(paymentLog);
+            //如果已经修改支付记录 设计密等 直接返回成功
+            if(Objects.nonNull(paymentLog)&&Objects.equals(paymentLog.getPaymentStep(),"paid")){
+                return ResponseEntity.ok("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                        + "<xml><return_code><![CDATA[SUCCESS]]></return_code>"
+                        + "<return_msg><![CDATA[OK]]></return_msg></xml>");
+            }
+            if (myDoIsOk) {
+
+                User updateUser=new User();
+                updateUser.setId(user.getId());
+                updateUser.setBalance(fee);//需要增加用户余额
+                userService.updateUser(updateUser);//扣除用户余额
+
+                paymentLog.setPaymentStep("paid");//支付步骤：sign-签名成功 paid-支付成功
+                paymentLog.setBankType(wrap.get("bank_type"));//银行类型
+                paymentLog.setTransactionId(wrap.get("transaction_id"));//微信流水
+                paymentLog.setTotalFee(Integer.valueOf(wrap.get("total_fee")));//支付金额
+                paymentLogService.updatePaymentLog(paymentLog);
+
+                //广播订单支付成功true, "success"
+                return ResponseEntity.ok("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                         + "<xml><return_code><![CDATA[SUCCESS]]></return_code>"
                         + "<return_msg><![CDATA[OK]]></return_msg></xml>");
             }
@@ -194,7 +239,7 @@ public class WxPayApi {
             boolean myDoIsOk=result>0;//我们处理的业务
             if (myDoIsOk) {
                 //广播订单支付成功true, "success"
-                ResponseEntity.ok("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                return ResponseEntity.ok("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                         + "<xml><return_code><![CDATA[SUCCESS]]></return_code>"
                         + "<return_msg><![CDATA[OK]]></return_msg></xml>");
             }
@@ -237,7 +282,7 @@ public class WxPayApi {
             //FIXME 需要依据欠款订单将订单状态改成已经支付
             if (myDoIsOk) {
                 //广播订单支付成功true, "success"
-                ResponseEntity.ok("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                return ResponseEntity.ok("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                         + "<xml><return_code><![CDATA[SUCCESS]]></return_code>"
                         + "<return_msg><![CDATA[OK]]></return_msg></xml>");
             }

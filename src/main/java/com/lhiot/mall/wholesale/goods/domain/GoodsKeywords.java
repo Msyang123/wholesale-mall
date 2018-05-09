@@ -19,11 +19,8 @@ public class GoodsKeywords {
 	@ApiModelProperty(notes="关键词",dataType="String")
 	private String keyword;
 	
-	@ApiModelProperty(notes="是否为热搜商品",dataType="Boolean")
-	private Boolean hotSearch;
-	
-	@ApiModelProperty(notes="是否为热搜商品",dataType="Integer")
-	private Integer isHotSearch;
+	@ApiModelProperty(notes="是否为热搜商品",dataType="String")
+	private String hotSearch;
 	
 	@ApiModelProperty(notes="关键词类型 goods-商品,category-分类",dataType="String")
 	private String kwType;

@@ -16,8 +16,8 @@ public class CouponEntityResult {
 	@ApiModelProperty(notes="优惠券配置编号",dataType="Long")
 	private Long couponConfigId;
 	
-	@ApiModelProperty(notes="优惠券名称",dataType="Long")
-	private Long couponName;
+	@ApiModelProperty(notes="优惠券名称",dataType="String")
+	private String couponName;
 	
 	@ApiModelProperty(notes="用户编号",dataType="Long")
 	private Long userId;
@@ -57,4 +57,7 @@ public class CouponEntityResult {
 	
 	@ApiModelProperty(notes="详细地址",dataType="String")
 	private String addressDetail;
+	
+	@ApiModelProperty(notes="优惠券来源",dataType="String")
+	private String couponFrom;
 }

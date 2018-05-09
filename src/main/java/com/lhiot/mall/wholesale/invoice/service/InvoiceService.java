@@ -34,7 +34,11 @@ public class InvoiceService {
 
 
     public InvoiceTitle selectInvoiceTitle(long id){
-        return invoiceMapper.selectInvoiceTitle(id);
+        InvoiceTitle invoiceTitle = invoiceMapper.selectInvoiceTitle(id);
+        if (invoiceTitle==null){
+            return new InvoiceTitle();
+        }
+        return invoiceTitle;
     }
 
     public int saveOrUpdateInvoiceTitle(InvoiceTitle invoiceTitle){
@@ -56,7 +60,7 @@ public class InvoiceService {
      * @param invoiceCode
      * @return
      */
-    public Invoice findInvoiceByCode(String invoiceCode){
+    public Invoice findInvoiceByCode(long invoiceCode){
         return invoiceMapper.findInvoiceByCode(invoiceCode);
     }
 
