@@ -1,41 +1,34 @@
 package com.lhiot.mall.wholesale.order.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.coupon.domain.CouponEntityResult;
+import com.lhiot.mall.wholesale.coupon.service.CouponEntityService;
+import com.lhiot.mall.wholesale.goods.domain.Goods;
+import com.lhiot.mall.wholesale.goods.service.GoodsService;
 import com.lhiot.mall.wholesale.order.domain.Distribution;
-import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.service.DebtOrderService;
-import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
-import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.leon.microx.common.exception.ServiceException;
-import com.leon.microx.common.wrapper.ArrayObject;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
-import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.service.OrderService;
-import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.setting.service.SettingService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.beans.IntrospectionException;
@@ -64,9 +57,13 @@ public class OrderApi {
 
     private final DebtOrderService debtOrderService;
 
+    private final GoodsService goodsService;
+
+    private final CouponEntityService couponEntityService;
+
     @Autowired
     public OrderApi(OrderService orderService, DebtOrderService debtOrderService, SalesUserService salesUserService,
-                SettingService settingService, PaymentLogService paymentLogService, RabbitTemplate rabbit, SnowflakeId snowflakeId) {
+                    SettingService settingService, PaymentLogService paymentLogService, RabbitTemplate rabbit, SnowflakeId snowflakeId, GoodsService goodsService, CouponEntityService couponEntityService) {
 
         this.orderService = orderService;
         this.settingService = settingService;
@@ -75,7 +72,8 @@ public class OrderApi {
         this.snowflakeId=snowflakeId;
         this.salesUserService=salesUserService;
         this.debtOrderService=debtOrderService;
-
+        this.goodsService=goodsService;
+        this.couponEntityService = couponEntityService;
     }
 
     @GetMapping("/my-orders/{userId}")
@@ -129,12 +127,12 @@ public class OrderApi {
 
     @GetMapping("/my-order/{orderCode}")
     @ApiOperation(value = "根据订单编号查询订单详情")
-    public ResponseEntity<OrderDetail> queryOrder(@PathVariable("orderCode") String orderCode){
+    public ResponseEntity queryOrder(@PathVariable("orderCode") String orderCode){
         OrderDetail orderDetail = orderService.searchOrder(orderCode);
-        PaymentLog paymentLog = paymentLogService.getPaymentLog(orderCode);
-        orderDetail.setPayType(paymentLog.getPaymentType());
+        /*PaymentLog paymentLog = paymentLogService.getPaymentLog(orderCode);
+        orderDetail.setPayType(paymentLog.getPaymentType());*/
         if (Objects.isNull(orderDetail)){
-           return ResponseEntity.badRequest().body(orderDetail);
+           return ResponseEntity.badRequest().body("没有该订单信息");
         }
         List<OrderGoods> goods = orderService.searchOrderGoods(orderDetail.getId());
         if (goods.isEmpty()){
@@ -147,10 +145,10 @@ public class OrderApi {
 
     @GetMapping("/{id}")
     @ApiOperation(value = "根据订单编号查询订单详情")
-    public ResponseEntity<OrderDetail> queryOrderById(@PathVariable("id") long id){
+    public ResponseEntity queryOrderById(@PathVariable("id") long id){
         OrderDetail orderDetail = orderService.searchOrderById(id);
         if (Objects.isNull(orderDetail)){
-            throw new ServiceException("没有该订单信息");
+            return ResponseEntity.badRequest().body("没有该订单信息");
         }
         List<OrderGoods> goods = orderService.searchOrderGoods(id);
         if (goods.isEmpty()){
@@ -250,16 +248,52 @@ public class OrderApi {
     @PostMapping("/create")
     @ApiOperation(value = "创建订单")
     public ResponseEntity<OrderDetail> create(@RequestBody OrderDetail orderDetail) throws JsonProcessingException {
-
-        orderService.create(orderDetail);
+        //查询商品库存 不足返回
+        for(OrderGoods item: orderDetail.getOrderGoodsList()){
+            Goods goods=goodsService.goods(item.getGoodsId());
+            Integer stockLimit=goods.getStockLimit();
+            if(stockLimit!=null&&stockLimit-item.getQuanity()<0){
+                orderDetail.setCode(-1002);
+                orderDetail.setMsg(item.getGoodsName()+"库存不足");
+                return ResponseEntity.ok(orderDetail);
+            }
+        }
+        //检查优惠券是否失效
+        CouponEntityResult couponEntityResult=couponEntityService.coupon(orderDetail.getOrderCoupon());
+        //优惠券状态：unused-未使用  used-已使用  expired-已过期
+        if(!Objects.equals(couponEntityResult.getCouponStatus(),"unused")){
+            if(Objects.equals(couponEntityResult.getCouponStatus(),"used")){
+                orderDetail.setCode(-1002);
+                orderDetail.setMsg("优惠券已使用");
+                return ResponseEntity.ok(orderDetail);
+            }
+            if(Objects.equals(couponEntityResult.getCouponStatus(),"expired")){
+                orderDetail.setCode(-1002);
+                orderDetail.setMsg("优惠券已过期");
+                return ResponseEntity.ok(orderDetail);
+            }
+        }
+        int result=orderService.create(orderDetail);
+        if(result>0){
+            orderDetail.setCode(1002);
+            orderDetail.setMsg("创建成功");
+        }else{
+            orderDetail.setCode(-1002);
+            orderDetail.setMsg("创建失败");
+        }
         return ResponseEntity.ok(orderDetail);
     }
 
     @PostMapping("/update/{orderCode}")
     @ApiOperation(value = "依据订单编码修改订单信息")
-    public ResponseEntity<OrderDetail> create(@PathVariable("orderCode") String orderCode,@RequestBody OrderDetail orderDetail){
+    public ResponseEntity<OrderDetail> update(@PathVariable("orderCode") String orderCode,@RequestBody OrderDetail orderDetail){
         orderDetail.setOrderCode(orderCode);
-        orderService.updateOrder(orderDetail);
+        int result=orderService.updateOrder(orderDetail);
+        if(result>0){
+            orderDetail.setCode(1001);
+        }else{
+            orderDetail.setCode(-1001);
+        }
         return ResponseEntity.ok(orderDetail);
     }
 
