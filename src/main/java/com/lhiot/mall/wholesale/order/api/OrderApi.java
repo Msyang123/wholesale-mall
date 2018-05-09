@@ -210,8 +210,6 @@ public class OrderApi {
         return ResponseEntity.ok(100);
     }
 
-
-
     @GetMapping("/after-sale/{userId}")
     @ApiOperation(value = "查询售后订单")
     public ResponseEntity<ArrayObject> queryAfterSale(@PathVariable("userId") @NotNull long userId,@RequestParam(defaultValue="1") Integer page,

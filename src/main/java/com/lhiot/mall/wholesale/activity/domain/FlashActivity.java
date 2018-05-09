@@ -31,6 +31,12 @@ public class FlashActivity {
 	@ApiModelProperty(notes="商品排序",dataType="Integer")
 	private Integer rankNum;
 	
+	@ApiModelProperty(notes="剩余数量",dataType="Integer")
+	private Integer remain;
+	
 	@ApiModelProperty(notes="逗号分割的规格id",dataType="String")
 	private String standardIds;
+	
+	@ApiModelProperty(notes="冗余字段，用于后台展示",dataType="String")
+	private String specialPriceDisplay;
 }

@@ -13,13 +13,14 @@ public interface OrderMapper {
     List<OrderDetail> searchOrders(OrderDetail orderDetail);
 
     List<OrderDetail> searchOrdersByOrderCodes(List<String> orderCodes);
+
     List<OrderGoods> searchOrderGoods(long orderId);
 
     String searchOutstandingAccountsOrder(String orderCode);
 
     OrderDetail searchOrder(String orderCode);
 
-/*    OrderDetail searchOrderById(long orderId);*/
+    OrderDetail searchOrderById(long orderId);
 
     /**
      * 后台管理--分页查询订单

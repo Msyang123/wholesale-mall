@@ -45,7 +45,7 @@
 	<insert id="insertIntroduction" parameterType="com.lhiot.mall.wholesale.introduction.domain.Introduction" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
 		insert into t_whs_introduction(
 		<trim suffixOverrides=",">
-			id,
+			<if test="id != null and id != ''">id,</if>
 			<if test="serviceType != null and serviceType != ''">service_type,</if>
 			<if test="serviceTitle != null and serviceTitle != ''">service_title,</if>
 			<if test="content != null and content != ''">content,</if>
@@ -56,14 +56,13 @@
 		)
 		values(
 		<trim suffixOverrides=",">
-			(select count(id) from t_whs_introduction t1)+1,
+			<if test="id != null and id != ''">#{id},</if>
 			<if test="serviceType != null and serviceType != ''">#{serviceType},</if>
 			<if test="serviceTitle != null and serviceTitle != ''">#{serviceTitle},</if>
 			<if test="content != null and content != ''">#{content},</if>
 			<if test="createPerson != null and createPerson != ''">#{createPerson},</if>
 			<if test="serviceStatus != null and serviceStatus != ''">#{serviceStatus},</if>
 			<if test="createTime != null">#{createTime,jdbcType=TIMESTAMP},</if>
-			now()
 		</trim>
 		)
 	</insert>

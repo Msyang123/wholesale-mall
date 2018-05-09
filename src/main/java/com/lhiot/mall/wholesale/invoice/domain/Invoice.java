@@ -24,10 +24,10 @@ import java.util.List;
 public class Invoice {
 
     @JsonProperty("id")
-    private long id;
+    private Long id;
 
     @JsonProperty("invoiceTitleId")
-    private long invoiceTitleId;
+    private Long invoiceTitleId;
 
     @JsonProperty("taxpayerNumber")
     private String taxpayerNumber;
@@ -54,13 +54,13 @@ public class Invoice {
     private String bankCardCode;
 
     @JsonProperty("invoiceFee")
-    private int invoiceFee;
+    private Integer invoiceFee;
 
     @JsonProperty("invoiceTax")
     private BigDecimal invoiceTax;
 
     @JsonProperty("taxFee")
-    private int taxFee;
+    private Integer taxFee;
 
     @JsonProperty("createTime")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
@@ -80,10 +80,13 @@ public class Invoice {
     private String invoiceCode;
 
     @JsonProperty("userId")
-    private long userId;
+    private Long userId;
 
     @JsonProperty("orderDetail")
     private List<OrderDetail> orderDetailList;
+
+    @JsonProperty("rejectReason")
+    private String rejectReason;
 
     @JsonProperty("orderNumber")
     private Integer orderNumber;

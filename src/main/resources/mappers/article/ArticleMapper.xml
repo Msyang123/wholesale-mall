@@ -4,7 +4,7 @@
     <sql id="articleColumn">
         t1.id as id,t1.article_type as articleType,t1.create_type as createType,t1.article_title as articleTitle,
         t1.article_subhead as articleSubhead,t1.article_author as articleAuthor,t1.article_content as articleContent,t1.rank_num as rankNum,
-        t1.resouce_url as resouceUrl,t1.article_url as articleUrl,t1.create_time as createTime
+        t1.resouce_url as resouceUrl,t1.article_url as articleUrl,t1.create_time as createTime,t1.publish_status as publishStatus
     </sql>
 
     <!-- 根据id查询FAQ信息 -->
