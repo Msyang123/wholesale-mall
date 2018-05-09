@@ -23,20 +23,6 @@ spring:
     port: ${RABBIT_MQ_PORT:5672}
     username: guest
     password: guest
-# mq队列配置
-#message-queue:
-#  rabbit:
-#    delay-queue:
-#      dlx-queue-forward:
-#        retry-order-resendhd:
-#          forward-queue-name: order-resendhd-deal
-#    match-queue:
-#      queue-bind-routing-key:
-#        user-register-receive: user.register.route
-#    publishers:
-      #订单退款退货
-#      publish-received-refund:
-#        - order-back-refund
 mybatis:
   mapper-locations: classpath:mappers/**/*.xml
   configuration:
@@ -69,6 +55,29 @@ wholesale-mall:
       order-offline-notify-url: https://online.food-see.com/wechat/offline/notify
       payunit: 100
       proxy: nonginx
+  rabbitmq:
+    direct-queue:
+      order-create:
+#延迟队列信道
+        direct_exchange_name: order-direct-exchange
+#延迟队列队列名
+        dlx_queue_name: order-dlx-queue
+#转发队列队列名
+        repeat_queue_name: order-repeat-queue
+      pay-create:
+#延迟队列信道
+        direct_exchange_name: pay-direct-exchange
+#延迟队列队列名
+        dlx_queue_name: pay-dlx-queue
+#转发队列队列名
+        repeat_queue_name: pay-repeat-queue
+    fanout-queue:
+      order-created-event:
+        - coupon-publisher
+        - flasesale-publisher
+      order-payed-event:
+        - test-publisher-1
+        - test-publisher-4
 hd:
   config:
     charset: UTF-8

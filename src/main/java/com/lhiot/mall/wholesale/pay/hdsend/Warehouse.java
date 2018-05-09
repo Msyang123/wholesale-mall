@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.pay.hdsend;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.leon.microx.common.exception.ServiceException;
 import com.sgsl.hd.autoconfigure.HaiDingProperties;
 import com.sgsl.util.IOUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -12,12 +13,13 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.net.*;
+import java.net.Authenticator;
+import java.net.HttpURLConnection;
+import java.net.PasswordAuthentication;
+import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.text.MessageFormat;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -29,6 +31,7 @@ public class Warehouse {
 
     private static final Charset charset = Charset.forName("UTF-8");
     private String apiUser="test01",apiPass="AePq88kJbleNGUDT";
+    private ObjectMapper om=new ObjectMapper();
 
     class MyAuthenticator extends Authenticator {
         protected PasswordAuthentication getPasswordAuthentication() {
@@ -37,7 +40,43 @@ public class Warehouse {
         }
     }
 
-    public String h4Request(String method,String api,String data) throws Exception {
+    /**
+     * 总仓订单创建
+     * @param inventory
+     * @return
+     */
+    public String savenew2state(Inventory inventory){
+        try {
+            //{"echoCode":"0","uuid":"96461805060001"}
+            String result=this.h4Request("post","/wholesaleservice/wholesale/savenew2state/1700",om.writeValueAsString(inventory));
+            Map resultMap=om.readValue(result, Map.class);
+            if(!Objects.equals(resultMap.get("echoCode"),"0")){
+                throw new ServiceException("发送海鼎总仓批发单错误"+result);
+            }
+            return String.valueOf(resultMap.get("uuid"));
+        } catch (Exception e) {
+            return e.getLocalizedMessage();
+        }
+    }
+
+    /**
+     * 总仓退货
+     * @param abolish
+     * @return
+     */
+    public String abolish(Abolish abolish){
+        try {
+            //{"echoCode":"0"}
+           String uri= MessageFormat.format("/wholesaleservice/wholesale/abolish/{0}?srcCls={1}&oper={2}",abolish.getId(),abolish.getSrcCls(),abolish.getOper());
+           String result= this.h4Request("post",uri,om.writeValueAsString(abolish));
+            Map resultMap=om.readValue(result, Map.class);
+            return String.valueOf(resultMap.get("echoCode"));
+        } catch (Exception e) {
+            return e.getLocalizedMessage();
+        }
+    }
+
+    private String h4Request(String method,String api,String data) throws Exception {
         Authenticator.setDefault(
                 new MyAuthenticator());
         URL url = new URL(properties.getH4rest()+api);
@@ -71,7 +110,7 @@ public class Warehouse {
 
     public static void main(String[] args) {
         try {
-            Inventory inventory=new Inventory();
+            /*Inventory inventory=new Inventory();
             inventory.setUuid(UUID.randomUUID().toString());
             inventory.setSenderCode("9646");
             inventory.setSenderWrh("07310101");
@@ -118,13 +157,13 @@ public class Warehouse {
 
             ObjectMapper om=new ObjectMapper();
             //api=/savenew2state/{to_state}
-           System.out.println(new Warehouse().h4Request("post","/wholesaleservice/wholesale/savenew2state/1700",om.writeValueAsString(inventory)));
+            System.out.println( new Warehouse().savenew2state(inventory));*/
            /**********批发单服务-作废**********************************/
             Abolish abolish=new Abolish();
-            abolish.setId("96461805030003");
+            abolish.setId("96461805060001");
             abolish.setSrcCls("批发商城");
             abolish.setOper("退货管理员");
-            System.out.println(new Warehouse().h4Request("post","/wholesaleservice/wholesale/abolish/96461805030003?srcCls=批发商城&oper=退货管理员",om.writeValueAsString(abolish)));
+            System.out.println(new Warehouse().abolish(abolish));
 
             /*********批发退服务**********************/
             /*Wholesalebck wholesalebck=new Wholesalebck();

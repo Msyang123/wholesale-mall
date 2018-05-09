@@ -2,6 +2,7 @@ package com.lhiot.mall.wholesale.coupon.domain.gridparam;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.leon.microx.common.wrapper.PageObject;
 
 import io.swagger.annotations.ApiModel;

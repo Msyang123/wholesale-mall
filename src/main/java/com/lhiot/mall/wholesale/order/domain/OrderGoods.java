@@ -34,8 +34,8 @@ public class OrderGoods {
     @JsonProperty("paymentTime")
     private Timestamp paymentTime;
 
-    @JsonProperty("refundStaus")
-    private Integer refundStaus;
+    @JsonProperty("refundStatus")
+    private Integer refundStatus;
 
     @JsonProperty("discountGoodsPrice")
     private Integer discountGoodsPrice;
@@ -57,4 +57,10 @@ public class OrderGoods {
 
     @JsonProperty("hdSkuId")
     private String hdSkuId;
+
+    @JsonProperty("purchasePrice")
+    private int purchasePrice;
+
+    @JsonProperty("goodsId")
+    private Long goodsId;
 }

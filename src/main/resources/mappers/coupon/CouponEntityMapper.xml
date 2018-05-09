@@ -12,11 +12,11 @@
 	<!-- lynn 2018/4/19批量新增-->
 	<insert id="insertBatch" parameterType="java.util.List">
 		insert into t_whs_coupon_entity (coupon_config_id,user_id,effective_time,failure_time,coupon_status,
-			get_time,coupon_fee,full_fee)
+			get_time,coupon_fee,full_fee,coupon_from)
 		values
 		<foreach collection="list" item="item" separator="," >
 			(#{item.couponConfigId},#{item.userId},now(),date_add(now(), interval 7 day),#{item.couponStatus},now(),
-			 #{item.couponFee},#{item.fullFee})
+			 #{item.couponFee},#{item.fullFee},#{item.couponFrom})
 		</foreach>
 	</insert>
 	
@@ -53,13 +53,19 @@
 		resultType="Integer">
 		select count(t1.id) 
 		from t_whs_coupon_entity t1
-		left join t_whs_coupon_config t2 on t1.coupon_config_id on t2.id
+		left join t_whs_coupon_config t2 on t1.coupon_config_id = t2.id
 		left join t_whs_coupon_plate t3 on t2.coupon_id = t3.id
 		<trim prefix="where" prefixOverrides="and">
 			<if test="couponName != null and couponName != ''">
 				 and t3.coupon_name like concat('%',#{couponName},'%')
 			</if>
-	        <if test="userIds != null and userIds != ''">
+			<if test="couponStatus != null and couponStatus != ''">
+				 and t1.coupon_status = #{couponStatus}
+			</if>
+			<if test="couponType != null and couponType != ''">
+				 and t1.coupon_from = #{couponType}
+			</if>
+	        <if test="userIds != null">
 	            and
 	            <foreach collection="userIds" item="item" index="index"  open="(" separator="or" close=")">
 	                t1.user_id = #{item} 
@@ -73,15 +79,22 @@
 		resultType="com.lhiot.mall.wholesale.coupon.domain.CouponEntityResult">
 		select t1.id,t1.coupon_config_id as couponConfigId,t1.user_id as userId,t1.effective_time as effectiveTime,
 		t1.failure_time as failureTime,t1.coupon_status as couponStatus,t1.get_time as getTime,t1.use_time as userTime,
-		t1.coupon_fee as couponFee,t1.full_fee as fullTime,t3.coupon_name as couponName,t3.coupon_type as couponType
+		t1.coupon_fee as couponFee,t1.full_fee as fullFee,t3.coupon_name as couponName,t3.coupon_type as couponType,
+		t1.coupon_from as couponFrom
 		from t_whs_coupon_entity t1
-		left join t_whs_coupon_config t2 on t1.coupon_config_id on t2.id
+		left join t_whs_coupon_config t2 on t1.coupon_config_id = t2.id
 		left join t_whs_coupon_plate t3 on t2.coupon_id = t3.id
 		<trim prefix="where" prefixOverrides="and">
 			<if test="couponName != null and couponName != ''">
 				 and t3.coupon_name like concat('%',#{couponName},'%')
 			</if>
-	        <if test="userIds != null and userIds != ''">
+			<if test="couponStatus != null and couponStatus != ''">
+				 and t1.coupon_status = #{couponStatus}
+			</if>
+			<if test="couponType != null and couponType != ''">
+				 and t1.coupon_from = #{couponType}
+			</if>
+	        <if test="userIds != null">
 	            and
 	            <foreach collection="userIds" item="item" index="index"  open="(" separator="or" close=")">
 	                t1.user_id = #{item} 

@@ -70,6 +70,15 @@ public class GoodsStandardService {
 	public GoodsStandard goodsStandard(Long id){
 		return goodsStandardMapper.select(id);
 	}
+
+	/**
+	 * 根据商品id查询商品信息
+	 * @param goodsId
+	 * @return
+	 */
+	public GoodsStandard searchByGoodsId(long goodsId){
+		return goodsStandardMapper.searchByGoodsId(goodsId);
+	}
 	
 	public List<GoodsStandard> goodsStandards(List<Long> ids){
 		return goodsStandardMapper.searchByIds(ids);

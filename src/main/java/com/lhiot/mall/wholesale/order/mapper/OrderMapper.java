@@ -19,7 +19,7 @@ public interface OrderMapper {
 
     OrderDetail searchOrder(String orderCode);
 
-    OrderDetail searchOrderById(long orderId);
+/*    OrderDetail searchOrderById(long orderId);*/
 
     /**
      * 后台管理--分页查询订单
@@ -57,6 +57,13 @@ public interface OrderMapper {
      * @return
      */
     int updateOrderStatusByCode(OrderDetail orderDetail);
+
+    /**
+     * 依据订单号修改订单信息
+     * @return
+     */
+    int updateOrder(OrderDetail orderDetail);
+
 
     //统计商品的售卖数量，根据商品ids
     List<SoldQuantity> soldQuantity(List<Long> goodsIds);

@@ -40,7 +40,7 @@ public class OrderDetail {
     @JsonProperty("auditStatus")
     private String checkStatus;
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @JsonProperty("createTime")
     private Timestamp createTime;
 
@@ -59,16 +59,20 @@ public class OrderDetail {
     @JsonProperty("comments")
     private String remarks;
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @JsonProperty("afterSaleTime")
     private Timestamp afterSaleTime;
 
     @JsonProperty("hdStatus")
     private String hdStatus;//发送订单到海鼎是否成功0成功1失败
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @JsonProperty("deliveryTime")
     private Timestamp deliveryTime;
+
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    @JsonProperty("receiveTime")
+    private Timestamp receiveTime;
 
     @JsonProperty("deliveryFee")
     private Integer deliveryFee;
@@ -91,11 +95,14 @@ public class OrderDetail {
     @JsonProperty("needPay")
     private  Integer payableFee;
 
-    @JsonProperty("addressDetail")
-    private String addressDetail;
-
     @JsonProperty("expire")
     private String expire;//是否已过期 yes no
+
+    @JsonProperty("hdCode")
+    private String hdCode;
+
+    @JsonProperty("orderCoupon")
+    private Integer orderCoupon;//优惠券
 
     @JsonProperty("start")
     private Integer start;
