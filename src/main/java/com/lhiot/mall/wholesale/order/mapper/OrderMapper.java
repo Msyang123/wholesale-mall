@@ -19,7 +19,7 @@ public interface OrderMapper {
 
     OrderDetail searchOrder(String orderCode);
 
-    OrderDetail searchOrderById(long orderId);
+/*    OrderDetail searchOrderById(long orderId);*/
 
     /**
      * 后台管理--分页查询订单
