@@ -11,15 +11,16 @@ import com.lhiot.mall.wholesale.activity.domain.gridparam.RewardConfigGridParam;
 @Mapper
 public interface RewardConfigMapper {
 
-    int insert(List<RewardConfig> rewardConfigs);
+    int insert(List<RewardConfig> rewardConfig);
 
-    int update(RewardConfig ewardConfig);
+    int update(RewardConfig rewardConfig);
     
     void removeInbatch(List<Long> ids);
 
+    RewardCoupon select(Long id);
+    
     List<RewardCoupon> selectByActivity(Long activityId);
     
-    List<RewardConfig> search(List<Long> ids);
     //分页查询分类
     List<RewardCoupon> pageQuery(RewardConfigGridParam rewardConfigGridParam);
     //查询分类的总记录数

@@ -1,7 +1,6 @@
 package com.lhiot.mall.wholesale.activity.domain.gridparam;
 
 import com.leon.microx.common.wrapper.PageObject;
-import com.lhiot.mall.wholesale.activity.domain.ActivityType;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -19,8 +18,14 @@ public class ActivityGirdParam extends PageObject {
 	@ApiModelProperty(notes="活动类型",dataType="String")
 	private String activityType;
 	
-	@ApiModelProperty(notes="是否有效",dataType="Integer")
-	private Integer vaild;
+	@ApiModelProperty(notes="活动开启时间起",dataType="String")
+	private String beginTime;
+	
+	@ApiModelProperty(notes="活动开始止",dataType="String")
+	private String endTime;
+	
+	@ApiModelProperty(notes="是否有效",dataType="String")
+	private String vaild;
 
 	@ApiModelProperty(notes="商品单位名称",dataType="Integer")
 	private Integer start;

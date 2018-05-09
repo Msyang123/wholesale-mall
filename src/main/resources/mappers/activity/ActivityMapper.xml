@@ -19,8 +19,8 @@
 				<if test="activityDesc != null and activityDesc != ''">activity_desc,</if>
 				<if test="activityType != null and activityType != ''">activity_type,</if>
 				<if test="linkUrl != null and linkUrl != ''">link_url,</if>
-				<if test="startTime != null and startTime != ''">start_time,</if>
-				<if test="endTime != null and endTime != ''">end_time,</if>
+				<if test="startTime != null">start_time,</if>
+				<if test="endTime != null">end_time,</if>
 				<if test="vaild != null">vaild,</if>
 			</trim>
 		)
@@ -29,8 +29,8 @@
 				<if test="activityDesc != null and activityDesc != ''">#{activityDesc},</if>
 				<if test="activityType != null and activityType != ''">#{activityType},</if>
 				<if test="linkUrl != null and linkUrl != ''">#{linkUrl},</if>
-				<if test="startTime != null and startTime != ''">#{startTime},</if>
-				<if test="endTime != null and endTime != ''">#{endTime},</if>
+				<if test="startTime != null">#{startTime},</if>
+				<if test="endTime != null">#{endTime},</if>
 				<if test="vaild != null">#{vaild},</if>
 			</trim>
 		)
@@ -43,8 +43,8 @@
 			<if test="activityDesc != null and activityDesc != ''">activity_desc=#{activityDesc},</if>
 			<if test="activityType != null and activityType != ''">activity_type=#{activityType},</if>
 			<if test="linkUrl != null and linkUrl != ''">link_url=#{linkUrl},</if>
-			<if test="startTime != null and startTime != ''">start_time=#{startTime},</if>
-			<if test="endTime != null and endTime != ''">end_time=#{endTime},</if>
+			<if test="startTime != null">start_time=#{startTime},</if>
+			<if test="endTime != null">end_time=#{endTime},</if>
 			<if test="vaild != null">vaild=#{vaild},</if>
 		</trim>
 		where id = #{id}
@@ -67,6 +67,12 @@
 				and activity_type=#{activityType}
 			</if>
 			<if test="vaild != null and vaild != ''">and vaild = #{vaild}</if>
+			<if test="beginTime != null and beginTime != ''">
+				and DATE_FORMAT(start_time,'%Y-%m-%d %H:%i:%s') &gt;=#{beginTime}
+			</if>
+			<if test="endTime != null and endTime != ''">
+				and DATE_FORMAT(start_time,'%Y-%m-%d %H:%i:%s') &lt;=#{endTime}
+			</if>
 		</trim>
 	</select>
 	
@@ -79,6 +85,12 @@
 				and activity_type=#{activityType}
 			</if>
 			<if test="vaild != null and vaild != ''">and vaild = #{vaild}</if>
+			<if test="beginTime != null and beginTime != ''">
+				and DATE_FORMAT(start_time,'%Y-%m-%d %H:%i:%s') &gt;=#{beginTime}
+			</if>
+			<if test="endTime != null and endTime != ''">
+				and DATE_FORMAT(start_time,'%Y-%m-%d %H:%i:%s') &lt;=#{endTime}
+			</if>
 		</trim>
 		<include refid="common.pager"></include>
 	</select>
