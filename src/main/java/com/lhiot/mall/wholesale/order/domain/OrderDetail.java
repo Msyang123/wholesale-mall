@@ -86,7 +86,7 @@ public class OrderDetail {
     @JsonProperty("proList")
     private List<OrderGoods> orderGoodsList;
 
-    @JsonProperty("shopName")
+     @JsonProperty("shopName")
     private String shopName;
 
     @JsonProperty("userName")
@@ -97,6 +97,16 @@ public class OrderDetail {
 
     @JsonProperty("needPay")
     private  Integer payableFee;
+
+    @JsonProperty("addressDetail")
+    private String addressDetail;
+
+   @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonProperty("paymentTime")
+    private Timestamp paymentTime;
+
+    @JsonProperty("salesmanName")
+    private String salesmanName;
 
     @JsonProperty("expire")
     private String expire;//是否已过期 yes no

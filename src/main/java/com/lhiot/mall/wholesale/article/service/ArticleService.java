@@ -67,7 +67,7 @@ public class ArticleService {
         if (article.getId()>0){
             return articleMapper.updateArticle(article);
         }else {
-            article.setId(articleMapper.pageQueryCount()+1);
+            //article.setId(articleMapper.pageQueryCount()+1);
             return articleMapper.insertArticle(article);
         }
     }

@@ -108,7 +108,7 @@ public class OrderRefundApplicationApi {
                     orderGridResult.setPhone(user.getPhone());
                     orderGridResult.setShopName(user.getShopName());
                     orderGridResult.setUserName(user.getUserName());
-                    orderGridResult.setCreateTime(orderGridResult.getCreateTime().toString());
+                    orderGridResult.setCreateTime(orderGridResult.getCreateTime());
                     break;
                 }
             }
