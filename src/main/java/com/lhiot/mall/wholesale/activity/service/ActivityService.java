@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.activity.service;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -118,9 +119,11 @@ public class ActivityService {
 				.map(id -> Long.parseLong(id.trim())).collect(Collectors.toList());
 		List<Activity> activities = activityMapper.search(list);
 		LocalDate currentTime = LocalDate.now();
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyy-MM-dd HH:mm:ss");
+		//DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyy-MM-dd HH:mm:ss");
 		for(Activity activity : activities){
-			LocalDate beginTime = LocalDate.parse(activity.getStartTime(), formatter);
+			String st = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+								.format(activity.getStartTime());
+			LocalDate beginTime = LocalDate.parse(st);
 			boolean afterBeginTime = currentTime.isAfter(beginTime);
 			//如果活动已经开启或者当前时间大于活动开始时间，则不能删除活动
 			boolean vailid = "yes".equals(activity.getVaild());
@@ -183,5 +186,15 @@ public class ActivityService {
 				"time", curActivity.getEndTime());
 		return activityMapper.nextActivity(param);
 	}
+
+	/**
+	 * 根据活动id查询抢购活动商品
+	 * @param activityId
+	 * @return
+	 */
+	public Activity flashGoods(Long activityId){
+		return activityMapper.flashActivity(activityId);
+	}
+	
 	
 }

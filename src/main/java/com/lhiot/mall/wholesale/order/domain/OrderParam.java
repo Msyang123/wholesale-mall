@@ -15,5 +15,5 @@ import lombok.ToString;
 public class OrderParam {
     private Integer dayNum;
 
-    private long id;
+    private Long id;
 }

@@ -11,21 +11,21 @@
 
     <!-- 查询订单信息 -->
     <select id="searchOrders"  parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
-       select id,order_code orderCode,discount_fee discountFee,settlement_type settlementType,pay_status payStatus
-        ,order_status orderStatus,create_time createTime,total_fee totalFee,payable_fee payableFee,remarks,after_sale_time afterSaleTime
+       select id,order_code orderCode,ifnull(discount_fee,0) discountFee,settlement_type settlementType,pay_status payStatus,user_id
+        ,order_status orderStatus,create_time createTime,ifnull(total_fee,0) totalFee,ifnull(payable_fee,0) payableFee,remarks,after_sale_time afterSaleTime
        from t_whs_order o
         <trim prefix="where" prefixOverrides="and">
             <if test="userId != null ">and o.user_id=#{userId}</if>
             <if test="settlementType != null ">and o.settlement_type=#{settlementType}</if>
             <if test="payStatus != null ">and o.pay_status=#{payStatus}</if>
-            <if test="orderStatus != null ">and o.order_status = #{orderStatus}</if>
-
+            <if test="orderStatus != null and  orderStatus != 'all' ">and o.order_status = #{orderStatus}</if>
         </trim>
+        <include refid="common.pager"></include>
     </select>
 
     <select id="searchAfterSaleOrders"  parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
-        select id,order_code orderCode,discount_fee discountFee,settlement_type settlementType,pay_status payStatus
-        ,order_status orderStatus,create_time createTime,total_fee total,payable_fee needPay,remarks,after_sale_time afterSaleTime
+        select id,order_code orderCode,ifnull(discount_fee,0) discountFee,settlement_type settlementType,pay_status payStatus,user_id
+        ,order_status orderStatus,create_time createTime,ifnull(total_fee,0) totalFee,ifnull(payable_fee,0) payableFee,remarks,after_sale_time afterSaleTime
         from t_whs_order o
         <trim prefix="where" prefixOverrides="and">
             <if test="userId != null ">and o.user_id=#{userId}</if>
@@ -34,12 +34,13 @@
             <if test="orderStatus != null ">and o.order_status = #{orderStatus}</if>
         </trim>
         and DATE_SUB(CURDATE(),INTERVAL 30 DAY) &lt;= o.create_time
+        <include refid="common.pager"></include>
     </select>
 
     <select id="searchOrder"  parameterType="String" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
-        select id,order_code orderCode,discount_fee discountFee,settlement_type settlementType,pay_status payStatus
-        ,order_status orderStatus,create_time createTime,total_fee total,payable_fee orderNeedFee,remarks,
-        hd_status,delivery_time,delivery_fee,delivery_address
+        select id,order_code orderCode,IFNULL(discount_fee,0) discountFee,settlement_type settlementType,pay_status payStatus,user_id
+        ,order_status orderStatus,create_time createTime,IFNULL(total_fee,0) totalFee,IFNULL(payable_fee,0) payableFee,remarks,
+        hd_status,delivery_time,IFNULL(delivery_fee,0) deliveryFee,delivery_address,hd_code
         from t_whs_order o where o.order_code = #{orderCode}
     </select>
 
@@ -71,30 +72,63 @@
             keyProperty="id">
         insert into t_whs_order (order_code,user_id,
                         salesman_id,total_fee,create_time,order_status,order_coupon,discount_fee,payable_fee,
-                        hd_status,delivery_time,delivery_fee,remarks,settlement_type,pay_status,delivery_address,receive_time,hd_status,
-                        delivery_time,delivery_fee.delivery_address
+                        hd_status,delivery_time,delivery_fee,remarks,settlement_type,
+                        pay_status,delivery_address,receive_time,after_sale_time,hd_code
                         ) VALUES
           (#{orderCode},#{userId},
-              #{salesmanId},#{orderTotal},#{createTime},#{orderStatus},#{orderCoupon},#{discountFee},#{orderNeedFee},
-              #{hdStatus},#{deliveryTime},#{deliveryFee},#{remarks},#{settlementType},#{payStatus},#{deliveryAddress},#{receiveTime},
-              #{hdStatus},#{deliveryTime},#{deliveryFee},#{deliveryAddress}
+              #{salesmanId},#{totalFee},#{createTime},#{orderStatus},#{orderCoupon},#{discountFee},#{payableFee},
+              #{hdStatus},#{deliveryTime},#{deliveryFee},#{remarks},#{settlementType},
+              #{payStatus},#{deliveryAddress},#{receiveTime},#{afterSaleTime},#{hdCode}
           )
     </insert>
 
     <insert id="saveOrderGoods" parameterType="com.lhiot.mall.wholesale.order.domain.OrderGoods">
         insert into t_whs_order_goods (goods_standard_id,standard_weight,
-        order_id,quanity,goods_price,payment_time,refund_status,discount_goods_price,user_id
+        order_id,quanity,goods_price,payment_time,refund_status,
+        discount_goods_price,user_id,purchase_price,goods_id
         ) VALUES
         <foreach collection="list" item="item" separator=",">
             (#{item.goodsStandardId},#{item.standardWeight},#{item.orderId},#{item.quanity},#{item.goodsPrice},#{item.paymentTime},#{item.refundStatus},
-            #{item.discountGoodsPrice},#{item.userId})
+            #{item.discountGoodsPrice},#{item.userId},#{item.purchasePrice},#{item.goodsId})
         </foreach>
     </insert>
 
     <!--依据订单编码和当前状态修改订单状态-->
     <update id="updateOrderStatusByCode" parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
-        UPDATE t_whs_order set order_status=#{orderStatus} where order_status=#{currentOrderStaus} and order_code=#{orderCode}
+        UPDATE t_whs_order set order_status=#{orderStatus} where order_status=#{currentOrderStatus} and order_code=#{orderCode}
     </update>
+    <!--依据订单编码修改订单信息-->
+    <update id="updateOrder" parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        UPDATE t_whs_order
+        <set>
+            <if test="hdCode!=null and hdCode!=''">
+                hd_code=#{hdCode},
+            </if>
+            <if test="remarks!=null and remarks!=''">
+                remarks=#{remarks},
+            </if>
+            <if test="payStatus!=null and payStatus!=''">
+                pay_status=#{payStatus},
+            </if>
+            <if test="receiveTime!=null">
+                receive_time=#{receiveTime},
+            </if>
+            <if test="payStatus!=null and payStatus!=''">
+                pay_status=#{payStatus},
+            </if>
+            <if test="hdStatus!=null and hdStatus!=''">
+                hd_status=#{hdStatus},
+            </if>
+            <if test="orderStatus!=null and orderStatus!=''">
+                order_status=#{orderStatus},
+            </if>
+            <if test="settlementType!=null and settlementType!=''">
+                settlement_type=#{settlementType},
+            </if>
+        </set>
+         where order_code=#{orderCode}
+    </update>
+
     
     <!-- 统计商品的售卖数量 -->
     <select id="soldQuantity" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.order.domain.SoldQuantity">
@@ -150,6 +184,13 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="orderIds != null and orderIds.size()>0">
+                and t1.order_code in
+                <foreach collection="orderIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+
         </trim>
         <include refid="common.pager"></include>
     </select>
@@ -177,7 +218,7 @@
         ,order_status orderStatus,create_time createTime,total_fee total,payable_fee needPay,remarks,after_sale_time afterSaleTime
         from t_whs_order o where o.user_id=#{id}
         and o.order_status = 'received'
-        and DATE_SUB(CURDATE(),INTERVAL #{dayNum} DAY) &gt; o.create_time
+        and DATE_SUB(CURDATE(),INTERVAL 30 DAY) &lt;= o.create_time
     </select>
 
     <!--用户最近下单数据 -->
@@ -185,7 +226,7 @@
         select IFNULL(SUM(payable_fee),0) ordersTotalFee
 					from t_whs_order o where o.user_id=#{id}
 							and o.order_status = 'received'
-					and DATE_SUB(CURDATE(),INTERVAL #{dayNum} DAY) &gt; o.create_time
+					and DATE_SUB(CURDATE(),INTERVAL 30 DAY) &lt;= o.create_time
     </select>
 
     <!-- 后台管理  根据id查询订单详情 -->
@@ -194,4 +235,29 @@
         FROM t_whs_order t1
         WHERE t1.id = #{0}
     </select>
+
+    <!-- 用户下单情况 -->
+    <select id="userOrder" parameterType="com.lhiot.mall.wholesale.order.domain.OrderParam" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        select * from t_whs_order where user_id=#{id}
+        <choose>
+            <when test="dayNum!=null and dayNum!=1">
+              and DATE_SUB(CURDATE(),INTERVAL #{dayNum} DAY) &lt;= create_time limit 1
+            </when>
+            <otherwise>
+                limit 1
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--分页查询订单信息-->
+
+   <!-- <select parameterType="map" id="page" resultType="com.lhiot.mall.wholesale.aftersale.domain.Order">
+        select o.* from t_whs_order_refund_application a
+        LEFT JOIN t_whs_order o on a.order_id=o.order_code
+        <where>
+            <if test="orderCode!=null and orderCode!='null' and orderCode!=''"> and o.order_code = #{orderCode} </if>
+        </where>
+    </select>-->
 </mapper>
+
+

@@ -37,7 +37,7 @@ public interface GoodsMapper {
 
     List<GoodsInfo> inventoryList(long userId);
 
-    List<GoodsInfo> recommendList(long plateId);
+    List<GoodsInfo> recommendList(List<Long> plateIds);
     
     List<Goods> categoryGoods(Long categoryId);
     
@@ -46,4 +46,5 @@ public interface GoodsMapper {
     
     //根据版块id查询商品
     List<Goods> plateGoodses(Long plateId);
+
 }

@@ -51,9 +51,10 @@ public class DebtOrderService {
      */
     public int create(DebtOrder debtOrder){
         //产生欠款账款订单编码
+
+        debtOrder.setCheckStatus("unpaid");//未支付
         debtOrder.setOrderDebtCode(snowflakeId.stringId());
         debtOrder.setCreateTime(new Timestamp(System.currentTimeMillis()));
-        debtOrder.setCheckStatus("unpaid");//未提交审核
         return debtOrderMapper.save(debtOrder);
     }
 
@@ -74,6 +75,16 @@ public class DebtOrderService {
     public DebtOrder findByCode(String debtOrderCode){
         return debtOrderMapper.findByCode(debtOrderCode);
     }
+
+    /**
+     * 依据订单号模糊查找账款订单
+     * @param orderCode
+     * @return
+     */
+    public DebtOrder findByOrderIdLike(String orderCode){
+        return debtOrderMapper.findByOrderIdLike(orderCode);
+    }
+
 
     /**
      * 后台管理系统--分页查询账款订单信息
@@ -139,7 +150,7 @@ public class DebtOrderService {
                     param.setPage(page);
                     param.setStart(0);
                 }
-                debtOrderList = debtOrderMapper.pageQuery(param);//根据用户ID列表及其他查询条件查询用户信息
+                debtOrderList = debtOrderMapper.pageQuery(param);//根据用户ID列表及其他查询条件查询账款订单信息
                 List<Long> orderIds = new ArrayList<Long>();
                 if(debtOrderList != null && debtOrderList.size() > 0){
                     for(DebtOrder debtOrder : debtOrderList){

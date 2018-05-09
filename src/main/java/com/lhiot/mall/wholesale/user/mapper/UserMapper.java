@@ -14,19 +14,21 @@ public interface UserMapper {
 
     List<User> search(List ids);
 
-    List<User> search(String userName);
+    /*List<User> search(String userName);*/
 
-    int updateUserStatus(long id);
+    Integer updateUserStatus(long id);
 
-    int save(User user);
+    Integer save(User user);
 
     User user(long id);
 
-    int updateUser(User user);
+    User searchUserByOpenid(String openId);
 
-    int insertAddress(UserAddress userAddress);
+    Integer updateUser(User user);
 
-    int updateAddress(UserAddress userAddress);
+    Integer insertAddress(UserAddress userAddress);
+
+    Integer updateAddress(UserAddress userAddress);
 
     List<UserAddress> searchAddressList(long userId);
 
@@ -57,4 +59,5 @@ public interface UserMapper {
     List<UserAddress> searchAddressListNo(long userId);
 
     Integer debtFee(long userId);
+
 }

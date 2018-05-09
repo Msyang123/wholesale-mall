@@ -14,11 +14,11 @@ public interface SalesUserMapper {
 
     List<SalesUserRelation> selectRelation(Map<String,Object> param);
 
-    int updateUserSaleRelationship(SalesUserRelation salesUserRelation);
+    Integer updateUserSaleRelationship(SalesUserRelation salesUserRelation);
 
     SalesUser searchSalesUser(long id);
 
-    SalesUser searchSalesUserCode(String code);
+    SalesUser searchSalesUserByOpenid(String openid);
 
     int insertRelation(SalesUserRelation salesUserRelation);
 
@@ -43,4 +43,6 @@ public interface SalesUserMapper {
     SalesUser findById(Long id);
 
     SalesUser findCode(String code);
+
+    SalesUser login(String acount);
 }

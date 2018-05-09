@@ -23,20 +23,6 @@ spring:
     port: ${RABBIT_MQ_PORT:5672}
     username: guest
     password: guest
-# mq队列配置
-message-queue:
-  rabbit:
-    delay-queue:
-      dlx-queue-forward:
-#        retry-order-resendhd:
-#          forward-queue-name: order-resendhd-deal
-    match-queue:
-#      queue-bind-routing-key:
-#        user-register-receive: user.register.route
-    publishers:
-      #订单退款退货
-#      publish-received-refund:
-#        - order-back-refund
 mybatis:
   mapper-locations: classpath:mappers/**/*.xml
   configuration:
@@ -56,16 +42,42 @@ wholesale-mall:
     we-chat-oauth:
       app-id: wx8521acbe400f89e3
       app-secret: 5176ebed12516da3cabb3a4d0e6d3ad6
-      app-redirect-uri: https://online.food-see.com/wholesale-mall/user/weixin/authorize
+      app-redirect-uri: https://online.food-see.com/user/wechat/authorize
+      app-front-uri: https://online.food-see.com/weixin/
     we-chat-pay:
       partner-id: 1497940112
       partner-key: aZ2J68OrUnvkNtTdSasGLBnGRjceHRS2
       pkcs12: classpath:apiclient_cert.p12
       timeout-express: 6
-      recharge-notify-url: https://online.food-see.com/wholesale-mall/wechat/recharge/notify
-      order-notify-url: https://online.food-see.com/wholesale-mall/wechat/order/notify
+      recharge-notify-url: https://online.food-see.com/wechat/recharge/notify
+      order-notify-url: https://online.food-see.com/wechat/order/notify
+      invoice-notify-url: https://online.food-see.com/wechat/invoice/notify
+      order-offline-notify-url: https://online.food-see.com/wechat/offline/notify
       payunit: 100
       proxy: nonginx
+  rabbitmq:
+    direct-queue:
+      order-create:
+#延迟队列信道
+        direct_exchange_name: order-direct-exchange
+#延迟队列队列名
+        dlx_queue_name: order-dlx-queue
+#转发队列队列名
+        repeat_queue_name: order-repeat-queue
+      pay-create:
+#延迟队列信道
+        direct_exchange_name: pay-direct-exchange
+#延迟队列队列名
+        dlx_queue_name: pay-dlx-queue
+#转发队列队列名
+        repeat_queue_name: pay-repeat-queue
+    fanout-queue:
+      order-created-event:
+        - coupon-publisher
+        - flasesale-publisher
+      order-payed-event:
+        - test-publisher-1
+        - test-publisher-4
 hd:
   config:
     charset: UTF-8
@@ -87,6 +99,9 @@ microx:
     title: 水果熟了 - 批发商城
     description: 批发商城 - 接口列表
     version: 20180416
+  redisson:
+    server-mode: single
+    addresses: 172.16.10.195:6379
 
 logging:
   file: ./logs/${spring.application.name}.log

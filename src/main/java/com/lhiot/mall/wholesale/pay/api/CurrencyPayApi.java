@@ -1,12 +1,5 @@
 package com.lhiot.mall.wholesale.pay.api;
 
-import com.leon.microx.common.exception.ServiceException;
-import com.lhiot.mall.wholesale.invoice.domain.Invoice;
-import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
-import com.leon.microx.common.wrapper.ArrayObject;
-import com.lhiot.mall.wholesale.faq.domain.Faq;
-import com.lhiot.mall.wholesale.faq.domain.FaqCategory;
-import com.leon.microx.common.wrapper.ArrayObject;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
@@ -16,11 +9,6 @@ import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.service.PayService;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
-import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
-import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
-import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
-import com.lhiot.mall.wholesale.user.wechat.XPathParser;
-import com.lhiot.mall.wholesale.user.wechat.XPathWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -28,9 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.List;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -48,6 +33,7 @@ public class CurrencyPayApi {
     private final InvoiceService invoiceService;
     private final PaymentLogService paymentLogService;
 
+
 	@Autowired
 	public CurrencyPayApi(PayService payService,DebtOrderService debtOrderService, OrderService orderService,
                           InvoiceService invoiceService,PaymentLogService paymentLogService){
@@ -61,7 +47,7 @@ public class CurrencyPayApi {
 	
     @PutMapping("/orderpay/{orderCode}")
     @ApiOperation(value = "余额支付订单", response = String.class)
-    public ResponseEntity orderPay(@PathVariable("orderCode") String orderCode) {
+    public ResponseEntity orderPay(@PathVariable("orderCode") String orderCode) throws Exception {
         OrderDetail orderDetail = orderService.searchOrder(orderCode);
         if (Objects.isNull(orderDetail)){
             return ResponseEntity.badRequest().body("没有该订单信息");
@@ -69,20 +55,13 @@ public class CurrencyPayApi {
         if(!Objects.equals(orderDetail.getOrderStatus(),"unpaid")){
             return ResponseEntity.badRequest().body("订单状态异常，请检查订单状态");
         }
+        //余额支付订单 发送到总仓
         int payResult=payService.currencyPay(orderDetail);
         if(payResult>0){
-            //发送订单到海鼎总仓
             return ResponseEntity.ok(orderDetail);
         }
         return ResponseEntity.badRequest().body("余额支付订单失败");
     }
-
-  /*  @GetMapping("/balance/{userId}")
-    @ApiOperation(value = "余额收支明细")
-    public ResponseEntity<ArrayObject> getBalanceRecord(@PathVariable("userId") Integer userId) {
-        List<PaymentLog> paymentLogList = payService.getBalanceRecord(userId);//待测
-        return ResponseEntity.ok(ArrayObject.of(paymentLogList));
-    }*/
 
     @PutMapping("/debtorderpay/{orderDebtCode}")
     @ApiOperation(value = "余额支付账款订单", response = String.class)
@@ -101,6 +80,12 @@ public class CurrencyPayApi {
         //余额支付账款订单支付
         int payResult=payService.currencyPay(debtOrder);
         if(payResult>0){
+            //修改账款订单为已支付
+            DebtOrder saveDebtOrder=new DebtOrder();
+            saveDebtOrder.setOrderDebtCode(orderDebtCode);
+            saveDebtOrder.setCheckStatus("paid");
+            saveDebtOrder.setPaymentType("balance");
+            debtOrderService.updateDebtOrderByCode(saveDebtOrder);
             return ResponseEntity.ok(debtOrder);
         }
         return ResponseEntity.badRequest().body("余额支付账款订单失败");
@@ -109,19 +94,21 @@ public class CurrencyPayApi {
 
     @PutMapping("/invoice-pay/{invoiceCode}")
     @ApiOperation(value = "余额支付发票", response = String.class)
-    public ResponseEntity invoicePay(@PathVariable("invoiceCode") String invoiceCode) {
+    public ResponseEntity invoicePay(@PathVariable("invoiceCode") Long invoiceCode) {
         //依据发票业务编码查询发票信息
         Invoice invoice= invoiceService.findInvoiceByCode(invoiceCode);
         if(Objects.isNull(invoice)){
             return ResponseEntity.badRequest().body("未找到开票信息");
-        }else if(invoice.getInvoiceStatus()==""){ //FIXME 更改为枚举  invoice.getInvoiceStatus()==1
+        }else if(invoice.getInvoiceStatus()=="no"){
             return ResponseEntity.badRequest().body("发票已支付，请勿重复支付");
-        }else if(invoice.getInvoiceStatus()==""){//FIXME 更改为枚举  invoice.getInvoiceStatus()==2
+        }else if(invoice.getInvoiceStatus()=="yes"){
             return ResponseEntity.badRequest().body("已经开票，请勿重复支付");
         }
 
         int payResult=payService.currencyPay(invoice);
         if(payResult>0){
+            //保存开票信息
+            invoiceService.applyInvoice(invoice);
             return ResponseEntity.ok(invoice);
         }
         return ResponseEntity.badRequest().body("余额支付发票失败");

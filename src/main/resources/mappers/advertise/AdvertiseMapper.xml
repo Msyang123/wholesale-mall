@@ -70,7 +70,7 @@
 			<if test="advertmentPosition != null and advertmentPosition != ''">
 				and advertment_position=#{advertmentPosition}
 			</if>
-			<if test="isVaild != null and isVaild != ''">and vaild = #{isVaild}</if>
+			<if test="vaild != null and vaild != ''">and vaild = #{vaild}</if>
 			<if test="title != null and title !=''">and title = #{title}</if>
 		</trim>
 	</select>
@@ -83,7 +83,7 @@
 			<if test="advertmentPosition != null and advertmentPosition != ''">
 				and advertment_position=#{advertmentPosition}
 			</if>
-			<if test="isVaild != null and isVaild != ''">and vaild = #{isVaild}</if>
+			<if test="vaild != null and vaild != ''">and vaild = #{vaild}</if>
 			<if test="title != null and title !=''">and title = #{title}</if>
 		</trim>
 		<include refid="common.pager"></include>

@@ -66,7 +66,7 @@ public class IndexService {
 		}
 		
 		//获取首页弹窗广告
-		List<Advertise> popups = advertiseService.findByType(AdvertiseType.popup);
+		List<Advertise> popups = advertiseService.findByType(AdvertiseType.poppup);
 		if(!popups.isEmpty()){
 			index.setAdvBanner(popups.get(FIRST_INDEX));
 		}
@@ -75,19 +75,13 @@ public class IndexService {
 		List<Advertise> swiperSlides = advertiseService.findByType(AdvertiseType.top);
 		index.setSwiperSlides(swiperSlides);
 		
-		//获取版块商品
-		List<PlateCategory> plateCategories = goodsService.plateGoodses();
-		if(!plateCategories.isEmpty()){
-			for(PlateCategory plateCategory : plateCategories){
-				String layout = plateCategory.getLayout();
-				if(Objects.equal(layout, LayoutType.roll.toString())){
-					index.setHotPro(plateCategory);
-					plateCategories.remove(plateCategory);
-					break;
-				}
-			}
-			index.setChannelList(plateCategories);
-		}
+		//获取滚动排版的版块商品
+		List<PlateCategory> hotPro = goodsService.plateGoodses(LayoutType.roll);
+		index.setHotPro(hotPro.get(FIRST_INDEX));
+		
+		//获取平铺排版的版块商品
+		List<PlateCategory> channelList = goodsService.plateGoodses(LayoutType.tile);
+		index.setChannelList(channelList);
 		return index;
 	}
 }

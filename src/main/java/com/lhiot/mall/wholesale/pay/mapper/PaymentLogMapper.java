@@ -11,6 +11,8 @@ public interface PaymentLogMapper {
 
     int insertPaymentLog(PaymentLog paymentLog);
 
+    int updatePaymentLog(PaymentLog paymentLog);
+
     PaymentLog getPaymentLog(String orderCode);
 
     List<PaymentLog> getPaymentLogList(List<Long> userIds);

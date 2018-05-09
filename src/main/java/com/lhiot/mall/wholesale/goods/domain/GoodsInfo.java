@@ -14,19 +14,19 @@ import lombok.NoArgsConstructor;
 public class GoodsInfo {
 
     @JsonProperty("id")
-    private long id;
+    private Long id;
 
     @JsonProperty("name")
     private String goodsName;
 
     @JsonProperty("price")
-    private int price;
+    private Integer price;
 
     @JsonProperty("minPrice")
-    private int maxPrice;
+    private Integer minPrice;
 
     @JsonProperty("maxPrice")
-    private int minPrice;
+    private Integer maxPrice;
 
     @JsonProperty("unit")
     private String unitName;
@@ -35,7 +35,7 @@ public class GoodsInfo {
     private String standard;
 
     @JsonProperty("stock")
-    private int stockLimit;
+    private Integer stockLimit;
 
     @JsonProperty("src")
     private String goodsImage;
@@ -47,13 +47,16 @@ public class GoodsInfo {
     private String otherImage;
 
     @JsonProperty("goodsStandradId")
-    private long goodsStandardId;
+    private Long goodsStandardId;
 
     @JsonProperty("flashPrice")
-    private long specialPrice;
+    private Long specialPrice;
 
     @JsonProperty("saleCount")
-    private int saleCount;
+    private Integer saleCount;
+
+    @JsonProperty("content")
+    private String goodsImages;
 
     @JsonProperty("standardList")
     private List<GoodsPriceRegion> goodsPriceRegionList;

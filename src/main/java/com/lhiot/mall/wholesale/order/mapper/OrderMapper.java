@@ -5,6 +5,7 @@ import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import java.util.Map;
 
 
 @Mapper
@@ -18,7 +19,7 @@ public interface OrderMapper {
 
     OrderDetail searchOrder(String orderCode);
 
-    OrderDetail searchOrderById(long orderId);
+/*    OrderDetail searchOrderById(long orderId);*/
 
     /**
      * 后台管理--分页查询订单
@@ -57,6 +58,13 @@ public interface OrderMapper {
      */
     int updateOrderStatusByCode(OrderDetail orderDetail);
 
+    /**
+     * 依据订单号修改订单信息
+     * @return
+     */
+    int updateOrder(OrderDetail orderDetail);
+
+
     //统计商品的售卖数量，根据商品ids
     List<SoldQuantity> soldQuantity(List<Long> goodsIds);
 
@@ -69,4 +77,7 @@ public interface OrderMapper {
     Integer lateOrdersFee(OrderParam orderParam);
 
     OrderDetail select(long id);
+
+    OrderDetail userOrder(OrderParam orderParam);
+
 }

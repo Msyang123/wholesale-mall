@@ -34,7 +34,11 @@ public class InvoiceService {
 
 
     public InvoiceTitle selectInvoiceTitle(long id){
-        return invoiceMapper.selectInvoiceTitle(id);
+        InvoiceTitle invoiceTitle = invoiceMapper.selectInvoiceTitle(id);
+        if (invoiceTitle==null){
+            return new InvoiceTitle();
+        }
+        return invoiceTitle;
     }
 
     public int saveOrUpdateInvoiceTitle(InvoiceTitle invoiceTitle){
@@ -56,9 +60,19 @@ public class InvoiceService {
      * @param invoiceCode
      * @return
      */
-    public Invoice findInvoiceByCode(String invoiceCode){
+    public Invoice findInvoiceByCode(long invoiceCode){
         return invoiceMapper.findInvoiceByCode(invoiceCode);
     }
+
+    /**
+     * 依据订单code模糊查询发票信息
+     * @param orderCode
+     * @return
+     */
+    public Invoice listByorderCodesLike(String orderCode){
+        return invoiceMapper.listByorderCodesLike(orderCode);
+    }
+
 
     /**
      * 修改发票信息

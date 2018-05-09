@@ -8,17 +8,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.lhiot.mall.wholesale.activity.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.StringUtils;
-import com.lhiot.mall.wholesale.activity.domain.ActivityPeriodsType;
-import com.lhiot.mall.wholesale.activity.domain.ActivityType;
-import com.lhiot.mall.wholesale.activity.domain.FlashActivity;
-import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
-import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 import com.lhiot.mall.wholesale.activity.mapper.FlashsaleMapper;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
@@ -197,7 +193,7 @@ public class FlashsaleService {
 	 * @return
 	 */
 	public FlashActivityGoods flashGoods(ActivityPeriodsType activityPeriodsType){
-		FlashActivityGoods flashActivityGoods = null;
+		FlashActivityGoods flashActivityGoods = new FlashActivityGoods();
 		ActivityType flasesale = ActivityType.flashsale;
 		//获取开启抢购活动
 		if(activityPeriodsType.equals(ActivityPeriodsType.current)){
@@ -206,7 +202,7 @@ public class FlashsaleService {
 			flashActivityGoods = activityService.nextActivity(flasesale);
 		}
 		if(Objects.isNull(flashActivityGoods)){
-			return null;
+			return flashActivityGoods;
 		}
 		//查询活动商品
 		List<FlashsaleGoods> flashGoods = flashsaleMapper.search(flashActivityGoods.getId());
@@ -249,8 +245,11 @@ public class FlashsaleService {
 	 * @param activityId
 	 * @return
 	 */
-	public int userRecords(Long userId,Long activityId){
+	public Integer userRecords(Long userId,Long activityId){
 		Map<String,Object> param = ImmutableMap.of("userId", userId, "activityId", activityId);
 		return flashsaleMapper.userRecord(param);
 	}
+
+
+
 }

@@ -1,7 +1,10 @@
 package com.lhiot.mall.wholesale.user.api;
 
 import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.util.ImmutableMap;
+import com.leon.microx.common.wrapper.ResultObject;
+import com.lhiot.mall.wholesale.coupon.domain.CouponConfig;
+import com.lhiot.mall.wholesale.coupon.domain.ReleaseCouponParam;
+import com.lhiot.mall.wholesale.coupon.service.CouponConfigService;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderParam;
 import com.lhiot.mall.wholesale.order.service.OrderService;
@@ -11,19 +14,21 @@ import com.lhiot.mall.wholesale.user.domain.ShopResult;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
+import com.sgsl.util.ImmutableMap;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.WebResource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.NotNull;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Array;
+import java.util.*;
 
 @Api(description = "业务员接口")
 @Slf4j
@@ -37,26 +42,42 @@ public class SalesUserApi {
 
     private final OrderService orderService;
 
+    private final CouponConfigService couponConfigService;
+
     @Autowired
-    public SalesUserApi(SalesUserService salesUserService, UserService userService, OrderService orderService) {
+    private RestTemplate restTemplate;
+
+    @Autowired
+    public SalesUserApi(SalesUserService salesUserService, UserService userService, OrderService orderService, CouponConfigService couponConfigService) {
         this.salesUserService = salesUserService;
         this.userService = userService;
         this.orderService = orderService;
+        this.couponConfigService = couponConfigService;
     }
 
     @GetMapping("/{id}/search/{approved}/sellers")
     @ApiOperation(value = "根据业务员ID查询是否审核通过或者未审核的商户")
-    public ResponseEntity<List<User>> isCheck(@PathVariable @NotNull Integer id, @PathVariable Integer approved, @RequestParam Integer page, @RequestParam Integer rows) {
-        Map<String, Object> param = ImmutableMap.of("id", id, "isCheck", approved, "START", (page - 1) * rows, "ROWS", rows);
+    public ResponseEntity<ArrayObject> isCheck(@PathVariable @NotNull Integer id, @PathVariable String approved, @RequestParam Integer page, @RequestParam Integer rows) {
+        Map<String, Object> param = ImmutableMap.of("id", id, "check", approved, "start", (page - 1) * rows, "rows", rows);
         List<SalesUserRelation> salesUserRelations = salesUserService.selectRelation(param);
         if (salesUserRelations.isEmpty()) {
-            return ResponseEntity.ok(new ArrayList<>());
+            return ResponseEntity.ok(ArrayObject.of(new ArrayList<>()));
         }
         List ids = new ArrayList();
         for (SalesUserRelation salesUserRelation : salesUserRelations) {
             ids.add(salesUserRelation.getUserId());
         }
-        return ResponseEntity.ok(userService.search(ids));
+        List<User> users = userService.search(ids);
+        List<User> sellers = new ArrayList<User>();
+        for (User user :users){
+            for (SalesUserRelation salesUserRelation:salesUserRelations) {
+                if (Objects.equals(user.getId(),salesUserRelation.getUserId())){
+                    user.setAuditStatus(salesUserRelation.getAuditStatus());
+                }
+            }
+            sellers.add(user);
+        }
+        return ResponseEntity.ok(ArrayObject.of(sellers));
     }
 
 
@@ -69,16 +90,15 @@ public class SalesUserApi {
     @GetMapping("/{salesId}/shopInfo")
     @ApiOperation(value = "门店管理")
     public ResponseEntity<ArrayObject> shopInfo(@PathVariable("salesId") Long salesId, @RequestParam Integer dayNum) {
-        List<ShopResult> shopResultList = salesUserService.searchShopInfo(salesId);//查询门店基本信息
-        if(shopResultList.isEmpty()){
-            return ResponseEntity.ok(ArrayObject.of(new ArrayList<ShopResult>()));
+        List<ShopResult> shopResults = salesUserService.searchShopInfo(salesId);//查询门店基本信息
+        if(shopResults.isEmpty()){
+            ResponseEntity.ok(ArrayObject.of(new ArrayList<ShopResult>()));
         }
-        for (ShopResult result:shopResultList){
+        for (ShopResult result:shopResults){
             System.out.println(result.getUserId());
             OrderDetail orderDetail = orderService.lateOneOrder(result.getUserId());//最近一单消费记录
             OrderParam param = new OrderParam();//传参对象
             if (orderDetail!=null){
-                param.setDayNum(dayNum);
                 param.setId(result.getUserId());
                 result.setLateOrdersFee(orderDetail.getPayableFee());//最近一单的消费金额
                 result.setLateTime(orderDetail.getCreateTime());//最近一单的下单时间
@@ -93,17 +113,87 @@ public class SalesUserApi {
             }else{
                 result.setLateOrdersFee(0);//最近一单的消费金额
                 result.setLateTime(null);//最近一单的下单时间
+                result.setOrdersTotalFee(0);//最近下单总金额
+                result.setOrderTotal(0);//订单数
             }
         }
-        return ResponseEntity.ok(ArrayObject.of(shopResultList));
+
+        List<ShopResult> resultList = new ArrayList<ShopResult>();//创建一个未下单的容器
+        if (shopResults.isEmpty()){
+            return ResponseEntity.ok(ArrayObject.of(new ArrayList<ShopResult>()));
+        }
+        if (dayNum==0){
+            //全部门店
+            return ResponseEntity.ok(ArrayObject.of(shopResults));
+        }
+
+        OrderParam param = new OrderParam();
+        for (ShopResult shopResult:shopResults) {
+            param.setId(shopResult.getUserId());
+            param.setDayNum(dayNum);
+            OrderDetail order = orderService.userOrder(param);
+            if (order==null){
+                resultList.add(shopResult);
+            }
+        }
+        return ResponseEntity.ok(ArrayObject.of(resultList));
     }
 
-    /*@GetMapping("/page")
-    @ApiOperation(value = "业务员账号登陆接口")
-    public ResponseEntity<SalesUser> salesLogin(@RequestParam String acount,@RequestParam String salesmanPassword){
+    @GetMapping("/detial/{openid}")
+    @ApiOperation(value = "依据openid查询业务员详细信息")
+    public ResponseEntity<SalesUser> detial(@RequestParam("openid") String openid) {
+        return ResponseEntity.ok(salesUserService.searchSalesUserByOpenid(openid));
+    }
 
-        return ResponseEntity.ok(SalesUser);
-    }*/
+    @PostMapping("/login")
+    @ApiOperation(value = "业务员账号登陆接口")
+    public ResponseEntity salesLogin(@RequestParam String account,@RequestParam String psw){
+        SalesUser salesUser=salesUserService.login(account);
+        if (salesUser==null){
+            return ResponseEntity.badRequest().body(ResultObject.of("账号不存在"));
+        }
+        if (psw.equals(salesUser.getSalesmanPassword())){
+            return ResponseEntity.ok().body(salesUser);
+        }
+        return ResponseEntity.badRequest().body(ResultObject.of("密码错误"));
+    }
+
+    @GetMapping("/salesman")
+    @ApiOperation(value = "业务员主页信息")
+    public ResponseEntity<SalesUser> salesman(@RequestParam long userId){
+        SalesUser salesUser = salesUserService.findById(userId);
+        if (salesUser==null){
+            return ResponseEntity.ok(new SalesUser());
+        }
+        return ResponseEntity.ok(salesUser);
+    }
+    @PostMapping("/check/{salesId}/{userId}")
+    @ApiOperation(value = "业务员门店审核")
+    public ResponseEntity check(@PathVariable("salesId")Long salesId,@PathVariable("userId") Long userId,@RequestParam String checkStatus){
+       SalesUserRelation salesUserRelation = new SalesUserRelation();
+       salesUserRelation.setAuditStatus(checkStatus);
+       salesUserRelation.setUserId(userId);
+       salesUserRelation.setSalesmanId(salesId);
+            //if (Objects.equals(salesUserRelation.getAuditStatus(),"agree")){
+                if (salesUserService.updateUserSaleRelationship(salesUserRelation)>0){//关系表改状态
+                    if (userService.updateUserStatus(salesUserRelation.getUserId())>0){//用户表改已认证或未认证
+                        StringBuilder ids = new StringBuilder();//夺取券包IDs
+                        List<CouponConfig> configs = couponConfigService.couponConfig("activity");
+                        for (CouponConfig coupon:configs) {
+                            ids.append(coupon.getId()).append(",");
+                        }
+                        System.out.println(ids.substring(0,ids.length()-1));
+                       /* Map<String,Object> param = new HashMap<String,Object>();
+                        param.put("couponConfigIds",ids.substring(0,ids.length()-1));
+                        param.put("phone",userService.user(userId).getPhone());
+                        Object o =restTemplate.exchange("http://localhost:3051/coupon", HttpMethod.POST, new HttpEntity<>(param), String.class);
+                        System.out.println(o.toString()+" =================================");*/
+                    }
+                }
+          //  }
+
+        return ResponseEntity.ok("操作成功");
+    }
 
 
     /***************************************后台管理系统接口***********************************************/

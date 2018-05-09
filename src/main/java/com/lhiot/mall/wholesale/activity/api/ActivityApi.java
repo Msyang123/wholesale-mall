@@ -8,6 +8,8 @@ import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 import com.lhiot.mall.wholesale.activity.service.ActivityService;
 import com.lhiot.mall.wholesale.advertise.domain.Advertise;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.coupon.service.CouponEntityService;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.Objects;
 
 @Slf4j
 @Api(description = "活动统一管理")
@@ -24,7 +27,6 @@ import java.net.URI;
 public class ActivityApi {
 	
 	private final ActivityService activityService;
-	
 	@Autowired
 	public ActivityApi(ActivityService activityService){
 		this.activityService = activityService;
@@ -68,11 +70,11 @@ public class ActivityApi {
         return ResponseEntity.ok(activityService.pageQuery(param));
     }
     
-	@GetMapping("/activity/trydelete/{ids}")
+	/*@GetMapping("/activity/trydelete/{ids}")
     @ApiOperation(value = "查询是否可以被删除")
     public ResponseEntity<Boolean> tryOperation(@PathVariable("ids") String ids) {
         return ResponseEntity.ok(activityService.canDelete(ids));
-    }
+    }*/
 	
 	@PostMapping("/activity/tryoperation")
     @ApiOperation(value = "查询是否可以被修改或新增")

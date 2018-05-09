@@ -41,9 +41,8 @@ public class PlateCategoryService {
 	 * @return
 	 */
 	public boolean create(PlateCategory plateCategory){
-		if(this.existRollingLayout()){
-			plateCategory.setLayout(LayoutType.tile.toString());
-		}
+		//确保只有一个roll和list的类型，如果已经存在则都改成tile类型
+		this.ensureUnique(plateCategory);
 		return plateCategoryMapper.insert(plateCategory)>0;
 	}
 	
@@ -66,9 +65,8 @@ public class PlateCategoryService {
 	 * @return
 	 */
 	public boolean update(PlateCategory plateCategory){
-		if(this.existRollingLayout()){
-			plateCategory.setLayout(LayoutType.roll.toString());
-		}
+		//确保只有一个roll和list的类型，如果已经存在则都改成tile类型
+		this.ensureUnique(plateCategory);
 		return plateCategoryMapper.update(plateCategory)>0;
 	}
 	
@@ -82,10 +80,27 @@ public class PlateCategoryService {
 	}
 	
 	/**
-	 * 查询所有的商品版块
+	 * 根据类型查询所有的商品版块
 	 * @return
 	 */
-	public List<PlateCategory> search(){
+	public List<PlateCategory> search(String layoutType){
+		return plateCategoryMapper.searchByType(layoutType);
+	}
+	
+	/**
+	 * 推荐商品id的集合
+	 * @param layoutType
+	 * @return
+	 */
+	public List<Long> recommendGoodsId(LayoutType layoutType){
+		return plateCategoryMapper.plateGoodsId(layoutType.toString());
+	}
+	
+	/**
+	 * 根据类型查询所有的商品版块
+	 * @return
+	 */
+	public List<PlateCategory> searchAll(){
 		return plateCategoryMapper.searchAll();
 	}
 	
@@ -153,11 +168,22 @@ public class PlateCategoryService {
 	}
 	
 	/**
-	 * 用于后台管理是否存在滚动布局
+	 * 确保滚动布局和推荐列表只有一个版块
+	 * @param category
 	 * @return
 	 */
-	public boolean existRollingLayout(){
-		int count = plateCategoryMapper.rollongLayout();
-		return count>0;
+	public void ensureUnique(PlateCategory category){
+		if(Objects.isNull(category)){
+			return ;
+		}
+		String type = category.getLayout();
+		boolean success = plateCategoryMapper.layout(type) > 0;
+		//滚动布局和推荐列表的类型只能设置一个
+		if(StringUtils.isNotBlank(type) && 
+				!LayoutType.tile.toString().equals(type)){
+			if(success){
+				category.setLayout(LayoutType.tile.toString());
+			}
+		}
 	}
 }

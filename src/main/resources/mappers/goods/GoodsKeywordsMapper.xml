@@ -10,7 +10,7 @@
 		insert into t_whs_goods_keywords(
 			<trim suffixOverrides=",">
 				<if test="keyword != null and keyword != ''">keyword,</if>
-				<if test="isHotSearch != null">hot_search,</if>
+				<if test="hotSearch != null and hotSearch != ''">hot_search,</if>
 				<if test="kwType != null and kwType != ''">kw_type,</if>
 				<if test="mappingId != null and mappingId != ''">mapping_id,</if>
 			</trim>
@@ -18,7 +18,7 @@
 		values(
 			<trim suffixOverrides=",">
 				<if test="keyword != null and keyword != ''">#{keyword},</if>
-				<if test="isHotSearch != null">#{isHotSearch},</if>
+				<if test="hotSearch != null and hotSearch != ''">#{hotSearch},</if>
 				<if test="kwType != null and kwType != ''">#{kwType},</if>
 				<if test="mappingId != null and mappingId != ''">#{mappingId},</if>
 			</trim>
@@ -38,7 +38,7 @@
 		update t_whs_goods_keywords
 		<trim prefix="set" suffixOverrides=",">
 			<if test="keyword != null and keyword != ''">keyword=#{keyword},</if>
-			<if test="isHotSearch != null">hot_search=#{isHotSearch},</if>
+			<if test="hotSearch != null and hotSearch != ''">hot_search=#{hotSearch},</if>
 			<if test="kwType != null and kwType != ''">kw_type=#{kwType},</if>
 			<if test="mappingId != null and mappingId != ''">mapping_id=#{mappingId},</if>
 		</trim>

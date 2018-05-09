@@ -189,6 +189,24 @@ public class WeChatUtil {
 		return xpath;
 	}
 
+	public static void main(String[] args) {
+		String xml="<xml><return_code><![CDATA[SUCCESS]]></return_code>" +
+				"<return_msg><![CDATA[OK]]></return_msg>" +
+				"<appid><![CDATA[wx8521acbe400f89e3]]></appid>" +
+				"<mch_id><![CDATA[1497940112]]></mch_id>" +
+				"<nonce_str><![CDATA[QZKuqRQyUaIdIucY]]></nonce_str>" +
+				"<sign><![CDATA[1B38AC2CF8C1B1F925E4E0E4E04ED0FE]]></sign>" +
+				"<result_code><![CDATA[SUCCESS]]></result_code>" +
+				"<prepay_id><![CDATA[wx061043471566460b9bc456933877209590]]></prepay_id>" +
+				"<trade_type><![CDATA[JSAPI]]></trade_type>" +
+				"</xml>";
+		XPathParser xpath = new XPathParser(xml);
+		List<XNode> nodes=xpath.evalNodes("//xml/*");
+		for(XNode node:nodes){
+			System.out.println(node.name()+"-"+node.body());
+		}
+	}
+
 
 	/**
 	 * 获取预支付ID

@@ -74,7 +74,7 @@ public class PlateCategoryApi {
     @GetMapping("/platecategory/search")
     @ApiOperation(value = "新建一个查询，查询所有商品版块", response = PlateCategory.class, responseContainer = "List")
     public ResponseEntity<List<PlateCategory>> search() {
-        return ResponseEntity.ok(plateCategoryService.search());
+        return ResponseEntity.ok(plateCategoryService.searchAll());
     }
     
     @PostMapping("/platecategory/gird")

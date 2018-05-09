@@ -67,6 +67,7 @@
 			<if test="baseBar != null and baseBar != ''">base_bar=#{baseBar},</if>
 			<if test="baseUnit != null and baseUnit != ''">base_unit=#{baseUnit},</if>
 			<if test="stockLimit != null and stockLimit != ''">stock_limit=#{stockLimit},</if>
+			<if test="reduceStockLimit != null and reduceStockLimit != ''">stock_limit=stock_limit-#{reduceStockLimit},</if>
 			<if test="goodsDes != null and goodsDes != ''">goods_des=#{goodsDes},</if>
 			<if test="goodsImages != null and goodsImages != ''">goods_images=#{goodsImages},</if>
 			<if test="otherImage != null and otherImage != ''">other_image=#{otherImage},</if>
@@ -120,19 +121,19 @@
 	</select>
 
 	<select id="goodsFlashsale" parameterType="long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale">
-		select special_price,limit_quantity,end_time from t_whs_flashsale_goods where goods_standard_id=#{0}
+		select special_price,limit_quantity,activity_id from t_whs_flashsale_goods where goods_standard_id=#{0}
 	</select>
+
 
     <!-- 常用清单 -->
     <select id="inventoryList" parameterType="long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsInfo">
         select g.id,g.goods_name,s.price,(select MAX(price) FROM t_whs_goods_price_region r where r.goods_standard_id=s.id) maxPrice,
-        (select MIN(price) from t_whs_goods_price_region r where r.goods_standard_id=s.id) minPrice,u.unit_name,f.special_price,
+        (select MIN(price) from t_whs_goods_price_region r where r.goods_standard_id=s.id) minPrice,u.unit_name,
         (select count(*) from t_whs_order_goods og where og.goods_standard_id=s.id) saleCount,s.standard,g.goods_image
         from t_whs_goods_standard s
         LEFT JOIN t_whs_goods g on g.id=s.goods_id
         LEFT JOIN t_whs_goods_unit u on u.unit_code=s.unit_code
-        LEFT JOIN t_whs_flashsale_goods f on f.goods_standard_id=s.id
-        where s.id in(SELECT DISTINCT t.goods_standard_id FROM t_whs_order_goods t where t.user_id=#{0}) LIMIT 5
+        where s.id in(SELECT DISTINCT t.goods_standard_id FROM t_whs_order_goods t where t.user_id=#{0}) LIMIT 10
     </select>
 
     <!--<select id="" parameterType="long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale">
@@ -140,15 +141,18 @@
     </select>-->
 
     <!-- 常用清单 -->
-    <select id="recommendList" parameterType="long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsInfo">
+    <select id="recommendList" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsInfo">
         select g.id,g.goods_name,s.price,(select MAX(price) FROM t_whs_goods_price_region r where r.goods_standard_id=s.id) maxPrice,
-        (select MIN(price) from t_whs_goods_price_region r where r.goods_standard_id=s.id) minPrice,u.unit_name,f.special_price,
-        (select count(*) from t_whs_order_goods og where og.goods_standard_id=s.id) saleCount,s.standard
+        (select MIN(price) from t_whs_goods_price_region r where r.goods_standard_id=s.id) minPrice,u.unit_name,
+        (select count(*) from t_whs_order_goods og where og.goods_standard_id=s.id) saleCount,s.standard,g.goods_image
         from t_whs_goods_standard s
         LEFT JOIN t_whs_goods g on g.id=s.goods_id
         LEFT JOIN t_whs_goods_unit u on u.unit_code=s.unit_code
-        LEFT JOIN t_whs_flashsale_goods f on f.goods_standard_id=s.id
-        where s.id in(SELECT DISTINCT t.goods_standard_id FROM t_whs_plate_goods t where t.plate_id=#{0}) LIMIT 5
+        where s.id in
+		<foreach collection="list" item="plateId" open="(" separator="," close=")">
+			#{plateId}
+		</foreach>
+		LIMIT 5
     </select>
 
 	<!-- 根据条件查询商品 -->

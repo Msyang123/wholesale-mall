@@ -15,21 +15,21 @@ import lombok.ToString;
 public class InvoiceTitle {
 
     @JsonProperty("id")
-    private long id;
+    private Long id;
 
     @JsonProperty("userId")
-    private long userId;
+    private Long userId;
 
-    @JsonProperty("taxpayerNumber")
+    @JsonProperty("taxpayerNum")
     private String taxpayerNumber;
 
     @JsonProperty("companyName")
     private String companyName;
 
-    @JsonProperty("addressArea")
+    @JsonProperty("city")
     private String addressArea;
 
-    @JsonProperty("addressDetail")
+    @JsonProperty("address")
     private String addressDetail;
 
     @JsonProperty("contactName")
@@ -38,10 +38,10 @@ public class InvoiceTitle {
     @JsonProperty("contactPhone")
     private String contactPhone;
 
-    @JsonProperty("bankName")
+    @JsonProperty("openBank")
     private String bankName;
 
-    @JsonProperty("bankCardCode")
+    @JsonProperty("account")
     private String bankCardCode;
 
 }

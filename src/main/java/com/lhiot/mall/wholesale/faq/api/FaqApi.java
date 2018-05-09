@@ -1,10 +1,10 @@
 package com.lhiot.mall.wholesale.faq.api;
 
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.demand.domain.gridparam.DemandGoodsGridParam;
 import com.lhiot.mall.wholesale.faq.domain.Faq;
 import com.lhiot.mall.wholesale.faq.domain.FaqCategory;
 import com.lhiot.mall.wholesale.faq.domain.gridparam.FaqGridParam;
+import com.lhiot.mall.wholesale.faq.service.FaqCategoryService;
 import com.lhiot.mall.wholesale.faq.service.FaqService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -23,16 +23,18 @@ import java.util.List;
 public class FaqApi {
 
     private final FaqService faqService;
+    private final FaqCategoryService faqCategoryService;
 
     @Autowired
-    public FaqApi(FaqService faqService) {
+    public FaqApi(FaqService faqService, FaqCategoryService faqCategoryService) {
         this.faqService = faqService;
+        this.faqCategoryService = faqCategoryService;
     }
 
     @GetMapping("/faq")
     @ApiOperation(value = "查询faq分类接口")
     public ResponseEntity<List<FaqCategory>> faqSearch() {
-        List<FaqCategory> faqCategoryList = faqService.searchFaqCategory();
+        List<FaqCategory> faqCategoryList = faqCategoryService.searchFaqCategory();
         for (FaqCategory faqCategory:faqCategoryList) {
             List<Faq> faq = faqService.searchFaq(faqCategory.getId());
             faqCategory.setFaqList(faq);
@@ -51,7 +53,7 @@ public class FaqApi {
     public  ResponseEntity saveFaq(@RequestBody Faq faq) {
         faq.setCreateTime(new Timestamp(new Date().getTime()));
         //FIXME 修改为登录用户
-        faq.setCreatePerson("张三");
+        //faq.setCreatePerson("张三");
         if (faqService.saveOrUpdateFaq(faq)>0){
             return ResponseEntity.ok().body("新增/修改完成");
         }else{

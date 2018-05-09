@@ -11,11 +11,11 @@ import lombok.ToString;
 @NoArgsConstructor
 public class User1 {
 
-    private long id;
+    private Long id;
 
     private String name;
 
-    private int age;
+    private Integer age;
 
     private Sex sex;
 

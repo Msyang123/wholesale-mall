@@ -1,6 +1,8 @@
 package com.lhiot.mall.wholesale.aftersale.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
@@ -19,13 +21,13 @@ import java.util.List;
 public class OrderRefundApplication {
 
     @JsonProperty("id")
-    private long id;
+    private Long id;
 
-    @JsonProperty("refundType")
-    private int refundType;
+    @JsonProperty("applicationType")
+    private String applicationType;
 
     @JsonProperty("existProblem")
-    private int existProblem;
+    private String existProblem;
 
     @JsonProperty("otherProblem")
     private String otherProblem;
@@ -33,14 +35,11 @@ public class OrderRefundApplication {
     @JsonProperty("refundEvidence")
     private String refundEvidence;
 
-    @JsonProperty("verifyStatus")
-    private int verifyStatus;
-
     @JsonProperty("orderDiscountFee")
-    private int orderDiscountFee;
+    private Integer orderDiscountFee;
 
     @JsonProperty("deliveryFee")
-    private int deliveryFee;
+    private Integer deliveryFee;
 
     @JsonProperty("comments")
     private String comments;
@@ -49,9 +48,17 @@ public class OrderRefundApplication {
     private String orderId;
 
     @JsonProperty("userId")
-    private long userId;
+    private Long userId;
 
-    @JsonProperty("orderGoodsList")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonProperty("createTime")
+    private Timestamp orderCreateTime;
+
+    @JsonProperty("proList")
     private List<OrderGoods> orderGoodsList;
+    //private OrderDetail orderDetail;
+
+    @JsonProperty("auditStatus")
+    private String auditStatus;
 
 }

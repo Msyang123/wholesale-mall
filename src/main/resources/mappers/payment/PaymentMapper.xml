@@ -16,25 +16,48 @@
                             bank_name,
                             payment_from,
                             payment_step,
-                            payment_order_type,
+                            payment_type,
                             payment_time
                         ) VALUES (#{orderId},#{orderCode},#{userId},
                         #{transactionId},#{refundFee},#{totalFee},#{bankType},#{bankName},#{paymentFrom},#{paymentStep},
-                        #{paymentOrderType},#{paymentTime})
+                        #{paymentType},#{paymentTime})
     </insert>
+
+    <update id="updatePaymentLog" parameterType="com.lhiot.mall.wholesale.pay.domain.PaymentLog">
+        update t_whs_payment_log
+        <set>
+            <if test="transactionId!=null and transactionId!=''">
+                transaction_id=#{transactionId},
+            </if>
+            <if test="totalFee!=null and totalFee!=0">
+                total_fee=#{totalFee},
+            </if>
+            <if test="bankType!=null and bankType!=''">
+                bank_type=#{bankType},
+            </if>
+            <if test="paymentStep!=null and paymentStep!=''">
+                payment_step=#{paymentStep},
+            </if>
+            <if test="paymentTime!=null">
+                payment_time=#{paymentTime},
+            </if>
+        </set>
+        where order_code=#{orderCode}
+    </update>
 
     <select id="getPaymentLog" parameterType="String" resultType="com.lhiot.mall.wholesale.pay.domain.PaymentLog">
         select * from t_whs_payment_log where order_code=#{0}
     </select>
 
 
-    <select id="getPaymentLogList" parameterType="java.util.ArrayList" resultType="com.lhiot.mall.wholesale.pay.domain.PaymentLog">
+    <select id="getPaymentLogList" parameterType="java.util.ArrayList"
+            resultType="com.lhiot.mall.wholesale.pay.domain.PaymentLog">
         select * from t_whs_payment_log where 1=2
         <if test="list != null and list.size()>0">
-        or order_id IN
-        <foreach collection="list" item="item" open="(" separator="," close=")">
-            #{item}
-        </foreach>
+            or order_id IN
+            <foreach collection="list" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         </if>
     </select>
 

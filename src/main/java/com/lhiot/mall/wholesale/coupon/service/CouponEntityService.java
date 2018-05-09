@@ -3,18 +3,25 @@ package com.lhiot.mall.wholesale.coupon.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.activity.domain.ActivityType;
+import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
+import com.lhiot.mall.wholesale.activity.service.ActivityService;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.coupon.domain.CouponEntityResult;
+import com.lhiot.mall.wholesale.coupon.domain.ActivityCoupon;
+import com.lhiot.mall.wholesale.coupon.domain.CouponConfig;
 import com.lhiot.mall.wholesale.coupon.domain.CouponEntity;
+import com.lhiot.mall.wholesale.coupon.domain.CouponEntityResult;
+import com.lhiot.mall.wholesale.coupon.domain.CouponStatusType;
+import com.lhiot.mall.wholesale.coupon.domain.CouponType;
+import com.lhiot.mall.wholesale.coupon.domain.ReleaseCouponParam;
 import com.lhiot.mall.wholesale.coupon.domain.UserCouponParam;
 import com.lhiot.mall.wholesale.coupon.domain.gridparam.CouponGridParam;
 import com.lhiot.mall.wholesale.coupon.mapper.CouponEntityMapper;
@@ -27,10 +34,16 @@ public class CouponEntityService {
 
     private final CouponEntityMapper couponEntityMapper;
     private final UserService userService;
+    private final CouponConfigService couponConfigService;
+    private final ActivityService activityService;
     public CouponEntityService(CouponEntityMapper couponEntityMapper,
-    		UserService userService) {
+    		UserService userService,
+    		CouponConfigService couponConfigService,
+    		ActivityService activityService) {
         this.couponEntityMapper = couponEntityMapper;
         this.userService = userService;
+        this.couponConfigService = couponConfigService;
+        this.activityService = activityService;
     }
 
 	/**
@@ -40,15 +53,6 @@ public class CouponEntityService {
 	 */
 	public boolean create(CouponEntity couponEntityParam){
 		return couponEntityMapper.insert(couponEntityParam)>0;
-	}
-	
-	/**
-	 * 批量新增
-	 * @param couponConfig
-	 * @return
-	 */
-	public boolean createInbatch(List<CouponEntity> couponEntityParams){
-		return couponEntityMapper.insertBatch(couponEntityParams)>0;
 	}
 	
 	/**
@@ -65,7 +69,7 @@ public class CouponEntityService {
 	}
 	
 	/**
-	 * 修改广告
+	 * 修改优惠券状态
 	 * @param goodsUnit
 	 * @return
 	 */
@@ -80,7 +84,7 @@ public class CouponEntityService {
 	 */
 	public CouponEntityResult couponConfig(Long id){
 		CouponEntityResult coupon = couponEntityMapper.select(id);
-		User user = userService.user(id);
+		User user = userService.user(coupon.getUserId());
 		//组装用户信息
 		this.constructUser(user, coupon);
 		return couponEntityMapper.select(id);
@@ -92,17 +96,16 @@ public class CouponEntityService {
 	 */
 	public PageQueryObject pageQuery(CouponGridParam param){
 		String phone = param.getPhone();
-		List<Long> userIds = null;
+		List<Long> userIds = new ArrayList<>();;
 		//通过电话号码查询
 		if(StringUtils.isNotBlank(phone)){
 			//根据电话查询用户信息
 			List<User> users = userService.fuzzySearch(phone);
-			userIds = new ArrayList<>();
 			for(User user : users){
 				userIds.add(user.getId());
 			}
 		}
-		if(null != userIds){
+		if(!userIds.isEmpty()){
 			param.setUserIds(userIds);
 		}
 		int count = couponEntityMapper.pageQueryCount(param);
@@ -119,7 +122,10 @@ public class CouponEntityService {
 		}
 		List<CouponEntityResult> coupongEntities = couponEntityMapper.pageQuery(param);
 		List<Long> uIds = this.userIds(coupongEntities);
-		List<User> users = userService.users(uIds);
+		List<User> users = new ArrayList<>();
+		if(!uIds.isEmpty()){
+			users = userService.users(uIds);
+		}
 		//组装用户数据
 		this.constructUser(users, coupongEntities);
 		PageQueryObject result = new PageQueryObject();
@@ -208,5 +214,172 @@ public class CouponEntityService {
 		}
 		return availables;
 	}
+	
+	/**
+	 * 构建手动发券的参数,多种单张
+	 * @param userId
+	 * @param couponConfigids
+	 * @return
+	 */
+	public List<CouponEntity> couponParam(List<Long> userIds,
+			List<Long> couponConfigids){
+		List<CouponEntity> params = new ArrayList<>();
+		if(couponConfigids.isEmpty() || userIds.isEmpty()){
+			return params;
+		}
+		CouponEntity param = null;
+		//获取优惠券信息
+		List<CouponEntity> couponEntities = new ArrayList<>();
+		List<CouponConfig> couponConfigs = couponConfigService.couponConfigs(couponConfigids);
+		for(CouponConfig cf : couponConfigs){
+			param = new CouponEntity();
+			param.setCouponConfigId(cf.getId());
+			param.setCouponStatus(CouponStatusType.unused.toString());
+			param.setCouponFee(cf.getCouponFee());
+			param.setFullFee(cf.getFullFee());
+			param.setVaildDays(cf.getVaildDays());
+			param.setCouponFrom(CouponType.artificial.toString());
+			couponEntities.add(param);
+		}
+		
+		if(couponEntities.isEmpty()){
+			return params;
+		}
+		//将用户id配置优惠券参数中
+		List<CouponEntity> temp = null;
+		for(Long userId : userIds){
+			temp = this.cloneList(couponEntities);
+			for(CouponEntity couponEntity : temp){
+				couponEntity.setUserId(userId);
+				params.add(couponEntity);
+			}
+		}
+		return params;
+	}
+	
+	/**
+	 * 领取或者活动发券，构建数据；多种多张
+	 * @param configs
+	 * @param userId
+	 * @return
+	 */
+	public List<CouponEntity> activityCoupons(Long userId,Long activityId){
+		List<CouponEntity> params = new ArrayList<>();
+		if(Objects.isNull(userId) || Objects.isNull(activityId)) {
+			return params;
+		}
+		List<ActivityCoupon> acs = couponConfigService.activityCoupons(activityId);
+		if(acs.isEmpty()){
+			return params;
+		}
+		CouponEntity coupon = null;
+		//多种优惠券
+		for(ActivityCoupon ac : acs){
+			int count = ac.getRewardAmount();
+			coupon = new CouponEntity();
+			coupon.setCouponConfigId(ac.getCouponConfigId());
+			coupon.setCouponStatus(CouponStatusType.unused.toString());
+			coupon.setCouponFee(ac.getCouponFee());
+			coupon.setFullFee(ac.getFullFee());
+			coupon.setVaildDays(ac.getVaildDays());
+			coupon.setUserId(userId);
+			coupon.setCouponFrom(CouponType.activity.toString());
+			//多种优惠券
+			for(int i=0;i< count;i++){
+				params.add(coupon);
+			}
+		}
+		return params;
+	}
+	
+	/**
+	 * 活动发放优惠券或者领取优惠券
+	 * @param couponConfig
+	 * @return
+	 */
+	public boolean addCoupon(Long userId,ActivityType type){
+		boolean success = false;
+		FlashActivityGoods ac = activityService.currentActivity(type);
+		if(Objects.isNull(ac)){
+			return success;
+		}
+		List<CouponEntity> params = this.activityCoupons(userId, ac.getId());
+		if(params.isEmpty()){
+			return success;
+		}
+		int count = couponEntityMapper.insertBatch(params);
+		return count > 0;
+	}
+	
+	/**
+	 * 手动发券
+	 * @param param
+	 * @return
+	 */
+	public String realeaseCupon(ReleaseCouponParam param){
+		String failureUser = "failure";
+		if(Objects.isNull(param)){
+			return failureUser;
+		}
+		List<String> pls = Arrays.asList(param.getPhones().split(","));
+		List<Long> ccIds = Arrays.asList(param.getCouponConfigIds().split(",")).stream()
+								 .map(id -> Long.parseLong(id.trim())).collect(Collectors.toList());
+		//获取用户id
+		List<User> users = userService.searchByPhones(pls);
+		if(users.isEmpty()){
+			return failureUser;
+		}
+		
+		//获取userId的集合
+		List<Long> userIds = new ArrayList<>();
+		for(User user : users){
+			userIds.add(user.getId());
+		}
+		
+		//批量发放优惠券
+		List<CouponEntity> params = this.couponParam(userIds, ccIds);
+		boolean success = couponEntityMapper.insertBatch(params)>0;
+		if(!success){
+			return failureUser;
+		}
+		
+		if(Objects.equals(pls.size(), users.size())){
+			failureUser = "ok";
+			return failureUser;
+		}
+		//获取发放失败的用户
+		List<String> failure = new ArrayList<>();
+        for(String phone:pls) {  
+            boolean flag = false;  
+            for(User user:users) {  
+            	String po = user.getPhone();
+                if(phone.equals(po)) {  
+                    flag = true;  
+                    break;  
+                }  
+            }  
+            if(!flag){  
+            	failure.add(phone);
+            }  
+        } 
+		failureUser = StringUtils.collectionToDelimitedString(failure,",");
+		return failureUser;
+	}
+    
+	/**
+	 * 深度拷贝一个对象
+	 * @param source
+	 * @return
+	 */
+    public List<CouponEntity> cloneList(List<CouponEntity> source){
+    	List<CouponEntity> result = new ArrayList<>();
+    	CouponEntity target = null;
+    	for(CouponEntity coupon : source){
+    		target = new CouponEntity();
+    		BeanUtils.copyProperties(coupon, target);
+    		result.add(target);
+    	}
+    	return result;
+    }
 }
 

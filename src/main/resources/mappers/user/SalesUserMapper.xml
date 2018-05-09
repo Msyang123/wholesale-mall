@@ -8,23 +8,23 @@
             <if test="id !=null and id !=''">
                 SALESMAN_ID = #{id}
             </if>
-            <if test="check !=null and check !='' and check ==2">
-                and check =2
+            <if test="auditStatus !=null and auditStatus !='' and auditStatus =='no'">
+                and audit_status = 'unaudited'
             </if>
-            <if test="check !=null and check !='' and check ==1">
-                and check in(1,0)
+            <if test="auditStatus !=null and auditStatus !='' and auditStatus =='yes'">
+                and audit_status in('agree','reject')
             </if>
         </trim>
         <include refid="common.pager"/>
     </select>
 
-    <select id="searchSalesUserCode" parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
-        select * from t_whs_salesuser where invite_code=#{0}
+    <select id="searchSalesUserByOpenid" parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
+        select * from t_whs_salesuser where open_id=#{0}
     </select>
 
     <update id="updateUserSaleRelationship" parameterType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation">
-        UPDATE t_whs_salesuser_relation set  check = #{check}
-        where user_id=#{userId}
+        UPDATE t_whs_salesuser_relation set  audit_status = #{auditStatus}
+        where user_id=#{userId} and salesman_id=#{salesmanId}
     </update>
 
     <!-- 添加一条商户与业务员关联未审核的数据 -->
@@ -34,7 +34,7 @@
             <if test="id != null and id != ''">id,</if>
             <if test="userId != null and userId != ''">user_id,</if>
             <if test="salesmanId != null and salesmanId != ''">salesman_id,</if>
-            <if test="check != null and check != ''">check,</if>
+            <if test="auditStatus != null and auditStatus != ''">audit_status,</if>
         </trim>
         )
         values(
@@ -42,7 +42,7 @@
             <if test="id != null and id != ''">#{id},</if>
             <if test="userId != null and userId != ''">#{userId},</if>
             <if test="salesmanId != null and salesmanId != ''">#{salesmanId},</if>
-            <if test="check != null and check != ''">#{check},</if>
+            <if test="auditStatus != null and auditStatus != ''">#{auditStatus},</if>
         </trim>
         )
     </insert>
@@ -57,27 +57,28 @@
             <if test="id !=null and id !=0">
                 and id = #{id}
             </if>
-            user_id
             <if test="userId !=null and userId !=0">
                 and user_id =#{userId}
             </if>
             <if test="salesmanId !=null and salesmanId !=0">
                 and salesman_id =#{salesmanId}
             </if>
-            <if test="check !=null ">
-                and check =#{check}
+            <if test="auditStatus !=null ">
+                and audit_status =#{auditStatus}
             </if>
         </trim>
     </select>
 
     <select id="searchShopInfo" parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.ShopResult">
-        select u.id userId,u.shop_name,u.user_name,u.phone,u.register_time,u.address_detail from t_whs_salesuser s
+        select u.id userId,u.shop_name,u.user_name,u.phone,u.register_time,u.city,u.address_detail addressDetail from t_whs_salesuser s
         LEFT JOIN t_whs_salesuser_relation r on s.id=r.salesman_id
         LEFT JOIN t_whs_user u on u.id=r.user_id
-       <!-- <trim prefix="where" prefixOverrides="and">-->
-            and r.audit_status='agree'
-            and s.id=#{salesId}
-        <!--</trim>-->
+        where r.audit_status='agree'
+        and s.id=#{salesId}
+    </select>
+
+    <select id="login" parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
+        select * from t_whs_salesuser where account=#{account}
     </select>
 
 

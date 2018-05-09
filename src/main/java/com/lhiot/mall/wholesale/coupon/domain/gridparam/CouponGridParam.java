@@ -2,6 +2,7 @@ package com.lhiot.mall.wholesale.coupon.domain.gridparam;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.leon.microx.common.wrapper.PageObject;
 
 import io.swagger.annotations.ApiModel;
@@ -19,11 +20,14 @@ public class CouponGridParam extends PageObject {
 	@ApiModelProperty(notes="优惠券名称",dataType="String")
 	private String couponName;
 	
-	@ApiModelProperty(notes="优惠券状态 0-无效 1-有效",dataType="Integer")
-	private Integer vaild;
+	@ApiModelProperty(notes="优惠券状态 no-无效 yes-有效",dataType="String")
+	private String vaild;
+	
+	@ApiModelProperty(notes="配置类型  activity-活动送券 artificial-手动发券",dataType="String")
+	private String couponType;
 	
 	@ApiModelProperty(notes="优惠券类型  all-全品类 single-单品类",dataType="String")
-	private String couponType;
+	private String couponTypePlate;
 	
 	@ApiModelProperty(notes="用户电话",dataType="String")
 	private String phone;
