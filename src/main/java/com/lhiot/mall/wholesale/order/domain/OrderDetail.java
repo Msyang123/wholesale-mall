@@ -27,7 +27,7 @@ public class OrderDetail {
     @JsonProperty("salesmanId")
     private Long salesmanId;
 
-    @JsonProperty("orderType")
+    @JsonProperty("settlementType")
     private String settlementType;
 
     @JsonProperty("status")

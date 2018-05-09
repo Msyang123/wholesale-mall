@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +31,7 @@ import com.lhiot.mall.wholesale.coupon.mapper.CouponEntityMapper;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.service.UserService;
 
+@Slf4j
 @Service
 @Transactional
 public class CouponEntityService {
@@ -48,7 +52,7 @@ public class CouponEntityService {
 
 	/**
 	 * 新增
-	 * @param couponConfig
+	 * @param couponEntityParam
 	 * @return
 	 */
 	public boolean create(CouponEntity couponEntityParam){
@@ -70,7 +74,7 @@ public class CouponEntityService {
 	
 	/**
 	 * 修改优惠券状态
-	 * @param goodsUnit
+	 * @param couponEntityParam
 	 * @return
 	 */
 	public boolean update(CouponEntity couponEntityParam){
@@ -157,8 +161,8 @@ public class CouponEntityService {
 	
 	/**
 	 * 将用户信息组装到优惠券中
-	 * @param user
-	 * @param coupongEntity
+	 * @param users
+	 * @param coupongEntities
 	 * @return
 	 */
 	public void constructUser(List<User> users,List<CouponEntityResult> coupongEntities){
@@ -217,7 +221,7 @@ public class CouponEntityService {
 	
 	/**
 	 * 构建手动发券的参数,多种单张
-	 * @param userId
+	 * @param userIds
 	 * @param couponConfigids
 	 * @return
 	 */
@@ -259,7 +263,7 @@ public class CouponEntityService {
 	
 	/**
 	 * 领取或者活动发券，构建数据；多种多张
-	 * @param configs
+	 * @param activityId
 	 * @param userId
 	 * @return
 	 */
@@ -294,7 +298,8 @@ public class CouponEntityService {
 	
 	/**
 	 * 活动发放优惠券或者领取优惠券
-	 * @param couponConfig
+	 * @param userId
+	 * @param type
 	 * @return
 	 */
 	public boolean addCoupon(Long userId,ActivityType type){
@@ -310,13 +315,20 @@ public class CouponEntityService {
 		int count = couponEntityMapper.insertBatch(params);
 		return count > 0;
 	}
-	
+
+
+	@RabbitHandler
+	@RabbitListener(queues = "add-coupon")
+	public void couponPublisher(String message){
+		log.info("add-coupon:"+message);
+		this.addCoupon(Long.valueOf(message),ActivityType.registration);
+	}
 	/**
 	 * 手动发券
 	 * @param param
 	 * @return
 	 */
-	public String realeaseCupon(ReleaseCouponParam param){
+	public String releaseCoupon(ReleaseCouponParam param){
 		String failureUser = "failure";
 		if(Objects.isNull(param)){
 			return failureUser;

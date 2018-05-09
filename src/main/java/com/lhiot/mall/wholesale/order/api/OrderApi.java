@@ -132,7 +132,7 @@ public class OrderApi {
     public ResponseEntity<OrderDetail> queryOrder(@PathVariable("orderCode") String orderCode){
         OrderDetail orderDetail = orderService.searchOrder(orderCode);
         PaymentLog paymentLog = paymentLogService.getPaymentLog(orderCode);
-        orderDetail.setPayType(paymentLog.getPaymentType());
+       // orderDetail.setPayType(paymentLog.getPaymentType());
         if (Objects.isNull(orderDetail)){
            return ResponseEntity.badRequest().body(orderDetail);
         }
