@@ -56,9 +56,6 @@ public class OrderDetail {
     @JsonProperty("paidType")
     private String payStatus;
 
-    @JsonProperty("payType")
-    private String payType;
-
     @JsonProperty("comments")
     private String remarks;
 
