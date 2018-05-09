@@ -19,6 +19,8 @@ public interface GoodsStandardMapper {
 
     GoodsStandard select(long id);
 
+    GoodsStandard searchByGoodsId(long goodsId);
+
     List<GoodsStandard> fuzzySearch(String name);
     
     List<GoodsStandard> searchByIds(List<Long> ids);

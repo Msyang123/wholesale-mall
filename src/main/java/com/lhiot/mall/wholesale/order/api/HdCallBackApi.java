@@ -1,6 +1,5 @@
 package com.lhiot.mall.wholesale.order.api;
 
-import com.lhiot.mall.wholesale.MQDefaults;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.sgsl.util.IOUtils;
@@ -9,7 +8,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,8 +29,6 @@ import java.util.Objects;
 public class HdCallBackApi {
 
 
-    @Autowired
-    private RabbitTemplate rabbit;
     @Autowired
     private OrderService orderService;
 
@@ -61,12 +57,6 @@ public class HdCallBackApi {
             // 依据订单编码查询订单
             OrderDetail order= orderService.searchOrder(orderCode);
 
-            rabbit.convertAndSend(MQDefaults.DIRECT_EXCHANGE_NAME, "retry-order-resendhd", "延迟信息发送测试",
-                    message -> {
-                        // 10秒钟
-                        message.getMessageProperties().setExpiration("10000");
-                        return message;
-                    });
 
             //rabbit.convertAndSend(MQDefaults.MATCH_EXCHANGE_NAME, "im.push.route", "sddd测试的主题队列");
             // 所有订单推送类消息

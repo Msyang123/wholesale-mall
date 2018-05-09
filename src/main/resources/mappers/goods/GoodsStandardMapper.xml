@@ -21,7 +21,11 @@
 	<sql id="categoryColumn">
 		t4.category_name as categoryName
 	</sql>
-	
+
+	<select id="searchByGoodsId" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
+		select <include refid="goodsStandardColumn"/>  from t_whs_goods_standard t1
+		where t1.goods_id=#{0}
+	</select>
 	<!-- lynn 2018/4/19根据商品id查询商品 -->
 	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsStandard">
 		select <include refid="goodsStandardColumn"/>, <include refid="goodsColumn"/>,<include refid="unitColumn"/>,

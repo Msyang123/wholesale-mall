@@ -1,43 +1,39 @@
 package com.lhiot.mall.wholesale.order.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.leon.microx.common.exception.ServiceException;
+import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.base.JacksonUtils;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.goods.domain.Goods;
+import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
+import com.lhiot.mall.wholesale.goods.service.GoodsService;
+import com.lhiot.mall.wholesale.goods.service.GoodsStandardService;
+import com.lhiot.mall.wholesale.order.domain.*;
+import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
+import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
+import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
+import com.lhiot.mall.wholesale.pay.hdsend.Abolish;
+import com.lhiot.mall.wholesale.pay.hdsend.Inventory;
+import com.lhiot.mall.wholesale.pay.hdsend.Warehouse;
+import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
+import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
+import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.service.SalesUserService;
+import com.lhiot.mall.wholesale.user.service.UserService;
+import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
+import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.lhiot.mall.wholesale.MQDefaults;
-import com.lhiot.mall.wholesale.base.JacksonUtils;
-import com.lhiot.mall.wholesale.order.domain.OrderGoods;
-import com.lhiot.mall.wholesale.order.domain.OrderParam;
-import com.lhiot.mall.wholesale.base.DataMergeUtils;
-import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.demand.domain.DemandGoods;
-import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
-import com.lhiot.mall.wholesale.goods.domain.Goods;
-import com.lhiot.mall.wholesale.order.domain.*;
-import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
-import com.lhiot.mall.wholesale.pay.hdsend.Abolish;
-import com.lhiot.mall.wholesale.pay.hdsend.Inventory;
-import com.lhiot.mall.wholesale.pay.hdsend.Warehouse;
-import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
-import com.lhiot.mall.wholesale.user.domain.User;
-import com.lhiot.mall.wholesale.user.service.SalesUserService;
-import com.lhiot.mall.wholesale.user.service.UserService;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import com.leon.microx.common.exception.ServiceException;
-import com.leon.microx.util.SnowflakeId;
-import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
-import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
-import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
-import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
-import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
-import com.sgsl.hd.client.HaiDingClient;
-import lombok.extern.slf4j.Slf4j;
 
 
 
@@ -60,12 +56,16 @@ public class OrderService {
 
     private final SalesUserService salesUserService;
 
+    private final GoodsService goodsService;
+
+    private final GoodsStandardService goodsStandardService;
+
     private final RabbitTemplate rabbit;
 
     @Autowired
     public OrderService(OrderMapper orderMapper, UserService userService, PaymentLogService paymentLogService,
                         PaymentProperties paymentProperties, SnowflakeId snowflakeId,Warehouse warehouse,
-                        SalesUserService salesUserService,RabbitTemplate rabbit) {
+                        SalesUserService salesUserService,GoodsService goodsService,GoodsStandardService goodsStandardService,RabbitTemplate rabbit) {
         this.orderMapper = orderMapper;
         this.userService = userService;
         this.weChatUtil=new WeChatUtil(paymentProperties);
@@ -73,6 +73,8 @@ public class OrderService {
         this.snowflakeId=snowflakeId;
         this.warehouse=warehouse;
         this.salesUserService=salesUserService;
+        this.goodsService=goodsService;
+        this.goodsStandardService=goodsStandardService;
         this.rabbit=rabbit;
     }
 
@@ -96,8 +98,11 @@ public class OrderService {
         return orderMapper.searchOrder(orderCode);
     }
 
-    public OrderDetail searchOrderById(long orderId){
+/*    public OrderDetail searchOrderById(long orderId){
         return orderMapper.searchOrderById(orderId);
+    }*/
+    public OrderDetail searchOrderById(long id) {
+      return  orderMapper.select(id);
     }
 
     public List<OrderDetail> searchAfterSaleOrder(OrderDetail orderDetail) {
@@ -113,11 +118,10 @@ public class OrderService {
             orderDetail.setSalesmanId(salesUserRelationResult.getSalesmanId());
         }
         orderDetail.setPayStatus("unpaid");
-        //FIXME 创建的时候发送创建广播消息 用于优惠券设置无效
-        if(orderDetail.getOrderCoupon()!=0){
+        //产生订单编码
+        orderDetail.setOrderCode(snowflakeId.stringId());
+        orderDetail.setCreateTime(new Timestamp(System.currentTimeMillis()));
 
-        }
-        //FIXME 判断库存 减库存
         if(Objects.equals(orderDetail.getSettlementType(),"cod")){  //改为枚举
             orderDetail.setOrderStatus("undelivery");//待收货
             //FIXME 直接发送总仓
@@ -177,20 +181,29 @@ public class OrderService {
         }else{
             orderDetail.setOrderStatus("unpaid");//待付款
             //mq设置三十分钟失效
-            rabbit.convertAndSend(MQDefaults.DIRECT_EXCHANGE_NAME, MQDefaults.DLX_QUEUE_NAME, JacksonUtils.toJson(orderDetail), message -> {
+            rabbit.convertAndSend("order-direct-exchange", "order-dlx-queue", JacksonUtils.toJson(orderDetail), message -> {
                 message.getMessageProperties().setExpiration(String.valueOf(1 * 60 * 1000));
                 return message;
             });
         }
 
-        //产生订单编码
-        orderDetail.setOrderCode(snowflakeId.stringId());
-        orderDetail.setCreateTime(new Timestamp(System.currentTimeMillis()));
+
         orderMapper.save(orderDetail);
         //将保存的订单id赋值到订单商品中
         orderDetail.getOrderGoodsList().forEach(item->{
             item.setOrderId(orderDetail.getId());
+            //查询商品进货价写入到订单商品中
+            GoodsStandard goodsStandard= goodsStandardService.searchByGoodsId(item.getGoodsId());
+            item.setPurchasePrice(goodsStandard.getPurchasePrice());
+            //减商品库存
+            Goods goods=new Goods();
+            goods.setId(item.getGoodsId());
+            goods.setReduceStockLimit(item.getQuanity());//递减
+            goodsService.update(goods);
         });
+        //发送订单创建广播
+        //FIXME 创建的时候发送创建广播消息 用于优惠券设置无效
+        rabbit.convertAndSend("order-created-event","",JacksonUtils.toJson(orderDetail));
         return orderMapper.saveOrderGoods(orderDetail.getOrderGoodsList());
     }
 
@@ -425,7 +438,7 @@ public class OrderService {
                 orderDetail.setShopName(user.getShopName());
                 orderDetail.setUserName(user.getUserName());
                 orderDetail.setPhone(user.getPhone());
-                orderDetail.setAddressDetail(user.getAddressDetail());
+                orderDetail.setDeliveryAddress(user.getAddressDetail());
             }
         }
         return orderDetail;

@@ -30,16 +30,16 @@
                 transaction_id=#{transactionId},
             </if>
             <if test="totalFee!=null and totalFee!=0">
-                total_fee=#{totalFee};
+                total_fee=#{totalFee},
             </if>
             <if test="bankType!=null and bankType!=''">
-                bank_type=#{bankType}
+                bank_type=#{bankType},
             </if>
             <if test="paymentStep!=null and paymentStep!=''">
-                payment_step=#{paymentStep}
+                payment_step=#{paymentStep},
             </if>
             <if test="paymentTime!=null">
-                payment_time=#{paymentTime}
+                payment_time=#{paymentTime},
             </if>
         </set>
         where order_code=#{orderCode}
