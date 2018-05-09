@@ -45,9 +45,9 @@ public class DemandGoodsResult {
     private Long userId;
 
 
-    @ApiModelProperty(notes = "创建时间", dataType = "String")
+    @ApiModelProperty(notes = "创建时间", dataType = "Timestamp")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss" ,timezone = "GMT+8")
-    private String createTime;
+    private Timestamp createTime;
 
     //--------t_whs_user 用户表-------
     @ApiModelProperty(notes="店铺名称",dataType="String")

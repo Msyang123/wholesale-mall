@@ -38,5 +38,8 @@ public interface InvoiceMapper {
     int pageQueryCount(InvoiceGridParam param);
 
     //修改开票状态
-    int updateInvoiceStatus(long id);
+    int updateInvoiceStatus(Invoice invoice);
+
+    //修改开票原因
+    int updateInvoiceReason(Invoice invoice);
 }

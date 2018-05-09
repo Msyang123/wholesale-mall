@@ -29,7 +29,7 @@ public class FaqCategoryApi {
 
 
     @PostMapping("/faqcategory")
-    @ApiOperation(value = "新增FAQ分类",response = Faq.class)
+    @ApiOperation(value = "后台管理系统---新增FAQ分类",response = Faq.class)
     public  ResponseEntity add(@RequestBody FaqCategory faqCategory) {
         faqCategory.setCreateTime(new Timestamp(new Date().getTime()));
         //FIXME 用户修改为后台管理登录用户
@@ -41,7 +41,7 @@ public class FaqCategoryApi {
     }
 
     @GetMapping("/faqcategory/searchfaqcategory")
-    @ApiOperation(value = "查询faq分类接口")
+    @ApiOperation(value = "后台管理系统----查询faq分类接口")
     public ResponseEntity<List<FaqCategory>> searchFaqCategory() {
         List<FaqCategory> faqCategoryList = faqCategoryService.searchFaqCategory();
         return ResponseEntity.ok(faqCategoryList);

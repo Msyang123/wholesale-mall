@@ -21,4 +21,7 @@ public class RewardConfig {
 	
 	@ApiModelProperty(notes="奖励数量",dataType="Integer")
 	private Integer rewardAmount;
+	
+	@ApiModelProperty(notes="逗号分割，优惠券配置id",dataType="String")
+	private String couponConfigIds;
 }

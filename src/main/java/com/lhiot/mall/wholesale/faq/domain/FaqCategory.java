@@ -27,7 +27,7 @@ public class FaqCategory {
     @JsonProperty("faqList")
     private List<Faq> faqList;
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @JsonProperty("faqCategoryCreateTime")
     private Timestamp createTime;
 

@@ -24,22 +24,28 @@ public class OrderGridResult {
 
     @JsonProperty("createTime")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    private String createTime;
+    private Timestamp createTime;
 
     @JsonProperty("totalFee")
-    private Long totalFee;
+    private Integer totalFee;
 
     @JsonProperty("discountFee")
-    private Long discountFee;
+    private Integer discountFee;
+
+    @JsonProperty("deliveryFee")
+    private Integer deliveryFee;
 
     @JsonProperty("payableFee")
-    private Long payableFee;
+    private Integer payableFee;
 
     @JsonProperty("settlementType")
     private String settlementType;
 
     @JsonProperty("userId")
     private Long userId;
+
+    @JsonProperty("hdStatus")
+    private String hdStatus;
 
     @JsonProperty("paymentTime")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
@@ -56,4 +62,9 @@ public class OrderGridResult {
 
     @JsonProperty("orderStatus")
     private String orderStatus;
+
+    @JsonProperty("payStatus")
+    private String payStatus;
+
+
 }

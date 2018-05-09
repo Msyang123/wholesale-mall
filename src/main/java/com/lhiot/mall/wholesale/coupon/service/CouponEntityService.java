@@ -29,7 +29,7 @@ import com.lhiot.mall.wholesale.coupon.domain.UserCouponParam;
 import com.lhiot.mall.wholesale.coupon.domain.gridparam.CouponGridParam;
 import com.lhiot.mall.wholesale.coupon.mapper.CouponEntityMapper;
 import com.lhiot.mall.wholesale.user.domain.User;
-import com.lhiot.mall.wholesale.user.service.UserService;
+import com.lhiot.mall.wholesale.user.mapper.UserMapper;
 
 @Slf4j
 @Service
@@ -37,17 +37,17 @@ import com.lhiot.mall.wholesale.user.service.UserService;
 public class CouponEntityService {
 
     private final CouponEntityMapper couponEntityMapper;
-    private final UserService userService;
+    private final UserMapper userMapper;
     private final CouponConfigService couponConfigService;
     private final ActivityService activityService;
     public CouponEntityService(CouponEntityMapper couponEntityMapper,
-    		UserService userService,
     		CouponConfigService couponConfigService,
-    		ActivityService activityService) {
+    		ActivityService activityService,
+    		UserMapper userMapper) {
         this.couponEntityMapper = couponEntityMapper;
-        this.userService = userService;
         this.couponConfigService = couponConfigService;
         this.activityService = activityService;
+        this.userMapper = userMapper;
     }
 
 	/**
@@ -88,7 +88,7 @@ public class CouponEntityService {
 	 */
 	public CouponEntityResult couponConfig(Long id){
 		CouponEntityResult coupon = couponEntityMapper.select(id);
-		User user = userService.user(coupon.getUserId());
+		User user = userMapper.user(coupon.getUserId());
 		//组装用户信息
 		this.constructUser(user, coupon);
 		return couponEntityMapper.select(id);
@@ -104,7 +104,7 @@ public class CouponEntityService {
 		//通过电话号码查询
 		if(StringUtils.isNotBlank(phone)){
 			//根据电话查询用户信息
-			List<User> users = userService.fuzzySearch(phone);
+			List<User> users = userMapper.fuzzySearchByPhone(phone);
 			for(User user : users){
 				userIds.add(user.getId());
 			}
@@ -128,7 +128,7 @@ public class CouponEntityService {
 		List<Long> uIds = this.userIds(coupongEntities);
 		List<User> users = new ArrayList<>();
 		if(!uIds.isEmpty()){
-			users = userService.users(uIds);
+			users = userMapper.searchInbatch(uIds);
 		}
 		//组装用户数据
 		this.constructUser(users, coupongEntities);
@@ -337,7 +337,7 @@ public class CouponEntityService {
 		List<Long> ccIds = Arrays.asList(param.getCouponConfigIds().split(",")).stream()
 								 .map(id -> Long.parseLong(id.trim())).collect(Collectors.toList());
 		//获取用户id
-		List<User> users = userService.searchByPhones(pls);
+		List<User> users = userMapper.searchByPhones(pls);
 		if(users.isEmpty()){
 			return failureUser;
 		}

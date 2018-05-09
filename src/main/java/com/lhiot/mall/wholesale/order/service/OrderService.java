@@ -17,6 +17,7 @@ import com.lhiot.mall.wholesale.pay.hdsend.Abolish;
 import com.lhiot.mall.wholesale.pay.hdsend.Inventory;
 import com.lhiot.mall.wholesale.pay.hdsend.Warehouse;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
+import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
@@ -44,7 +45,6 @@ public class OrderService {
     private final OrderMapper orderMapper;
 
     private final UserService userService;
-
 
     private final WeChatUtil weChatUtil;
 
@@ -386,7 +386,6 @@ public class OrderService {
                         orderGridResult.setPhone(user.getPhone());
                         orderGridResult.setShopName(user.getShopName());
                         orderGridResult.setUserName(user.getUserName());
-                        orderGridResult.setCreateTime(orderGridResult.getCreateTime().toString());
                         break;
                     }
                 }
@@ -431,14 +430,31 @@ public class OrderService {
      */
     public OrderDetail detail(Long id) {
         //账款订单详情信息
-        OrderDetail orderDetail = orderMapper.select(id);
+        OrderDetail orderDetail = orderMapper.searchOrderById(id);
         if (Objects.nonNull(orderDetail)) {
-            User user = userService.user(orderDetail.getUserId()); //用户信息
+            //用户信息
+            User user = userService.user(orderDetail.getUserId());
             if (Objects.nonNull(user)) {
                 orderDetail.setShopName(user.getShopName());
                 orderDetail.setUserName(user.getUserName());
                 orderDetail.setPhone(user.getPhone());
+                orderDetail.setAddressDetail(user.getAddressDetail());
                 orderDetail.setDeliveryAddress(user.getAddressDetail());
+            }
+            //支付信息
+            PaymentLog paymentLog = paymentLogService.getPaymentLog(orderDetail.getOrderCode());
+            if (Objects.nonNull(paymentLog)) {
+                orderDetail.setPaymentTime(paymentLog.getPaymentTime());
+            }
+            //业务员信息
+            SalesUser salesUser = salesUserService.findById(orderDetail.getSalesmanId());
+            if (Objects.nonNull(salesUser)) {
+                orderDetail.setSalesmanName(salesUser.getSalesmanName());
+            }
+            //商品信息
+            List<OrderGoods> orderGoods = orderMapper.searchOrderGoods(orderDetail.getId());
+            if (Objects.nonNull(orderGoods)) {
+                orderDetail.setOrderGoodsList(orderGoods);
             }
         }
         return orderDetail;

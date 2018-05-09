@@ -27,7 +27,7 @@ public class IntroductionApi {
 
     @GetMapping("/introduction/{id}")
     @ApiOperation(value = "根据ID查询服务协议", response = Introduction.class)
-    public ResponseEntity<Introduction> introduction(@PathVariable("id") Long id) {
+    public ResponseEntity<Introduction> detail(@PathVariable("id") Long id) {
         return ResponseEntity.ok(introductionService.introduction(id));
     }
 

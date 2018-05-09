@@ -85,7 +85,7 @@ public class DebtOrderApi {
 
     @GetMapping("/detail/{id}")
     @ApiOperation(value = "后台管理-账款订单详情页面",response = DebtOrderResult.class)
-    public  ResponseEntity<DebtOrderResult> demandGoodsDetail(@PathVariable("id") Long id){
+    public  ResponseEntity<DebtOrderResult> detail(@PathVariable("id") Long id){
         return ResponseEntity.ok(debtOrderService.detail(id));
     }
 }

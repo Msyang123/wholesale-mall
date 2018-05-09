@@ -14,28 +14,20 @@ import com.lhiot.mall.wholesale.order.service.DebtOrderService;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
-import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.leon.microx.common.exception.ServiceException;
-import com.leon.microx.common.wrapper.ArrayObject;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
-import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.service.OrderService;
-import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.setting.service.SettingService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.beans.IntrospectionException;
@@ -211,8 +203,6 @@ public class OrderApi {
         }
         return ResponseEntity.ok(100);
     }
-
-
 
     @GetMapping("/after-sale/{userId}")
     @ApiOperation(value = "查询售后订单")

@@ -26,7 +26,7 @@ public class OrderGoods {
     private Long orderId;
 
     @JsonProperty("num")
-    private int quanity;
+    private Integer quanity;
 
     @JsonProperty("price")
     private Integer goodsPrice;
