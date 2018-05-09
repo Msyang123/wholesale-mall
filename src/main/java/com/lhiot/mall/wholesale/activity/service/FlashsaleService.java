@@ -18,7 +18,9 @@ import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 import com.lhiot.mall.wholesale.activity.mapper.FlashsaleMapper;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.goods.domain.GoodsMinPrice;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
+import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 import com.lhiot.mall.wholesale.goods.service.GoodsStandardService;
 
 /**
@@ -31,15 +33,17 @@ import com.lhiot.mall.wholesale.goods.service.GoodsStandardService;
 public class FlashsaleService {
 	
 	private final FlashsaleMapper flashsaleMapper;
-	
+	private final GoodsPriceRegionService goodsPriceRegionService;
 	private final GoodsStandardService goodsStandardService;
 	private final ActivityService activityService;
 	@Autowired
 	public FlashsaleService(FlashsaleMapper flasesaleMapper,GoodsStandardService goodsStandardService,
-		   ActivityService activityService){
+		   ActivityService activityService,
+		   GoodsPriceRegionService goodsPriceRegionService){
 		this.flashsaleMapper = flasesaleMapper;
 		this.goodsStandardService = goodsStandardService;
 		this.activityService = activityService;
+		this.goodsPriceRegionService = goodsPriceRegionService;
 	}
 	
 	/**
@@ -51,7 +55,6 @@ public class FlashsaleService {
 		
 		String standardIds = flashActivity.getStandardIds();
 		Long activityId = flashActivity.getActivityId();
-		Integer price = flashActivity.getSpecialPrice();
 		
 		if(StringUtils.isBlank(standardIds)){
 			return false;
@@ -72,7 +75,9 @@ public class FlashsaleService {
 			activity.setGoodsStock(100);//默认100份
 			activity.setLimitQuantity(1);//默认限购1份
 			activity.setRankNum(rank);
-			activity.setSpecialPrice(price);
+			activity.setRemain(100);//默认设置100份
+			//默认商品价格区间的最大值,没有设置最大值则为原价的8.5折
+			activity.setSpecialPrice(this.specialPrice(id));
 			list.add(activity);
 			rank++;
 		}
@@ -98,6 +103,8 @@ public class FlashsaleService {
 	 * @return
 	 */
 	public boolean update(FlashActivity flashActivity){
+		//修改初始时候修改库存时，剩余数量与库存数相等
+		flashActivity.setRemain(flashActivity.getGoodsStock());
 		return flashsaleMapper.update(flashActivity)>0;
 	}
 	
@@ -139,14 +146,14 @@ public class FlashsaleService {
 	}
 	
 	/**
-	 * 去重重复的
+	 * 去重复的
 	 * @param standardIds
 	 * @param id活动id
 	 */
 	public void duplicate(List<Long> standardIds,Long id){
 		List<FlashsaleGoods> list = flashsaleMapper.search(id);
 		if(list.isEmpty()) return ;
-		for(int i=standardIds.size();i>=0;i--){
+		for(int i=standardIds.size()-1;i>=0;i--){
 			for(FlashsaleGoods ac : list){
 				if(Objects.equals(standardIds.get(i), ac.getGoodsStandardId())){
 					standardIds.remove(i);
@@ -212,31 +219,16 @@ public class FlashsaleService {
 		//查询并设置抢购进度
 		for(FlashsaleGoods flashsaleGoods : flashGoods){
 			int goodsStock = flashsaleGoods.getGoodsStock();
-			Map<String,Object> flashsaleProgress = this.flashsaleProgress(flashsaleGoods.getId(), goodsStock);
-			flashsaleGoods.setProgress(flashsaleProgress.get("progress").toString());
-			flashsaleGoods.setRemain(flashsaleProgress.get("remainNum").toString());
+			int remain = flashsaleGoods.getRemain();
+			//计算抢购进度
+			BigDecimal b1 = new BigDecimal((goodsStock-remain)*100);
+			BigDecimal b2 = new BigDecimal(goodsStock);
+			flashsaleGoods.setProgress(b1.divide(b2).intValue()+"");
 		}
 		//组装商品信息
 		this.contructData(flashGoods);
 		flashActivityGoods.setProList(flashGoods);
 		return flashActivityGoods;
-	}
-	
-	/**
-	 * 抢购商品抢购进度统计，及剩余数量
-	 * @param id
-	 * @return
-	 */
-	public Map<String,Object> flashsaleProgress(Long id,Integer goodsStock){
-		int progress = 0;
-		Integer sum = flashsaleMapper.flashGoodsRecord(id);
-		if(Objects.equals(0, sum)){
-			return ImmutableMap.of("progress", progress, "remainNum", goodsStock);
-		}
-		BigDecimal b1 = new BigDecimal(sum*100);
-		BigDecimal b2 = new BigDecimal(goodsStock);
-		progress = b1.divide(b2).intValue();
-		return ImmutableMap.of("progress", progress, "remainNum", (goodsStock-sum));
 	}
 	
 	/**
@@ -250,6 +242,35 @@ public class FlashsaleService {
 		return flashsaleMapper.userRecord(param);
 	}
 
-
+	/**
+	 * 给一个默认8.5折的抢购价
+	 * @param price
+	 * @return
+	 */
+	public Integer specialPrice(Long standardId){
+		//获取当前商品区间最大价格
+		Integer discount = 0;
+		List<Long> list = new ArrayList<>();
+		list.add(standardId);
+		if(!list.isEmpty()){
+			List<GoodsMinPrice> goodsMinPrices = goodsPriceRegionService.minPrices(list);
+			if(!goodsMinPrices.isEmpty()){
+				GoodsMinPrice goodsMinPrice = goodsMinPrices.get(0);
+				Integer maxPrice = goodsMinPrice.getMaxPrice();
+				if(Objects.isNull(maxPrice) || Objects.equals(maxPrice, 0)){
+					discount = maxPrice;
+				}
+			}
+		}
+		//如果没有设置价格区间，则为原价的9折
+		if(Objects.equals(discount, 0)){
+			//获取商品的原价
+			GoodsStandard goodsStandard = goodsStandardService.goodsStandard(standardId);
+			BigDecimal b1 = new BigDecimal(0.90);//默认一个9.0折的折扣
+			BigDecimal bp = new BigDecimal(goodsStandard.getPrice());
+			discount = b1.multiply(bp).intValue();
+		}
+		return discount;
+	}
 
 }

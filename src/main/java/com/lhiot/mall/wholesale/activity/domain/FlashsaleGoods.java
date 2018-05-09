@@ -1,6 +1,5 @@
 package com.lhiot.mall.wholesale.activity.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModel;
@@ -13,15 +12,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FlashsaleGoods {
 
-	@JsonIgnore
+	@JsonProperty("flashsaleId")
 	@ApiModelProperty(notes="ID",dataType="Long")
 	private Long id;
 	
-	@JsonIgnore
 	@ApiModelProperty(notes="活动id",dataType="Long")
 	private Long activityId;
 	
-	@JsonIgnore
 	@ApiModelProperty(notes="商品规格id",dataType="Long")
 	private Long goodsStandardId;
 	
@@ -40,9 +37,8 @@ public class FlashsaleGoods {
 	@ApiModelProperty(notes="商品抢购价",dataType="Integer")
 	private Integer specialPrice;
 	
-	@JsonIgnore
 	@ApiModelProperty(notes="商品抢购价，冗余字段用于后天管理展示",dataType="String")
-	private String specialPriceDispalye;
+	private String specialPriceDisplay;
 	
 	@ApiModelProperty(notes="基础单位",dataType="String")
 	private String baseUnit;
@@ -55,15 +51,12 @@ public class FlashsaleGoods {
 	@ApiModelProperty(notes="商品图片",dataType="String")
 	private String goodsImage;
 	
-	@JsonIgnore
 	@ApiModelProperty(notes="抢购库存",dataType="Integer")
 	private Integer goodsStock;
 	
-	@JsonIgnore
 	@ApiModelProperty(notes="用户限购数量",dataType="Integer")
 	private Integer limitQuantity;
 	
-	@JsonIgnore
 	@ApiModelProperty(notes="商品排序",dataType="Integer")
 	private Integer rankNum;
 	
@@ -71,6 +64,6 @@ public class FlashsaleGoods {
 	@ApiModelProperty(notes="抢购进度",dataType="String")
 	private String progress;
 	
-	@ApiModelProperty(notes="剩余数量",dataType="String")
-	private String remain;
+	@ApiModelProperty(notes="剩余数量",dataType="Integer")
+	private Integer remain;
 }

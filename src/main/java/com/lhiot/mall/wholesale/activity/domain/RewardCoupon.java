@@ -1,7 +1,5 @@
 package com.lhiot.mall.wholesale.activity.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -12,37 +10,24 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RewardCoupon {
 
-	@ApiModelProperty(notes="活动ID",dataType="Long")
+	@ApiModelProperty(notes="奖励ID",dataType="Long")
 	private Long id;
 	
-	@ApiModelProperty(notes="活动ID",dataType="Long")
+	@ApiModelProperty(notes="活动id",dataType="Long")
 	private Long activityId;
 	
-	@ApiModelProperty(notes="活动起始时间",dataType="String")
-	private String startTime;
-	
-	@ApiModelProperty(notes="活动结束时间",dataType="String")
-	private String endTime;
-	
-	@ApiModelProperty(notes="活动类型",dataType="String")
-	private String activityType;
-	
-	@ApiModelProperty(notes="优惠券配置Id",dataType="Long")
+	@ApiModelProperty(notes="优惠券配置编号",dataType="Long")
 	private Long couponConfigId;
 	
-	@ApiModelProperty(notes="优惠券奖励数量",dataType="Integer")
+	@ApiModelProperty(notes="奖励数量",dataType="Integer")
 	private Integer rewardAmount;
 	
-	@ApiModelProperty(notes="优惠名称",dataType="Long")
-	private Long couponName;
+	@ApiModelProperty(notes="优惠券名称",dataType="String")
+	private String couponName;
 	
-	@ApiModelProperty(notes="优惠券面值",dataType="Integer")
-	private Integer couponFee;
+	@ApiModelProperty(notes="优惠券金额",dataType="String")
+	private String couponFee;
 	
-	@ApiModelProperty(notes="优惠券面值",dataType="Integer")
-	private Integer fullFee;
-	
-	@ApiModelProperty(notes="优惠券种类 all-全品类 single-单品类",dataType="String")
-	private String couponType;
-
+	@ApiModelProperty(notes="满减金额",dataType="String")
+	private String fullFee;
 }

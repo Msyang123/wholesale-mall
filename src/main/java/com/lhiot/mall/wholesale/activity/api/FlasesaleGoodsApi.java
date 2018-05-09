@@ -20,6 +20,7 @@ import com.lhiot.mall.wholesale.activity.domain.FlashResult;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -66,7 +67,7 @@ public class FlasesaleGoodsApi {
 
     @GetMapping("/flashsale/{id}")
     @ApiOperation(value = "根据ID查询", response = FlashActivity.class)
-    public ResponseEntity<FlashActivity> goodsUnit(@PathVariable("id") Long id) {
+    public ResponseEntity<FlashActivity> flashActivity(@PathVariable("id") Long id) {
         return ResponseEntity.ok(flashsaleService.flashActivity(id));
     }
     
