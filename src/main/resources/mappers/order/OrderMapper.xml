@@ -72,29 +72,30 @@
             keyProperty="id">
         insert into t_whs_order (order_code,user_id,
                         salesman_id,total_fee,create_time,order_status,order_coupon,discount_fee,payable_fee,
-                        hd_status,delivery_time,delivery_fee,remarks,settlement_type,pay_status,delivery_address,receive_time,hd_status,
-                        delivery_time,delivery_fee,delivery_address,hd_code
+                        hd_status,delivery_time,delivery_fee,remarks,settlement_type,
+                        pay_status,delivery_address,receive_time,after_sale_time,hd_code
                         ) VALUES
           (#{orderCode},#{userId},
-              #{salesmanId},#{orderTotal},#{createTime},#{orderStatus},#{orderCoupon},#{discountFee},#{orderNeedFee},
-              #{hdStatus},#{deliveryTime},#{deliveryFee},#{remarks},#{settlementType},#{payStatus},#{deliveryAddress},#{receiveTime},
-              #{hdStatus},#{deliveryTime},#{deliveryFee},#{deliveryAddress},#{hdCode}
+              #{salesmanId},#{totalFee},#{createTime},#{orderStatus},#{orderCoupon},#{discountFee},#{payableFee},
+              #{hdStatus},#{deliveryTime},#{deliveryFee},#{remarks},#{settlementType},
+              #{payStatus},#{deliveryAddress},#{receiveTime},#{afterSaleTime},#{hdCode}
           )
     </insert>
 
     <insert id="saveOrderGoods" parameterType="com.lhiot.mall.wholesale.order.domain.OrderGoods">
         insert into t_whs_order_goods (goods_standard_id,standard_weight,
-        order_id,quanity,goods_price,payment_time,refund_status,discount_goods_price,user_id
+        order_id,quanity,goods_price,payment_time,refund_status,
+        discount_goods_price,user_id,purchase_price,goods_id
         ) VALUES
         <foreach collection="list" item="item" separator=",">
             (#{item.goodsStandardId},#{item.standardWeight},#{item.orderId},#{item.quanity},#{item.goodsPrice},#{item.paymentTime},#{item.refundStatus},
-            #{item.discountGoodsPrice},#{item.userId})
+            #{item.discountGoodsPrice},#{item.userId},#{item.purchasePrice},#{item.goodsId})
         </foreach>
     </insert>
 
     <!--依据订单编码和当前状态修改订单状态-->
     <update id="updateOrderStatusByCode" parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
-        UPDATE t_whs_order set order_status=#{orderStatus} where order_status=#{currentOrderStaus} and order_code=#{orderCode}
+        UPDATE t_whs_order set order_status=#{orderStatus} where order_status=#{currentOrderStatus} and order_code=#{orderCode}
     </update>
     <!--依据订单编码修改订单信息-->
     <update id="updateOrder" parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
@@ -120,6 +121,9 @@
             </if>
             <if test="orderStatus!=null and orderStatus!=''">
                 order_status=#{orderStatus},
+            </if>
+            <if test="settlementType!=null and settlementType!=''">
+                settlement_type=#{settlementType},
             </if>
         </set>
          where order_code=#{orderCode}

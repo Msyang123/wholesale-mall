@@ -249,10 +249,20 @@ public class OrderApi {
 
     @PostMapping("/create")
     @ApiOperation(value = "创建订单")
-    public ResponseEntity create(@RequestBody OrderDetail orderDetail) throws JsonProcessingException {
+    public ResponseEntity<OrderDetail> create(@RequestBody OrderDetail orderDetail) throws JsonProcessingException {
+
         orderService.create(orderDetail);
         return ResponseEntity.ok(orderDetail);
     }
+
+    @PostMapping("/update/{orderCode}")
+    @ApiOperation(value = "依据订单编码修改订单信息")
+    public ResponseEntity<OrderDetail> create(@PathVariable("orderCode") String orderCode,@RequestBody OrderDetail orderDetail){
+        orderDetail.setOrderCode(orderCode);
+        orderService.updateOrder(orderDetail);
+        return ResponseEntity.ok(orderDetail);
+    }
+
 
     @PutMapping("/cancel/unpay/{orderCode}")
     @ApiOperation(value = "取消未支付订单")

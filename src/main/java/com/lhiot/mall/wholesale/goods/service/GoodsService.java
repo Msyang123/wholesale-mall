@@ -1,31 +1,26 @@
 package com.lhiot.mall.wholesale.goods.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.activity.domain.ActivityPeriodsType;
 import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
 import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.goods.domain.Goods;
-import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
-import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
-import com.lhiot.mall.wholesale.goods.domain.GoodsMinPrice;
-import com.lhiot.mall.wholesale.goods.domain.LayoutType;
-import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
+import com.lhiot.mall.wholesale.goods.domain.*;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.GoodsMapper;
 import com.lhiot.mall.wholesale.order.domain.SoldQuantity;
+import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
 import com.lhiot.mall.wholesale.order.service.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**GoodsService
  * 商品中心
@@ -37,17 +32,17 @@ import com.lhiot.mall.wholesale.order.service.OrderService;
 public class GoodsService {
 	
 	private final GoodsMapper goodsMapper;
-	private final OrderService orderService;
+	private final OrderMapper orderMapper;
 	private final GoodsPriceRegionService priceRegionService;
 	private final PlateCategoryService plateCategoryService;
 	private final FlashsaleService flashsaleService;
 	@Autowired
-	public GoodsService(GoodsMapper goodsMapper,OrderService orderService,
+	public GoodsService(GoodsMapper goodsMapper,OrderMapper orderMapper,
 			GoodsPriceRegionService priceRegionService,
 			PlateCategoryService plateCategoryService,
 			FlashsaleService flashsaleService){
 		this.goodsMapper = goodsMapper;
-		this.orderService = orderService;
+		this.orderMapper = orderMapper;
 		this.priceRegionService = priceRegionService;
 		this.plateCategoryService = plateCategoryService;
 		this.flashsaleService = flashsaleService;
@@ -55,7 +50,7 @@ public class GoodsService {
 	
 	/**
 	 * 新增商品
-	 * @param goodsUnit
+	 * @param goods
 	 * @return
 	 */
 	public boolean create(Goods goods){
@@ -77,7 +72,7 @@ public class GoodsService {
 	
 	/**
 	 * 修改商品
-	 * @param goodsUnit
+	 * @param goods
 	 * @return
 	 */
 	public boolean update(Goods goods){
@@ -92,7 +87,7 @@ public class GoodsService {
 	public Goods goods(Long id){
 		return goodsMapper.select(id);
 	}
-	
+
 	/**
 	 * 分页查询
 	 * @return
@@ -148,7 +143,7 @@ public class GoodsService {
 	
 	/**
 	 * 查询编码是否重复，进而判断是否可以进行修改和增加操作
-	 * @param goodsCategory
+	 * @param goods
 	 * @return true允许操作，false 不允许操作
 	 */
 	public boolean allowOperation(Goods goods){
@@ -264,7 +259,14 @@ public class GoodsService {
 			ids.add(goodsId);
 		});
 		//订单中心获取商品销售数量
-		List<SoldQuantity> soldQuantities = orderService.statisticalSoldQuantity(ids, degree);
+		List<SoldQuantity> soldQuantities = orderMapper.soldQuantity(ids);
+		for(SoldQuantity soldQuantity : soldQuantities){
+			int count = soldQuantity.getSoldQuantity();
+			//默认设置商品为1份
+			count = Objects.isNull(count) ? 1 : count;
+			//乘以系数
+			soldQuantity.setSoldQuantity(count*degree);
+		}
 		for(Goods goods : goodses){
 			for(SoldQuantity soldQuantity : soldQuantities){
 				if(Objects.equals(goods.getId(), 

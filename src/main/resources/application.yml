@@ -55,6 +55,29 @@ wholesale-mall:
       order-offline-notify-url: https://online.food-see.com/wechat/offline/notify
       payunit: 100
       proxy: nonginx
+  rabbitmq:
+    direct-queue:
+      order-create:
+#延迟队列信道
+        direct_exchange_name: order-direct-exchange
+#延迟队列队列名
+        dlx_queue_name: order-dlx-queue
+#转发队列队列名
+        repeat_queue_name: order-repeat-queue
+      pay-create:
+#延迟队列信道
+        direct_exchange_name: pay-direct-exchange
+#延迟队列队列名
+        dlx_queue_name: pay-dlx-queue
+#转发队列队列名
+        repeat_queue_name: pay-repeat-queue
+    fanout-queue:
+      order-created-event:
+        - coupon-publisher
+        - flasesale-publisher
+      order-payed-event:
+        - test-publisher-1
+        - test-publisher-4
 hd:
   config:
     charset: UTF-8

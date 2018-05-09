@@ -67,6 +67,7 @@
 			<if test="baseBar != null and baseBar != ''">base_bar=#{baseBar},</if>
 			<if test="baseUnit != null and baseUnit != ''">base_unit=#{baseUnit},</if>
 			<if test="stockLimit != null and stockLimit != ''">stock_limit=#{stockLimit},</if>
+			<if test="reduceStockLimit != null and reduceStockLimit != ''">stock_limit=stock_limit-#{reduceStockLimit},</if>
 			<if test="goodsDes != null and goodsDes != ''">goods_des=#{goodsDes},</if>
 			<if test="goodsImages != null and goodsImages != ''">goods_images=#{goodsImages},</if>
 			<if test="otherImage != null and otherImage != ''">other_image=#{otherImage},</if>
