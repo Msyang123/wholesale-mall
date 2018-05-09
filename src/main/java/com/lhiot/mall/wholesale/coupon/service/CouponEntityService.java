@@ -67,7 +67,7 @@ public class CouponEntityService {
 								.map(id -> Long.parseLong(id.trim())).collect(Collectors.toList());
 		couponEntityMapper.removeInbatch(list);
 	}
-	
+
 	/**
 	 * 修改优惠券状态
 	 * @param goodsUnit
@@ -82,11 +82,7 @@ public class CouponEntityService {
 	 * @param id
 	 * @return
 	 */
-	public CouponEntityResult couponConfig(Long id){
-		CouponEntityResult coupon = couponEntityMapper.select(id);
-		User user = userMapper.user(coupon.getUserId());
-		//组装用户信息
-		this.constructUser(user, coupon);
+	public CouponEntityResult coupon(Long id){
 		return couponEntityMapper.select(id);
 	}
 	
