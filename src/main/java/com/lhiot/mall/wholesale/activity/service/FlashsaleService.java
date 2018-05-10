@@ -8,16 +8,21 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.lhiot.mall.wholesale.activity.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.activity.domain.ActivityPeriodsType;
+import com.lhiot.mall.wholesale.activity.domain.ActivityType;
+import com.lhiot.mall.wholesale.activity.domain.FlashActivity;
+import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
+import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 import com.lhiot.mall.wholesale.activity.mapper.FlashsaleMapper;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
 import com.lhiot.mall.wholesale.goods.domain.GoodsMinPrice;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
 import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
@@ -298,5 +303,22 @@ public class FlashsaleService {
 			}
 		}
 		return result; 
+	}
+	
+	/**
+	 * 获取用户的抢购商品信息
+	 * @param standardId
+	 * @param userId
+	 * @return
+	 */
+	public GoodsFlashsale goodsFlashsale(Long standardId,Long userId){
+		GoodsFlashsale goodsFlashSale = new GoodsFlashsale();
+		if(!Objects.isNull(goodsFlashSale)){
+			goodsFlashSale = flashsaleMapper.searchFlashGoods(standardId);
+			Long activityId = goodsFlashSale.getActivityId();
+			Map<String,Object> param = ImmutableMap.of("userId", userId, "activityId", activityId,"standardId",standardId);
+			goodsFlashSale.setUserPucharse(flashsaleMapper.userRecord(param));
+		}
+		return goodsFlashSale;
 	}
 }
