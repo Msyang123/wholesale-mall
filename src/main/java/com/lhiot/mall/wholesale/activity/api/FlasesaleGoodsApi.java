@@ -92,4 +92,10 @@ public class FlasesaleGoodsApi {
     	flashResult.setNextFlash(flashsaleService.flashGoods(ActivityPeriodsType.next));
         return ResponseEntity.ok(flashResult);
     }
+    
+    @GetMapping("/flashsale/records/{userId}")
+    @ApiOperation(value = "获取用户抢购数量")
+    public ResponseEntity<FlashsaleGoods> userRecords(@PathVariable("userId") Long userId) {
+        return ResponseEntity.ok(flashsaleService.flashsaleGoods(userId));
+    }
 }

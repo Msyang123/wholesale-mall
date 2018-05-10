@@ -104,20 +104,10 @@ public class GoodsApi {
         //商品价格区间信息
         List<GoodsPriceRegion> goodsPriceRegions =goodsPriceRegionService.selectPriceRegion(goodsInfo.getGoodsStandardId());
         goodsInfo.setGoodsPriceRegionList(goodsPriceRegions);
-        GoodsFlashsale goodsFlashsale = goodsService.goodsFlashsale(goodsInfo.getGoodsStandardId());
-        //商品详情信息和抢购信息存放到GoodsDetailResult
+        
         GoodsDetailResult goodsDetailResult = new GoodsDetailResult();
-        if (goodsFlashsale==null){
-            goodsDetailResult.setGoodsFlashsale(new GoodsFlashsale());
-        }else{
-            Activity activity = activityService.flashGoods(goodsFlashsale.getActivityId());
-            goodsFlashsale.setEndTime(activity.getEndTime());
-            goodsFlashsale.setStartTime(activity.getStartTime());
-            Integer userPucharse = flashsaleService.userRecords(userId,goodsFlashsale.getActivityId());//用户已购抢购商品数量
-            goodsFlashsale.setUserPucharse(userPucharse);
-            goodsDetailResult.setGoodsFlashsale(goodsFlashsale);
-        }
         goodsDetailResult.setGoodsInfo(goodsInfo);
+        goodsDetailResult.setGoodsFlashsale(flashsaleService.goodsFlashsale(id, userId));
         return ResponseEntity.ok(goodsDetailResult);
     }
 

@@ -74,4 +74,13 @@
 		WHERE t1.user_id = #{userId} and t2.activity_id = #{activityId} and flashsale_goods_id = #{standardId}
 	</select>
 
+	<!-- lynn 查询抢购商品的信息 -->
+	<select id="searchFlashGoods" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale">
+		SELECT t1.id,t1.activity_id,t1.goods_standard_id,t1.special_price,t1.goods_stock,t1.limit_quantity,t1.rank_num,t1.remain,
+		t2.start_time,t2.end_time
+		FROM t_whs_flashsale_goods t1
+		LEFT JOIN t_whs_activity t2 ON t1.activity_id = t2.id
+		WHERE t1.goods_standard_id = #{0} 
+		AND t2.vaild='yes' and now() between t2.start_time and t2.end_time
+	</select>
 </mapper>
