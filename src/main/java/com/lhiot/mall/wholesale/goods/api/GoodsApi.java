@@ -22,6 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.ResultObject;
+import com.lhiot.mall.wholesale.activity.domain.Activity;
+import com.lhiot.mall.wholesale.activity.service.ActivityService;
+import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.goods.domain.GoodsDetailResult;
@@ -99,29 +102,18 @@ public class GoodsApi {
         return ResponseEntity.ok(goodsService.pageQuery(param));
     }
 
-    @GetMapping("/goods-detail/{id}/{activityId}")
+    @GetMapping("/goods-detail/{id}")
     @ApiOperation(value = "商品详情页面")
-    public  ResponseEntity<GoodsDetailResult> goodsDetail(@PathVariable("id") Long id,@RequestParam Long userId,@PathVariable("activityId") Long activityId){
-	    //商品详情信息
+    public  ResponseEntity<GoodsDetailResult> goodsDetail(@PathVariable("id") Long id,@RequestParam Long userId){
+        //商品详情信息
         GoodsInfo goodsInfo = goodsService.goodsInfo(id);
         //商品价格区间信息
         List<GoodsPriceRegion> goodsPriceRegions =goodsPriceRegionService.selectPriceRegion(goodsInfo.getGoodsStandardId());
         goodsInfo.setGoodsPriceRegionList(goodsPriceRegions);
-        Map goodsParam = ImmutableMap.of("activityId",activityId,"goodsStandardId",goodsInfo.getGoodsStandardId());
-        GoodsFlashsale goodsFlashsale = goodsService.goodsFlashsale(goodsParam);
-        //商品详情信息和抢购信息存放到GoodsDetailResult
+
         GoodsDetailResult goodsDetailResult = new GoodsDetailResult();
-        if (goodsFlashsale==null){
-            goodsDetailResult.setGoodsFlashsale(new GoodsFlashsale());
-        }else{
-            Activity activity = activityService.flashGoods(goodsFlashsale.getActivityId());
-            goodsFlashsale.setEndTime(activity.getEndTime());
-            goodsFlashsale.setStartTime(activity.getStartTime());
-            Integer userPucharse = flashsaleService.userRecords(userId,goodsFlashsale.getActivityId());//用户已购抢购商品数量
-            goodsFlashsale.setUserPucharse(userPucharse);
-            goodsDetailResult.setGoodsFlashsale(goodsFlashsale);
-        }
         goodsDetailResult.setGoodsInfo(goodsInfo);
+        goodsDetailResult.setGoodsFlashsale(flashsaleService.goodsFlashsale(id, userId));
         return ResponseEntity.ok(goodsDetailResult);
     }
 

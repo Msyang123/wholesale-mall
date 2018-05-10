@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.base.Objects;
+import com.lhiot.mall.wholesale.activity.service.ActivityService;
 import com.lhiot.mall.wholesale.advertise.domain.Advertise;
 import com.lhiot.mall.wholesale.advertise.domain.AdvertiseType;
 import com.lhiot.mall.wholesale.advertise.service.AdvertiseService;
@@ -29,6 +30,7 @@ public class IndexService {
 	private static final Long PARENT_ID = 0l;//父节点id
 	private static final Integer FIRST_INDEX = 0;//第一个节点
 	private final AdvertiseService advertiseService;
+	private final ActivityService activityService;
 	private final GoodsService goodsService;
 	private final GoodsCategoryService goodsCategoryService;
 	
@@ -36,10 +38,12 @@ public class IndexService {
 	@Autowired
 	public IndexService(AdvertiseService advertiseService,
 			GoodsService goodsService,
-			GoodsCategoryService goodsCategoryService){
+			GoodsCategoryService goodsCategoryService,
+			ActivityService activityService){
 		this.advertiseService = advertiseService;
 		this.goodsService = goodsService;
 		this.goodsCategoryService = goodsCategoryService;
+		this.activityService = activityService;
 	}
 	
 	/**
