@@ -33,7 +33,7 @@ public interface GoodsMapper {
 
     GoodsInfo goodsInfo(long goods_id);
 
-    GoodsFlashsale goodsFlashsale(long goodsStandardId);
+    GoodsFlashsale goodsFlashsale(Map param);
 
     List<GoodsInfo> inventoryList(long userId);
 

@@ -2,7 +2,9 @@ package com.lhiot.mall.wholesale.goods.api;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
+import com.leon.microx.util.ImmutableMap;
 import com.lhiot.mall.wholesale.activity.domain.Activity;
 import com.lhiot.mall.wholesale.activity.service.ActivityService;
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
@@ -97,15 +99,16 @@ public class GoodsApi {
         return ResponseEntity.ok(goodsService.pageQuery(param));
     }
 
-    @GetMapping("/goods-detail/{id}")
+    @GetMapping("/goods-detail/{id}/{activityId}")
     @ApiOperation(value = "商品详情页面")
-    public  ResponseEntity<GoodsDetailResult> goodsDetail(@PathVariable("id") Long id,@RequestParam Long userId){
+    public  ResponseEntity<GoodsDetailResult> goodsDetail(@PathVariable("id") Long id,@RequestParam Long userId,@PathVariable("activityId") Long activityId){
 	    //商品详情信息
         GoodsInfo goodsInfo = goodsService.goodsInfo(id);
         //商品价格区间信息
         List<GoodsPriceRegion> goodsPriceRegions =goodsPriceRegionService.selectPriceRegion(goodsInfo.getGoodsStandardId());
         goodsInfo.setGoodsPriceRegionList(goodsPriceRegions);
-        GoodsFlashsale goodsFlashsale = goodsService.goodsFlashsale(goodsInfo.getGoodsStandardId());
+        Map goodsParam = ImmutableMap.of("activityId",activityId,"goodsStandardId",goodsInfo.getGoodsStandardId());
+        GoodsFlashsale goodsFlashsale = goodsService.goodsFlashsale(goodsParam);
         //商品详情信息和抢购信息存放到GoodsDetailResult
         GoodsDetailResult goodsDetailResult = new GoodsDetailResult();
         if (goodsFlashsale==null){
