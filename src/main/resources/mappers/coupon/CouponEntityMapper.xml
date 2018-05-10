@@ -43,7 +43,7 @@
 		t1.failure_time as failureTime,t1.coupon_status as couponStatus,t1.get_time as getTime,t1.use_time as userTime,
 		t1.coupon_fee as couponFee,t1.full_fee as fullTime,t3.coupon_name as couponName,t3.coupon_type as couponType
 		from t_whs_coupon_entity t1
-		left join t_whs_coupon_config t2 on t1.coupon_config_id on t2.id
+		left join t_whs_coupon_config t2 on t1.coupon_config_id = t2.id
 		left join t_whs_coupon_plate t3 on t2.coupon_id = t3.id
 		where t1.id = #{0}
 	</select>

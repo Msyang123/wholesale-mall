@@ -37,11 +37,11 @@ public class CouponEntityResult {
 	@ApiModelProperty(notes="使用时间",dataType="String")
 	private String useTime;
 	
-	@ApiModelProperty(notes="优惠券金额",dataType="String")
-	private String couponFee;
+	@ApiModelProperty(notes="优惠券金额",dataType="Integer")
+	private int couponFee;
 	
-	@ApiModelProperty(notes="满减金额",dataType="String")
-	private String fullFee;
+	@ApiModelProperty(notes="满减金额",dataType="Integer")
+	private int fullFee;
 	
 	@ApiModelProperty(notes="用户名称",dataType="String")
 	private String userName;
