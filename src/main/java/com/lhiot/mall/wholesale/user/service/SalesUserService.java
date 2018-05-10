@@ -5,7 +5,9 @@ import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.ShopResult;
 import com.lhiot.mall.wholesale.user.mapper.SalesUserMapper;
+import com.lhiot.mall.wholesale.user.mapper.UserMapper;
 import org.apache.ibatis.session.SqlSession;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -22,11 +25,17 @@ public class SalesUserService {
 
     private final SalesUserMapper salesUserMapper;
 
+    private final RabbitTemplate rabbit;
+
+    private final UserMapper userMapper;
+
 
     @Autowired
-    public SalesUserService(SqlSession sqlSession, SnowflakeId snowflakeId, SalesUserMapper salesUserMapper) {
+    public SalesUserService(SqlSession sqlSession, SnowflakeId snowflakeId, SalesUserMapper salesUserMapper, RabbitTemplate rabbit, UserMapper userMapper) {
         this.snowflakeId = snowflakeId;
         this.salesUserMapper = salesUserMapper;
+        this.rabbit = rabbit;
+        this.userMapper = userMapper;
     }
 
 
@@ -67,12 +76,17 @@ public class SalesUserService {
      * @param salesUserRelation
      * @return
      */
-   /* public boolean userCheck(SalesUserRelation salesUserRelation){
+    public boolean userCheck(SalesUserRelation salesUserRelation){
         if (salesUserMapper.updateUserSaleRelationship(salesUserRelation)>0){
-            userService.updateUserStatus(salesUserRelation.getUserId());
+            if (Objects.equals(salesUserRelation.getAuditStatus(),"agree")){
+                if (userMapper.updateUserStatus(salesUserRelation.getUserId())>0){//用户表改已认证或未认证
+                    //FIXME 审核通过的时候发送发券广播消息
+                    rabbit.convertAndSend("store-check-event","", salesUserRelation.getUserId());
+                }
+            }
         }
-        return false;
-    }*/
+        return true;
+    }
 
 
     /***************后台管理系统*******************/

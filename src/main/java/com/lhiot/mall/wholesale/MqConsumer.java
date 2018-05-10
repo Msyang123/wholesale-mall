@@ -39,8 +39,8 @@ public class MqConsumer{
      */
     @RabbitHandler
     @RabbitListener(queues = "order-repeat-queue")
-    public void orderOuttime(String getMessage) {
-        log.info("orderOuttime =========== " + getMessage);
+    public void orderOutTime(String getMessage) {
+        log.info("orderOutTime =========== " + getMessage);
         try {
             OrderDetail orderDetail=JacksonUtils.fromJson(getMessage, OrderDetail.class);
             OrderDetail searchOrderDetail= orderService.searchOrder(orderDetail.getOrderCode());
