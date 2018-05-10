@@ -276,4 +276,27 @@ public class FlashsaleService {
 		return discount;
 	}
 
+	/**
+	 * 根据商品规格id查询商品的抢购信息
+	 * @param standardId
+	 * @return
+	 */
+	public FlashsaleGoods flashsaleGoods(Long standardId){
+		FlashsaleGoods result = null;
+		FlashActivityGoods ac = activityService.currentActivity(ActivityType.flashsale);
+		if(Objects.isNull(ac)){
+			return result;
+		}
+		List<FlashsaleGoods> flashGoods = flashsaleMapper.search(ac.getId());
+		if(flashGoods.isEmpty()){
+			return result;
+		}
+		for(FlashsaleGoods goods : flashGoods){
+			if(Objects.equals(standardId, goods.getGoodsStandardId())){
+				result = goods;
+				break;
+			}
+		}
+		return result; 
+	}
 }
