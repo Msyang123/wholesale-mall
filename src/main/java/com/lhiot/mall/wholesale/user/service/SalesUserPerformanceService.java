@@ -233,7 +233,7 @@ public class SalesUserPerformanceService{
                         orderGridResult.setPhone(user.getPhone());
                         orderGridResult.setUserName(user.getUserName());
                         orderGridResult.setShopName(user.getShopName());
-                        orderGridResult.setCreateTime(orderGridResult.getCreateTime().toString());
+                        orderGridResult.setCreateTime(orderGridResult.getCreateTime());
                         break;
                     }
                 }
