@@ -115,7 +115,7 @@ public class OrderApi {
     public ResponseEntity<ArrayObject> debtOrders(@PathVariable("userId") long userId,@RequestParam(defaultValue="1") Integer page,@RequestParam(defaultValue="10") Integer rows){
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setUserId(userId);
-        orderDetail.setSettlementType("cod");
+        orderDetail.setSettlementType("offline");
         orderDetail.setPayStatus("unpaid");
         orderDetail.setPage(page);
         orderDetail.setStart((page-1)*rows);
@@ -261,6 +261,8 @@ public class OrderApi {
         //验证前端应付金额
         int needPay=0;//需要支付金额
         int gooddNeedPay=0;//商品金额
+        int totalFee=orderDetail.getPayableFee()+orderDetail.getDiscountFee();//总金额
+        double disPre=orderDetail.getPayableFee()/totalFee;//优惠比例
         boolean haveFlashGoods=false;
         if(Objects.isNull(orderDetail.getTotalFee())
                 ||Objects.isNull(orderDetail.getDeliveryFee())
@@ -300,6 +302,7 @@ public class OrderApi {
                     return ResponseEntity.ok(orderDetail);
                 }
                 needPay+=flashsaleGoods.getSpecialPrice()*item.getQuanity();
+                item.setDiscountGoodsPrice((int)(disPre*flashsaleGoods.getSpecialPrice()*item.getQuanity()));//优惠后价格
                 gooddNeedPay+=flashsaleGoods.getSpecialPrice()*item.getQuanity();
                 haveFlashGoods=true;//拥有限时抢购商品
             }else{
@@ -310,6 +313,7 @@ public class OrderApi {
                     if(item.getQuanity()>=goodsPriceRegion.getMinQuantity()&&item.getQuanity()<=goodsPriceRegion.getMaxQuantity()){
                         needPay+=goodsPriceRegion.getPrice()*item.getQuanity();
                         gooddNeedPay+=goodsPriceRegion.getPrice()*item.getQuanity();
+                        item.setDiscountGoodsPrice((int)(disPre*goodsPriceRegion.getPrice()*item.getQuanity()));//优惠后价格
                         break;
                     }
                 }

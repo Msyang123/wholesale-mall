@@ -368,6 +368,7 @@ public class PayService {
         boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
         if(updateResult){
             //减商品库存
+            orderDetail.setPayStatus("paid");//已支付
             sendToStock(orderDetail);
 
             PaymentLog paymentLog=new PaymentLog();
@@ -499,7 +500,6 @@ public class PayService {
         orderDetail.setHdCode(hdCode);//总仓编码
         orderDetail.setHdStatus("success");//海鼎发送成功
         orderDetail.setOrderStatus("undelivery");//待发货状态
-        orderDetail.setCurrentOrderStatus("unpaid");//待付款状态
         int result=orderService.updateOrder(orderDetail);
         //发布广播消息
         try {
