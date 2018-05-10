@@ -2,7 +2,12 @@ package com.lhiot.mall.wholesale.goods.api;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
+import com.leon.microx.util.ImmutableMap;
+import com.lhiot.mall.wholesale.activity.domain.Activity;
+import com.lhiot.mall.wholesale.activity.service.ActivityService;
+import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,6 +32,7 @@ import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
 import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
 import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
 import com.lhiot.mall.wholesale.goods.domain.InventoryResult;
+import com.lhiot.mall.wholesale.goods.domain.LayoutType;
 import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
 import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
@@ -99,12 +105,12 @@ public class GoodsApi {
     @GetMapping("/goods-detail/{id}")
     @ApiOperation(value = "商品详情页面")
     public  ResponseEntity<GoodsDetailResult> goodsDetail(@PathVariable("id") Long id,@RequestParam Long userId){
-	    //商品详情信息
+        //商品详情信息
         GoodsInfo goodsInfo = goodsService.goodsInfo(id);
         //商品价格区间信息
         List<GoodsPriceRegion> goodsPriceRegions =goodsPriceRegionService.selectPriceRegion(goodsInfo.getGoodsStandardId());
         goodsInfo.setGoodsPriceRegionList(goodsPriceRegions);
-        
+
         GoodsDetailResult goodsDetailResult = new GoodsDetailResult();
         goodsDetailResult.setGoodsInfo(goodsInfo);
         goodsDetailResult.setGoodsFlashsale(flashsaleService.goodsFlashsale(id, userId));

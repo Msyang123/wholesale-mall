@@ -69,55 +69,19 @@ public class OrderRefundApplicationApi {
     }
 
     /***************************************后台管理系统*************************************************/
-    @GetMapping("/page")
-    @ApiOperation(value = "分页查询售后申请表列表")
-    public ResponseEntity<ArrayObject> list(
-            @RequestParam(value="id", required = false) Long id,
-            @RequestParam(value="auditStatus", required = false) String auditStatus,
-            @RequestParam(value="orderDiscountFee", required = false) Integer orderDiscountFee,
-            @RequestParam(value="orderId", required = false) Long orderId,
-            @RequestParam(value="phone", required = false) String phone,
-            @RequestParam(value="rows", required = false, defaultValue="10") Integer rows,
-            @RequestParam(value="page", required = false, defaultValue="1") Integer page,
-            @RequestParam(value="sidx", required = false, defaultValue="") String sidx,
-            @RequestParam(value="sord", required = false, defaultValue="") String sord) throws IntrospectionException, InstantiationException, IllegalAccessException, InvocationTargetException {
-        Map<String,Object> param=new HashMap<>();
-        param.put("id",id);
-        param.put("auditStatus",auditStatus);
-        param.put("orderDiscountFee",orderDiscountFee);
-        param.put("orderId",orderId);
-        param.put("page",page);
-        param.put("rows",rows);
-        param.put("sidx",sidx);
-        param.put("sord",sord);
+    @PostMapping("/grid")
+    @ApiOperation(value = "后台管理-分页查询售后订单信息", response = PageQueryObject.class)
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) OrderGridParam param) throws IntrospectionException, InstantiationException, IllegalAccessException, InvocationTargetException {
         OrderRefundApplication orderRefundApplication=new OrderRefundApplication();
         List<OrderRefundApplication> orderRefundApplicationList = orderRefundApplicationService.list(orderRefundApplication);
         List<String> orderDetailList = new ArrayList<String>();
+        List<String> statuss = new ArrayList<String>();
         for (OrderRefundApplication item:orderRefundApplicationList) {
             orderDetailList.add(item.getOrderId());
+            statuss.add(item.getAuditStatus());
         }
-        OrderGridParam orderParam = new OrderGridParam();
-        orderParam.setOrderIds(orderDetailList);
-        List<OrderGridResult> orderGridResults = orderService.orderGridData(orderParam);
-        User userParam = new User();
-        userParam.setPhone(phone);
-        List<User> users = userService.searchByPhoneOrName(userParam);
-        for (OrderGridResult orderGridResult:orderGridResults) {
-            for (User user:users) {
-                if (Objects.equals(orderGridResult.getUserId(), user.getId())) {
-                    orderGridResult.setPhone(user.getPhone());
-                    orderGridResult.setShopName(user.getShopName());
-                    orderGridResult.setUserName(user.getUserName());
-                    orderGridResult.setCreateTime(orderGridResult.getCreateTime());
-                    break;
-                }
-            }
-        }
-        Map<String,Object> param2=new HashMap<>();
-        param.put("page",page);
-        param.put("rows",rows);
-        param.put("sidx",sidx);
-        param.put("sord",sord);
-        return ResponseEntity.ok(ArrayObject.of(orderGridResults));
+        param.setOrderIds(orderDetailList);
+        param.setAuditStatuss(statuss);
+        return ResponseEntity.ok(orderService.pageQuery(param));
     }
 }
