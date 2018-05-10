@@ -68,8 +68,20 @@ public class WxPayApi {
         OrderDetail orderDetail= orderService.searchOrder(orderCode);
 	    //通过加密后的openIdAfterDm5查找数据库openId
         String wxOrderSignStr=payService.wxOrderPay(getRemoteAddr(request),openId,
-                orderDetail.getPayableFee()+orderDetail.getDeliveryFee(),getUserAgent(request),orderCode,weChatUtil);
-        //FIXME 写订单签名日志
+                orderDetail.getPayableFee()+orderDetail.getDeliveryFee(),
+                getUserAgent(request),
+                orderCode,
+                weChatUtil);
+        PaymentLog paymentLog=new PaymentLog();
+        //写入日志
+        paymentLog.setPaymentType("balance");//balance-余额支付 wechat-微信 offline-线下支付
+        paymentLog.setPaymentStep("paid");//sign-签名成功 paid-支付成功
+        paymentLog.setOrderCode(orderDetail.getOrderCode());
+        paymentLog.setOrderId(orderDetail.getId());
+        paymentLog.setUserId(orderDetail.getUserId());
+        paymentLog.setPaymentFrom("order");//支付来源于 order-订单 debt-账款 invoice-发票 recharge-充值
+        paymentLog.setTotalFee(orderDetail.getPayableFee()+orderDetail.getDeliveryFee());
+        paymentLogService.insertPaymentLog(paymentLog);
     	return ResponseEntity.ok(wxOrderSignStr);
     }
 
@@ -80,13 +92,35 @@ public class WxPayApi {
         XPathParser xpath = weChatUtil.getParametersByWeChatCallback(request);
         XPathWrapper wrap = new XPathWrapper(xpath);
         String resultCode = wrap.get("result_code");
-        if ("SUCCESS".equalsIgnoreCase(resultCode)) {
+        //获取签名的单号
+        String orderCode = wrap.get("out_trade_no");
+        List<XNode> nodes=xpath.evalNodes("//xml/*");
+        SortedMap<Object,Object> parameters=new TreeMap();
+        for (XNode node:nodes){
+            parameters.put(node.name(),node.body());
+        }
+        //计算签名
+        String signResult=payService.createSign(parameters,weChatUtil.getProperties().getWeChatPay().getPartnerKey());
+        log.info("signResult:"+signResult);
+        log.info("urlsign:"+wrap.get("sign"));
+        if ("SUCCESS".equalsIgnoreCase(resultCode)&&Objects.equals(signResult,wrap.get("sign"))) {
             String userId = wrap.get("attach");
             String totalFee = wrap.get("total_fee");
             int fee = Integer.parseInt(totalFee);
             //获取传达的附加参数获取用户信息
             log.info("userId:"+userId+"fee:"+fee);
-            boolean myDoIsOk=true;//我们处理的业务
+            boolean myDoIsOk=false;//我们处理的业务
+            OrderDetail orderDetail = orderService.searchOrder(orderCode);
+            if (Objects.isNull(orderDetail)){
+                //return ResponseEntity.badRequest().body("没有该订单信息");
+                return ResponseEntity.ok().build();
+            }
+            if(!Objects.equals(orderDetail.getOrderStatus(),"unpaid")){
+                //return ResponseEntity.badRequest().body("订单状态异常，请检查订单状态");
+                return ResponseEntity.ok().build();
+            }
+            int result=payService.sendToStock(orderDetail);
+            myDoIsOk=result>0;
             if (myDoIsOk) {
                 //广播订单支付成功true, "success"
                 return ResponseEntity.ok("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"

@@ -45,7 +45,7 @@
     </select>
 
     <select id="searchOrderGoods"  parameterType="long" resultType="com.lhiot.mall.wholesale.order.domain.OrderGoods">
-        select t.id,g.goods_name goodsName,u.unit_name unit,t.standard_weight standardWeight,t.goods_price goodsPrice,t.quanity,g.goods_image goodsImage,s.hd_sku_id
+        select t.id,g.goods_name goodsName,u.unit_name unit,t.standard_weight standardWeight,t.goods_price goodsPrice,t.quanity,g.goods_image goodsImage,s.hd_sku_id,t.flash
         from t_whs_order_goods t
         LEFT JOIN t_whs_goods_standard s on t.goods_standard_id=s.id
         LEFT JOIN t_whs_goods g on g.id=s.goods_id
@@ -85,11 +85,11 @@
     <insert id="saveOrderGoods" parameterType="com.lhiot.mall.wholesale.order.domain.OrderGoods">
         insert into t_whs_order_goods (goods_standard_id,standard_weight,
         order_id,quanity,goods_price,payment_time,refund_status,
-        discount_goods_price,user_id,purchase_price,goods_id
+        discount_goods_price,user_id,purchase_price,goods_id,flash
         ) VALUES
         <foreach collection="list" item="item" separator=",">
             (#{item.goodsStandardId},#{item.standardWeight},#{item.orderId},#{item.quanity},#{item.goodsPrice},#{item.paymentTime},#{item.refundStatus},
-            #{item.discountGoodsPrice},#{item.userId},#{item.purchasePrice},#{item.goodsId})
+            #{item.discountGoodsPrice},#{item.userId},#{item.purchasePrice},#{item.goodsId},#{item.flash})
         </foreach>
     </insert>
 

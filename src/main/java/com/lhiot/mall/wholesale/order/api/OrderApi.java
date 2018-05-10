@@ -1,14 +1,17 @@
 package com.lhiot.mall.wholesale.order.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
+import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.coupon.domain.CouponEntityResult;
 import com.lhiot.mall.wholesale.coupon.service.CouponEntityService;
 import com.lhiot.mall.wholesale.goods.domain.Goods;
+import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
+import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 import com.lhiot.mall.wholesale.goods.service.GoodsService;
 import com.lhiot.mall.wholesale.order.domain.Distribution;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
@@ -32,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.constraints.NotNull;
 import java.beans.IntrospectionException;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -61,9 +65,13 @@ public class OrderApi {
 
     private final CouponEntityService couponEntityService;
 
+    private final FlashsaleService flashsaleService;
+
+    private final GoodsPriceRegionService priceRegionService;
+
     @Autowired
     public OrderApi(OrderService orderService, DebtOrderService debtOrderService, SalesUserService salesUserService,
-                    SettingService settingService, PaymentLogService paymentLogService, RabbitTemplate rabbit, SnowflakeId snowflakeId, GoodsService goodsService, CouponEntityService couponEntityService) {
+                    SettingService settingService, PaymentLogService paymentLogService, RabbitTemplate rabbit, SnowflakeId snowflakeId, GoodsService goodsService, CouponEntityService couponEntityService, FlashsaleService flashsaleService, GoodsPriceRegionService priceRegionService) {
 
         this.orderService = orderService;
         this.settingService = settingService;
@@ -74,6 +82,8 @@ public class OrderApi {
         this.debtOrderService=debtOrderService;
         this.goodsService=goodsService;
         this.couponEntityService = couponEntityService;
+        this.flashsaleService = flashsaleService;
+        this.priceRegionService = priceRegionService;
     }
 
     @GetMapping("/my-orders/{userId}")
@@ -245,8 +255,20 @@ public class OrderApi {
 
     @PostMapping("/create")
     @ApiOperation(value = "创建订单")
-    public ResponseEntity<OrderDetail> create(@RequestBody OrderDetail orderDetail) throws JsonProcessingException {
+    public ResponseEntity<OrderDetail> create(@RequestBody OrderDetail orderDetail) throws IOException {
         //查询商品库存 不足返回
+        //检测限时抢购商品
+        //验证前端应付金额
+        int needPay=0;//需要支付金额
+        int gooddNeedPay=0;//商品金额
+        boolean haveFlashGoods=false;
+        if(Objects.isNull(orderDetail.getTotalFee())
+                ||Objects.isNull(orderDetail.getDeliveryFee())
+                ||Objects.isNull(orderDetail.getPayableFee())){
+            orderDetail.setCode(-1002);
+            orderDetail.setMsg("订单金额传递为空");
+            return ResponseEntity.ok(orderDetail);
+        }
         for(OrderGoods item: orderDetail.getOrderGoodsList()){
             Goods goods=goodsService.goods(item.getGoodsId());
             Integer stockLimit=goods.getStockLimit();
@@ -255,22 +277,100 @@ public class OrderApi {
                 orderDetail.setMsg(item.getGoodsName()+"库存不足");
                 return ResponseEntity.ok(orderDetail);
             }
+            if(item.getFlash()==1){
+                //查询限时抢购相关信息
+                log.info("查询限时抢购相关信息"+item.getGoodsId()+":"+item.getGoodsName());
+                //用户已经抢购数量
+                int userFlashCount=flashsaleService.userRecords(orderDetail.getUserId(),item.getGoodsStandardId());
+                FlashsaleGoods flashsaleGoods= flashsaleService.flashsaleGoods(item.getGoodsStandardId());
+                if(Objects.isNull(flashsaleGoods)){
+                    orderDetail.setCode(-1002);
+                    orderDetail.setMsg(item.getGoodsName()+"当前没有开启限时抢购活动");
+                    return ResponseEntity.ok(orderDetail);
+                }
+                //查询当前活动每人能够抢购数量与实际抢购库存数 如果超过就提示错误
+                if(flashsaleGoods.getRemain()<item.getQuanity()){
+                    orderDetail.setCode(-1002);
+                    orderDetail.setMsg(item.getGoodsName()+"抢购活动数量不足");
+                    return ResponseEntity.ok(orderDetail);
+                }
+                if(flashsaleGoods.getLimitQuantity()<userFlashCount+item.getQuanity()){
+                    orderDetail.setCode(-1002);
+                    orderDetail.setMsg(item.getGoodsName()+"超过限时抢购每人限定数量");
+                    return ResponseEntity.ok(orderDetail);
+                }
+                needPay+=flashsaleGoods.getSpecialPrice()*item.getQuanity();
+                gooddNeedPay+=flashsaleGoods.getSpecialPrice()*item.getQuanity();
+                haveFlashGoods=true;//拥有限时抢购商品
+            }else{
+                //要依据订单的商品规格查询关联的商品数量与对应购买价格计算实际商品价格
+                List<GoodsPriceRegion> goodsPriceRegions=priceRegionService.selectPriceRegion(item.getGoodsStandardId());
+                for (GoodsPriceRegion goodsPriceRegion:goodsPriceRegions){
+                    //依据购买数量计算所在价格区间
+                    if(item.getQuanity()>=goodsPriceRegion.getMinQuantity()&&item.getQuanity()<=goodsPriceRegion.getMaxQuantity()){
+                        needPay+=goodsPriceRegion.getPrice()*item.getQuanity();
+                        gooddNeedPay+=goodsPriceRegion.getPrice()*item.getQuanity();
+                        break;
+                    }
+                }
+            }
         }
         //检查优惠券是否失效
-        CouponEntityResult couponEntityResult=couponEntityService.coupon(orderDetail.getOrderCoupon());
-        //优惠券状态：unused-未使用  used-已使用  expired-已过期
-        if(!Objects.equals(couponEntityResult.getCouponStatus(),"unused")){
-            if(Objects.equals(couponEntityResult.getCouponStatus(),"used")){
+        if(Objects.nonNull(orderDetail.getOrderCoupon())) {
+            CouponEntityResult couponEntityResult = couponEntityService.coupon(orderDetail.getOrderCoupon());
+            if(Objects.isNull(couponEntityResult)){
                 orderDetail.setCode(-1002);
-                orderDetail.setMsg("优惠券已使用");
+                orderDetail.setMsg("优惠券不存在");
                 return ResponseEntity.ok(orderDetail);
             }
-            if(Objects.equals(couponEntityResult.getCouponStatus(),"expired")){
-                orderDetail.setCode(-1002);
-                orderDetail.setMsg("优惠券已过期");
-                return ResponseEntity.ok(orderDetail);
+            //优惠券状态：unused-未使用  used-已使用  expired-已过期
+            if (!Objects.equals(couponEntityResult.getCouponStatus(), "unused")) {
+                if (Objects.equals(couponEntityResult.getCouponStatus(), "used")) {
+                    orderDetail.setCode(-1002);
+                    orderDetail.setMsg("优惠券已使用");
+                    return ResponseEntity.ok(orderDetail);
+                }
+                if (Objects.equals(couponEntityResult.getCouponStatus(), "expired")) {
+                    orderDetail.setCode(-1002);
+                    orderDetail.setMsg("优惠券已过期");
+                    return ResponseEntity.ok(orderDetail);
+                }
+            }else{
+                if(haveFlashGoods){
+                    orderDetail.setCode(-1002);
+                    orderDetail.setMsg("拥有限时抢购商品不允许使用优惠券");
+                    return ResponseEntity.ok(orderDetail);
+                }
+                int fullFee=couponEntityResult.getFullFee();//优惠满减金额
+                //满减金额大于订单商品总金额 不允许使用优惠券
+                if(fullFee>gooddNeedPay){
+                    orderDetail.setCode(-1002);
+                    orderDetail.setMsg("优惠券满减金额大于订单商品金额");
+                    return ResponseEntity.ok(orderDetail);
+                }
+                //应付金额要减优惠金额
+                needPay =needPay-couponEntityResult.getCouponFee();
             }
         }
+        //查询配送费
+        ParamConfig paramConfig = settingService.searchConfigParam("distributionFeeSet");
+        String distribution = paramConfig.getConfigParamValue();
+        Distribution[] distributionsJson = JacksonUtils.fromJson(distribution,  Distribution[].class);//字符串转json
+        int distributionFee=0;//配送费
+        for (Distribution item:distributionsJson){
+            if (needPay>=item.getMinPrice()&&needPay<item.getMaxPrice()){
+                distributionFee = item.getDistributionFee();
+                break;
+            }
+        }
+        needPay =needPay+distributionFee;
+        //验证实际计算订单金额+配送费=传递的订单应付金额+应付配送费
+        if (needPay!=orderDetail.getPayableFee()+orderDetail.getDeliveryFee()){
+            orderDetail.setCode(-1002);
+            orderDetail.setMsg("订单计算应付金额与实际传递订单金额不一致");
+            return ResponseEntity.ok(orderDetail);
+        }
+        //总金额不需要计算
         int result=orderService.create(orderDetail);
         if(result>0){
             orderDetail.setCode(1002);

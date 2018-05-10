@@ -63,4 +63,7 @@ public class OrderGoods {
 
     @JsonProperty("goodsId")
     private Long goodsId;
+
+    @JsonProperty("flash")
+    private int flash;//0 正常 1限时抢购
 }
