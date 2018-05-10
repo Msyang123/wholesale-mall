@@ -3,6 +3,9 @@ package com.lhiot.mall.wholesale.user.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.activity.domain.Activity;
+import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.base.StringReplaceUtil;
 import com.lhiot.mall.wholesale.coupon.domain.ActivityCoupon;
 import com.lhiot.mall.wholesale.coupon.domain.CouponConfig;
@@ -12,6 +15,8 @@ import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.domain.UserAddress;
+import com.lhiot.mall.wholesale.user.domain.UserGridParam;
+import com.lhiot.mall.wholesale.user.domain.UserResult;
 import com.lhiot.mall.wholesale.user.mapper.UserMapper;
 import com.sgsl.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -232,4 +237,30 @@ public class UserService {
     public List<User> searchByPhoneOrName(User param) {
         return userMapper.searchByPhoneOrName(param);
     }
+    
+	/**
+	 * 分页查询
+	 * @return
+	 */
+	public PageQueryObject pageQuery(UserGridParam param){
+		int count = userMapper.pageQueryCount(param);
+		int page = param.getPage();
+		int rows = param.getRows();
+		//起始行
+		param.setStart((page-1)*rows);
+		//总记录数
+		int totalPages = (count%rows==0?count/rows:count/rows+1);
+		if(totalPages < page){
+			page = 1;
+			param.setPage(page);
+			param.setStart(0);
+		}
+		List<UserResult> activitys = userMapper.pageQuery(param);
+		PageQueryObject result = new PageQueryObject();
+		result.setRows(activitys);
+		result.setPage(page);
+		result.setRecords(rows);
+		result.setTotal(totalPages);
+		return result;
+	}
 }
