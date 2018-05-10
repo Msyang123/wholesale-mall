@@ -237,8 +237,11 @@ public class FlashsaleService {
 	 * @param activityId
 	 * @return
 	 */
-	public Integer userRecords(Long userId,Long activityId){
-		Map<String,Object> param = ImmutableMap.of("userId", userId, "activityId", activityId);
+	public Integer userRecords(Long userId,Long standardId){
+		//获取当前开启的活动
+		FlashActivityGoods flashActivity = activityService.currentActivity(ActivityType.flashsale);
+		Long activityId = flashActivity.getId();
+		Map<String,Object> param = ImmutableMap.of("userId", userId, "activityId", activityId,"standardId",standardId);
 		return flashsaleMapper.userRecord(param);
 	}
 
