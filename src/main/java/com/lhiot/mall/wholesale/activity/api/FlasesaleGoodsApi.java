@@ -17,10 +17,10 @@ import com.leon.microx.common.wrapper.ResultObject;
 import com.lhiot.mall.wholesale.activity.domain.ActivityPeriodsType;
 import com.lhiot.mall.wholesale.activity.domain.FlashActivity;
 import com.lhiot.mall.wholesale.activity.domain.FlashResult;
+import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -77,11 +77,11 @@ public class FlasesaleGoodsApi {
         return ResponseEntity.ok(flashsaleService.pageQuery(param));
     }
     
-    @GetMapping("/flashsale/records/{userId}/{activityId}")
+    @GetMapping("/flashsale/records/{userId}/{standardId}")
     @ApiOperation(value = "获取用户抢购数量")
     public ResponseEntity<Integer> userRecords(@PathVariable("userId") Long userId,
-    		@PathVariable("activityId") Long activityId) {
-        return ResponseEntity.ok(flashsaleService.userRecords(userId, activityId));
+    		@PathVariable("standardId") Long standardId) {
+        return ResponseEntity.ok(flashsaleService.userRecords(userId, standardId));
     }
     
     @GetMapping("/flashsale/periods")
