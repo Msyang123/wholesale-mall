@@ -83,6 +83,8 @@ wholesale-mall:
       order-payed-event:
         - test-publisher-1
         - test-publisher-4
+      store-check-event:
+        - add-coupon
 hd:
   config:
     charset: UTF-8

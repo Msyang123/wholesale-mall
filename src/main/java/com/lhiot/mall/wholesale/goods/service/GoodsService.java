@@ -16,10 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**GoodsService
@@ -119,8 +116,8 @@ public class GoodsService {
 		return goodsMapper.goodsInfo(id);
 	}
 
-	public GoodsFlashsale goodsFlashsale(long goodsStandardId){
-		return goodsMapper.goodsFlashsale(goodsStandardId);
+	public GoodsFlashsale goodsFlashsale(Map param){
+		return goodsMapper.goodsFlashsale(param);
 	}
 
 	public List<GoodsInfo> inventoryList(long userId){

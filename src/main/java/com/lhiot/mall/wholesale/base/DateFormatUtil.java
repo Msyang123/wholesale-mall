@@ -6,6 +6,7 @@
 */
 package com.lhiot.mall.wholesale.base;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -72,5 +73,13 @@ public class DateFormatUtil
         c.add(Calendar.DAY_OF_MONTH, day);
         return c.getTime();
     }
-
+    public static Date parse5(String dateStr){
+        SimpleDateFormat formatter=new SimpleDateFormat(format5);
+        try{
+            return formatter.parse(dateStr);
+        }catch(ParseException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
