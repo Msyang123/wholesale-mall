@@ -1,46 +1,70 @@
 package com.lhiot.mall.wholesale.user.api;
 
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.MultiFormatWriter;
-import com.google.zxing.common.BitMatrix;
-import com.leon.microx.common.exception.ServiceException;
-import com.leon.microx.common.wrapper.ArrayObject;
-import com.lhiot.mall.wholesale.base.QRCodeUtil;
-import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
-import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
-import com.lhiot.mall.wholesale.user.domain.User;
-import com.lhiot.mall.wholesale.user.domain.UserAddress;
-import com.lhiot.mall.wholesale.user.service.SalesUserService;
-import com.lhiot.mall.wholesale.user.service.UserService;
-import com.lhiot.mall.wholesale.user.wechat.*;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RMapCache;
-import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-
-import javax.imageio.ImageIO;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotNull;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
+
+import org.redisson.api.RMapCache;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.common.BitMatrix;
+import com.leon.microx.common.exception.ServiceException;
+import com.leon.microx.common.wrapper.ArrayObject;
+import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.base.QRCodeUtil;
+import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
+import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
+import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.domain.UserAddress;
+import com.lhiot.mall.wholesale.user.domain.UserGridParam;
+import com.lhiot.mall.wholesale.user.service.SalesUserService;
+import com.lhiot.mall.wholesale.user.service.UserService;
+import com.lhiot.mall.wholesale.user.wechat.AccessToken;
+import com.lhiot.mall.wholesale.user.wechat.JsapiPaySign;
+import com.lhiot.mall.wholesale.user.wechat.JsapiTicket;
+import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
+import com.lhiot.mall.wholesale.user.wechat.Token;
+import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 
 @Api(description ="用户接口")
 @Slf4j
@@ -441,7 +465,12 @@ public class UserApi {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
     }
-
+    
+    @PostMapping("/info/gird")
+    @ApiOperation(value = "新建一个查询，分页查询", response = PageQueryObject.class)
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) UserGridParam param) {
+        return ResponseEntity.ok(userService.pageQuery(param));
+    }
+    
 }

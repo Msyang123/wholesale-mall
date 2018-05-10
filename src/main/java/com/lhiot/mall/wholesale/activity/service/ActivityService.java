@@ -97,9 +97,9 @@ public class ActivityService {
 			param.setPage(page);
 			param.setStart(0);
 		}
-		List<Activity> goodsUnits = activityMapper.pageQuery(param);
+		List<Activity> activitys = activityMapper.pageQuery(param);
 		PageQueryObject result = new PageQueryObject();
-		result.setRows(goodsUnits);
+		result.setRows(activitys);
 		result.setPage(page);
 		result.setRecords(rows);
 		result.setTotal(totalPages);
