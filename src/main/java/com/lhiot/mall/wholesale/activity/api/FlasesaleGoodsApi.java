@@ -17,10 +17,10 @@ import com.leon.microx.common.wrapper.ResultObject;
 import com.lhiot.mall.wholesale.activity.domain.ActivityPeriodsType;
 import com.lhiot.mall.wholesale.activity.domain.FlashActivity;
 import com.lhiot.mall.wholesale.activity.domain.FlashResult;
-import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -91,11 +91,5 @@ public class FlasesaleGoodsApi {
     	flashResult.setFlash(flashsaleService.flashGoods(ActivityPeriodsType.current));
     	flashResult.setNextFlash(flashsaleService.flashGoods(ActivityPeriodsType.next));
         return ResponseEntity.ok(flashResult);
-    }
-    
-    @GetMapping("/flashsale/records/{userId}")
-    @ApiOperation(value = "获取用户抢购数量")
-    public ResponseEntity<FlashsaleGoods> userRecords(@PathVariable("userId") Long userId) {
-        return ResponseEntity.ok(flashsaleService.flashsaleGoods(userId));
     }
 }

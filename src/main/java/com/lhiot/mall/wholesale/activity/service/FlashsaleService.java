@@ -312,13 +312,14 @@ public class FlashsaleService {
 	 * @return
 	 */
 	public GoodsFlashsale goodsFlashsale(Long standardId,Long userId){
-		GoodsFlashsale goodsFlashSale = new GoodsFlashsale();
-		if(!Objects.isNull(goodsFlashSale)){
-			goodsFlashSale = flashsaleMapper.searchFlashGoods(standardId);
-			Long activityId = goodsFlashSale.getActivityId();
-			Map<String,Object> param = ImmutableMap.of("userId", userId, "activityId", activityId,"standardId",standardId);
-			goodsFlashSale.setUserPucharse(flashsaleMapper.userRecord(param));
+		GoodsFlashsale goodsFlashSale = flashsaleMapper.searchFlashGoods(standardId);;
+		if(Objects.isNull(goodsFlashSale)){
+			return new GoodsFlashsale();
 		}
+		Long activityId = goodsFlashSale.getActivityId();
+		Map<String,Object> param = ImmutableMap.of("userId", userId, "activityId", activityId,"standardId",standardId);
+		goodsFlashSale.setUserPucharse(flashsaleMapper.userRecord(param));
+		
 		return goodsFlashSale;
 	}
 }
