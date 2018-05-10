@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.pay.api;
 
+import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
