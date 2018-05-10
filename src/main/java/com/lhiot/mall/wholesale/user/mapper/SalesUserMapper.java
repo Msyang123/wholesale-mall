@@ -45,4 +45,7 @@ public interface SalesUserMapper {
     SalesUser findCode(String code);
 
     SalesUser login(String acount);
+    
+    //查询所有的销售，用于下拉
+    List<SalesUser> salesUsers();
 }

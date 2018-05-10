@@ -166,4 +166,8 @@
         select * from t_whs_salesuser where invite_code=#{inviteCode}
     </select>
 
+	<!-- lynn 查询业务员用作下拉 -->
+	<select id="salesUsers" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
+		select * from t_whs_salesuser
+	</select>
 </mapper>

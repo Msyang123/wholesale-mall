@@ -20,7 +20,6 @@ import com.lhiot.mall.wholesale.activity.domain.FlashResult;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

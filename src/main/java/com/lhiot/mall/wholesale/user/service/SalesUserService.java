@@ -124,4 +124,7 @@ public class SalesUserService {
         return this.salesUserMapper.login(acount);
     }
 
+    public List<SalesUser> salesUsers(){
+    	return this.salesUserMapper.salesUsers();
+    }
 }

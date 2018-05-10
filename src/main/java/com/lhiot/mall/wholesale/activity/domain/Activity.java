@@ -22,11 +22,11 @@ public class Activity {
 	@ApiModelProperty(notes="活动描述",dataType="String")
 	private String activityDesc;
 
-	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
 	@ApiModelProperty(notes="活动起始时间",dataType="Timestamp")
 	private Timestamp startTime;
 
-	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
 	@ApiModelProperty(notes="活动结束时间",dataType="Timestamp")
 	private Timestamp endTime;
 	
