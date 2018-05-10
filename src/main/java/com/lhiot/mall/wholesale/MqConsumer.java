@@ -56,7 +56,7 @@ public class MqConsumer{
                 }else if (Objects.equals("paying", searchOrderDetail.getOrderStatus())){
                     //继续往延迟队列中发送
                     rabbit.convertAndSend("order-direct-exchange", "order-dlx-queue", JacksonUtils.toJson(orderDetail), message -> {
-                        message.getMessageProperties().setExpiration(String.valueOf(1 * 60 * 1000));
+                        message.getMessageProperties().setExpiration(String.valueOf(30 * 60 * 1000));
                         return message;
                     });
                 }
@@ -65,6 +65,11 @@ public class MqConsumer{
             log.error("消息处理错误" + e.getLocalizedMessage());
         }
     }
+
+    /**
+     * 订单支付优惠券设置为失效
+     * @param getMessage
+     */
     @RabbitHandler
     @RabbitListener(queues = "coupon-publisher")
     public void couponPublisher(String getMessage){
@@ -72,6 +77,10 @@ public class MqConsumer{
         couponEntityService.delete("11");
     }
 
+    /**
+     * 订单支付后限时抢购活动处理
+     * @param getMessage
+     */
     @RabbitHandler
     @RabbitListener(queues = "flasesale-publisher")
     public void flasesalePublisher(String getMessage){

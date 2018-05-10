@@ -341,10 +341,25 @@ public class UserApi {
             @ApiImplicitParam(paramType = "path", name = "phone", value = "手机号", required = true, dataType = "String")
     })
     public ResponseEntity verificationCode(@PathVariable("phone") String phone){
-        //发送验证码到第三方推送服务器
-        String sendMessageUrl=MessageFormat.format(weChatUtil.getProperties().getSendMessageUrl(),phone,"sigup");
-        restTemplate.postForObject(sendMessageUrl,null,Map.class);
-        return ResponseEntity.ok(phone);
+        //手机验证码
+        RMapCache<String,String> cache=  redissonClient.getMapCache("userVerificationCode");
+        if(Objects.nonNull(cache.get("phone"+phone))){
+            return ResponseEntity.badRequest().body("验证码2分钟内有效，请勿重复发送");
+        }
+        try {
+            String randomCode= ""+weChatUtil.buildRandom(6);
+            //将手机验证码(2分钟) 缓存起来
+            cache.put("phone"+phone,randomCode,2, TimeUnit.MINUTES);
+            //发送验证码到第三方推送服务器
+            Map<String,String> body=new HashMap<>();
+            body.put("number",randomCode);
+            String sendMessageUrl=MessageFormat.format(weChatUtil.getProperties().getSendMessageUrl(),"verification",phone);
+            restTemplate.postForObject(sendMessageUrl, body, String.class);
+            return ResponseEntity.ok().build();
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body("验证码发送失败");
+        }
+
     }
 
     @PostMapping("/register")
@@ -355,13 +370,20 @@ public class UserApi {
             @ApiImplicitParam(paramType = "query", name = "verifCode", value = "手机验证码", required = true, dataType = "String")
     })
     public ResponseEntity register(@RequestBody @NotNull User user, @RequestParam("code") String code,@RequestParam("verifCode") String verifCode) {
-
+        //手机验证码
+        RMapCache<String,String> cache =  redissonClient.getMapCache("userVerificationCode");
+        if(Objects.isNull(cache.get("phone"+user.getPhone()))){
+            return ResponseEntity.badRequest().body("验证码已失效，请再次发送验证码");
+        }
         try {
-            String verifiKey=MessageFormat.format("sendsms:{0}:{1}",user.getPhone(),"verification");
-            //FIXME 会序列化成对象 采用最新方案直接验证
-            String redisVerifCode=null;//=String.valueOf(redisTemplate.opsForValue().get(verifiKey));
-            //需要通过redis客户端获取验证码code 然后比较传递的code与redis中存储的是否一致
-            if(!Objects.equals(redisVerifCode,verifCode)){
+            //到远端验证手机验证码是否正确
+            String verifiUrl=MessageFormat.format(weChatUtil.getProperties().getValidateMessageUrl(),"verification",user.getPhone());
+            Map<String,String> body=new HashMap<>();
+            body.put("code",verifCode);
+            body.put("key","number");
+            String result=restTemplate.postForObject(verifiUrl, body, String.class);
+            log.info("verifiCode result:"+result);
+            if (!Objects.equals(result,"true")){
                 return ResponseEntity.badRequest().body("手机验证码不正确");
             }
             if (userService.register(user, code)) {

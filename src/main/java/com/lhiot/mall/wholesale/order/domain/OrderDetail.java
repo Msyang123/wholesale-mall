@@ -112,7 +112,7 @@ public class OrderDetail {
     private String hdCode;
 
     @JsonProperty("orderCoupon")
-    private Integer orderCoupon;//优惠券
+    private Long orderCoupon;//优惠券
 
     @JsonProperty("start")
     private Integer start;
@@ -123,5 +123,9 @@ public class OrderDetail {
     private String sidx;
 
     private Integer page;
+
+    private Integer code;//操作返回码 1001 更新成功 1002添加成功 1003支付成功 1004 审核成功
+
+    private String msg;//返回结果
 
 }
