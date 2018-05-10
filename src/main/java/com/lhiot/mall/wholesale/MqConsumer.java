@@ -2,6 +2,8 @@ package com.lhiot.mall.wholesale;
 
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
+import com.lhiot.mall.wholesale.coupon.domain.CouponEntity;
+import com.lhiot.mall.wholesale.coupon.domain.CouponStatusType;
 import com.lhiot.mall.wholesale.coupon.service.CouponEntityService;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.service.OrderService;
@@ -90,12 +92,18 @@ public class MqConsumer{
     @RabbitListener(queues = "coupon-publisher")
     public void couponPublisher(String getMessage){
         log.info("coupon-publisher"+getMessage);
+        CouponEntity coupon = null;
         try {
             OrderDetail orderDetail = JacksonUtils.fromJson(getMessage, OrderDetail.class);
+            coupon = new CouponEntity();
+            coupon.setId(orderDetail.getOrderCoupon());
+            coupon.setCouponStatus(CouponStatusType.used.toString());
         }  catch (IOException e) {
             log.error("消息处理错误" + e.getLocalizedMessage());
         }
-        couponEntityService.delete("11");
+        if(Objects.isNull(coupon)){
+        	couponEntityService.update(coupon);
+        }
     }
 
     /**
@@ -111,7 +119,6 @@ public class MqConsumer{
         }  catch (IOException e) {
             log.error("消息处理错误" + e.getLocalizedMessage());
         }
-        //couponEntityService.delete("11");
     }
 
 }

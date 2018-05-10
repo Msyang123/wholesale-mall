@@ -18,6 +18,7 @@ import com.lhiot.mall.wholesale.activity.domain.ActivityPeriodsType;
 import com.lhiot.mall.wholesale.activity.domain.ActivityType;
 import com.lhiot.mall.wholesale.activity.domain.FlashActivity;
 import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
+import com.lhiot.mall.wholesale.activity.domain.FlashGoodsRecord;
 import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 import com.lhiot.mall.wholesale.activity.mapper.FlashsaleMapper;
@@ -321,5 +322,15 @@ public class FlashsaleService {
 		goodsFlashSale.setUserPucharse(flashsaleMapper.userRecord(param));
 		
 		return goodsFlashSale;
+	}
+	
+	/**
+	 * 新增抢购
+	 * @param param
+	 * @return
+	 */
+	public boolean createFlashRecord(FlashGoodsRecord param){
+		int count = flashsaleMapper.insertRecord(param);
+		return count>0;
 	}
 }

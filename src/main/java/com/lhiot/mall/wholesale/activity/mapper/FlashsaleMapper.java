@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.lhiot.mall.wholesale.activity.domain.FlashActivity;
+import com.lhiot.mall.wholesale.activity.domain.FlashGoodsRecord;
 import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
@@ -34,4 +35,6 @@ public interface FlashsaleMapper {
     Integer userRecord(Map<String,Object> map);
 
     GoodsFlashsale searchFlashGoods(Long standardId);
+    
+    int insertRecord(FlashGoodsRecord flashGoodsRecord);
 }
