@@ -5,16 +5,13 @@ import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
-import com.lhiot.mall.wholesale.goods.service.GoodsService;
 import com.lhiot.mall.wholesale.goods.service.GoodsStandardService;
 import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.hdsend.Abolish;
-import com.lhiot.mall.wholesale.pay.hdsend.Inventory;
 import com.lhiot.mall.wholesale.pay.hdsend.Warehouse;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
 import com.lhiot.mall.wholesale.user.domain.SalesUser;
@@ -32,10 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
-
 
 
 @Slf4j
@@ -56,7 +51,7 @@ public class OrderService {
 
     private final SalesUserService salesUserService;
 
-    private final GoodsService goodsService;
+
 
     private final GoodsStandardService goodsStandardService;
 
@@ -65,7 +60,7 @@ public class OrderService {
     @Autowired
     public OrderService(OrderMapper orderMapper, UserService userService, PaymentLogService paymentLogService,
                         PaymentProperties paymentProperties, SnowflakeId snowflakeId,Warehouse warehouse,
-                        SalesUserService salesUserService,GoodsService goodsService,GoodsStandardService goodsStandardService,RabbitTemplate rabbit) {
+                        SalesUserService salesUserService,GoodsStandardService goodsStandardService,RabbitTemplate rabbit) {
         this.orderMapper = orderMapper;
         this.userService = userService;
         this.weChatUtil=new WeChatUtil(paymentProperties);
@@ -73,7 +68,6 @@ public class OrderService {
         this.snowflakeId=snowflakeId;
         this.warehouse=warehouse;
         this.salesUserService=salesUserService;
-        this.goodsService=goodsService;
         this.goodsStandardService=goodsStandardService;
         this.rabbit=rabbit;
     }
@@ -95,14 +89,20 @@ public class OrderService {
     }
 
     public OrderDetail searchOrder(String orderCode){
-        return orderMapper.searchOrder(orderCode);
+        OrderDetail orderDetail=orderMapper.searchOrder(orderCode);
+        //商品信息
+        orderDetail.setOrderGoodsList(orderMapper.searchOrderGoods(orderDetail.getId()));
+        return orderDetail;
     }
 
 /*    public OrderDetail searchOrderById(long orderId){
         return orderMapper.searchOrderById(orderId);
     }*/
     public OrderDetail searchOrderById(long id) {
-      return  orderMapper.select(id);
+        OrderDetail orderDetail=orderMapper.select(id);
+        //商品信息
+        orderDetail.setOrderGoodsList(orderMapper.searchOrderGoods(orderDetail.getId()));
+        return orderDetail;
     }
 
     public List<OrderDetail> searchAfterSaleOrder(OrderDetail orderDetail) {
@@ -139,14 +139,8 @@ public class OrderService {
             //查询商品进货价写入到订单商品中
             GoodsStandard goodsStandard= goodsStandardService.searchByGoodsId(item.getGoodsId());
             item.setPurchasePrice(goodsStandard.getPurchasePrice());
-            //减商品库存
-            Goods goods=new Goods();
-            goods.setId(item.getGoodsId());
-            goods.setReduceStockLimit(item.getQuanity());//递减
-            goodsService.update(goods);
         });
         //发送订单创建广播
-        //FIXME 创建的时候发送创建广播消息 用于优惠券设置无效
         rabbit.convertAndSend("order-created-event","",JacksonUtils.toJson(orderDetail));
         return orderMapper.saveOrderGoods(orderDetail.getOrderGoodsList());
     }
@@ -403,6 +397,27 @@ public class OrderService {
         }
         return orderDetail;
     }
+
+    public String countPayAbleFeeByUserId(List<Long> userIds,String startTime,String endTime){
+        Map<String,Object> param = new HashMap<String,Object>();
+        param.put("userIds",userIds);
+        param.put("startTime",startTime);
+        param.put("endTime",endTime);
+        return orderMapper.countPayAbleFee(param);
+    }
+    public boolean isExistsOrderByuserId(Long userId){
+        if(null != userId){
+            return orderMapper.isExistsOrderByuserId(userId) > 0;
+        }
+        return false;
+    }
+    //根据userId查询欠款总额
+    public String countOverDue(List<Long> shopIds){
+        Map<String,Object> param = new HashMap<String,Object>();
+        param.put("userIds",shopIds);
+        return orderMapper.countOverDue(param);
+    }
+
 
     public OrderDetail userOrder(OrderParam orderParam){
         return orderMapper.userOrder(orderParam);

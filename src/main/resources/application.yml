@@ -73,7 +73,11 @@ wholesale-mall:
 #转发队列队列名
         repeat_queue_name: pay-repeat-queue
     fanout-queue:
+#订单创建广播
       order-created-event:
+        - order-create-publisher
+#订单支付成功广播
+      order-paid-event:
         - coupon-publisher
         - flasesale-publisher
       order-payed-event:

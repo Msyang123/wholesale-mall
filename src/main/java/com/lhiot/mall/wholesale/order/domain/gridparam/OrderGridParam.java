@@ -64,4 +64,7 @@ public class OrderGridParam extends PageObject{
     @ApiModelProperty(notes="订单codes",dataType="String")
     private List<String> orderIds;
 
+    @ApiModelProperty(notes="审核状态",dataType="String")
+    private List<String> auditStatuss;
+
 }

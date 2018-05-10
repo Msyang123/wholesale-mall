@@ -81,4 +81,10 @@ public interface OrderMapper {
 
     OrderDetail userOrder(OrderParam orderParam);
 
+    //判断门店是否下过单
+    int isExistsOrderByuserId(Long userId);
+
+    String countOverDue(Map<String,Object> param);
+
+    String countPayAbleFee(Map<String,Object> param);
 }

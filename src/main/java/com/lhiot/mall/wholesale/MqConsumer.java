@@ -67,6 +67,22 @@ public class MqConsumer{
     }
 
     /**
+     * 订单创建广播
+     * @param getMessage
+     */
+    @RabbitHandler
+    @RabbitListener(queues = "order-create-publisher")
+    public void orderCreatePublisher(String getMessage){
+        log.info("订单创建了"+getMessage);
+        try {
+            OrderDetail orderDetail = JacksonUtils.fromJson(getMessage, OrderDetail.class);
+        }  catch (IOException e) {
+            log.error("消息处理错误" + e.getLocalizedMessage());
+        }
+        //couponEntityService.delete("11");
+    }
+
+    /**
      * 订单支付优惠券设置为失效
      * @param getMessage
      */
@@ -74,6 +90,11 @@ public class MqConsumer{
     @RabbitListener(queues = "coupon-publisher")
     public void couponPublisher(String getMessage){
         log.info("coupon-publisher"+getMessage);
+        try {
+            OrderDetail orderDetail = JacksonUtils.fromJson(getMessage, OrderDetail.class);
+        }  catch (IOException e) {
+            log.error("消息处理错误" + e.getLocalizedMessage());
+        }
         couponEntityService.delete("11");
     }
 
@@ -85,6 +106,11 @@ public class MqConsumer{
     @RabbitListener(queues = "flasesale-publisher")
     public void flasesalePublisher(String getMessage){
         log.info("flasesale-publisher"+getMessage);
+        try {
+            OrderDetail orderDetail = JacksonUtils.fromJson(getMessage, OrderDetail.class);
+        }  catch (IOException e) {
+            log.error("消息处理错误" + e.getLocalizedMessage());
+        }
         //couponEntityService.delete("11");
     }
 
