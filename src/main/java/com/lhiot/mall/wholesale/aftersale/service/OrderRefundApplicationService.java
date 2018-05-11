@@ -18,6 +18,7 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -126,6 +127,17 @@ public class OrderRefundApplicationService {
                 }
             }
         }
+
+        //售后订单状态字段数据组装
+        for (OrderGridResult orderGridResult : orderGridResultList) {
+            for (Map item:param.getAuditStatuss()) {
+                if (Objects.equals(item.get("orderCode"),orderGridResult.getOrderCode())){
+                    orderGridResult.setAuditStatus(item.get("status").toString());
+                    break;
+                }
+            }
+        }
+
         result.setPage(page);
         result.setRecords(rows);
         result.setTotal(totalPages);

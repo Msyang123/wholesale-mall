@@ -20,6 +20,7 @@
             <if test="payStatus != null ">and o.pay_status=#{payStatus}</if>
             <if test="orderStatus != null and  orderStatus != 'all' ">and o.order_status = #{orderStatus}</if>
         </trim>
+        ORDER BY o.create_time desc
         <include refid="common.pager"></include>
     </select>
 
@@ -34,6 +35,7 @@
             <if test="orderStatus != null ">and o.order_status = #{orderStatus}</if>
         </trim>
         and DATE_SUB(CURDATE(),INTERVAL 30 DAY) &lt;= o.create_time
+        ORDER BY o.create_time desc
         <include refid="common.pager"></include>
     </select>
 

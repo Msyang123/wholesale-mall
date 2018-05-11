@@ -75,13 +75,17 @@ public class OrderRefundApplicationApi {
         OrderRefundApplication orderRefundApplication=new OrderRefundApplication();
         List<OrderRefundApplication> orderRefundApplicationList = orderRefundApplicationService.list(orderRefundApplication);
         List<String> orderDetailList = new ArrayList<String>();
-        List<String> statuss = new ArrayList<String>();
+        List<Map> statuss = new ArrayList<Map>();
         for (OrderRefundApplication item:orderRefundApplicationList) {
             orderDetailList.add(item.getOrderId());
-            statuss.add(item.getAuditStatus());
+            //statuss.add(item.getAuditStatus());
+            Map map = new HashMap();
+            map.put("orderCode",item.getOrderId());
+            map.put("status",item.getAuditStatus());
+            statuss.add(map);
         }
         param.setOrderIds(orderDetailList);
         param.setAuditStatuss(statuss);
-        return ResponseEntity.ok(orderService.pageQuery(param));
+        return ResponseEntity.ok(orderRefundApplicationService.pageQuery(param));
     }
 }
