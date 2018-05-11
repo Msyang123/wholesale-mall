@@ -119,6 +119,7 @@ public class WxPayApi {
                 //return ResponseEntity.badRequest().body("订单状态异常，请检查订单状态");
                 return ResponseEntity.ok().build();
             }
+            orderDetail.setPayStatus("paid"); //支付状态：paid-已支付 unpaid-未支付
             int result=payService.sendToStock(orderDetail);
             myDoIsOk=result>0;
             if (myDoIsOk) {
