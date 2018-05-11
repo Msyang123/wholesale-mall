@@ -2,6 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.lhiot.mall.wholesale.aftersale.mapper.OrderRefundApplicationMapper">
 
+    <sql id="orderColumn">
+        t1.id as id,t1.order_code as orderCode,t1.user_id as userId,t1.salesman_id as salesmanId,t1.total_fee as totalFee,
+        DATE_FORMAT(t1.create_time,'%Y-%m-%d %H:%i:%s') as createTime,t1.order_status as orderStatus,t1.order_coupon as orderCoupon,t1.discount_fee as discountFee,
+        t1.payable_fee as payableFee,t1.hd_status as hdStatus,DATE_FORMAT(t1.delivery_time,'%Y-%m-%d %H:%i:%s') as deliveryTime,t1.delivery_fee as deliveryFee,
+        t1.remarks as remarks,t1.settlement_type as settlementType,t1.pay_status as payStatus,t1.delivery_address as deliveryAddress,
+        DATE_FORMAT(t1.receive_time,'%Y-%m-%d %H:%i:%s') as receiveTime,DATE_FORMAT(t1.after_sale_time,'%Y-%m-%d %H:%i:%s') as afterSale_Time
+    </sql>
+
     <insert id="create" parameterType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
         insert into t_whs_order_refund_application(
             id,
@@ -71,6 +79,26 @@
                 and user_id=#{userId}
             </if>
         </trim>
+    </select>
+
+    <!--后台管理系统 -查询售后申请表-->
+    <select parameterType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication" id="refundInfo" resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
+        select id,application_type applicationType,exist_problem existProblem,other_problem otherProblem,
+        refund_evidence refundEvidence,audit_status auditStatus,order_discount_fee orderDiscountFee,
+        delivery_fee deliveryFee,comments comments,order_id orderId,user_id userId
+        from t_whs_order_refund_application
+        <trim prefix="where" prefixOverrides="and">
+            <if test="orderId!=null and orderId!=''">
+                and order_id=#{orderId}
+            </if>
+        </trim>
+    </select>
+
+    <!-- 后台管理  根据id查询售后订单详情 -->
+    <select id="searchOrderById" parameterType="long" resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderResult">
+        SELECT <include refid="orderColumn"/>
+        FROM t_whs_order t1
+        WHERE t1.id = #{0}
     </select>
 
 </mapper>
