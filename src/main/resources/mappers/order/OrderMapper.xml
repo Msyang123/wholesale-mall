@@ -20,6 +20,7 @@
             <if test="payStatus != null ">and o.pay_status=#{payStatus}</if>
             <if test="orderStatus != null and  orderStatus != 'all' ">and o.order_status = #{orderStatus}</if>
         </trim>
+        ORDER BY o.create_time desc
         <include refid="common.pager"></include>
     </select>
 
@@ -34,6 +35,7 @@
             <if test="orderStatus != null ">and o.order_status = #{orderStatus}</if>
         </trim>
         and DATE_SUB(CURDATE(),INTERVAL 30 DAY) &lt;= o.create_time
+        ORDER BY o.create_time desc
         <include refid="common.pager"></include>
     </select>
 
@@ -45,7 +47,7 @@
     </select>
 
     <select id="searchOrderGoods"  parameterType="long" resultType="com.lhiot.mall.wholesale.order.domain.OrderGoods">
-        select t.id,g.goods_name goodsName,u.unit_name unit,t.standard_weight standardWeight,t.goods_price goodsPrice,t.quanity,g.goods_image goodsImage,s.hd_sku_id,t.flash
+        select t.id,g.goods_name goodsName,t.goods_standard_id goodsStandardId,u.unit_name unit,t.standard_weight standardWeight,t.goods_price goodsPrice,t.quanity,g.goods_image goodsImage,s.hd_sku_id,t.flash
         from t_whs_order_goods t
         LEFT JOIN t_whs_goods_standard s on t.goods_standard_id=s.id
         LEFT JOIN t_whs_goods g on g.id=s.goods_id
@@ -133,13 +135,13 @@
 		from t_whs_order_goods t1
 		left join t_whs_order t2 on t1.order_id = t2.id
 		<trim prefix="where">
-			goods_standard_id in
+			goods_id in
 			<foreach collection="list" item="item" open="(" separator="," close=")">
 				 #{item}
 			</foreach>
 			and t2.order_status in ('undelivery','delivery','received') and t1.refund_status = 'no'
 		</trim>
-		group by t1.goods_standard_id
+		group by t1.goods_id
     </select>
 
     <!-- 后台管理 分页查询总数 -->

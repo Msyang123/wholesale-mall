@@ -1,23 +1,37 @@
 package com.lhiot.mall.wholesale.goods.service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.activity.domain.ActivityPeriodsType;
 import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
 import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.goods.domain.*;
+import com.lhiot.mall.wholesale.goods.domain.Goods;
+import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
+import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
+import com.lhiot.mall.wholesale.goods.domain.GoodsMinPrice;
+import com.lhiot.mall.wholesale.goods.domain.LayoutType;
+import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.GoodsMapper;
 import com.lhiot.mall.wholesale.order.domain.SoldQuantity;
 import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
-import com.lhiot.mall.wholesale.order.service.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
+import com.lhiot.mall.wholesale.setting.service.SettingService;
 
 /**GoodsService
  * 商品中心
@@ -33,16 +47,20 @@ public class GoodsService {
 	private final GoodsPriceRegionService priceRegionService;
 	private final PlateCategoryService plateCategoryService;
 	private final FlashsaleService flashsaleService;
+	private final SettingService settingService;
+	private static final String SOLD_COUNT = "soldDegree";//销售数量的配置系数
 	@Autowired
 	public GoodsService(GoodsMapper goodsMapper,OrderMapper orderMapper,
 			GoodsPriceRegionService priceRegionService,
 			PlateCategoryService plateCategoryService,
-			FlashsaleService flashsaleService){
+			FlashsaleService flashsaleService,
+			SettingService settingService){
 		this.goodsMapper = goodsMapper;
 		this.orderMapper = orderMapper;
 		this.priceRegionService = priceRegionService;
 		this.plateCategoryService = plateCategoryService;
 		this.flashsaleService = flashsaleService;
+		this.settingService = settingService;
 	}
 	
 	/**
@@ -187,7 +205,7 @@ public class GoodsService {
 			return goodses;
 		}
 		//计算商品最低价格及售卖数
-		this.minPriceAndSoldQua(goodses, 25);
+		this.priceRegionAndSoldQua(goodses);
 		//排序
 		if(Objects.isNull(id)){
 			return goodses;
@@ -217,7 +235,7 @@ public class GoodsService {
 		PlateCategory plateCategory = plateCategoryService.plateCategory(plateId);
 		List<Goods> plateGoodses = goodsMapper.plateGoodses(plateId);
 		//组装商品的售卖数和最低价格
-		this.minPriceAndSoldQua(plateGoodses,25);
+		this.priceRegionAndSoldQua(plateGoodses);
 		plateCategory.setChannelGoods(plateGoodses);
 		return plateCategory;
 	}
@@ -235,18 +253,18 @@ public class GoodsService {
 		for(PlateCategory plateCategory : plateCategories){
 			List<Goods> plateGoodses = goodsMapper.plateGoodses(plateCategory.getId());
 			//组装商品的售卖数和最低价格
-			this.minPriceAndSoldQua(plateGoodses,25);
+			this.priceRegionAndSoldQua(plateGoodses);
 			plateCategory.setChannelGoods(plateGoodses);
 		}
 		return plateCategories;
 	}
 	
 	/**
-	 * 统计商品的销售数量以及商品的最低售价,
+	 * 统计商品的销售数量以及商品的最低和最高售价,
 	 * 及判断当前商品是否抢购商品
 	 * @param goodses
 	 */
-	public void minPriceAndSoldQua(List<Goods> goodses,int degree){
+	public void priceRegionAndSoldQua(List<Goods> goodses){
 		if(goodses.isEmpty()){
 			return ;
 		}
@@ -259,11 +277,10 @@ public class GoodsService {
 		List<SoldQuantity> soldQuantities = orderMapper.soldQuantity(ids);
 		for(SoldQuantity soldQuantity : soldQuantities){
 			int count = soldQuantity.getSoldQuantity();
-			//默认设置商品为1份
-			count = Objects.isNull(count) ? 1 : count;
-			//乘以系数
-			soldQuantity.setSoldQuantity(count*degree);
+			//设置计算出来的销售数量
+			soldQuantity.setSoldQuantity(this.calSoldCount(count));
 		}
+		//组装商品的销售数量
 		for(Goods goods : goodses){
 			for(SoldQuantity soldQuantity : soldQuantities){
 				if(Objects.equals(goods.getId(), 
@@ -300,5 +317,60 @@ public class GoodsService {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * 获取单个商品的销售数量
+	 * @param goodsIds
+	 * @return
+	 */
+	public int soldCount(Long goodsId){
+		int defaultValue = 0;
+		if(!Objects.isNull(goodsId)){
+			List<Long> ids = new ArrayList<>();
+			ids.add(goodsId);
+			List<SoldQuantity> soldCounts = orderMapper.soldQuantity(ids);
+			if(!soldCounts.isEmpty()){
+				SoldQuantity soldQuantity = soldCounts.get(0);
+				defaultValue = soldQuantity.getSoldQuantity();
+			}
+		}
+		return this.calSoldCount(defaultValue);
+	}
+	
+	/**
+	 * 计算销售数量
+	 * @param realCount 真实的或者默认的销售数量
+	 * @param degree 系数
+	 * @return
+	 */
+	public int calSoldCount(int realCount){
+		BigDecimal degree = this.soldDegree();
+		int real = (Objects.isNull(realCount) ? 0 : realCount);
+		BigDecimal realBigDecimal = new BigDecimal(real);
+		return degree.multiply(realBigDecimal).intValue();
+	}
+	
+	/**
+	 * 获取商品的销售系数
+	 * @return
+	 */
+	public BigDecimal soldDegree(){
+		BigDecimal degree = new BigDecimal(10);//给定默认值为10
+		ParamConfig config = settingService.searchConfigParam(SOLD_COUNT);
+		if(Objects.isNull(config)){
+			return degree;
+		}
+		String value = config.getConfigParamValue();
+		if(StringUtils.isBlank(value)){
+			return degree;
+		}
+		Pattern pattern = Pattern.compile("^[0-9]+.?[0-9]+");
+		boolean isNum = pattern.matcher(value).matches();
+		if(!isNum){
+			return degree;
+		}
+		degree = new BigDecimal(value);
+		return degree;
 	}
 }

@@ -2,6 +2,7 @@ package com.lhiot.mall.wholesale.aftersale.api;
 
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication;
+import com.lhiot.mall.wholesale.aftersale.domain.OrderResult;
 import com.lhiot.mall.wholesale.aftersale.service.OrderRefundApplicationService;
 import com.lhiot.mall.wholesale.base.DataMergeUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
@@ -75,13 +76,23 @@ public class OrderRefundApplicationApi {
         OrderRefundApplication orderRefundApplication=new OrderRefundApplication();
         List<OrderRefundApplication> orderRefundApplicationList = orderRefundApplicationService.list(orderRefundApplication);
         List<String> orderDetailList = new ArrayList<String>();
-        List<String> statuss = new ArrayList<String>();
+        List<Map> statuss = new ArrayList<Map>();
         for (OrderRefundApplication item:orderRefundApplicationList) {
             orderDetailList.add(item.getOrderId());
-            statuss.add(item.getAuditStatus());
+            //statuss.add(item.getAuditStatus());
+            Map map = new HashMap();
+            map.put("orderCode",item.getOrderId());
+            map.put("status",item.getAuditStatus());
+            statuss.add(map);
         }
         param.setOrderIds(orderDetailList);
         param.setAuditStatuss(statuss);
-        return ResponseEntity.ok(orderService.pageQuery(param));
+        return ResponseEntity.ok(orderRefundApplicationService.pageQuery(param));
+    }
+
+    @GetMapping("/detail/{id}")
+    @ApiOperation(value = "后台管理-根据订单id查看售后订单详情",response = OrderGridResult.class)
+    public  ResponseEntity<OrderResult> demandGoodsDetail(@PathVariable("id") Long id){
+        return ResponseEntity.ok(orderRefundApplicationService.detail(id));
     }
 }

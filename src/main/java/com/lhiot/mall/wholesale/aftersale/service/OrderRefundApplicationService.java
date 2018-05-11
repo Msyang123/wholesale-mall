@@ -1,14 +1,19 @@
 package com.lhiot.mall.wholesale.aftersale.service;
 
 import com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication;
+import com.lhiot.mall.wholesale.aftersale.domain.OrderResult;
 import com.lhiot.mall.wholesale.aftersale.mapper.OrderRefundApplicationMapper;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
+import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
+import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +23,7 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -32,12 +38,15 @@ public class OrderRefundApplicationService {
 
     private final PaymentLogService paymentLogService;
 
+    private final SalesUserService salesUserService;
+
     @Autowired
-    public OrderRefundApplicationService(OrderRefundApplicationMapper orderRefundApplicationMapper, OrderMapper orderMapper, UserService userService, PaymentLogService paymentLogService) {
+    public OrderRefundApplicationService(OrderRefundApplicationMapper orderRefundApplicationMapper, OrderMapper orderMapper, UserService userService, PaymentLogService paymentLogService, SalesUserService salesUserService) {
         this.orderRefundApplicationMapper = orderRefundApplicationMapper;
         this.orderMapper = orderMapper;
         this.userService = userService;
         this.paymentLogService = paymentLogService;
+        this.salesUserService = salesUserService;
     }
 
     public int create(OrderRefundApplication orderRefundApplication){
@@ -126,11 +135,65 @@ public class OrderRefundApplicationService {
                 }
             }
         }
+
+        //售后订单状态字段数据组装
+        for (OrderGridResult orderGridResult : orderGridResultList) {
+            for (Map item:param.getAuditStatuss()) {
+                if (Objects.equals(item.get("orderCode"),orderGridResult.getOrderCode())){
+                    orderGridResult.setAuditStatus(item.get("status").toString());
+                    break;
+                }
+            }
+        }
+
         result.setPage(page);
         result.setRecords(rows);
         result.setTotal(totalPages);
         result.setRows(orderGridResultList);//将查询记录放入返回参数中
         return result;
+    }
+
+    /**
+     * 后台管理--查询订单详情
+     * @return
+     */
+    public OrderResult detail(Long id) {
+        //账款订单详情信息
+        OrderResult order = orderRefundApplicationMapper.searchOrderById(id);
+        if (Objects.nonNull(order)){
+            //售后订单详细信息
+            OrderRefundApplication orderRefund=new OrderRefundApplication();
+            orderRefund.setOrderId(order.getOrderCode());
+            OrderRefundApplication orderRefundApplication = orderRefundApplicationMapper.refundInfo(orderRefund);
+            order.setOrderRefundApplication(orderRefundApplication);
+        }
+        if (Objects.nonNull(order)) {
+            //用户信息
+            User user = userService.user(order.getUserId());
+            if (Objects.nonNull(user)) {
+                order.setShopName(user.getShopName());
+                order.setUserName(user.getUserName());
+                order.setPhone(user.getPhone());
+                order.setAddressDetail(user.getAddressDetail());
+                order.setDeliveryAddress(user.getAddressDetail());
+            }
+            //支付信息
+            PaymentLog paymentLog = paymentLogService.getPaymentLog(order.getOrderCode());
+            if (Objects.nonNull(paymentLog)) {
+                order.setPaymentTime(paymentLog.getPaymentTime());
+            }
+            //业务员信息
+            SalesUser salesUser = salesUserService.findById(order.getSalesmanId());
+            if (Objects.nonNull(salesUser)) {
+                order.setSalesmanName(salesUser.getSalesmanName());
+            }
+            //商品信息
+            List<OrderGoods> orderGoods = orderMapper.searchOrderGoods(order.getId());
+            if (Objects.nonNull(orderGoods)) {
+                order.setOrderGoodsList(orderGoods);
+            }
+        }
+        return order;
     }
 
 }
