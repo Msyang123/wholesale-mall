@@ -50,12 +50,9 @@ public class DebtOrderApi {
             //计算账款订单金额
             debtFee+=item.getPayableFee()+item.getDeliveryFee();
             //检查非结账付款订单
-            if(Objects.equals("offline",item.getSettlementType())){
+            if(!Objects.equals("offline",item.getSettlementType())){
                 return ResponseEntity.badRequest().body("订单编码"+item.getOrderCode()+"非货到付款订单");
             }
-
-        }
-        for (OrderDetail item:orderDetailList){
             DebtOrder searchDebtOrder= debtOrderService.findByOrderIdLike(item.getOrderCode());
             //非空说明依据选择了
             if(Objects.nonNull(searchDebtOrder)){
