@@ -109,9 +109,6 @@
             <if test="remarks!=null and remarks!=''">
                 remarks=#{remarks},
             </if>
-            <if test="payStatus!=null and payStatus!=''">
-                pay_status=#{payStatus},
-            </if>
             <if test="receiveTime!=null">
                 receive_time=#{receiveTime},
             </if>

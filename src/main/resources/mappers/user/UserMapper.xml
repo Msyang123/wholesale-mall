@@ -208,4 +208,94 @@
           union all
         (select refund_time time,refund_type type,refund_fee fee from t_whs_refund_log where user_id=#{id})
     </select>
+    
+    <!--lynn 分页查询用户数量 -->
+    <select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.user.domain.UserGridParam"
+    	resultType="Integer">
+    	SELECT count(u.id) as count
+		FROM t_whs_user u
+		LEFT JOIN (
+			SELECT user_id, CONCAT('￥',CONVERT(FORMAT(SUM(payable_fee)/100.0,2),CHAR),'/',CONVERT(COUNT(id),CHAR),'次') as thisMonth
+			FROM t_whs_order
+			WHERE order_status = 'received' AND DATE_FORMAT(NOW(),'%Y-%m') = DATE_FORMAT(create_time,'%Y-%m')
+			GROUP BY user_id 
+		) as t1 ON u.id = t1.user_id
+		LEFT JOIN (
+			SELECT user_id, CONCAT('￥',CONVERT(FORMAT(SUM(payable_fee)/100.0,2),CHAR),'/',CONVERT(COUNT(id),CHAR),'次') as lastMonth 
+			FROM t_whs_order
+			WHERE order_status = 'received' 
+			AND date_format(create_time,'%Y-%m')=date_format(DATE_SUB(curdate(), INTERVAL 1 MONTH),'%Y-%m') 
+			GROUP BY user_id 
+		) as t2 ON u.id = t2.user_id
+		LEFT JOIN (
+			SELECT user_id, CONCAT('￥',CONVERT(FORMAT(SUM(payable_fee)/100.0,2),CHAR),'/',CONVERT(COUNT(id),CHAR),'次') as accumulative
+			FROM t_whs_order
+			WHERE order_status = 'received'
+			GROUP BY user_id 
+		) as t3 ON u.id = t3.user_id
+		LEFT JOIN (
+			SELECT user_id, CONCAT('￥',CONVERT(FORMAT(SUM(payable_fee)/100.0,2),CHAR),'/',CONVERT(COUNT(id),CHAR),'次') as arrears
+			FROM t_whs_order
+			WHERE settlement_type = 'offline' and pay_status = 'unpaid'
+			GROUP BY user_id 
+		) as t4 ON u.id = t4.user_id
+		LEFT JOIN t_whs_salesuser_relation sr ON u.id = sr.user_id
+		LEFT JOIN t_whs_salesuser s ON sr.salesman_id = s.id
+		<trim prefix="where" prefixOverrides="and">
+			<if test="userName != null and userName != ''">and u.user_name like concat('%',#{userName},'%')</if>
+			<if test="phone != null and phone != ''">and u.phone like concat('%',#{phone},'%')</if>
+			<if test="saleId != null and saleId != ''">and s.id = #{saleId}</if>
+			<if test="beginTime != null and beginTime != ''">and u.register_time &gt;= #{beginTime}</if>
+			<if test="endTime != null and endTime != ''">and u.register_time &lt;=#{endTime}</if>
+		</trim>
+    </select>
+    
+    <!--lynn 分页查询用户信息 -->
+    <select id="pageQuery" parameterType="com.lhiot.mall.wholesale.user.domain.UserGridParam"
+        resultType="com.lhiot.mall.wholesale.user.domain.UserResult">
+        SELECT u.id,u.phone,u.shop_name,u.user_name,u.register_time,u.user_status ,s.salesman_name,t1.thisMonth,t2.lastMonth,
+		t3.accumulative,t4.arrears,t5.lastCreateTime
+		FROM t_whs_user u
+		LEFT JOIN (
+			SELECT user_id, CONCAT('￥',CONVERT(FORMAT(SUM(payable_fee)/100.0,2),CHAR),'/',CONVERT(COUNT(id),CHAR),'次') as thisMonth
+			FROM t_whs_order
+			WHERE order_status = 'received' AND DATE_FORMAT(NOW(),'%Y-%m') = DATE_FORMAT(create_time,'%Y-%m')
+			GROUP BY user_id 
+		) as t1 ON u.id = t1.user_id
+		LEFT JOIN (
+			SELECT user_id, CONCAT('￥',CONVERT(FORMAT(SUM(payable_fee)/100.0,2),CHAR),'/',CONVERT(COUNT(id),CHAR),'次') as lastMonth 
+			FROM t_whs_order
+			WHERE order_status = 'received' 
+			AND date_format(create_time,'%Y-%m')=date_format(DATE_SUB(NOW(), INTERVAL 1 MONTH),'%Y-%m') 
+			GROUP BY user_id 
+		) as t2 ON u.id = t2.user_id
+		LEFT JOIN (
+			SELECT user_id, CONCAT('￥',CONVERT(FORMAT(SUM(payable_fee)/100.0,2),CHAR),'/',CONVERT(COUNT(id),CHAR),'次') as accumulative
+			FROM t_whs_order
+			WHERE order_status = 'received'
+			GROUP BY user_id 
+		) as t3 ON u.id = t3.user_id
+		LEFT JOIN (
+			SELECT user_id, CONCAT('￥',CONVERT(FORMAT(SUM(payable_fee)/100.0,2),CHAR),'/',CONVERT(COUNT(id),CHAR),'次') as arrears
+			FROM t_whs_order
+			WHERE settlement_type = 'offline' and pay_status = 'unpaid'
+			GROUP BY user_id 
+		) as t4 ON u.id = t4.user_id
+		LEFT JOIN(
+			SELECT user_id, MAX(create_time) as lastCreateTime
+			FROM t_whs_order
+			WHERE order_status = 'received'
+			GROUP BY user_id 
+		) as t5 on u.id = t5.user_id
+		LEFT JOIN t_whs_salesuser_relation sr ON u.id = sr.user_id
+		LEFT JOIN t_whs_salesuser s ON sr.salesman_id = s.id
+		<trim prefix="where" prefixOverrides="and">
+			<if test="userName != null and userName != ''">and u.user_name like concat('%',#{userName},'%')</if>
+			<if test="phone != null and phone != ''">and u.phone like concat('%',#{phone},'%')</if>
+			<if test="saleId != null and saleId != ''">and s.id = #{saleId}</if>
+			<if test="beginTime != null and beginTime != ''">and date_format(u.register_time,'%Y-%m-%d) &gt;= #{beginTime}</if>
+			<if test="endTime != null and endTime != ''">and date_format(u.register_time,'%Y-%m-%d) &lt;=#{endTime}</if>
+		</trim>
+		<include refid="common.pager"/>
+    </select>
 </mapper>

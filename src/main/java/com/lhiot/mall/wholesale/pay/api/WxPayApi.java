@@ -74,8 +74,8 @@ public class WxPayApi {
                 weChatUtil);
         PaymentLog paymentLog=new PaymentLog();
         //写入日志
-        paymentLog.setPaymentType("balance");//balance-余额支付 wechat-微信 offline-线下支付
-        paymentLog.setPaymentStep("paid");//sign-签名成功 paid-支付成功
+        paymentLog.setPaymentType("wechat");//balance-余额支付 wechat-微信 offline-线下支付
+        paymentLog.setPaymentStep("sign");//sign-签名成功 paid-支付成功
         paymentLog.setOrderCode(orderDetail.getOrderCode());
         paymentLog.setOrderId(orderDetail.getId());
         paymentLog.setUserId(orderDetail.getUserId());
@@ -119,9 +119,16 @@ public class WxPayApi {
                 //return ResponseEntity.badRequest().body("订单状态异常，请检查订单状态");
                 return ResponseEntity.ok().build();
             }
+            orderDetail.setPayStatus("paid"); //支付状态：paid-已支付 unpaid-未支付
             int result=payService.sendToStock(orderDetail);
             myDoIsOk=result>0;
             if (myDoIsOk) {
+                PaymentLog paymentLog =paymentLogService.getPaymentLog(orderCode);
+                paymentLog.setPaymentStep("paid");//支付步骤：sign-签名成功 paid-支付成功
+                paymentLog.setBankType(wrap.get("bank_type"));//银行类型
+                paymentLog.setTransactionId(wrap.get("transaction_id"));//微信流水
+                paymentLog.setTotalFee(Integer.valueOf(wrap.get("total_fee")));//支付金额
+                paymentLogService.updatePaymentLog(paymentLog);
                 //广播订单支付成功true, "success"
                 return ResponseEntity.ok("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                         + "<xml><return_code><![CDATA[SUCCESS]]></return_code>"

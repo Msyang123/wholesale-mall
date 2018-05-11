@@ -1,9 +1,28 @@
 package com.lhiot.mall.wholesale.user.api;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import javax.validation.constraints.NotNull;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.ResultObject;
-import com.lhiot.mall.wholesale.base.JacksonUtils;
-import com.lhiot.mall.wholesale.coupon.domain.CouponConfig;
 import com.lhiot.mall.wholesale.coupon.service.CouponConfigService;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderParam;
@@ -15,17 +34,10 @@ import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
 import com.sgsl.util.ImmutableMap;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-
-import javax.validation.constraints.NotNull;
-import java.util.*;
 
 @Api(description = "业务员接口")
 @Slf4j
@@ -243,4 +255,9 @@ public class SalesUserApi {
         return ResponseEntity.ok(salesUserService.findCode(code));
     }
 
+    @GetMapping("/sales-users")
+    @ApiOperation(value = "查询所有业务员")
+    public ResponseEntity<List<SalesUser>> findAll(){
+        return ResponseEntity.ok(salesUserService.salesUsers());
+    }
 }

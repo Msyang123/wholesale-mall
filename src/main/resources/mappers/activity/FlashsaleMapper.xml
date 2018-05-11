@@ -83,4 +83,10 @@
 		WHERE t1.goods_standard_id = #{0} 
 		AND t2.vaild='yes' and now() between t2.start_time and t2.end_time
 	</select>
+	
+	<!-- lynn新增抢购记录 -->
+	<insert id="insertRecord" parameterType="com.lhiot.mall.wholesale.activity.domain.FlashGoodsRecord">
+		insert into t_whs_flashsale_goods_record(user_id,flashsale_goods_id,buy_count,create_at,order_id)
+		value(#{userId},#{flashsaleGoodsId},#{buyCount},now(),#{orderId})
+	</insert>
 </mapper>

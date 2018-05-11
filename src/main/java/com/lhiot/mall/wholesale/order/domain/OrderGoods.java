@@ -35,7 +35,7 @@ public class OrderGoods {
     private Timestamp paymentTime;
 
     @JsonProperty("refundStatus")
-    private Integer refundStatus;
+    private String refundStatus;
 
     @JsonProperty("discountGoodsPrice")
     private Integer discountGoodsPrice;

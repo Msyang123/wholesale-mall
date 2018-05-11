@@ -122,7 +122,7 @@ public class OrderService {
         orderDetail.setOrderCode(snowflakeId.stringId());
         orderDetail.setCreateTime(new Timestamp(System.currentTimeMillis()));
         //非货到付款订单需要支付
-         if(!Objects.equals(orderDetail.getSettlementType(),"cod")){
+         if(!Objects.equals(orderDetail.getSettlementType(),"offline")){
                 orderDetail.setOrderStatus("unpaid");//待付款
             //mq设置三十分钟失效
             rabbit.convertAndSend("order-direct-exchange", "order-dlx-queue", JacksonUtils.toJson(orderDetail), message -> {
@@ -134,11 +134,15 @@ public class OrderService {
         //保存订单信息
         orderMapper.save(orderDetail);
         //将保存的订单id赋值到订单商品中
+
         orderDetail.getOrderGoodsList().forEach(item->{
             item.setOrderId(orderDetail.getId());
             //查询商品进货价写入到订单商品中
             GoodsStandard goodsStandard= goodsStandardService.searchByGoodsId(item.getGoodsId());
-            item.setPurchasePrice(goodsStandard.getPurchasePrice());
+            item.setPurchasePrice(goodsStandard.getPurchasePrice());//进货价
+            item.setStandardWeight(goodsStandard.getWeight());//规格重量
+            item.setPaymentTime(new Timestamp(System.currentTimeMillis()));
+            item.setRefundStatus("no");//是否退货:yes-已退货  no-未退货
         });
         //发送订单创建广播
         rabbit.convertAndSend("order-created-event","",JacksonUtils.toJson(orderDetail));
@@ -201,7 +205,7 @@ public class OrderService {
 
          switch (orderDetail.getSettlementType()) {
             //1货到付款
-            case "cod":
+            case "offline":
                 //直接取消掉订单就可以了
                 break;
             //0 线上支付
