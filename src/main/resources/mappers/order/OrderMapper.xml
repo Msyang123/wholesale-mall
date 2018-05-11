@@ -133,13 +133,13 @@
 		from t_whs_order_goods t1
 		left join t_whs_order t2 on t1.order_id = t2.id
 		<trim prefix="where">
-			goods_standard_id in
+			goods_id in
 			<foreach collection="list" item="item" open="(" separator="," close=")">
 				 #{item}
 			</foreach>
 			and t2.order_status in ('undelivery','delivery','received') and t1.refund_status = 'no'
 		</trim>
-		group by t1.goods_standard_id
+		group by t1.goods_id
     </select>
 
     <!-- 后台管理 分页查询总数 -->

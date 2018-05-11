@@ -2,12 +2,7 @@ package com.lhiot.mall.wholesale.goods.api;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 
-import com.leon.microx.util.ImmutableMap;
-import com.lhiot.mall.wholesale.activity.domain.Activity;
-import com.lhiot.mall.wholesale.activity.service.ActivityService;
-import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,17 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.ResultObject;
-import com.lhiot.mall.wholesale.activity.domain.Activity;
 import com.lhiot.mall.wholesale.activity.service.ActivityService;
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.goods.domain.GoodsDetailResult;
-import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
 import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
 import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
 import com.lhiot.mall.wholesale.goods.domain.InventoryResult;
-import com.lhiot.mall.wholesale.goods.domain.LayoutType;
 import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
 import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
@@ -49,10 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GoodsApi {
 	private static final Integer FIRST = 0;//第一个节点
 	private final GoodsService goodsService;
-
 	private final GoodsPriceRegionService goodsPriceRegionService;
-
-	private final ActivityService activityService;
 
 	private final FlashsaleService flashsaleService;
 	
@@ -60,7 +49,6 @@ public class GoodsApi {
 	public GoodsApi(GoodsService goodsService, GoodsPriceRegionService goodsPriceRegionService, ActivityService activityService, FlashsaleService flashsaleService){
 		this.goodsService = goodsService;
         this.goodsPriceRegionService = goodsPriceRegionService;
-        this.activityService = activityService;
         this.flashsaleService = flashsaleService;
     }
 	
@@ -110,7 +98,9 @@ public class GoodsApi {
         //商品价格区间信息
         List<GoodsPriceRegion> goodsPriceRegions =goodsPriceRegionService.selectPriceRegion(goodsInfo.getGoodsStandardId());
         goodsInfo.setGoodsPriceRegionList(goodsPriceRegions);
-
+        //设置销售数量
+        goodsInfo.setSaleCount(goodsService.soldCount(goodsInfo.getId()));
+        
         GoodsDetailResult goodsDetailResult = new GoodsDetailResult();
         goodsDetailResult.setGoodsInfo(goodsInfo);
         goodsDetailResult.setGoodsFlashsale(flashsaleService.goodsFlashsale(id, userId));
