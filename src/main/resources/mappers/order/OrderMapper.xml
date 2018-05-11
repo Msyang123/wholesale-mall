@@ -60,7 +60,7 @@
 
     <select id="searchOrdersByOrderCodes" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
         select id,order_code orderCode,discount_fee discountFee,settlement_type settlementType,pay_status payStatus
-        ,order_status orderStatus,create_time createTime,total_fee total,payable_fee orderNeedFee,remarks
+        ,order_status orderStatus,create_time createTime,total_fee total,payable_fee payableFee,delivery_fee,remarks
         from t_whs_order where order_code in
         <foreach collection="list" item="item" open="(" close=")" separator=",">
             #{item}

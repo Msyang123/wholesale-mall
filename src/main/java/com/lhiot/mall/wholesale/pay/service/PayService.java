@@ -7,7 +7,9 @@ import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.StringReplaceUtil;
 import com.lhiot.mall.wholesale.goods.domain.Goods;
+import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
 import com.lhiot.mall.wholesale.goods.service.GoodsService;
+import com.lhiot.mall.wholesale.goods.service.GoodsStandardService;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -50,10 +53,11 @@ public class PayService {
     private final InvoiceService invoiceService;
     private final Warehouse warehouse;
     private final GoodsService goodsService;
+    private final GoodsStandardService goodsStandardService;
     private final RabbitTemplate rabbit;
 
     @Autowired
-    public PayService(PaymentLogService paymentLogService, UserService userService, OrderService orderService, DebtOrderService debtOrderService, InvoiceService invoiceService, Warehouse warehouse, GoodsService goodsService, RabbitTemplate rabbit){
+    public PayService(PaymentLogService paymentLogService, UserService userService, OrderService orderService, DebtOrderService debtOrderService, InvoiceService invoiceService, Warehouse warehouse, GoodsService goodsService, GoodsStandardService goodsStandardService, RabbitTemplate rabbit){
         this.paymentLogService=paymentLogService;
         this.userService=userService;
         this.orderService=orderService;
@@ -61,6 +65,7 @@ public class PayService {
         this.invoiceService=invoiceService;
         this.warehouse=warehouse;
         this.goodsService = goodsService;
+        this.goodsStandardService = goodsStandardService;
         this.rabbit = rabbit;
     }
     /**
@@ -408,8 +413,23 @@ public class PayService {
         updateUser.setBalance(-needPayFee);//需要扣除的值
         boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
         if(updateResult){
-            debtOrder.setCheckStatus("unaudited");//设置审核中
-            debtOrderService.updateDebtOrderByCode(debtOrder);
+            //修改账款订单为已支付
+            DebtOrder saveDebtOrder=new DebtOrder();
+            saveDebtOrder.setOrderDebtCode(debtOrder.getOrderDebtCode());
+            saveDebtOrder.setCheckStatus("paid");
+            saveDebtOrder.setPaymentType("balance");
+            debtOrderService.updateDebtOrderByCode(saveDebtOrder);
+            //修改订单为已支付状态
+            List<OrderDetail> orderDetailList=orderService.searchOrdersByOrderCodes(debtOrder.getOrderIds().split(","));
+            if(orderDetailList==null||orderDetailList.isEmpty()){
+                throw new ServiceException("未查找到相关订单");
+            }
+            for (OrderDetail item:orderDetailList){
+                OrderDetail updateOrderDetail =new OrderDetail();
+                updateOrderDetail.setPayStatus("paid");//支付状态：paid-已支付 unpaid-未支付
+                updateOrderDetail.setOrderCode(item.getOrderCode());
+                orderService.updateOrder(updateOrderDetail);
+            }
 
             PaymentLog paymentLog=new PaymentLog();
             //写入日志
@@ -419,14 +439,6 @@ public class PayService {
             paymentLog.setOrderId(debtOrder.getId());
             paymentLog.setUserId(debtOrder.getUserId());
             paymentLog.setPaymentFrom("debt");//支付来源：order-订单 debt-账款 invoice-发票 recharge-充值
-           /* paymentLog.setPaymentOrderType(0);
-            paymentLog.setPaymentStep(3);//0签名 1余额支付 2账款订单未支付 3账款订单已支付 4支付回调 5充值回调 6欠款订单支付回调  7 发票支付回调
-            paymentLog.setOrderCode(debtOrder.getOrderDebtCode());
-            paymentLog.setOrderId(debtOrder.getId());
-            paymentLog.setUserId(debtOrder.getUserId());
-            paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
-            paymentLog.setPaymentFrom(0);//支付来源于 0订单 1发票
-            paymentLog.setPaymentOrderType(1);//订单类型 0线上订单 1账款订单*/
             paymentLog.setTotalFee(needPayFee);
             paymentLogService.insertPaymentLog(paymentLog);
             return 1;
@@ -436,66 +448,113 @@ public class PayService {
     }
 
     /**
+     * 微信支付账款订单
+     * @return
+     */
+    public int weixinPayDebt(DebtOrder debtOrder,String bankType,String transactionId,Integer totalFee) {
+        User user= userService.user(debtOrder.getUserId());
+        if(Objects.isNull(user)){
+            throw new ServiceException("用户信息不存在");
+        }
+        //修改账款订单为已支付
+        DebtOrder saveDebtOrder=new DebtOrder();
+        saveDebtOrder.setOrderDebtCode(debtOrder.getOrderDebtCode());
+        saveDebtOrder.setCheckStatus("paid");
+        saveDebtOrder.setPaymentType("wechat");
+        debtOrderService.updateDebtOrderByCode(saveDebtOrder);
+        //修改订单为已支付状态
+        List<OrderDetail> orderDetailList=orderService.searchOrdersByOrderCodes(debtOrder.getOrderIds().split(","));
+        if(orderDetailList==null||orderDetailList.isEmpty()){
+            throw new ServiceException("未查找到相关订单");
+        }
+        for (OrderDetail item:orderDetailList){
+            OrderDetail updateOrderDetail =new OrderDetail();
+            updateOrderDetail.setPayStatus("paid");//支付状态：paid-已支付 unpaid-未支付
+            updateOrderDetail.setOrderCode(item.getOrderCode());
+            orderService.updateOrder(updateOrderDetail);
+        }
+        //修改支付日志
+        PaymentLog paymentLog =paymentLogService.getPaymentLog(debtOrder.getOrderDebtCode());
+        paymentLog.setPaymentStep("paid");//支付步骤：sign-签名成功 paid-支付成功
+        paymentLog.setBankType(bankType);//银行类型
+        paymentLog.setTransactionId(transactionId);//微信流水
+        paymentLog.setTotalFee(totalFee);//支付金额
+        paymentLogService.updatePaymentLog(paymentLog);
+        return 1;
+    }
+
+    /**
      * 减商品库存 发货 修改订单状态为待收货
      * @param orderDetail
      */
     public int sendToStock(OrderDetail orderDetail){
-        orderDetail.getOrderGoodsList().forEach(item->{
-            Goods goods=new Goods();
-            goods.setId(item.getGoodsId());
-            goods.setReduceStockLimit(item.getQuanity());//递减
-            goodsService.update(goods);
-        });
-        //FIXME 发送订单到海鼎总仓
+        //{"id":7,"sex":"male","phone":"18207493756","address":"麓谷企业广场F3栋","city":"湖南省/长沙市/岳麓区","isDefault":"yes","userId":1,"name":"gfhfg"}
         Inventory inventory=new Inventory();
         inventory.setUuid(UUID.randomUUID().toString());
         inventory.setSenderCode("9646");
         inventory.setSenderWrh("07310101");
         inventory.setReceiverCode(null);
-        inventory.setContactor("老曹");
-        inventory.setPhoneNumber("18888888888");
-        inventory.setDeliverAddress("五一大道98号");
-        inventory.setRemark("快点送");
+        String deliveryAddress=orderDetail.getDeliveryAddress();
+        try {
+            Map<String,Object> addressInfo= JacksonUtils.fromJson(deliveryAddress,Map.class);
+            inventory.setContactor(String.valueOf(addressInfo.get("name")));
+            inventory.setPhoneNumber(String.valueOf(addressInfo.get("phone")));
+            inventory.setDeliverAddress(String.valueOf(addressInfo.get("city"))+String.valueOf(addressInfo.get("address")));
+        } catch (IOException e) {
+            throw new ServiceException("减商品库存 发货转换发货地址错误"+e.getLocalizedMessage());
+        }
+
+        inventory.setRemark(orderDetail.getRemarks());
         inventory.setOcrDate(new Date());
-        inventory.setFiller("填单人");
-        inventory.setSeller("销售员");
+        inventory.setFiller("批发填单人");
+        inventory.setSeller("批发销售员");
         inventory.setSouceOrderCls("批发商城");
         inventory.setNegInvFlag("1");
         inventory.setMemberCode(null);
-        inventory.setFreight(new BigDecimal(21.3));
 
         //清单
         List<Inventory.WholeSaleDtl> wholeSaleDtlList=new ArrayList<>();
-        Inventory.WholeSaleDtl wholeSaleDtl1=inventory.new WholeSaleDtl();
-        wholeSaleDtl1.setSkuId("010100100011");
-        wholeSaleDtl1.setQty(new BigDecimal(3));
-        wholeSaleDtl1.setPrice(new BigDecimal(100.1));
-        wholeSaleDtl1.setTotal(null);
-        wholeSaleDtl1.setFreight(null);
-        wholeSaleDtl1.setPayAmount(new BigDecimal((99.1)));
-        wholeSaleDtl1.setUnitPrice(null);
-        wholeSaleDtl1.setPriceAmount(new BigDecimal(200.1));
-        wholeSaleDtl1.setBuyAmount(new BigDecimal(99.2));
-        wholeSaleDtl1.setBusinessDiscount(new BigDecimal(0.1));
-        wholeSaleDtl1.setPlatformDiscount(new BigDecimal(0));
-        wholeSaleDtl1.setQpc(new BigDecimal(5));
-        wholeSaleDtl1.setQpcStr("1*5");
 
-        wholeSaleDtlList.add(wholeSaleDtl1);
+        orderDetail.getOrderGoodsList().forEach(item->{
+            Goods goods=new Goods();
+            goods.setId(item.getGoodsId());
+            goods.setReduceStockLimit(item.getQuanity());//递减
+            goodsService.update(goods);
+
+            GoodsStandard goodsStandard= goodsStandardService.goodsStandard(item.getGoodsStandardId());
+            Inventory.WholeSaleDtl wholeSaleDtl=inventory.new WholeSaleDtl();
+            wholeSaleDtl.setSkuId(goodsStandard.getBarCode());
+            wholeSaleDtl.setSkuId("010100100011");
+            wholeSaleDtl.setQty(item.getStandardWeight().multiply(new BigDecimal(item.getQuanity())));//数量乘以重量
+            wholeSaleDtl.setPrice(new BigDecimal(item.getGoodsPrice()/100.0));
+            wholeSaleDtl.setTotal(new BigDecimal(item.getGoodsPrice()/100.0).multiply(new BigDecimal(item.getQuanity())));
+            wholeSaleDtl.setFreight(null);
+            wholeSaleDtl.setPayAmount(new BigDecimal(item.getDiscountGoodsPrice()/100.0));
+            wholeSaleDtl.setUnitPrice(new BigDecimal(item.getGoodsPrice()/100.0));
+            wholeSaleDtl.setPriceAmount(new BigDecimal(item.getGoodsPrice()/100.0));
+            wholeSaleDtl.setBuyAmount(new BigDecimal(item.getGoodsPrice()/100.0));
+            wholeSaleDtl.setBusinessDiscount(new BigDecimal((item.getGoodsPrice()-item.getDiscountGoodsPrice())/100.0));
+            wholeSaleDtl.setPlatformDiscount(new BigDecimal(0));
+            wholeSaleDtl.setQpc(item.getStandardWeight());
+            wholeSaleDtl.setQpcStr(goodsStandard.getStandard());
+
+            wholeSaleDtlList.add(wholeSaleDtl);
+        });
+
+        inventory.setFreight(new BigDecimal(orderDetail.getDeliveryFee()/100.0));
         inventory.setProducts(wholeSaleDtlList);
 
         List<Inventory.Pay> pays=new ArrayList<>();
         Inventory.Pay pay=inventory.new Pay();
 
-        pay.setTotal(new BigDecimal(234.56));
-        pay.setPayName("现金支付");
+        pay.setTotal(new BigDecimal((orderDetail.getPayableFee()+orderDetail.getDeliveryFee())/100.0));
+        pay.setPayName(orderDetail.getSettlementType());
         pays.add(pay);
         inventory.setPays(pays);
 
         String hdCode=warehouse.savenew2state(inventory);
         log.info(hdCode);
         //获取海鼎总仓返回的订单号
-        //TODO 修改订单并且发送海鼎总仓订单
         //修改订单状态为已支付状态
         orderDetail.setHdCode(hdCode);//总仓编码
         orderDetail.setHdStatus("success");//海鼎发送成功
@@ -506,6 +565,7 @@ public class PayService {
             rabbit.convertAndSend("order-paid-event","", JacksonUtils.toJson(orderDetail));
         } catch (JsonProcessingException e) {
             log.error("支付订单发布广播消息"+e.getLocalizedMessage());
+            throw new ServiceException("支付订单发布广播消息"+e.getLocalizedMessage());
         }
         return result;
     }
@@ -530,9 +590,8 @@ public class PayService {
         updateUser.setBalance(-needPayFee);//需要扣除的值
         boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
         if(updateResult){
-
-            invoice.setInvoiceStatus("yes");//开票状态 0未开 1已付款 2已开
-            invoiceService.updateInvoiceByCode(invoice);
+            //保存开票信息
+            invoiceService.applyInvoice(invoice);
 
             PaymentLog paymentLog=new PaymentLog();
             //写入日志

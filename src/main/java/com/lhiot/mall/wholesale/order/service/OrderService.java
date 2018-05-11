@@ -121,15 +121,12 @@ public class OrderService {
         //产生订单编码
         orderDetail.setOrderCode(snowflakeId.stringId());
         orderDetail.setCreateTime(new Timestamp(System.currentTimeMillis()));
-        //非货到付款订单需要支付
-         if(!Objects.equals(orderDetail.getSettlementType(),"offline")){
-                orderDetail.setOrderStatus("unpaid");//待付款
-            //mq设置三十分钟失效
-            rabbit.convertAndSend("order-direct-exchange", "order-dlx-queue", JacksonUtils.toJson(orderDetail), message -> {
-                message.getMessageProperties().setExpiration(String.valueOf(30 * 60 * 1000));
-                return message;
-            });
-        }
+        orderDetail.setOrderStatus("unpaid");//先都设置为待付款 货到付款订单不需要需要支付
+        //mq设置三十分钟失效
+        rabbit.convertAndSend("order-direct-exchange", "order-dlx-queue", JacksonUtils.toJson(orderDetail), message -> {
+            message.getMessageProperties().setExpiration(String.valueOf(30 * 60 * 1000));
+            return message;
+        });
 
         //保存订单信息
         orderMapper.save(orderDetail);

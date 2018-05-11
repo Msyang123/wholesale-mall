@@ -46,8 +46,9 @@ public class OfflinePayApi {
             orderDetail.setMsg("非货到付款订单");
             return ResponseEntity.ok(orderDetail);
         }
-        orderDetail.setOrderCode(orderCode);
-        int result=payService.sendToStock(orderDetail);
+        OrderDetail searchOrderDetail=orderService.searchOrder(orderCode);
+        searchOrderDetail.setSettlementType("offline");
+        int result=payService.sendToStock(searchOrderDetail);
         if(result>0){
             orderDetail.setCode(1001);
             orderDetail.setMsg("支付成功");
@@ -55,7 +56,7 @@ public class OfflinePayApi {
             orderDetail.setCode(-1001);
             orderDetail.setMsg("支付失败");
         }
-        return ResponseEntity.ok(orderDetail);
+        return ResponseEntity.ok(searchOrderDetail);
     }
 
     @PostMapping("/debtorderpay")
