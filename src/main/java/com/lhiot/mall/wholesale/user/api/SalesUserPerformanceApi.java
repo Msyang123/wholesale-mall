@@ -6,6 +6,7 @@ import com.leon.microx.common.wrapper.ArrayObject;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.service.OrderService;
+import com.lhiot.mall.wholesale.user.domain.gridparam.UserPerformanceGridParam;
 import com.lhiot.mall.wholesale.user.service.SalesUserPerformanceService;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
@@ -76,6 +77,23 @@ public class SalesUserPerformanceApi{
         param.setRows(rows);
         param.setSidx(sidx);
         PageQueryObject pageQueryObject = salesUserPerformanceService.pagePerformanceDetail(param);
+        return ResponseEntity.ok(pageQueryObject);
+    }
+    @GetMapping("/performanceShopDetailGrid")
+    @ApiOperation(value = "分页查询业务员信息表列表")
+    public ResponseEntity<PageQueryObject> performanceShopDetailGrid(
+            @RequestParam(value="salesmanName", required = false) String salesmanName,
+            @RequestParam(value="salesmanPhone", required = false) String salesmanPhone,
+            @RequestParam(value="rows", required = false, defaultValue="10") Integer rows,
+            @RequestParam(value="page", required = false, defaultValue="1") Integer page,
+            @RequestParam(value="sidx", required = false, defaultValue="") String sidx,
+            @RequestParam(value="sord", required = false, defaultValue="") String sord){
+        UserPerformanceGridParam param = new UserPerformanceGridParam();
+        param.setPage(page);
+        param.setSidx(sidx);
+        param.setSord(sord);
+        param.setRows(rows);
+        PageQueryObject pageQueryObject = salesUserPerformanceService.pagePerformanceShopDetail(param);
         return ResponseEntity.ok(pageQueryObject);
     }
 }

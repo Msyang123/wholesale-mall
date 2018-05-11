@@ -2,7 +2,6 @@ package com.lhiot.mall.wholesale.user.service;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -10,20 +9,17 @@ import java.util.Objects;
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.faq.domain.Faq;
-import com.lhiot.mall.wholesale.faq.domain.gridparam.FaqGridParam;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
 import com.lhiot.mall.wholesale.order.service.OrderService;
-import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
-import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.SalesUserPerformance;
-import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.ShopResult;
 import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.domain.SalesUserPerformanceDetail;
+import com.lhiot.mall.wholesale.user.domain.gridparam.UserPerformanceGridParam;
 import com.lhiot.mall.wholesale.user.mapper.SalesUserMapper;
-import org.apache.http.client.utils.DateUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,7 +38,7 @@ public class SalesUserPerformanceService{
     private final UserService userService;
     @Autowired
     public SalesUserPerformanceService(SqlSession sqlSession, SnowflakeId snowflakeId, SalesUserMapper salesUserMapper,
-            OrderService orderService,SalesUserService salesUserService,OrderMapper orderMapper,UserService userService) {
+                                       OrderService orderService,SalesUserService salesUserService,OrderMapper orderMapper,UserService userService) {
         this.salesUserMapper = salesUserMapper;
         this.orderService = orderService;
         this.salesUserService = salesUserService;
@@ -79,13 +75,13 @@ public class SalesUserPerformanceService{
                 List<ShopResult> shopResults = salesUserService.searchShopInfo(salesUserPerformance.getId());
                 List<Long> shopIds = getShopIds(shopResults);
                 //上月业绩
-                salesUserPerformance.setPerMonthPerformance(orderService.countPayAbleFeeByUserId(shopIds,preMonthFirstDay,thisMonthFirstDay));
+                salesUserPerformance.setPerMonthPerformance(orderService.countPayAbleFeeByUserId(shopIds,preMonthFirstDay,thisMonthFirstDay).get("ordersTotalFee")+"");
                 //本月业绩
-                salesUserPerformance.setThisMonthPerformance(orderService.countPayAbleFeeByUserId(shopIds,thisMonthFirstDay,null));
+                salesUserPerformance.setThisMonthPerformance(orderService.countPayAbleFeeByUserId(shopIds,thisMonthFirstDay,null).get("ordersTotalFee")+"");
                 //业绩总额
-                salesUserPerformance.setPerformanceTotal(orderService.countPayAbleFeeByUserId(shopIds,null,null));
+                salesUserPerformance.setPerformanceTotal(orderService.countPayAbleFeeByUserId(shopIds,null,null).get("ordersTotalFee")+"");
                 //累计欠款
-                salesUserPerformance.setOverDueTotal(orderService.countOverDue(shopIds));
+                salesUserPerformance.setOverDueTotal(orderService.countOverDue(shopIds).get("ordersTotalFee")+"");
                 if(!CollectionUtils.isEmpty(shopResults)){
                     salesUserPerformance.setNewShopNumTotal(shopIds.size());
                     for(ShopResult shop:shopResults){
@@ -257,5 +253,40 @@ public class SalesUserPerformanceService{
         }
         return result;
     }
-
+    public PageQueryObject pagePerformanceShopDetail(UserPerformanceGridParam param){
+        PageQueryObject result=new PageQueryObject();
+        int count=userService.performanceUserQueryCount(param);
+        int page=param.getPage();
+        int rows=param.getRows();
+        //起始行
+        param.setStart((page-1)*rows);
+        //param.setStart((page-1)*rows);
+        //总记录数
+        int totalPages=(count%rows==0?count/rows:count/rows+1);
+        if(totalPages<page){
+            page=1;
+            param.setPage(page);
+            param.setStart(0);
+        }
+        List<SalesUserPerformanceDetail> userGridResults=userService.pagePerformanceUserQuery(param);
+        if(!CollectionUtils.isEmpty(userGridResults)){
+            for(SalesUserPerformanceDetail userGridResult : userGridResults){
+                List<Long> userIds = new ArrayList<Long>();
+                userIds.add(userGridResult.getId());
+                Map<String,Object> payAbleFeeMap = orderService.countPayAbleFeeByUserId(userIds,null,null);
+                userGridResult.setPerformanceTotalStr(payAbleFeeMap.get("ordersTotalFee")+""+"/"+payAbleFeeMap.get("totalNum"));
+                Map<String,Object> overDueMap = orderService.countOverDue(userIds);
+                userGridResult.setOverDueStr(overDueMap.get("ordersTotalFee")+""+"/"+payAbleFeeMap.get("totalNum"));
+                OrderDetail orderDetail = orderService.lateOneOrder(userGridResult.getId());
+                if(null != orderDetail){
+                    userGridResult.setLastOneOrdertime(orderDetail.getCreateTime());
+                }
+            }
+            result.setRows(userGridResults);
+            result.setPage(page);
+            result.setRecords(rows);
+            result.setTotal(totalPages);
+        }
+        return result;
+    }
 }

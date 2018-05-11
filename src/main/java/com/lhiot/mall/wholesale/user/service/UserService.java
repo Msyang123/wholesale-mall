@@ -11,12 +11,8 @@ import com.lhiot.mall.wholesale.coupon.domain.ActivityCoupon;
 import com.lhiot.mall.wholesale.coupon.domain.CouponConfig;
 import com.lhiot.mall.wholesale.coupon.service.CouponConfigService;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
-import com.lhiot.mall.wholesale.user.domain.SalesUser;
-import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
-import com.lhiot.mall.wholesale.user.domain.User;
-import com.lhiot.mall.wholesale.user.domain.UserAddress;
-import com.lhiot.mall.wholesale.user.domain.UserGridParam;
-import com.lhiot.mall.wholesale.user.domain.UserResult;
+import com.lhiot.mall.wholesale.user.domain.*;
+import com.lhiot.mall.wholesale.user.domain.gridparam.UserPerformanceGridParam;
 import com.lhiot.mall.wholesale.user.mapper.UserMapper;
 import com.sgsl.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -263,4 +259,11 @@ public class UserService {
 		result.setTotal(totalPages);
 		return result;
 	}
+    public Integer performanceUserQueryCount(UserPerformanceGridParam param){
+        return userMapper.performanceUserQueryCount(param);
+    }
+    public List<SalesUserPerformanceDetail> pagePerformanceUserQuery(UserPerformanceGridParam param){
+        return userMapper.pagePerformanceUserQuery(param);
+    }
+
 }

@@ -261,9 +261,29 @@
             <if test="orderCode!=null and orderCode!='null' and orderCode!=''"> and o.order_code = #{orderCode} </if>
         </where>
     </select>-->
+
+    <!-- 查询用户是否下过单 -->
+    <select id="isExistsOrderByuserId" parameterType="long" resultType="java.lang.Integer">
+        SELECT count(1) from t_whs_order t where t.user_id=#{userId} ORDER BY t.create_time DESC LIMIT 1
+    </select>
+    <!--根据id查询欠款总额-->
     <!-- 根据门店id,开始时间,结束时间统计应付金额-->
-    <select id="countPayAbleFee" parameterType="map" resultType="String">
-        select IFNULL(SUM(payable_fee),0) ordersTotalFee
+    <select id="countOverDue" parameterType="map" resultType="map">
+        select IFNULL(SUM(payable_fee),0) ordersTotalFee,count(o.id) totalNum
+        from t_whs_order o
+        <trim prefix="where" prefixOverrides="and">
+            <if test="userIds != null and userIds.size()>0">
+                and o.user_id in
+                <foreach collection="userIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            and o.order_status = 'received' and pay_status = 'unpaid' and settlement_type = 'cod'
+        </trim>
+    </select>
+    <!-- 根据门店id,开始时间,结束时间统计应付金额-->
+    <select id="countPayAbleFee" parameterType="map" resultType="map">
+        select IFNULL(SUM(payable_fee),0) ordersTotalFee,count(o.id) totalNum
         from t_whs_order o
         <trim prefix="where" prefixOverrides="and">
             <if test="userIds != null and userIds.size()>0">
@@ -277,27 +297,6 @@
             and o.order_status = 'received'
         </trim>
     </select>
-
-    <!-- 查询用户是否下过单 -->
-    <select id="isExistsOrderByuserId" parameterType="long" resultType="java.lang.Integer">
-        SELECT count(1) from t_whs_order t where t.user_id=#{userId} ORDER BY t.create_time DESC LIMIT 1
-    </select>
-    <!--根据id查询欠款总额-->
-    <!-- 根据门店id,开始时间,结束时间统计应付金额-->
-    <select id="countOverDue" parameterType="map" resultType="String">
-        select IFNULL(SUM(payable_fee),0) ordersTotalFee
-        from t_whs_order o
-        <trim prefix="where" prefixOverrides="and">
-            <if test="userIds != null and userIds.size()>0">
-                and o.user_id in
-                <foreach collection="userIds" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            and o.order_status = 'received' and pay_status = 'unpaid' and settlement_type = 'cod'
-        </trim>
-    </select>
-
 
 </mapper>
 

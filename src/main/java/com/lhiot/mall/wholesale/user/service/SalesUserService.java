@@ -56,7 +56,7 @@ public class SalesUserService {
     }
 
     public SalesUser searchSalesUser(long id){
-        return salesUserMapper.searchSalesUser(id);
+         return salesUserMapper.findById(id);
     }
 
     public SalesUser searchSalesUserByOpenid(String openid){
