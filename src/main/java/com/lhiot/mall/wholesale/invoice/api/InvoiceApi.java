@@ -77,7 +77,7 @@ public class InvoiceApi {
         return ResponseEntity.ok(invoice);
     }
 
-    @PostMapping("/apply-invoice")
+/*    @PostMapping("/apply-invoice")
     @ApiOperation(value = "申请开票")
     public ResponseEntity applyInvoice(@RequestBody Invoice invoice){
         int result=invoiceService.applyInvoice(invoice);
@@ -85,6 +85,16 @@ public class InvoiceApi {
             return ResponseEntity.ok(result);
         }
         return ResponseEntity.badRequest().body("开票失败");
+    }*/
+    @GetMapping("/calculate/texfee")
+    @ApiOperation(value = "计算发票税费")
+    public ResponseEntity calculateTexFee(@RequestParam("orderCodes") String orderCodes) {
+        if(StringUtils.isEmpty(orderCodes)){
+            return ResponseEntity.badRequest().body("请传入订单编码");
+        }
+        Invoice invoice=new Invoice();
+        invoice.setInvoiceOrderIds(orderCodes);
+        return ResponseEntity.ok(invoiceService.calculateTexFee(invoice));
     }
 
     @GetMapping("/{invoiceCode}")

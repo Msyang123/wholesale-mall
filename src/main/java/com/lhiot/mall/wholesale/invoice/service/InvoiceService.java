@@ -2,20 +2,21 @@ package com.lhiot.mall.wholesale.invoice.service;
 
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
-import com.lhiot.mall.wholesale.demand.domain.gridparam.DemandGoodsGridParam;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle;
 import com.lhiot.mall.wholesale.invoice.domain.gridparam.InvoiceGridParam;
 import com.lhiot.mall.wholesale.invoice.mapper.InvoiceMapper;
-import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
+import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @Transactional
@@ -23,12 +24,15 @@ public class InvoiceService {
 
     private final InvoiceMapper invoiceMapper;
 
+    private final OrderMapper orderMapper;
+
     private final SnowflakeId snowflakeId;
 
 
     @Autowired
-    public InvoiceService(InvoiceMapper invoiceMapper,SnowflakeId snowflakeId) {
+    public InvoiceService(InvoiceMapper invoiceMapper, OrderMapper orderMapper, SnowflakeId snowflakeId) {
         this.invoiceMapper = invoiceMapper;
+        this.orderMapper = orderMapper;
         this.snowflakeId=snowflakeId;
     }
 
@@ -49,12 +53,38 @@ public class InvoiceService {
         }
     }
 
+    /**
+     * 发票开票申请
+     * @param invoice
+     * @return
+     */
     public int applyInvoice(Invoice invoice){
+        invoice.setInvoiceStatus("no");//yes-已开票no未开票
         invoice.setCreateTime(new Timestamp(System.currentTimeMillis()));
-        invoice.setInvoiceCode(snowflakeId.stringId());//发票业务编码
         return invoiceMapper.applyInvoice(invoice);
     }
 
+    /**
+     * 计算发票税费信息
+     * @param invoice
+     * @return
+     */
+    public Invoice calculateTexFee(Invoice invoice){
+        //查询订单信息
+        List<OrderDetail> orderDetailList= orderMapper.searchOrdersByOrderCodes(Arrays.asList(invoice.getInvoiceOrderIds().split(",")));
+        //计算订单的开票金额
+        int invoiceFee=0;
+        for (OrderDetail item:orderDetailList) {
+            invoiceFee+=item.getPayableFee()+item.getDeliveryFee();
+        }
+        //税点
+        BigDecimal invoiceTaxPre=new BigDecimal(0.0336f);
+        int taxFee=new BigDecimal(invoiceFee).multiply(new BigDecimal(0.0336)).setScale(0, RoundingMode.DOWN).intValue();
+        invoice.setInvoiceFee(invoiceFee);//开票金额
+        invoice.setInvoiceTax(invoiceTaxPre);//发票税点
+        invoice.setTaxFee(taxFee);//需付税费
+        return invoice;
+    }
     /**
      * 依据发票code查询发票信息
      * @param invoiceCode

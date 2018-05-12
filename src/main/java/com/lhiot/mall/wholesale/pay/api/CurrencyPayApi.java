@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.pay.api;
 
-import com.lhiot.mall.wholesale.goods.domain.Goods;
+import com.leon.microx.util.SnowflakeId;
+import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
@@ -17,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Timestamp;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -34,18 +35,20 @@ public class CurrencyPayApi {
     private final OrderService orderService;
     private final InvoiceService invoiceService;
     private final PaymentLogService paymentLogService;
+    private final SnowflakeId snowflakeId;
 
 
 	@Autowired
-	public CurrencyPayApi(PayService payService,DebtOrderService debtOrderService, OrderService orderService,
-                          InvoiceService invoiceService,PaymentLogService paymentLogService){
+	public CurrencyPayApi(PayService payService, DebtOrderService debtOrderService, OrderService orderService,
+                          InvoiceService invoiceService, PaymentLogService paymentLogService, SnowflakeId snowflakeId){
 
         this.payService = payService;
         this.debtOrderService=debtOrderService;
         this.orderService=orderService;
         this.invoiceService=invoiceService;
         this.paymentLogService=paymentLogService;
-	}
+        this.snowflakeId = snowflakeId;
+    }
 	
     @PutMapping("/orderpay/{orderCode}")
     @ApiOperation(value = "余额支付订单", response = String.class)
@@ -82,12 +85,6 @@ public class CurrencyPayApi {
         //余额支付账款订单支付
         int payResult=payService.currencyPay(debtOrder);
         if(payResult>0){
-            //修改账款订单为已支付
-            DebtOrder saveDebtOrder=new DebtOrder();
-            saveDebtOrder.setOrderDebtCode(orderDebtCode);
-            saveDebtOrder.setCheckStatus("paid");
-            saveDebtOrder.setPaymentType("balance");
-            debtOrderService.updateDebtOrderByCode(saveDebtOrder);
             return ResponseEntity.ok(debtOrder);
         }
         return ResponseEntity.badRequest().body("余额支付账款订单失败");
@@ -96,21 +93,23 @@ public class CurrencyPayApi {
 
     @PutMapping("/invoice-pay/{invoiceCode}")
     @ApiOperation(value = "余额支付发票", response = String.class)
-    public ResponseEntity invoicePay(@PathVariable("invoiceCode") Long invoiceCode) {
-        //依据发票业务编码查询发票信息
-        Invoice invoice= invoiceService.findInvoiceByCode(invoiceCode);
-        if(Objects.isNull(invoice)){
-            return ResponseEntity.badRequest().body("未找到开票信息");
-        }else if(invoice.getInvoiceStatus()=="no"){
-            return ResponseEntity.badRequest().body("发票已支付，请勿重复支付");
-        }else if(invoice.getInvoiceStatus()=="yes"){
-            return ResponseEntity.badRequest().body("已经开票，请勿重复支付");
+    public ResponseEntity invoicePay(@RequestBody Invoice invoice) {
+        //不允许重复开票
+        String invoiceOrderCodes=invoice.getInvoiceOrderIds();
+        if(StringUtils.isBlank(invoiceOrderCodes)){
+            return ResponseEntity.badRequest().body("发票开票未包含订单信息");
         }
-
+        for (String orderCode:invoiceOrderCodes.split(",")){
+            if(Objects.nonNull(invoiceService.listByorderCodesLike(orderCode))){
+                return ResponseEntity.badRequest().body("订单编码为("+orderCode+")的订单已申请或已开发票");
+            }
+        }
+        //计算发票税费
+        invoiceService.calculateTexFee(invoice);
+        invoice.setInvoiceCode(snowflakeId.stringId());
         int payResult=payService.currencyPay(invoice);
         if(payResult>0){
-            //保存开票信息
-            invoiceService.applyInvoice(invoice);
+
             return ResponseEntity.ok(invoice);
         }
         return ResponseEntity.badRequest().body("余额支付发票失败");
