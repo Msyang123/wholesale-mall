@@ -106,6 +106,9 @@ microx:
     title: 水果熟了 - 批发商城
     description: 批发商城 - 接口列表
     version: 20180416
+  probe:
+    exception-monitor:
+      stack-trace-package-prefix: "com.lhiot**, com.sgsl**, com.leon**"
   redisson:
     server-mode: single
     addresses: 172.16.10.195:6379

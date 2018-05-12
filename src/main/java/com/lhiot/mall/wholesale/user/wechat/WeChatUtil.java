@@ -318,7 +318,6 @@ public class WeChatUtil {
 			}
 		}
 		sb.append("key=").append(partner_key);
-		//FIXME 可能有问题
 		String sign = DigestUtils.md5Hex(sb.toString().getBytes());
 		return sign.toUpperCase();
 	}

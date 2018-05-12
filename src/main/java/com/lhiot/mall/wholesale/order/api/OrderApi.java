@@ -420,8 +420,8 @@ public class OrderApi {
         if(!Objects.equals(orderDetail.getOrderStatus(),"undelivery")){
             return ResponseEntity.badRequest().body("非待收货订单状态");
         }
-        //FIXME 改为枚举      if(orderDetail.getPayStatus()!=0){
-        if(Objects.equals("unpaid",orderDetail.getPayStatus())){
+        if(Objects.equals("unpaid",orderDetail.getPayStatus())
+                &&!Objects.equals("offline",orderDetail.getSettlementType())){
             return ResponseEntity.badRequest().body("订单未支付");
         }
        return ResponseEntity.ok(orderService.cancelPayedOrder(orderDetail));

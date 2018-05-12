@@ -1,6 +1,5 @@
 package com.lhiot.mall.wholesale.order.api;
 
-import com.leon.microx.util.SnowflakeId;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
@@ -46,6 +45,9 @@ public class DebtOrderApi {
         }
         int debtFee=0;
         List<OrderDetail> orderDetailList=orderService.searchOrdersByOrderCodes(orderIds.split(","));
+        if(orderDetailList==null||orderDetailList.isEmpty()){
+            return ResponseEntity.badRequest().body("未查找到相关订单");
+        }
         for (OrderDetail item:orderDetailList){
             //计算账款订单金额
             debtFee+=item.getPayableFee()+item.getDeliveryFee();

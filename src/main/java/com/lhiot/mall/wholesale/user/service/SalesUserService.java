@@ -89,7 +89,7 @@ public class SalesUserService {
         if (salesUserMapper.updateUserSaleRelationship(salesUserRelation)>0){
             if (Objects.equals(salesUserRelation.getAuditStatus(),"agree")){
                 if (userMapper.updateUserStatus(salesUserRelation.getUserId())>0){//用户表改已认证或未认证
-                    //FIXME 审核通过的时候发送发券广播消息
+                    //审核通过的时候发送发券广播消息
                     rabbit.convertAndSend("store-check-event","", salesUserRelation.getUserId());
                     //发送短信
                     String messageUrl= MessageFormat.format(properties.getSendMessageUrl(),"regist-pass",user.getPhone());
