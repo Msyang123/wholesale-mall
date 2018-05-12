@@ -165,7 +165,7 @@
         </where>
     </select>
 
-    <!-- 根据id查询新品需求详情 -->
+    <!-- 后台管理 根据id查询开票信息详情 -->
     <select id="select" parameterType="long" resultType="com.lhiot.mall.wholesale.invoice.domain.Invoice">
         SELECT <include refid="invoiceColumn"/>
         FROM t_whs_invoice t1
@@ -200,11 +200,12 @@
         UPDATE t_whs_invoice
         <trim prefix="set" suffixOverrides=",">
             <if test="invoiceStatus != null and invoiceStatus != ''">invoice_status=#{invoiceStatus},</if>
+            <if test="rejectReason != null and rejectReason != ''">reject_reason=#{rejectReason},</if>
         </trim>
         where id=#{id}
     </update>
 
-    <!-- 后台管理 修改开票状态 -->
+    <!-- 后台管理 修改驳回状态 -->
     <update id="updateInvoiceReason" parameterType="com.lhiot.mall.wholesale.invoice.domain.Invoice">
         UPDATE t_whs_invoice
         <trim prefix="set" suffixOverrides=",">

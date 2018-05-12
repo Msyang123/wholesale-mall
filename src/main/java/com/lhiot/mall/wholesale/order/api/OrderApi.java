@@ -433,4 +433,11 @@ public class OrderApi {
         return ResponseEntity.ok(orderService.pageQuery(param));
     }
 
+    @GetMapping("/detail/{id}")
+    @ApiOperation(value = "后台管理-根据订单id查看订单详情",response = OrderGridResult.class)
+    public  ResponseEntity<OrderDetail> orderDetail(@PathVariable("id") Long id){
+        return ResponseEntity.ok(orderService.detail(id));
+    }
+
+
 }

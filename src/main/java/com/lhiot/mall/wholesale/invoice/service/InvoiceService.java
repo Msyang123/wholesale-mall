@@ -154,20 +154,10 @@ public class InvoiceService {
     }
 
     /**
-     * 修改开票状态
+     * 修改开票状态和驳回原因
      * @return
      */
     public int updateInvoiceStatus(Invoice invoice) {
-        //开票状态改为已开票
-        invoice.setInvoiceStatus("yes");
         return invoiceMapper.updateInvoiceStatus(invoice);
-    }
-
-    /**
-     * 修改驳回原因
-     * @return
-     */
-    public int updateInvoiceReason(Invoice invoice) {
-        return invoiceMapper.updateInvoiceReason(invoice);
     }
 }

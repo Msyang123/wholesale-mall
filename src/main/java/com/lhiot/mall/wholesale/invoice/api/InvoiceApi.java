@@ -163,14 +163,4 @@ public class InvoiceApi {
         }
     }
 
-    @PutMapping("/reject")
-    @ApiOperation(value = "后台管理-修改驳回原因")
-    public ResponseEntity updateInvoiceReason(@RequestBody Invoice invoice){
-        if (invoiceService.updateInvoiceReason(invoice)>0){
-            return ResponseEntity.ok().body("修改完成");
-        }else{
-            return ResponseEntity.badRequest().body("修改失败");
-        }
-    }
-
 }
