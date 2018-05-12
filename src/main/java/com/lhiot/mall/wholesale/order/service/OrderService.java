@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.beans.IntrospectionException;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.util.*;
@@ -208,38 +209,47 @@ public class OrderService {
         abolish.setOper("退货管理员");
         String cancelResult=warehouse.abolish(abolish);
        log.info(cancelResult);
+        try {
+            Map<String,String> cancelResultJson= JacksonUtils.fromJson(cancelResult,Map.class);
+            if(Objects.equals("0",cancelResultJson.get("echoCode"))){
+                switch (orderDetail.getSettlementType()) {
+                    //1货到付款
+                    case "offline":
+                        //直接取消掉订单就可以了
+                        /*OrderDetail updateOrderDetail =new OrderDetail();
+                        updateOrderDetail.setOrderCode(orderDetail.getOrderCode());
+                        updateOrderDetail.setCurrentOrderStatus();
+                        updateOrderDetail.setOrderStatus();
+                        updateOrderStatus()*/
+                        break;
+                    //0 微信支付
+                    case "wechat":
+                        //查询支付日志
 
+                        //退款 如果微信支付就微信退款
+                        try {
+                            weChatUtil.refund(paymentLog.getTransactionId(), paymentLog.getTotalFee());
 
-
-
-
-         switch (orderDetail.getSettlementType()) {
-            //1货到付款
-            case "offline":
-                //直接取消掉订单就可以了
-                break;
-            //0 微信支付
-            case "wechat":
-                //查询支付日志
-
-                //退款 如果微信支付就微信退款
-                try {
-                    weChatUtil.refund(paymentLog.getTransactionId(), paymentLog.getTotalFee());
-
-                    //TODO 写入退款记录  t_whs_refund_log
+                            //TODO 写入退款记录  t_whs_refund_log
                     /*RefundLog refundLog=new RefundLog();
                     refundLog.setPaymentLogId();
                     refundLogMapper.insertRefundLog();*/
-                } catch (Exception e) {
-                    throw new ServiceException("微信退款失败，请联系客服");
-                }
-                break;
-             //余额支付
-             case "balance":
+                        } catch (Exception e) {
+                            throw new ServiceException("微信退款失败，请联系客服",e);
+                        }
+                        break;
+                    //余额支付
+                    case "balance":
 
-                 break;
-            default:
-                break;
+                        break;
+                    default:
+                        break;
+                }
+            }else{
+                throw new ServiceException("批发单服务-作废失败，返回结果"+cancelResult);
+            }
+        } catch (IOException e) {
+            throw new ServiceException("批发单服务-作废失败，请联系客服",e);
         }
         return 1;
     }
