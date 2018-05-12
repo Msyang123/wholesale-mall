@@ -417,7 +417,7 @@ public class PayService {
             DebtOrder saveDebtOrder=new DebtOrder();
             saveDebtOrder.setOrderDebtCode(debtOrder.getOrderDebtCode());
             saveDebtOrder.setCheckStatus("paid");
-            saveDebtOrder.setPaymentType("balance");
+            saveDebtOrder.setPaymentType("balance");//支付类型：balance-余额支付 wechat-微信 offline-线下支付
             debtOrderService.updateDebtOrderByCode(saveDebtOrder);
             //修改订单为已支付状态
             List<OrderDetail> orderDetailList=orderService.searchOrdersByOrderCodes(debtOrder.getOrderIds().split(","));
@@ -429,18 +429,21 @@ public class PayService {
                 updateOrderDetail.setPayStatus("paid");//支付状态：paid-已支付 unpaid-未支付
                 updateOrderDetail.setOrderCode(item.getOrderCode());
                 orderService.updateOrder(updateOrderDetail);
+
+                OrderDetail searchOrder= orderService.searchOrder(item.getOrderCode());
+
+                PaymentLog paymentLog=new PaymentLog();
+                //写入日志
+                paymentLog.setPaymentType("balance");//支付类型：balance-余额支付 wechat-微信 offline-线下支付
+                paymentLog.setPaymentStep("paid");//支付步骤：sign-签名成功 paid-支付成功
+                paymentLog.setOrderCode(searchOrder.getOrderCode());
+                paymentLog.setOrderId(searchOrder.getId());
+                paymentLog.setUserId(searchOrder.getUserId());
+                paymentLog.setPaymentFrom("debt");//支付来源：order-订单 debt-账款 invoice-发票 recharge-充值
+                paymentLog.setTotalFee(searchOrder.getPayableFee()+searchOrder.getDeliveryFee());
+                paymentLogService.insertPaymentLog(paymentLog);
             }
 
-            PaymentLog paymentLog=new PaymentLog();
-            //写入日志
-            paymentLog.setPaymentType("balance");//支付类型：balance-余额支付 wechat-微信 offline-线下支付
-            paymentLog.setPaymentStep("paid");//支付步骤：sign-签名成功 paid-支付成功
-            paymentLog.setOrderCode(debtOrder.getOrderDebtCode());
-            paymentLog.setOrderId(debtOrder.getId());
-            paymentLog.setUserId(debtOrder.getUserId());
-            paymentLog.setPaymentFrom("debt");//支付来源：order-订单 debt-账款 invoice-发票 recharge-充值
-            paymentLog.setTotalFee(needPayFee);
-            paymentLogService.insertPaymentLog(paymentLog);
             return 1;
         }else{
             throw new ServiceException("扣除用户余额失败");
@@ -460,7 +463,7 @@ public class PayService {
         DebtOrder saveDebtOrder=new DebtOrder();
         saveDebtOrder.setOrderDebtCode(debtOrder.getOrderDebtCode());
         saveDebtOrder.setCheckStatus("paid");
-        saveDebtOrder.setPaymentType("wechat");
+        saveDebtOrder.setPaymentType("wechat");//支付类型：balance-余额支付 wechat-微信 offline-线下支付
         debtOrderService.updateDebtOrderByCode(saveDebtOrder);
         //修改订单为已支付状态
         List<OrderDetail> orderDetailList=orderService.searchOrdersByOrderCodes(debtOrder.getOrderIds().split(","));
@@ -472,14 +475,16 @@ public class PayService {
             updateOrderDetail.setPayStatus("paid");//支付状态：paid-已支付 unpaid-未支付
             updateOrderDetail.setOrderCode(item.getOrderCode());
             orderService.updateOrder(updateOrderDetail);
+
+            PaymentLog paymentLog =paymentLogService.getPaymentLog(item.getOrderCode());
+            paymentLog.setPaymentStep("paid");//支付步骤：sign-签名成功 paid-支付成功
+            paymentLog.setBankType(bankType);//银行类型
+            paymentLog.setTransactionId(transactionId);//微信流水
+            paymentLog.setTotalFee(totalFee);//支付金额
+            paymentLogService.updatePaymentLog(paymentLog);
         }
-        //修改支付日志
-        PaymentLog paymentLog =paymentLogService.getPaymentLog(debtOrder.getOrderDebtCode());
-        paymentLog.setPaymentStep("paid");//支付步骤：sign-签名成功 paid-支付成功
-        paymentLog.setBankType(bankType);//银行类型
-        paymentLog.setTransactionId(transactionId);//微信流水
-        paymentLog.setTotalFee(totalFee);//支付金额
-        paymentLogService.updatePaymentLog(paymentLog);
+
+
         return 1;
     }
 
@@ -524,7 +529,6 @@ public class PayService {
             GoodsStandard goodsStandard= goodsStandardService.goodsStandard(item.getGoodsStandardId());
             Inventory.WholeSaleDtl wholeSaleDtl=inventory.new WholeSaleDtl();
             wholeSaleDtl.setSkuId(goodsStandard.getBarCode());
-            wholeSaleDtl.setSkuId("010100100011");
             wholeSaleDtl.setQty(item.getStandardWeight().multiply(new BigDecimal(item.getQuanity())));//数量乘以重量
             wholeSaleDtl.setPrice(new BigDecimal(item.getGoodsPrice()/100.0));
             wholeSaleDtl.setTotal(new BigDecimal(item.getGoodsPrice()/100.0).multiply(new BigDecimal(item.getQuanity())));
@@ -591,27 +595,7 @@ public class PayService {
         boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
         if(updateResult){
             //保存开票信息
-            invoiceService.applyInvoice(invoice);
-
-            PaymentLog paymentLog=new PaymentLog();
-            //写入日志
-            paymentLog.setPaymentStep("paid");//支付步骤：sign-签名成功 paid-支付成功
-            paymentLog.setOrderCode(invoice.getInvoiceCode());
-            paymentLog.setOrderId(invoice.getId());
-            paymentLog.setUserId(invoice.getUserId());
-            paymentLog.setPaymentFrom("invoice");//支付来源：order-订单 debt-账款 invoice-发票 recharge-充值
-            paymentLog.setPaymentType("balance");//支付类型：balance-余额支付 wechat-微信 offline-线下支付
-           /* paymentLog.setPaymentOrderType(0);
-            paymentLog.setPaymentStep(1);//0签名 1余额支付 2账款订单未支付 3账款订单已支付 4支付回调 5充值回调 6欠款订单支付回调  7 发票支付回调
-            paymentLog.setOrderCode(invoice.getInvoiceCode());
-            paymentLog.setOrderId(invoice.getId());
-            paymentLog.setUserId(invoice.getUserId());
-            paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
-            paymentLog.setPaymentFrom(1);//支付来源于 0订单 1发票
-            paymentLog.setPaymentOrderType(2);//订单类型 0线上订单 1账款订单 2发票*/
-            paymentLog.setTotalFee(needPayFee);
-            paymentLogService.insertPaymentLog(paymentLog);
-            return 1;
+            return invoiceService.applyInvoice(invoice,"balance",null,null);
         }else{
             throw new ServiceException("扣除用户余额失败");
         }

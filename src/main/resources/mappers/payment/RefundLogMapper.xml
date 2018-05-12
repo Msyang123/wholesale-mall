@@ -5,7 +5,7 @@
     <insert id="insertRefundLog" parameterType="com.lhiot.mall.wholesale.pay.domain.RefundLog"
             useGeneratedKeys="true"
             keyProperty="id">
-        insert into t_whs_payment_log (
+        insert into t_whs_refund_log (
                               transaction_id,
                               refund_fee,
                               refund_time,
