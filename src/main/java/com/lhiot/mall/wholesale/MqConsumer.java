@@ -2,6 +2,8 @@ package com.lhiot.mall.wholesale;
 
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
+import com.lhiot.mall.wholesale.coupon.domain.CouponEntity;
+import com.lhiot.mall.wholesale.coupon.domain.CouponStatusType;
 import com.lhiot.mall.wholesale.coupon.service.CouponEntityService;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.service.OrderService;
@@ -39,8 +41,8 @@ public class MqConsumer{
      */
     @RabbitHandler
     @RabbitListener(queues = "order-repeat-queue")
-    public void orderOuttime(String getMessage) {
-        log.info("orderOuttime =========== " + getMessage);
+    public void orderOutTime(String getMessage) {
+        log.info("orderOutTime =========== " + getMessage);
         try {
             OrderDetail orderDetail=JacksonUtils.fromJson(getMessage, OrderDetail.class);
             OrderDetail searchOrderDetail= orderService.searchOrder(orderDetail.getOrderCode());
@@ -56,7 +58,7 @@ public class MqConsumer{
                 }else if (Objects.equals("paying", searchOrderDetail.getOrderStatus())){
                     //继续往延迟队列中发送
                     rabbit.convertAndSend("order-direct-exchange", "order-dlx-queue", JacksonUtils.toJson(orderDetail), message -> {
-                        message.getMessageProperties().setExpiration(String.valueOf(1 * 60 * 1000));
+                        message.getMessageProperties().setExpiration(String.valueOf(30 * 60 * 1000));
                         return message;
                     });
                 }
@@ -65,18 +67,58 @@ public class MqConsumer{
             log.error("消息处理错误" + e.getLocalizedMessage());
         }
     }
+
+    /**
+     * 订单创建广播
+     * @param getMessage
+     */
+    @RabbitHandler
+    @RabbitListener(queues = "order-create-publisher")
+    public void orderCreatePublisher(String getMessage){
+        log.info("订单创建了"+getMessage);
+        try {
+            OrderDetail orderDetail = JacksonUtils.fromJson(getMessage, OrderDetail.class);
+        }  catch (IOException e) {
+            log.error("消息处理错误" + e.getLocalizedMessage());
+        }
+        //couponEntityService.delete("11");
+    }
+
+    /**
+     * 订单支付优惠券设置为失效
+     * @param getMessage
+     */
     @RabbitHandler
     @RabbitListener(queues = "coupon-publisher")
     public void couponPublisher(String getMessage){
         log.info("coupon-publisher"+getMessage);
-        couponEntityService.delete("11");
+        CouponEntity coupon = null;
+        try {
+            OrderDetail orderDetail = JacksonUtils.fromJson(getMessage, OrderDetail.class);
+            coupon = new CouponEntity();
+            coupon.setId(orderDetail.getOrderCoupon());
+            coupon.setCouponStatus(CouponStatusType.used.toString());
+        }  catch (IOException e) {
+            log.error("消息处理错误" + e.getLocalizedMessage());
+        }
+        if(Objects.isNull(coupon)){
+        	couponEntityService.update(coupon);
+        }
     }
 
+    /**
+     * 订单支付后限时抢购活动处理
+     * @param getMessage
+     */
     @RabbitHandler
     @RabbitListener(queues = "flasesale-publisher")
     public void flasesalePublisher(String getMessage){
         log.info("flasesale-publisher"+getMessage);
-        //couponEntityService.delete("11");
+        try {
+            OrderDetail orderDetail = JacksonUtils.fromJson(getMessage, OrderDetail.class);
+        }  catch (IOException e) {
+            log.error("消息处理错误" + e.getLocalizedMessage());
+        }
     }
 
 }

@@ -12,6 +12,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @ToString
@@ -63,5 +64,8 @@ public class OrderGridParam extends PageObject{
 
     @ApiModelProperty(notes="订单codes",dataType="String")
     private List<String> orderIds;
+
+    @ApiModelProperty(notes="审核状态",dataType="String")
+    private List<Map> auditStatuss;
 
 }

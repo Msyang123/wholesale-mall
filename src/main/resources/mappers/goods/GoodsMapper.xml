@@ -120,8 +120,12 @@
 		where g.id=#{id}
 	</select>
 
-	<select id="goodsFlashsale" parameterType="long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale">
-		select special_price,limit_quantity,activity_id from t_whs_flashsale_goods where goods_standard_id=#{0}
+	<select id="goodsFlashsale" parameterType="map" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale">
+		select special_price,limit_quantity,activity_id from t_whs_flashsale_goods
+		<trim prefix="where" prefixOverrides="and">
+			<if test="goodsStandardId != null and goodsStandardId != 0">and goods_standard_id=#{goodsStandardId}</if>
+			<if test="activityId != null and activityId != 0">and activity_id=#{activityId}</if>
+		</trim>
 	</select>
 
 

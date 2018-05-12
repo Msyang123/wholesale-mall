@@ -72,7 +72,7 @@ public class CouponEntityApi {
     @PostMapping("/coupon")
     @ApiOperation(value = "手动发券", response = String.class)
     public ResponseEntity<String> releaseCoupon(@RequestBody ReleaseCouponParam param) {
-        return ResponseEntity.ok(couponEntityService.realeaseCupon(param));
+        return ResponseEntity.ok(couponEntityService.releaseCoupon(param));
     }
     
     @PostMapping("/coupon/gird")

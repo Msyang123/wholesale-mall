@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.user.mapper;
 
 import com.lhiot.mall.wholesale.user.domain.SalesUser;
+import com.lhiot.mall.wholesale.user.domain.SalesUserPerformance;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.ShopResult;
 import com.lhiot.mall.wholesale.user.domain.User;
@@ -45,4 +46,10 @@ public interface SalesUserMapper {
     SalesUser findCode(String code);
 
     SalesUser login(String acount);
+    //查询所有的销售，用于下拉
+    List<SalesUser> salesUsers();
+
+    Integer pageCountSalesUserPerformance(Map<String,Object> param);
+
+    List<SalesUserPerformance> pageSalesUserPerformance(Map<String,Object> param);
 }

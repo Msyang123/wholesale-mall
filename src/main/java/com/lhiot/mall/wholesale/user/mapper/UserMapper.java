@@ -1,13 +1,16 @@
 package com.lhiot.mall.wholesale.user.mapper;
 
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.domain.UserAddress;
-import org.apache.ibatis.annotations.Mapper;
-
-import java.util.List;
+import com.lhiot.mall.wholesale.user.domain.UserGridParam;
+import com.lhiot.mall.wholesale.user.domain.UserResult;
 
 @Mapper
 public interface UserMapper {
@@ -60,4 +63,8 @@ public interface UserMapper {
 
     Integer debtFee(long userId);
 
+    //分页查询分类
+    List<UserResult> pageQuery(UserGridParam param);
+    //查询分类的总记录数
+    int pageQueryCount(UserGridParam param);
 }

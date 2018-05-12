@@ -224,7 +224,7 @@ public class GoodsCategoryService {
 	public List<Goods> categoryGoods(Long categoryId){
 		List<Goods> goods = goodsService.findByCategory(categoryId);
 		//设置最低价格
-		goodsService.minPriceAndSoldQua(goods,25);
+		goodsService.priceRegionAndSoldQua(goods);
 		return goods;
 	}
 	

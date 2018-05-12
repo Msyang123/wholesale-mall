@@ -19,6 +19,11 @@ public class PaymentProperties {
      * 发送验证码的第三方推送服务地址
      */
     private String sendMessageUrl;
+
+    /**
+     * 验证发送验证码服务地址
+     */
+    private String validateMessageUrl;
     /**
      * http连接超时（毫秒数）
      */

@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.article.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
@@ -17,10 +18,10 @@ import java.sql.Timestamp;
 @EqualsAndHashCode(callSuper = false)
 public class Article {
     @JsonProperty("id")
-    private long id;
+    private Long id;
 
     @JsonProperty("articleType")
-    private Integer articleType;
+    private String articleType;
 
     @JsonProperty("createType")
     private String createType;
@@ -46,7 +47,12 @@ public class Article {
     @JsonProperty("articleUrl")
     private String articleUrl;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @JsonProperty("createTime")
     private Timestamp createTime;
+
+    @JsonProperty("publishStatus")
+    private String publishStatus;
+
 
 }

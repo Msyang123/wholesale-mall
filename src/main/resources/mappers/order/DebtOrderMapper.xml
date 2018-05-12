@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.lhiot.mall.wholesale.order.mapper.DebtOrderMapper">
     <sql id="debtOrderColumn">
-       t1.id as id,t1.check_time as checkTime,t1.order_debt_code as orderDebt_Code,t1.user_id as userId,t1.create_time as createTime,
+       t1.id as id,t1.check_time as checkTime,t1.order_debt_code as orderDebtCode,t1.user_id as userId,t1.create_time as createTime,
     t1.debt_fee as debtFee,t1.check_status as checkStatus,t1.payment_type as paymentType,t1.payment_evidence as paymentEvidence,
     t1.order_ids as orderIds,t1.remarks as remarks
     </sql>
@@ -74,6 +74,8 @@
         from t_whs_debt_order t1
         <trim prefix="where" prefixOverrides="and">
             <if test="checkStatus != null and checkStatus != ''">and t1.check_status = #{checkStatus}</if>
+            <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
+            <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
             <if test="userIds != null and userIds.size()>0">
                 and t1.user_id in
                 <foreach collection="userIds" item="item" open="(" separator="," close=")">
@@ -85,7 +87,7 @@
     </select>
 
     <!-- 根据账款订单id查询详情 -->
-    <select id="select" parameterType="long" resultType="com.lhiot.mall.wholesale.order.domain.DebtOrderResult">
+    <select id="searchDebtOrderById" parameterType="long" resultType="com.lhiot.mall.wholesale.order.domain.DebtOrderResult">
         SELECT <include refid="debtOrderColumn"/>
         FROM t_whs_debt_order t1
         WHERE t1.id = #{0}

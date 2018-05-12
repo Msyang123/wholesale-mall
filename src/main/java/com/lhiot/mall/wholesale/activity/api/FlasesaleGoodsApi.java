@@ -66,7 +66,7 @@ public class FlasesaleGoodsApi {
 
     @GetMapping("/flashsale/{id}")
     @ApiOperation(value = "根据ID查询", response = FlashActivity.class)
-    public ResponseEntity<FlashActivity> goodsUnit(@PathVariable("id") Long id) {
+    public ResponseEntity<FlashActivity> flashActivity(@PathVariable("id") Long id) {
         return ResponseEntity.ok(flashsaleService.flashActivity(id));
     }
     
@@ -76,11 +76,11 @@ public class FlasesaleGoodsApi {
         return ResponseEntity.ok(flashsaleService.pageQuery(param));
     }
     
-    @GetMapping("/flashsale/records/{userId}/{activityId}")
+    @GetMapping("/flashsale/records/{userId}/{standardId}")
     @ApiOperation(value = "获取用户抢购数量")
     public ResponseEntity<Integer> userRecords(@PathVariable("userId") Long userId,
-    		@PathVariable("activityId") Long activityId) {
-        return ResponseEntity.ok(flashsaleService.userRecords(userId, activityId));
+    		@PathVariable("standardId") Long standardId) {
+        return ResponseEntity.ok(flashsaleService.userRecords(userId, standardId));
     }
     
     @GetMapping("/flashsale/periods")

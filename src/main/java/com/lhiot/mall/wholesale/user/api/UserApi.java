@@ -1,46 +1,70 @@
 package com.lhiot.mall.wholesale.user.api;
 
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.MultiFormatWriter;
-import com.google.zxing.common.BitMatrix;
-import com.leon.microx.common.exception.ServiceException;
-import com.leon.microx.common.wrapper.ArrayObject;
-import com.lhiot.mall.wholesale.base.QRCodeUtil;
-import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
-import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
-import com.lhiot.mall.wholesale.user.domain.User;
-import com.lhiot.mall.wholesale.user.domain.UserAddress;
-import com.lhiot.mall.wholesale.user.service.SalesUserService;
-import com.lhiot.mall.wholesale.user.service.UserService;
-import com.lhiot.mall.wholesale.user.wechat.*;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RMapCache;
-import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-
-import javax.imageio.ImageIO;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotNull;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
+
+import org.redisson.api.RMapCache;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.common.BitMatrix;
+import com.leon.microx.common.exception.ServiceException;
+import com.leon.microx.common.wrapper.ArrayObject;
+import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.base.QRCodeUtil;
+import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
+import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
+import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.domain.UserAddress;
+import com.lhiot.mall.wholesale.user.domain.UserGridParam;
+import com.lhiot.mall.wholesale.user.service.SalesUserService;
+import com.lhiot.mall.wholesale.user.service.UserService;
+import com.lhiot.mall.wholesale.user.wechat.AccessToken;
+import com.lhiot.mall.wholesale.user.wechat.JsapiPaySign;
+import com.lhiot.mall.wholesale.user.wechat.JsapiTicket;
+import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
+import com.lhiot.mall.wholesale.user.wechat.Token;
+import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 
 @Api(description ="用户接口")
 @Slf4j
@@ -341,10 +365,25 @@ public class UserApi {
             @ApiImplicitParam(paramType = "path", name = "phone", value = "手机号", required = true, dataType = "String")
     })
     public ResponseEntity verificationCode(@PathVariable("phone") String phone){
-        //发送验证码到第三方推送服务器
-        String sendMessageUrl=MessageFormat.format(weChatUtil.getProperties().getSendMessageUrl(),phone,"sigup");
-        restTemplate.postForObject(sendMessageUrl,null,Map.class);
-        return ResponseEntity.ok(phone);
+        //手机验证码
+        RMapCache<String,String> cache=  redissonClient.getMapCache("userVerificationCode");
+        if(Objects.nonNull(cache.get("phone"+phone))){
+            return ResponseEntity.badRequest().body("验证码2分钟内有效，请勿重复发送");
+        }
+        try {
+            String randomCode= ""+weChatUtil.buildRandom(6);
+            //将手机验证码(2分钟) 缓存起来
+            cache.put("phone"+phone,randomCode,2, TimeUnit.MINUTES);
+            //发送验证码到第三方推送服务器
+            Map<String,String> body=new HashMap<>();
+            body.put("number",randomCode);
+            String sendMessageUrl=MessageFormat.format(weChatUtil.getProperties().getSendMessageUrl(),"verification",phone);
+            restTemplate.postForObject(sendMessageUrl, body, String.class);
+            return ResponseEntity.ok().build();
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body("验证码发送失败");
+        }
+
     }
 
     @PostMapping("/register")
@@ -355,13 +394,20 @@ public class UserApi {
             @ApiImplicitParam(paramType = "query", name = "verifCode", value = "手机验证码", required = true, dataType = "String")
     })
     public ResponseEntity register(@RequestBody @NotNull User user, @RequestParam("code") String code,@RequestParam("verifCode") String verifCode) {
-
+        //手机验证码
+        RMapCache<String,String> cache =  redissonClient.getMapCache("userVerificationCode");
+        if(Objects.isNull(cache.get("phone"+user.getPhone()))){
+            return ResponseEntity.badRequest().body("验证码已失效，请再次发送验证码");
+        }
         try {
-            String verifiKey=MessageFormat.format("sendsms:{0}:{1}",user.getPhone(),"verification");
-            //FIXME 会序列化成对象 采用最新方案直接验证
-            String redisVerifCode=null;//=String.valueOf(redisTemplate.opsForValue().get(verifiKey));
-            //需要通过redis客户端获取验证码code 然后比较传递的code与redis中存储的是否一致
-            if(!Objects.equals(redisVerifCode,verifCode)){
+            //到远端验证手机验证码是否正确
+            String verifiUrl=MessageFormat.format(weChatUtil.getProperties().getValidateMessageUrl(),"verification",user.getPhone());
+            Map<String,String> body=new HashMap<>();
+            body.put("code",verifCode);
+            body.put("key","number");
+            String result=restTemplate.postForObject(verifiUrl, body, String.class);
+            log.info("verifiCode result:"+result);
+            if (!Objects.equals(result,"true")){
                 return ResponseEntity.badRequest().body("手机验证码不正确");
             }
             if (userService.register(user, code)) {
@@ -419,7 +465,12 @@ public class UserApi {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
     }
-
+    
+    @PostMapping("/info/gird")
+    @ApiOperation(value = "新建一个查询，分页查询", response = PageQueryObject.class)
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) UserGridParam param) {
+        return ResponseEntity.ok(userService.pageQuery(param));
+    }
+    
 }

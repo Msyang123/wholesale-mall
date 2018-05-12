@@ -27,7 +27,7 @@ public class OrderDetail {
     @JsonProperty("salesmanId")
     private Long salesmanId;
 
-    @JsonProperty("orderType")
+    @JsonProperty("settlementType")
     private String settlementType;
 
     @JsonProperty("status")
@@ -56,9 +56,6 @@ public class OrderDetail {
     @JsonProperty("paidType")
     private String payStatus;
 
-    @JsonProperty("payType")
-    private String payType;
-
     @JsonProperty("comments")
     private String remarks;
 
@@ -86,7 +83,7 @@ public class OrderDetail {
     @JsonProperty("proList")
     private List<OrderGoods> orderGoodsList;
 
-    @JsonProperty("shopName")
+     @JsonProperty("shopName")
     private String shopName;
 
     @JsonProperty("userName")
@@ -98,6 +95,16 @@ public class OrderDetail {
     @JsonProperty("needPay")
     private  Integer payableFee;
 
+    @JsonProperty("addressDetail")
+    private String addressDetail;
+
+   @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonProperty("paymentTime")
+    private Timestamp paymentTime;
+
+    @JsonProperty("salesmanName")
+    private String salesmanName;
+
     @JsonProperty("expire")
     private String expire;//是否已过期 yes no
 
@@ -105,7 +112,7 @@ public class OrderDetail {
     private String hdCode;
 
     @JsonProperty("orderCoupon")
-    private Integer orderCoupon;//优惠券
+    private Long orderCoupon;//优惠券
 
     @JsonProperty("start")
     private Integer start;
@@ -116,5 +123,9 @@ public class OrderDetail {
     private String sidx;
 
     private Integer page;
+
+    private Integer code;//操作返回码 1001 更新成功 1002添加成功 1003支付成功 1004 审核成功
+
+    private String msg;//返回结果
 
 }

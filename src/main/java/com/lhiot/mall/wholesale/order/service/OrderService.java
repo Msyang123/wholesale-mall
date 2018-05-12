@@ -5,18 +5,16 @@ import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
-import com.lhiot.mall.wholesale.goods.service.GoodsService;
 import com.lhiot.mall.wholesale.goods.service.GoodsStandardService;
 import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.hdsend.Abolish;
-import com.lhiot.mall.wholesale.pay.hdsend.Inventory;
 import com.lhiot.mall.wholesale.pay.hdsend.Warehouse;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
+import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
@@ -31,10 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
-
 
 
 @Slf4j
@@ -44,7 +40,6 @@ public class OrderService {
     private final OrderMapper orderMapper;
 
     private final UserService userService;
-
 
     private final WeChatUtil weChatUtil;
 
@@ -56,7 +51,7 @@ public class OrderService {
 
     private final SalesUserService salesUserService;
 
-    private final GoodsService goodsService;
+
 
     private final GoodsStandardService goodsStandardService;
 
@@ -65,7 +60,7 @@ public class OrderService {
     @Autowired
     public OrderService(OrderMapper orderMapper, UserService userService, PaymentLogService paymentLogService,
                         PaymentProperties paymentProperties, SnowflakeId snowflakeId,Warehouse warehouse,
-                        SalesUserService salesUserService,GoodsService goodsService,GoodsStandardService goodsStandardService,RabbitTemplate rabbit) {
+                        SalesUserService salesUserService,GoodsStandardService goodsStandardService,RabbitTemplate rabbit) {
         this.orderMapper = orderMapper;
         this.userService = userService;
         this.weChatUtil=new WeChatUtil(paymentProperties);
@@ -73,7 +68,6 @@ public class OrderService {
         this.snowflakeId=snowflakeId;
         this.warehouse=warehouse;
         this.salesUserService=salesUserService;
-        this.goodsService=goodsService;
         this.goodsStandardService=goodsStandardService;
         this.rabbit=rabbit;
     }
@@ -95,14 +89,20 @@ public class OrderService {
     }
 
     public OrderDetail searchOrder(String orderCode){
-        return orderMapper.searchOrder(orderCode);
+        OrderDetail orderDetail=orderMapper.searchOrder(orderCode);
+        //商品信息
+        orderDetail.setOrderGoodsList(orderMapper.searchOrderGoods(orderDetail.getId()));
+        return orderDetail;
     }
 
 /*    public OrderDetail searchOrderById(long orderId){
         return orderMapper.searchOrderById(orderId);
     }*/
     public OrderDetail searchOrderById(long id) {
-      return  orderMapper.select(id);
+        OrderDetail orderDetail=orderMapper.select(id);
+        //商品信息
+        orderDetail.setOrderGoodsList(orderMapper.searchOrderGoods(orderDetail.getId()));
+        return orderDetail;
     }
 
     public List<OrderDetail> searchAfterSaleOrder(OrderDetail orderDetail) {
@@ -121,88 +121,30 @@ public class OrderService {
         //产生订单编码
         orderDetail.setOrderCode(snowflakeId.stringId());
         orderDetail.setCreateTime(new Timestamp(System.currentTimeMillis()));
-
-        if(Objects.equals(orderDetail.getSettlementType(),"cod")){  //改为枚举
-            orderDetail.setOrderStatus("undelivery");//待收货
-            //FIXME 直接发送总仓
-            Inventory inventory=new Inventory();
-            inventory.setUuid(UUID.randomUUID().toString());
-            inventory.setSenderCode("9646");
-            inventory.setSenderWrh("07310101");
-            inventory.setReceiverCode(null);
-            inventory.setContactor("老曹");
-            inventory.setPhoneNumber("18888888888");
-            inventory.setDeliverAddress("五一大道98号");
-            inventory.setRemark("快点送");
-            inventory.setOcrDate(new Date());
-            inventory.setFiller("填单人");
-            inventory.setSeller("销售员");
-            inventory.setSouceOrderCls("批发商城");
-            inventory.setNegInvFlag("1");
-            inventory.setMemberCode(null);
-            inventory.setFreight(new BigDecimal(21.3));
-
-            //清单
-            List<Inventory.WholeSaleDtl> wholeSaleDtlList=new ArrayList<>();
-            Inventory.WholeSaleDtl wholeSaleDtl1=inventory.new WholeSaleDtl();
-            wholeSaleDtl1.setSkuId("010100100011");
-            wholeSaleDtl1.setQty(new BigDecimal(3));
-            wholeSaleDtl1.setPrice(new BigDecimal(100.1));
-            wholeSaleDtl1.setTotal(null);
-            wholeSaleDtl1.setFreight(null);
-            wholeSaleDtl1.setPayAmount(new BigDecimal((99.1)));
-            wholeSaleDtl1.setUnitPrice(null);
-            wholeSaleDtl1.setPriceAmount(new BigDecimal(200.1));
-            wholeSaleDtl1.setBuyAmount(new BigDecimal(99.2));
-            wholeSaleDtl1.setBusinessDiscount(new BigDecimal(0.1));
-            wholeSaleDtl1.setPlatformDiscount(new BigDecimal(0));
-            wholeSaleDtl1.setQpc(new BigDecimal(5));
-            wholeSaleDtl1.setQpcStr("1*5");
-
-            wholeSaleDtlList.add(wholeSaleDtl1);
-            inventory.setProducts(wholeSaleDtlList);
-
-            List<Inventory.Pay> pays=new ArrayList<>();
-            Inventory.Pay pay=inventory.new Pay();
-
-            pay.setTotal(new BigDecimal(234.56));
-            pay.setPayName("现金支付");
-            pays.add(pay);
-            inventory.setPays(pays);
-
-            String hdCode=warehouse.savenew2state(inventory);
-            log.info(hdCode);
-
-            //修改订单状态为已支付状态
-            orderDetail.setHdCode(hdCode);//总仓编码
-            orderDetail.setHdStatus("success");//海鼎发送成功
-            orderDetail.setOrderStatus("undelivery");//待发货状态
-
-        }else{
-            orderDetail.setOrderStatus("unpaid");//待付款
+        //非货到付款订单需要支付
+         if(!Objects.equals(orderDetail.getSettlementType(),"offline")){
+                orderDetail.setOrderStatus("unpaid");//待付款
             //mq设置三十分钟失效
             rabbit.convertAndSend("order-direct-exchange", "order-dlx-queue", JacksonUtils.toJson(orderDetail), message -> {
-                message.getMessageProperties().setExpiration(String.valueOf(1 * 60 * 1000));
+                message.getMessageProperties().setExpiration(String.valueOf(30 * 60 * 1000));
                 return message;
             });
         }
 
-
+        //保存订单信息
         orderMapper.save(orderDetail);
         //将保存的订单id赋值到订单商品中
+
         orderDetail.getOrderGoodsList().forEach(item->{
             item.setOrderId(orderDetail.getId());
             //查询商品进货价写入到订单商品中
             GoodsStandard goodsStandard= goodsStandardService.searchByGoodsId(item.getGoodsId());
-            item.setPurchasePrice(goodsStandard.getPurchasePrice());
-            //减商品库存
-            Goods goods=new Goods();
-            goods.setId(item.getGoodsId());
-            goods.setReduceStockLimit(item.getQuanity());//递减
-            goodsService.update(goods);
+            item.setPurchasePrice(goodsStandard.getPurchasePrice());//进货价
+            item.setStandardWeight(goodsStandard.getWeight());//规格重量
+            item.setPaymentTime(new Timestamp(System.currentTimeMillis()));
+            item.setRefundStatus("no");//是否退货:yes-已退货  no-未退货
         });
         //发送订单创建广播
-        //FIXME 创建的时候发送创建广播消息 用于优惠券设置无效
         rabbit.convertAndSend("order-created-event","",JacksonUtils.toJson(orderDetail));
         return orderMapper.saveOrderGoods(orderDetail.getOrderGoodsList());
     }
@@ -263,7 +205,7 @@ public class OrderService {
 
          switch (orderDetail.getSettlementType()) {
             //1货到付款
-            case "cod":
+            case "offline":
                 //直接取消掉订单就可以了
                 break;
             //0 线上支付
@@ -386,7 +328,6 @@ public class OrderService {
                         orderGridResult.setPhone(user.getPhone());
                         orderGridResult.setShopName(user.getShopName());
                         orderGridResult.setUserName(user.getUserName());
-                        orderGridResult.setCreateTime(orderGridResult.getCreateTime().toString());
                         break;
                     }
                 }
@@ -431,18 +372,56 @@ public class OrderService {
      */
     public OrderDetail detail(Long id) {
         //账款订单详情信息
-        OrderDetail orderDetail = orderMapper.select(id);
+        OrderDetail orderDetail = orderMapper.searchOrderById(id);
         if (Objects.nonNull(orderDetail)) {
-            User user = userService.user(orderDetail.getUserId()); //用户信息
+            //用户信息
+            User user = userService.user(orderDetail.getUserId());
             if (Objects.nonNull(user)) {
                 orderDetail.setShopName(user.getShopName());
                 orderDetail.setUserName(user.getUserName());
                 orderDetail.setPhone(user.getPhone());
+                orderDetail.setAddressDetail(user.getAddressDetail());
                 orderDetail.setDeliveryAddress(user.getAddressDetail());
+            }
+            //支付信息
+            PaymentLog paymentLog = paymentLogService.getPaymentLog(orderDetail.getOrderCode());
+            if (Objects.nonNull(paymentLog)) {
+                orderDetail.setPaymentTime(paymentLog.getPaymentTime());
+            }
+            //业务员信息
+            SalesUser salesUser = salesUserService.findById(orderDetail.getSalesmanId());
+            if (Objects.nonNull(salesUser)) {
+                orderDetail.setSalesmanName(salesUser.getSalesmanName());
+            }
+            //商品信息
+            List<OrderGoods> orderGoods = orderMapper.searchOrderGoods(orderDetail.getId());
+            if (Objects.nonNull(orderGoods)) {
+                orderDetail.setOrderGoodsList(orderGoods);
             }
         }
         return orderDetail;
     }
+
+    public String countPayAbleFeeByUserId(List<Long> userIds,String startTime,String endTime){
+        Map<String,Object> param = new HashMap<String,Object>();
+        param.put("userIds",userIds);
+        param.put("startTime",startTime);
+        param.put("endTime",endTime);
+        return orderMapper.countPayAbleFee(param);
+    }
+    public boolean isExistsOrderByuserId(Long userId){
+        if(null != userId){
+            return orderMapper.isExistsOrderByuserId(userId) > 0;
+        }
+        return false;
+    }
+    //根据userId查询欠款总额
+    public String countOverDue(List<Long> shopIds){
+        Map<String,Object> param = new HashMap<String,Object>();
+        param.put("userIds",shopIds);
+        return orderMapper.countOverDue(param);
+    }
+
 
     public OrderDetail userOrder(OrderParam orderParam){
         return orderMapper.userOrder(orderParam);

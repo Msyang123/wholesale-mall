@@ -46,7 +46,7 @@ public class GoodsInfo {
     @JsonProperty("extraSrc")
     private String otherImage;
 
-    @JsonProperty("goodsStandradId")
+    @JsonProperty("goodsStandardId")
     private Long goodsStandardId;
 
     @JsonProperty("flashPrice")

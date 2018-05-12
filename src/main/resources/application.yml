@@ -38,7 +38,8 @@ wholesale-mall:
     string-http-message-converter-default-charset: UTF-8
   payment:
     charset: UTF-8
-    send-message-url: http://172.16.10.196:6321/verify/{0}?verifyCodeType={1}
+    send-message-url: http://172.16.10.196:5111/sms-captcha/{0}/{1}/sms
+    validate-message-url: http://172.16.10.196:5111/sms-captcha/{0}/{1}/sms/validate
     we-chat-oauth:
       app-id: wx8521acbe400f89e3
       app-secret: 5176ebed12516da3cabb3a4d0e6d3ad6
@@ -72,12 +73,18 @@ wholesale-mall:
 #转发队列队列名
         repeat_queue_name: pay-repeat-queue
     fanout-queue:
+#订单创建广播
       order-created-event:
+        - order-create-publisher
+#订单支付成功广播
+      order-paid-event:
         - coupon-publisher
         - flasesale-publisher
       order-payed-event:
         - test-publisher-1
         - test-publisher-4
+      store-check-event:
+        - add-coupon
 hd:
   config:
     charset: UTF-8

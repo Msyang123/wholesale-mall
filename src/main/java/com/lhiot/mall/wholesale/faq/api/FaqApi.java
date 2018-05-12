@@ -49,7 +49,7 @@ public class FaqApi {
     }
 
     @PutMapping("/faq/addorupdate")
-    @ApiOperation(value = "新增/修改FAQ",response = Faq.class)
+    @ApiOperation(value = "后台管理系统---新增/修改FAQ",response = Faq.class)
     public  ResponseEntity saveFaq(@RequestBody Faq faq) {
         faq.setCreateTime(new Timestamp(new Date().getTime()));
         //FIXME 修改为登录用户
@@ -62,7 +62,7 @@ public class FaqApi {
     }
 
     @PostMapping("/faq/grid")
-    @ApiOperation(value = "新建一个查询，分页查询FAQ", response = PageQueryObject.class)
+    @ApiOperation(value = "后台管理系统--分页查询FAQ", response = PageQueryObject.class)
     public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) FaqGridParam param) {
         return ResponseEntity.ok(faqService.pageQuery(param));
     }

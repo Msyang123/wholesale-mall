@@ -3,14 +3,13 @@ package com.lhiot.mall.wholesale.order.service;
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.base.DataMergeUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.demand.domain.DemandGoods;
-import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
 import com.lhiot.mall.wholesale.order.domain.DebtOrderResult;
-import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
 import com.lhiot.mall.wholesale.order.domain.gridparam.DebtOrderGridParam;
 import com.lhiot.mall.wholesale.order.mapper.DebtOrderMapper;
+import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,12 +34,18 @@ public class DebtOrderService {
 
     private final UserService userService;
 
+    private final OrderService orderService;
+
+    private final SalesUserService salesUserService;
+
     private final SnowflakeId snowflakeId;
 
     @Autowired
-    public DebtOrderService(DebtOrderMapper debtOrderMapper, UserService userService, SnowflakeId snowflakeId) {
+    public DebtOrderService(DebtOrderMapper debtOrderMapper, UserService userService, OrderService orderService, SalesUserService salesUserService, SnowflakeId snowflakeId) {
         this.debtOrderMapper = debtOrderMapper;
         this.userService = userService;
+        this.orderService = orderService;
+        this.salesUserService = salesUserService;
         this.snowflakeId=snowflakeId;
     }
 
@@ -171,12 +176,12 @@ public class DebtOrderService {
     }
 
     /**
-     * 查询账款订单详情
+     * 后台管理系统--查询账款订单详情
      * @return
      */
     public DebtOrderResult detail(Long id) {
         //账款订单详情信息
-        DebtOrderResult debtOrderResult = debtOrderMapper.select(id);
+        DebtOrderResult debtOrderResult = debtOrderMapper.searchDebtOrderById(id);
         if (Objects.nonNull(debtOrderResult)) {
             //用户信息
             User user1 = userService.user(debtOrderResult.getUserId());
@@ -185,6 +190,7 @@ public class DebtOrderService {
                 debtOrderResult.setUserName(user1.getUserName());
                 debtOrderResult.setPhone(user1.getPhone());
             }
+           //业务员信息
         }
         return debtOrderResult;
     }

@@ -1,9 +1,28 @@
 package com.lhiot.mall.wholesale.user.api;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import javax.validation.constraints.NotNull;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.ResultObject;
-import com.lhiot.mall.wholesale.coupon.domain.CouponConfig;
-import com.lhiot.mall.wholesale.coupon.domain.ReleaseCouponParam;
 import com.lhiot.mall.wholesale.coupon.service.CouponConfigService;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderParam;
@@ -15,20 +34,10 @@ import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
 import com.sgsl.util.ImmutableMap;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.WebResource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-
-import javax.validation.constraints.NotNull;
-import java.lang.reflect.Array;
-import java.util.*;
 
 @Api(description = "业务员接口")
 @Slf4j
@@ -46,6 +55,7 @@ public class SalesUserApi {
 
     @Autowired
     private RestTemplate restTemplate;
+
 
     @Autowired
     public SalesUserApi(SalesUserService salesUserService, UserService userService, OrderService orderService, CouponConfigService couponConfigService) {
@@ -174,25 +184,11 @@ public class SalesUserApi {
        salesUserRelation.setAuditStatus(checkStatus);
        salesUserRelation.setUserId(userId);
        salesUserRelation.setSalesmanId(salesId);
-            //if (Objects.equals(salesUserRelation.getAuditStatus(),"agree")){
-                if (salesUserService.updateUserSaleRelationship(salesUserRelation)>0){//关系表改状态
-                    if (userService.updateUserStatus(salesUserRelation.getUserId())>0){//用户表改已认证或未认证
-                        StringBuilder ids = new StringBuilder();//夺取券包IDs
-                        List<CouponConfig> configs = couponConfigService.couponConfig("activity");
-                        for (CouponConfig coupon:configs) {
-                            ids.append(coupon.getId()).append(",");
-                        }
-                        System.out.println(ids.substring(0,ids.length()-1));
-                       /* Map<String,Object> param = new HashMap<String,Object>();
-                        param.put("couponConfigIds",ids.substring(0,ids.length()-1));
-                        param.put("phone",userService.user(userId).getPhone());
-                        Object o =restTemplate.exchange("http://localhost:3051/coupon", HttpMethod.POST, new HttpEntity<>(param), String.class);
-                        System.out.println(o.toString()+" =================================");*/
-                    }
-                }
-          //  }
-
-        return ResponseEntity.ok("操作成功");
+        if (salesUserService.userCheck(salesUserRelation)){//关系表改状态
+            return ResponseEntity.ok("操作成功");
+        }else{
+            return ResponseEntity.ok("操作失败");
+        }
     }
 
 
@@ -259,4 +255,9 @@ public class SalesUserApi {
         return ResponseEntity.ok(salesUserService.findCode(code));
     }
 
+    @GetMapping("/sales-users")
+    @ApiOperation(value = "查询所有业务员")
+    public ResponseEntity<List<SalesUser>> findAll(){
+        return ResponseEntity.ok(salesUserService.salesUsers());
+    }
 }

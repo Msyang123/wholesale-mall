@@ -8,17 +8,25 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.lhiot.mall.wholesale.activity.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.activity.domain.ActivityPeriodsType;
+import com.lhiot.mall.wholesale.activity.domain.ActivityType;
+import com.lhiot.mall.wholesale.activity.domain.FlashActivity;
+import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
+import com.lhiot.mall.wholesale.activity.domain.FlashGoodsRecord;
+import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
 import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
 import com.lhiot.mall.wholesale.activity.mapper.FlashsaleMapper;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
+import com.lhiot.mall.wholesale.goods.domain.GoodsMinPrice;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
+import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 import com.lhiot.mall.wholesale.goods.service.GoodsStandardService;
 
 /**
@@ -31,15 +39,17 @@ import com.lhiot.mall.wholesale.goods.service.GoodsStandardService;
 public class FlashsaleService {
 	
 	private final FlashsaleMapper flashsaleMapper;
-	
+	private final GoodsPriceRegionService goodsPriceRegionService;
 	private final GoodsStandardService goodsStandardService;
 	private final ActivityService activityService;
 	@Autowired
 	public FlashsaleService(FlashsaleMapper flasesaleMapper,GoodsStandardService goodsStandardService,
-		   ActivityService activityService){
+		   ActivityService activityService,
+		   GoodsPriceRegionService goodsPriceRegionService){
 		this.flashsaleMapper = flasesaleMapper;
 		this.goodsStandardService = goodsStandardService;
 		this.activityService = activityService;
+		this.goodsPriceRegionService = goodsPriceRegionService;
 	}
 	
 	/**
@@ -51,7 +61,6 @@ public class FlashsaleService {
 		
 		String standardIds = flashActivity.getStandardIds();
 		Long activityId = flashActivity.getActivityId();
-		Integer price = flashActivity.getSpecialPrice();
 		
 		if(StringUtils.isBlank(standardIds)){
 			return false;
@@ -72,7 +81,9 @@ public class FlashsaleService {
 			activity.setGoodsStock(100);//默认100份
 			activity.setLimitQuantity(1);//默认限购1份
 			activity.setRankNum(rank);
-			activity.setSpecialPrice(price);
+			activity.setRemain(100);//默认设置100份
+			//默认商品价格区间的最大值,没有设置最大值则为原价的8.5折
+			activity.setSpecialPrice(this.specialPrice(id));
 			list.add(activity);
 			rank++;
 		}
@@ -98,6 +109,8 @@ public class FlashsaleService {
 	 * @return
 	 */
 	public boolean update(FlashActivity flashActivity){
+		//修改初始时候修改库存时，剩余数量与库存数相等
+		flashActivity.setRemain(flashActivity.getGoodsStock());
 		return flashsaleMapper.update(flashActivity)>0;
 	}
 	
@@ -139,14 +152,14 @@ public class FlashsaleService {
 	}
 	
 	/**
-	 * 去重重复的
+	 * 去重复的
 	 * @param standardIds
 	 * @param id活动id
 	 */
 	public void duplicate(List<Long> standardIds,Long id){
 		List<FlashsaleGoods> list = flashsaleMapper.search(id);
 		if(list.isEmpty()) return ;
-		for(int i=standardIds.size();i>=0;i--){
+		for(int i=standardIds.size()-1;i>=0;i--){
 			for(FlashsaleGoods ac : list){
 				if(Objects.equals(standardIds.get(i), ac.getGoodsStandardId())){
 					standardIds.remove(i);
@@ -212,9 +225,11 @@ public class FlashsaleService {
 		//查询并设置抢购进度
 		for(FlashsaleGoods flashsaleGoods : flashGoods){
 			int goodsStock = flashsaleGoods.getGoodsStock();
-			Map<String,Object> flashsaleProgress = this.flashsaleProgress(flashsaleGoods.getId(), goodsStock);
-			flashsaleGoods.setProgress(flashsaleProgress.get("progress").toString());
-			flashsaleGoods.setRemain(flashsaleProgress.get("remainNum").toString());
+			int remain = flashsaleGoods.getRemain();
+			//计算抢购进度
+			BigDecimal b1 = new BigDecimal((goodsStock-remain)*100);
+			BigDecimal b2 = new BigDecimal(goodsStock);
+			flashsaleGoods.setProgress(b1.divide(b2).intValue()+"");
 		}
 		//组装商品信息
 		this.contructData(flashGoods);
@@ -223,33 +238,99 @@ public class FlashsaleService {
 	}
 	
 	/**
-	 * 抢购商品抢购进度统计，及剩余数量
-	 * @param id
-	 * @return
-	 */
-	public Map<String,Object> flashsaleProgress(Long id,Integer goodsStock){
-		int progress = 0;
-		Integer sum = flashsaleMapper.flashGoodsRecord(id);
-		if(Objects.equals(0, sum)){
-			return ImmutableMap.of("progress", progress, "remainNum", goodsStock);
-		}
-		BigDecimal b1 = new BigDecimal(sum*100);
-		BigDecimal b2 = new BigDecimal(goodsStock);
-		progress = b1.divide(b2).intValue();
-		return ImmutableMap.of("progress", progress, "remainNum", (goodsStock-sum));
-	}
-	
-	/**
 	 * 查询用户当前活动的抢购数量
 	 * @param userId
 	 * @param activityId
 	 * @return
 	 */
-	public Integer userRecords(Long userId,Long activityId){
-		Map<String,Object> param = ImmutableMap.of("userId", userId, "activityId", activityId);
+	public Integer userRecords(Long userId,Long standardId){
+		//获取当前开启的活动
+		FlashActivityGoods flashActivity = activityService.currentActivity(ActivityType.flashsale);
+		Long activityId = flashActivity.getId();
+		Map<String,Object> param = ImmutableMap.of("userId", userId, "activityId", activityId,"standardId",standardId);
 		return flashsaleMapper.userRecord(param);
 	}
 
+	/**
+	 * 给一个默认8.5折的抢购价
+	 * @param price
+	 * @return
+	 */
+	public Integer specialPrice(Long standardId){
+		//获取当前商品区间最大价格
+		Integer discount = 0;
+		List<Long> list = new ArrayList<>();
+		list.add(standardId);
+		if(!list.isEmpty()){
+			List<GoodsMinPrice> goodsMinPrices = goodsPriceRegionService.minPrices(list);
+			if(!goodsMinPrices.isEmpty()){
+				GoodsMinPrice goodsMinPrice = goodsMinPrices.get(0);
+				Integer maxPrice = goodsMinPrice.getMaxPrice();
+				if(Objects.isNull(maxPrice) || Objects.equals(maxPrice, 0)){
+					discount = maxPrice;
+				}
+			}
+		}
+		//如果没有设置价格区间，则为原价的9折
+		if(Objects.equals(discount, 0)){
+			//获取商品的原价
+			GoodsStandard goodsStandard = goodsStandardService.goodsStandard(standardId);
+			BigDecimal b1 = new BigDecimal(0.90);//默认一个9.0折的折扣
+			BigDecimal bp = new BigDecimal(goodsStandard.getPrice());
+			discount = b1.multiply(bp).intValue();
+		}
+		return discount;
+	}
 
-
+	/**
+	 * 根据商品规格id查询商品的抢购信息
+	 * @param standardId
+	 * @return
+	 */
+	public FlashsaleGoods flashsaleGoods(Long standardId){
+		FlashsaleGoods result = null;
+		FlashActivityGoods ac = activityService.currentActivity(ActivityType.flashsale);
+		if(Objects.isNull(ac)){
+			return result;
+		}
+		List<FlashsaleGoods> flashGoods = flashsaleMapper.search(ac.getId());
+		if(flashGoods.isEmpty()){
+			return result;
+		}
+		for(FlashsaleGoods goods : flashGoods){
+			if(Objects.equals(standardId, goods.getGoodsStandardId())){
+				result = goods;
+				break;
+			}
+		}
+		return result; 
+	}
+	
+	/**
+	 * 获取用户的抢购商品信息
+	 * @param standardId
+	 * @param userId
+	 * @return
+	 */
+	public GoodsFlashsale goodsFlashsale(Long standardId,Long userId){
+		GoodsFlashsale goodsFlashSale = flashsaleMapper.searchFlashGoods(standardId);;
+		if(Objects.isNull(goodsFlashSale)){
+			return new GoodsFlashsale();
+		}
+		Long activityId = goodsFlashSale.getActivityId();
+		Map<String,Object> param = ImmutableMap.of("userId", userId, "activityId", activityId,"standardId",standardId);
+		goodsFlashSale.setUserPucharse(flashsaleMapper.userRecord(param));
+		
+		return goodsFlashSale;
+	}
+	
+	/**
+	 * 新增抢购
+	 * @param param
+	 * @return
+	 */
+	public boolean createFlashRecord(FlashGoodsRecord param){
+		int count = flashsaleMapper.insertRecord(param);
+		return count>0;
+	}
 }

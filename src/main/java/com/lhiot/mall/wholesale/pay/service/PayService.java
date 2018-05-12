@@ -1,9 +1,13 @@
 package com.lhiot.mall.wholesale.pay.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leon.microx.common.exception.ServiceException;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
+import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.StringReplaceUtil;
+import com.lhiot.mall.wholesale.goods.domain.Goods;
+import com.lhiot.mall.wholesale.goods.service.GoodsService;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
@@ -22,6 +26,7 @@ import com.sgsl.hd.client.vo.OrderReduceData;
 import com.sgsl.hd.client.vo.ProductsData;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,15 +49,19 @@ public class PayService {
     private final DebtOrderService debtOrderService;
     private final InvoiceService invoiceService;
     private final Warehouse warehouse;
+    private final GoodsService goodsService;
+    private final RabbitTemplate rabbit;
 
     @Autowired
-    public PayService(PaymentLogService paymentLogService,UserService userService,OrderService orderService,DebtOrderService debtOrderService,InvoiceService invoiceService,Warehouse warehouse){
+    public PayService(PaymentLogService paymentLogService, UserService userService, OrderService orderService, DebtOrderService debtOrderService, InvoiceService invoiceService, Warehouse warehouse, GoodsService goodsService, RabbitTemplate rabbit){
         this.paymentLogService=paymentLogService;
         this.userService=userService;
         this.orderService=orderService;
         this.debtOrderService=debtOrderService;
         this.invoiceService=invoiceService;
         this.warehouse=warehouse;
+        this.goodsService = goodsService;
+        this.rabbit = rabbit;
     }
     /**
      * 微信充值支付签名
@@ -358,62 +367,9 @@ public class PayService {
         updateUser.setBalance(-needPayFee);//需要扣除的值
         boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
         if(updateResult){
-            //FIXME 发送订单到海鼎总仓
-            Inventory inventory=new Inventory();
-            inventory.setUuid(UUID.randomUUID().toString());
-            inventory.setSenderCode("9646");
-            inventory.setSenderWrh("07310101");
-            inventory.setReceiverCode(null);
-            inventory.setContactor("老曹");
-            inventory.setPhoneNumber("18888888888");
-            inventory.setDeliverAddress("五一大道98号");
-            inventory.setRemark("快点送");
-            inventory.setOcrDate(new Date());
-            inventory.setFiller("填单人");
-            inventory.setSeller("销售员");
-            inventory.setSouceOrderCls("批发商城");
-            inventory.setNegInvFlag("1");
-            inventory.setMemberCode(null);
-            inventory.setFreight(new BigDecimal(21.3));
-
-            //清单
-            List<Inventory.WholeSaleDtl> wholeSaleDtlList=new ArrayList<>();
-            Inventory.WholeSaleDtl wholeSaleDtl1=inventory.new WholeSaleDtl();
-            wholeSaleDtl1.setSkuId("010100100011");
-            wholeSaleDtl1.setQty(new BigDecimal(3));
-            wholeSaleDtl1.setPrice(new BigDecimal(100.1));
-            wholeSaleDtl1.setTotal(null);
-            wholeSaleDtl1.setFreight(null);
-            wholeSaleDtl1.setPayAmount(new BigDecimal((99.1)));
-            wholeSaleDtl1.setUnitPrice(null);
-            wholeSaleDtl1.setPriceAmount(new BigDecimal(200.1));
-            wholeSaleDtl1.setBuyAmount(new BigDecimal(99.2));
-            wholeSaleDtl1.setBusinessDiscount(new BigDecimal(0.1));
-            wholeSaleDtl1.setPlatformDiscount(new BigDecimal(0));
-            wholeSaleDtl1.setQpc(new BigDecimal(5));
-            wholeSaleDtl1.setQpcStr("1*5");
-
-            wholeSaleDtlList.add(wholeSaleDtl1);
-            inventory.setProducts(wholeSaleDtlList);
-
-            List<Inventory.Pay> pays=new ArrayList<>();
-            Inventory.Pay pay=inventory.new Pay();
-
-            pay.setTotal(new BigDecimal(234.56));
-            pay.setPayName("现金支付");
-            pays.add(pay);
-            inventory.setPays(pays);
-
-            String hdCode=warehouse.savenew2state(inventory);
-            log.info(hdCode);
-            //获取海鼎总仓返回的订单号
-            //TODO 修改订单并且发送海鼎总仓订单
-            //修改订单状态为已支付状态
-            orderDetail.setHdCode(hdCode);//总仓编码
-            orderDetail.setHdStatus("success");//海鼎发送成功
-            orderDetail.setOrderStatus("undelivery");//待发货状态
-
-            orderService.updateOrder(orderDetail);
+            //减商品库存
+            orderDetail.setPayStatus("paid");//已支付
+            sendToStock(orderDetail);
 
             PaymentLog paymentLog=new PaymentLog();
             //写入日志
@@ -425,18 +381,6 @@ public class PayService {
             paymentLog.setPaymentFrom("order");//支付来源于 order-订单 debt-账款 invoice-发票 recharge-充值
             paymentLog.setTotalFee(needPayFee);
             paymentLogService.insertPaymentLog(paymentLog);
-           /* paymentLog.setPaymentOrderType(0);
-            paymentLog.setPaymentStep(1);//0签名 1余额支付 2账款订单未支付 3账款订单已支付 4支付回调 5充值回调 6欠款订单支付回调  7 发票支付回调
-            paymentLog.setOrderCode(orderDetail.getOrderCode());
-            paymentLog.setOrderId(orderDetail.getId());
-            paymentLog.setUserId(orderDetail.getUserId());
-            paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
-            paymentLog.setPaymentFrom(0);//支付来源于 0订单 1发票
-            paymentLog.setTotalFee(needPayFee);
-            paymentLogMapper.insertPaymentLog(paymentLog);*/
-            //修改订单并且发送海鼎订单
-            orderDetail.setOrderStatus("undelivery");//已付款状态
-            orderDetail.setCurrentOrderStatus("unpaid");//待付款状态
             return 1;
         }else{
             throw new ServiceException("扣除用户余额失败");
@@ -491,6 +435,80 @@ public class PayService {
         }
     }
 
+    /**
+     * 减商品库存 发货 修改订单状态为待收货
+     * @param orderDetail
+     */
+    public int sendToStock(OrderDetail orderDetail){
+        orderDetail.getOrderGoodsList().forEach(item->{
+            Goods goods=new Goods();
+            goods.setId(item.getGoodsId());
+            goods.setReduceStockLimit(item.getQuanity());//递减
+            goodsService.update(goods);
+        });
+        //FIXME 发送订单到海鼎总仓
+        Inventory inventory=new Inventory();
+        inventory.setUuid(UUID.randomUUID().toString());
+        inventory.setSenderCode("9646");
+        inventory.setSenderWrh("07310101");
+        inventory.setReceiverCode(null);
+        inventory.setContactor("老曹");
+        inventory.setPhoneNumber("18888888888");
+        inventory.setDeliverAddress("五一大道98号");
+        inventory.setRemark("快点送");
+        inventory.setOcrDate(new Date());
+        inventory.setFiller("填单人");
+        inventory.setSeller("销售员");
+        inventory.setSouceOrderCls("批发商城");
+        inventory.setNegInvFlag("1");
+        inventory.setMemberCode(null);
+        inventory.setFreight(new BigDecimal(21.3));
+
+        //清单
+        List<Inventory.WholeSaleDtl> wholeSaleDtlList=new ArrayList<>();
+        Inventory.WholeSaleDtl wholeSaleDtl1=inventory.new WholeSaleDtl();
+        wholeSaleDtl1.setSkuId("010100100011");
+        wholeSaleDtl1.setQty(new BigDecimal(3));
+        wholeSaleDtl1.setPrice(new BigDecimal(100.1));
+        wholeSaleDtl1.setTotal(null);
+        wholeSaleDtl1.setFreight(null);
+        wholeSaleDtl1.setPayAmount(new BigDecimal((99.1)));
+        wholeSaleDtl1.setUnitPrice(null);
+        wholeSaleDtl1.setPriceAmount(new BigDecimal(200.1));
+        wholeSaleDtl1.setBuyAmount(new BigDecimal(99.2));
+        wholeSaleDtl1.setBusinessDiscount(new BigDecimal(0.1));
+        wholeSaleDtl1.setPlatformDiscount(new BigDecimal(0));
+        wholeSaleDtl1.setQpc(new BigDecimal(5));
+        wholeSaleDtl1.setQpcStr("1*5");
+
+        wholeSaleDtlList.add(wholeSaleDtl1);
+        inventory.setProducts(wholeSaleDtlList);
+
+        List<Inventory.Pay> pays=new ArrayList<>();
+        Inventory.Pay pay=inventory.new Pay();
+
+        pay.setTotal(new BigDecimal(234.56));
+        pay.setPayName("现金支付");
+        pays.add(pay);
+        inventory.setPays(pays);
+
+        String hdCode=warehouse.savenew2state(inventory);
+        log.info(hdCode);
+        //获取海鼎总仓返回的订单号
+        //TODO 修改订单并且发送海鼎总仓订单
+        //修改订单状态为已支付状态
+        orderDetail.setHdCode(hdCode);//总仓编码
+        orderDetail.setHdStatus("success");//海鼎发送成功
+        orderDetail.setOrderStatus("undelivery");//待发货状态
+        int result=orderService.updateOrder(orderDetail);
+        //发布广播消息
+        try {
+            rabbit.convertAndSend("order-paid-event","", JacksonUtils.toJson(orderDetail));
+        } catch (JsonProcessingException e) {
+            log.error("支付订单发布广播消息"+e.getLocalizedMessage());
+        }
+        return result;
+    }
     /**
      * 余额支付发票
      * @return

@@ -26,7 +26,7 @@ public class OrderGoods {
     private Long orderId;
 
     @JsonProperty("num")
-    private int quanity;
+    private Integer quanity;
 
     @JsonProperty("price")
     private Integer goodsPrice;
@@ -35,7 +35,7 @@ public class OrderGoods {
     private Timestamp paymentTime;
 
     @JsonProperty("refundStatus")
-    private Integer refundStatus;
+    private String refundStatus;
 
     @JsonProperty("discountGoodsPrice")
     private Integer discountGoodsPrice;
@@ -63,4 +63,7 @@ public class OrderGoods {
 
     @JsonProperty("goodsId")
     private Long goodsId;
+
+    @JsonProperty("flash")
+    private int flash;//0 正常 1限时抢购
 }

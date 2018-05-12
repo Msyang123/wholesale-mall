@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.leon.microx.util.BeanUtils;
 import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.activity.domain.Activity;
@@ -44,6 +45,7 @@ public class ActivityService {
 	 * @return
 	 */
 	public boolean create(Activity activity){
+		
 		return activityMapper.insert(activity)>0;
 	}
 	
@@ -95,9 +97,9 @@ public class ActivityService {
 			param.setPage(page);
 			param.setStart(0);
 		}
-		List<Activity> goodsUnits = activityMapper.pageQuery(param);
+		List<Activity> activitys = activityMapper.pageQuery(param);
 		PageQueryObject result = new PageQueryObject();
-		result.setRows(goodsUnits);
+		result.setRows(activitys);
 		result.setPage(page);
 		result.setRecords(rows);
 		result.setTotal(totalPages);
@@ -119,12 +121,8 @@ public class ActivityService {
 				.map(id -> Long.parseLong(id.trim())).collect(Collectors.toList());
 		List<Activity> activities = activityMapper.search(list);
 		LocalDate currentTime = LocalDate.now();
-		//DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyy-MM-dd HH:mm:ss");
 		for(Activity activity : activities){
-			String st = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-								.format(activity.getStartTime());
-			LocalDate beginTime = LocalDate.parse(st);
-			boolean afterBeginTime = currentTime.isAfter(beginTime);
+			boolean afterBeginTime = this.isAfterNow(activity, currentTime);
 			//如果活动已经开启或者当前时间大于活动开始时间，则不能删除活动
 			boolean vailid = "yes".equals(activity.getVaild());
 			if(afterBeginTime || vailid){
@@ -143,7 +141,11 @@ public class ActivityService {
 	 */
 	public boolean allowOperation(Activity activity){
 		boolean success = true;
-		//如果是关闭状态是可以操作的
+		//判断修改的时候，值是否发生改变
+		if(!this.activityDataHasChange(activity)){
+			success = false;
+			return success;
+		}
 		if("no".equals(activity.getVaild())){
 			return success;
 		}
@@ -196,5 +198,58 @@ public class ActivityService {
 		return activityMapper.flashActivity(activityId);
 	}
 	
+	/**
+	 * 当前时间在开始时间之后
+	 * @param activity
+	 * @return
+	 */
+	public boolean isAfterNow(Activity activity,LocalDate currentTime){
+		String st = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+				.format(activity.getStartTime());
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyy-MM-dd HH:mm:ss");
+		LocalDate beginTime = LocalDate.parse(st,formatter);
+		boolean afterBeginTime = currentTime.isAfter(beginTime);
+		return afterBeginTime;
+	}
 	
+	/**
+	 * 修改的时候判断数据是否已经改变
+	 * @param activity
+	 * @return
+	 */
+	public boolean activityDataHasChange(Activity activity){
+		boolean success = true;
+		Long id = activity.getId();
+		//新增
+		if(Objects.isNull(id)){
+			return success;
+		}
+		//修改
+		Activity activityInDb = this.activity(id);
+		//如果当前时间在活动开启时间之后，则判断除却状态的其他属性是否改变
+		if(!this.isAfterNow(activityInDb, LocalDate.now())){
+			return success;
+		}
+		if("no".equals(activity.getVaild())){
+			return success;
+		}
+		Map<String,Object> dataInParam = BeanUtils.toMap(activity);
+		Map<String,Object> dataInDb = BeanUtils.toMap(activityInDb);
+		//暂时不判断活动的状态值的改变
+		dataInParam.remove("vaild");
+		dataInDb.remove("vaild");
+		//判断通一属性的值是否发生修改
+		for(String key1 : dataInParam.keySet()){
+			for(String key2 : dataInDb.keySet()){
+				if(key1.equals(key2)){
+					if(!Objects.equals(dataInParam.get(key1), 
+							dataInDb.get(key2))){
+						success = false;
+						break;
+					}
+				}
+			}
+		}
+		return success;
+	}
 }

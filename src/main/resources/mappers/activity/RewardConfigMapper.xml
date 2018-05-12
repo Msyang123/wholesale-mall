@@ -1,23 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.lhiot.mall.wholesale.advertise.mapper.RewardConfigMapper">
+<mapper namespace="com.lhiot.mall.wholesale.activity.mapper.RewardConfigMapper">
 	
 	<sql id="rewardCongfinColumn">
 		t1.id,t1.activity_id as activityId ,t1.coupon_config_id as couponConfigId,t1.reward_amount as rewardAmount
 	</sql>
 	
-	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.activity.domain.RewardConfig">
-		select <include refid="rewardCongfinColumn"/> from t_whs_reward_config t1 where t1.id in
-		<foreach collection="list" item = "item" open="(" separator="," close=")">
-			#{item}
-		</foreach>
+	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.activity.domain.RewardCoupon">
+		select <include refid="rewardCongfinColumn"/> from t_whs_reward_config t1 where t1.id = #{0}
 	</select>
 	
 	<select id="selectByActivity" parameterType="Long" resultType="com.lhiot.mall.wholesale.activity.domain.RewardCoupon">
-		select <include refid="rewardCongfinColumn"/>,date_format(t2.start_time,'%Y-%m-%d %h:%i:%s') as startTime,
-		date_format(t2.end_time,'%Y-%m-%d %h:%i:%s') as endTime,t2.activity_type as activityType
+		select <include refid="rewardCongfinColumn"/>
 		from t_whs_reward_config t1
-		left join t_whs_activity t2 on t1.activity_id = t2.id
 		where t1.activity_id = #{0}
 	</select>
 	
@@ -34,8 +29,6 @@
 	<update id="update" parameterType="com.lhiot.mall.wholesale.activity.domain.RewardConfig">
 		update t_whs_reward_config 
 		<trim prefix="set" suffixOverrides=",">
-			<if test="activityId != null and activityId != ''">activity_id=#{activityId},</if>
-			<if test="couponConfigId != null and couponConfigId != ''">coupon_config_id=#{couponConfigId},</if>
 			<if test="rewardAmount != null and rewardAmount != ''">reward_amount=#{rewardAmount},</if>
 		</trim>
 		where id = #{id}
@@ -52,18 +45,19 @@
 	<!-- lynn后台管理 分页查询2018/4/19 -->
 	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.activity.domain.gridparam.RewardConfigGridParam" 
 		resultType="Integer">
-		select count(id) from t_whs_reward_config where activity_id = #{0}
+		select count(id) from t_whs_reward_config where activity_id = #{activityId}
 	</select>
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
 	<select id="pageQuery" parameterType="com.lhiot.mall.wholesale.activity.domain.gridparam.RewardConfigGridParam" 
 		resultType="com.lhiot.mall.wholesale.activity.domain.RewardCoupon">
-		select <include refid="rewardCongfinColumn"/>,date_format(t2.start_time,'%Y-%m-%d %h:%i:%s') as startTime,
-		date_format(t2.end_time,'%Y-%m-%d %h:%i:%s') as endTime,t2.activity_type as activityType
-		from t_whs_reward_config t1
-		left join t_whs_activity t2 on t1.activity_id = t2.id
-		where t1.activity_id = #{0}
+		select <include refid="rewardCongfinColumn"/>,
+		t3.coupon_name as couponName,FORMAT(t3.full_fee/100.0,2) as fullFee,
+		FORMAT(t3.coupon_fee/100.0,2) as couponFee
+		FROM t_whs_reward_config t1
+		LEFT JOIN t_whs_coupon_config t2 ON t1.coupon_config_id = t2.id
+		LEFT JOIN t_whs_coupon_plate t3 ON t2.coupon_id = t3.id
+		where t1.activity_id = #{activityId}
 		<include refid="common.pager"></include>
 	</select>
-
 </mapper>

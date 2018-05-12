@@ -145,8 +145,18 @@ public class InvoiceApi {
 
     @PutMapping("/status")
     @ApiOperation(value = "后台管理-修改开票状态")
-    public ResponseEntity updateInvoiceStatus(@RequestBody(required = true) long id){
-        if (invoiceService.updateInvoiceStatus(id)>0){
+    public ResponseEntity updateInvoiceStatus(@RequestBody Invoice invoice){
+        if (invoiceService.updateInvoiceStatus(invoice)>0){
+            return ResponseEntity.ok().body("修改完成");
+        }else{
+            return ResponseEntity.badRequest().body("修改失败");
+        }
+    }
+
+    @PutMapping("/reject")
+    @ApiOperation(value = "后台管理-修改驳回原因")
+    public ResponseEntity updateInvoiceReason(@RequestBody Invoice invoice){
+        if (invoiceService.updateInvoiceReason(invoice)>0){
             return ResponseEntity.ok().body("修改完成");
         }else{
             return ResponseEntity.badRequest().body("修改失败");
