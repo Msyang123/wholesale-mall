@@ -91,7 +91,7 @@ public class CurrencyPayApi {
     }
 
 
-    @PutMapping("/invoice-pay/{invoiceCode}")
+    @PostMapping("/invoice-pay")
     @ApiOperation(value = "余额支付发票", response = String.class)
     public ResponseEntity invoicePay(@RequestBody Invoice invoice) {
         //不允许重复开票
@@ -99,13 +99,16 @@ public class CurrencyPayApi {
         if(StringUtils.isBlank(invoiceOrderCodes)){
             return ResponseEntity.badRequest().body("发票开票未包含订单信息");
         }
-        for (String orderCode:invoiceOrderCodes.split(",")){
-            if(Objects.nonNull(invoiceService.listByorderCodesLike(orderCode))){
-                return ResponseEntity.badRequest().body("订单编码为("+orderCode+")的订单已申请或已开发票");
+        for (String item:invoiceOrderCodes.split(",")){
+            OrderDetail orderDetail=orderService.searchOrderById(Long.valueOf(item));
+            if(Objects.isNull(orderDetail)){
+                return ResponseEntity.badRequest().body("订单编号("+item+")不存在");
+            }else if(Objects.nonNull(orderDetail)&&Objects.equals("yes",orderDetail.getInvoiceStatus())){
+                return ResponseEntity.badRequest().body("订单编号("+item+")已经开票，请勿重复开票");
             }
         }
         //计算发票税费
-        invoiceService.calculateTexFee(invoice);
+        invoiceService.calculateTaxFee(invoice);
         invoice.setInvoiceCode(snowflakeId.stringId());
         int payResult=payService.currencyPay(invoice);
         if(payResult>0){
