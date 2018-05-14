@@ -17,7 +17,13 @@ import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import com.lhiot.mall.wholesale.user.domain.UserGridParam;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
-import com.lhiot.mall.wholesale.user.wechat.*;
+import com.lhiot.mall.wholesale.user.wechat.AccessToken;
+import com.lhiot.mall.wholesale.user.wechat.JsapiPaySign;
+import com.lhiot.mall.wholesale.user.wechat.JsapiTicket;
+import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
+import com.lhiot.mall.wholesale.user.wechat.Token;
+import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
