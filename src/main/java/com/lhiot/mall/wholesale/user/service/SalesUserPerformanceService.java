@@ -256,7 +256,11 @@ public class SalesUserPerformanceService{
             //                }
             //            }
             //        }
+
             result.setPage(page);
+
+
+
             result.setRecords(rows);
             result.setTotal(totalPages);
             result.setRows(orderGridResultList);//将查询记录放入返回参数中
