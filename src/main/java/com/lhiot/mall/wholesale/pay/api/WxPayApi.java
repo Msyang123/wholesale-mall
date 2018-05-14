@@ -206,7 +206,7 @@ public class WxPayApi {
                 User updateUser=new User();
                 updateUser.setId(user.getId());
                 updateUser.setBalance(fee);//需要增加用户余额
-                userService.updateUser(updateUser);//增加用户余额
+                userService.updateBalance(updateUser);//扣除用户余额
 
                 paymentLog.setPaymentStep("paid");//支付步骤：sign-签名成功 paid-支付成功
                 paymentLog.setBankType(wrap.get("bank_type"));//银行类型

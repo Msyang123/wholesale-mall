@@ -60,9 +60,19 @@
             <if test="phone !=null and phone !=''">
                 ,phone=#{phone}
             </if>
-            <if test="registerTime !=null and registerTime !=''">
+            <if test="registerTime !=null">
                 ,register_time=#{registerTime}
             </if>
+            <if test="userStatus !=null and userStatus !=''">
+                ,user_status=#{userStatus}
+            </if>
+        </trim>
+        where id=#{id}
+    </update>
+
+    <update id="updateBalance" parameterType="com.lhiot.mall.wholesale.user.domain.User">
+        UPDATE t_whs_user
+        <trim prefix="set" prefixOverrides=",">
             <if test="balance !=null and balance !=0">
                 ,balance=balance+#{balance}
             </if>

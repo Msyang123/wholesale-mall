@@ -82,4 +82,10 @@ public class User {
     }*/
     @JsonProperty("auditStatus")
     private String auditStatus;
+
+    @JsonProperty("code")
+    private String code;
+
+    @JsonProperty("verifCode")
+    private String verifCode;
 }
