@@ -4,6 +4,12 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
+import org.springframework.util.CollectionUtils;
+
+import java.util.Arrays;
+import java.util.Map;
 
 @Data
 @Configuration
@@ -18,12 +24,12 @@ public class PaymentProperties {
     /**
      * 发送验证码的第三方推送服务地址
      */
-    private String sendMessageUrl;
+    private InetRemoteUrl sendSms;
 
     /**
      * 验证发送验证码服务地址
      */
-    private String validateMessageUrl;
+    private InetRemoteUrl validateSms;
     /**
      * http连接超时（毫秒数）
      */
@@ -111,5 +117,26 @@ public class PaymentProperties {
          * 前端静态页使用代理
          */
         private String proxy;
+    }
+
+    @Data
+    public static class InetRemoteUrl {
+        private String url;
+        private String version;
+
+        public <T> HttpEntity<T> createRequest(T parameters) {
+            return this.createRequest(parameters, null);
+        }
+
+        public <T> HttpEntity<T> createRequest(T parameters, Map<String, String> extHeaders) {
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+            headers.setAccept(Arrays.asList(MediaType.ALL, MediaType.APPLICATION_JSON_UTF8));
+            headers.set("version", version);
+            if (!CollectionUtils.isEmpty(headers)) {
+                extHeaders.forEach(headers::set);
+            }
+            return new HttpEntity<>(parameters, headers);
+        }
     }
 }

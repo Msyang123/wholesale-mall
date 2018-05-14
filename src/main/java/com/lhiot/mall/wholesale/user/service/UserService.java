@@ -2,6 +2,7 @@ package com.lhiot.mall.wholesale.user.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leon.microx.common.exception.ServiceException;
+import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
@@ -18,6 +19,7 @@ import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
 import com.sgsl.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -131,10 +133,10 @@ public class UserService {
                 throw new ServiceException("注册审核提交失败");
             }
             //发送短信
-            String messageUrl= MessageFormat.format(properties.getSendMessageUrl(),"check-reminding",user.getPhone());
-            Map<String,String> body=new HashMap<>();
-            body.put("phone",salesUser.getSalesmanPhone());
-            String result=restTemplate.postForObject(messageUrl, body, String.class);
+            Map<String, Object> body = ImmutableMap.of("phone",salesUser.getSalesmanPhone());
+            HttpEntity<Map<String, Object>> request = properties.getSendSms().createRequest(body);
+            String messageUrl= MessageFormat.format(properties.getSendSms().getUrl(),"check-reminding",user.getPhone());
+            String result=restTemplate.postForObject(messageUrl, request, String.class);
             log.info("result:"+result);
             return true;
         }
