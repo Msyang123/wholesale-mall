@@ -133,7 +133,7 @@ public class PaymentProperties {
             headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
             headers.setAccept(Arrays.asList(MediaType.ALL, MediaType.APPLICATION_JSON_UTF8));
             headers.set("version", version);
-            if (!CollectionUtils.isEmpty(headers)) {
+            if (!CollectionUtils.isEmpty(extHeaders)) {
                 extHeaders.forEach(headers::set);
             }
             return new HttpEntity<>(parameters, headers);
