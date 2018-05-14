@@ -88,7 +88,7 @@
     <select parameterType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication" id="refundInfo" resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
         select id,application_type applicationType,exist_problem existProblem,other_problem otherProblem,
         refund_evidence refundEvidence,audit_status auditStatus,order_discount_fee orderDiscountFee,
-        delivery_fee deliveryFee,comments comments,order_id orderId,user_id userId
+        delivery_fee deliveryFee,comments comments,order_id orderId,user_id userId,contacts_phone contactsPhone
         from t_whs_order_refund_application
         <trim prefix="where" prefixOverrides="and">
             <if test="orderId!=null and orderId!=''">
