@@ -379,7 +379,7 @@ public class UserApi {
             //发送验证码到第三方推送服务器
             Map<String,String> body=new HashMap<>();
             body.put("number",randomCode);
-            String sendMessageUrl=MessageFormat.format(weChatUtil.getProperties().getSendMessageUrl(),"verification",phone);
+            String sendMessageUrl=MessageFormat.format(weChatUtil.getProperties().getSendMessageUrl(),"verification-wholesale",phone);
             restTemplate.postForObject(sendMessageUrl, body, String.class);
             return ResponseEntity.ok().body("发送验证码成功");
         }catch (Exception e){
