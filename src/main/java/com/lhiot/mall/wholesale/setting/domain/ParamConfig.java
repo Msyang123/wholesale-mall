@@ -25,4 +25,6 @@ public class ParamConfig {
 
     @JsonProperty("configParamValue")
     private String configParamValue;
+    
+    private String notes;
 }

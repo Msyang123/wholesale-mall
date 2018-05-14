@@ -32,6 +32,9 @@
             <if test="totalFee!=null and totalFee!=0">
                 total_fee=#{totalFee},
             </if>
+            <if test="refundFee!=null and refundFee!=0">
+                refund_fee=#{refundFee},
+            </if>
             <if test="bankType!=null and bankType!=''">
                 bank_type=#{bankType},
             </if>

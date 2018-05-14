@@ -28,10 +28,14 @@ import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
 import com.lhiot.mall.wholesale.order.service.OrderService;
+import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.setting.service.SettingService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.beans.IntrospectionException;
@@ -49,17 +53,8 @@ import java.util.Objects;
 public class OrderApi {
 
     private final OrderService orderService;
+
     private final SettingService settingService;
-
-    private final PaymentLogService paymentLogService;
-
-    private final RabbitTemplate rabbit;
-
-    private final SnowflakeId snowflakeId;
-
-    private final SalesUserService salesUserService;
-
-    private final DebtOrderService debtOrderService;
 
     private final GoodsService goodsService;
 
@@ -70,16 +65,10 @@ public class OrderApi {
     private final GoodsPriceRegionService priceRegionService;
 
     @Autowired
-    public OrderApi(OrderService orderService, DebtOrderService debtOrderService, SalesUserService salesUserService,
-                    SettingService settingService, PaymentLogService paymentLogService, RabbitTemplate rabbit, SnowflakeId snowflakeId, GoodsService goodsService, CouponEntityService couponEntityService, FlashsaleService flashsaleService, GoodsPriceRegionService priceRegionService) {
+    public OrderApi(OrderService orderService, SettingService settingService,  GoodsService goodsService, CouponEntityService couponEntityService, FlashsaleService flashsaleService, GoodsPriceRegionService priceRegionService) {
 
         this.orderService = orderService;
         this.settingService = settingService;
-        this.paymentLogService = paymentLogService;
-        this.rabbit=rabbit;
-        this.snowflakeId=snowflakeId;
-        this.salesUserService=salesUserService;
-        this.debtOrderService=debtOrderService;
         this.goodsService=goodsService;
         this.couponEntityService = couponEntityService;
         this.flashsaleService = flashsaleService;
@@ -189,7 +178,7 @@ public class OrderApi {
         Timestamp currentTime = Timestamp.valueOf(time);
         for (OrderDetail order:orders) {
             //发票订单是收货已付款且过售后时间的订单
-            if ("received".equals(order.getOrderStatus())&&"paid".equals(order.getPayStatus())&&order.getAfterSaleTime().before(currentTime)){
+            //if ("received".equals(order.getOrderStatus())&&"paid".equals(order.getPayStatus())&&order.getAfterSaleTime().before(currentTime)){
                 List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
                 if (goods.isEmpty()){
                     order.setOrderGoodsList(new ArrayList<OrderGoods>());
@@ -197,7 +186,7 @@ public class OrderApi {
                     order.setOrderGoodsList(goods);
                 }
                 orderResults.add(order);
-            }
+            //}
         }
         return ResponseEntity.ok(ArrayObject.of(orderResults));
     }
@@ -367,6 +356,13 @@ public class OrderApi {
                 break;
             }
         }
+        //最低订单金额限制
+        ParamConfig orderMinFeeConfig = settingService.searchConfigParam("orderMinFee");
+        if(Objects.nonNull(orderMinFeeConfig)&&Integer.valueOf(orderMinFeeConfig.getConfigParamValue())>needPay){
+            orderDetail.setCode(-1002);
+            orderDetail.setMsg("订单金额低于最低限制金额："+orderMinFeeConfig.getConfigParamValue());
+            return ResponseEntity.ok(orderDetail);
+        }
         needPay =needPay+distributionFee;
         //验证实际计算订单金额+配送费=传递的订单应付金额+应付配送费
         if (needPay!=orderDetail.getPayableFee()+orderDetail.getDeliveryFee()){
@@ -427,6 +423,22 @@ public class OrderApi {
        return ResponseEntity.ok(orderService.cancelPayedOrder(orderDetail));
     }
 
+    @PutMapping("/received/{orderCode}")
+    @ApiOperation(value = "确认订单收货")
+    public ResponseEntity receivedOrder(@PathVariable("orderCode") String orderCode){
+        //判断订单类型来确定退款方式
+        //需求 当天可以自己任意取消支付订单，订单为全部商品,最后取消海鼎订单 超过指定时间，需要后台审核订单，审核走售后流程
+        OrderDetail orderDetail = orderService.searchOrder(orderCode);
+        if (Objects.isNull(orderDetail)){
+            return ResponseEntity.badRequest().body("没有该订单信息");
+        }
+        if(!Objects.equals(orderDetail.getOrderStatus(),"undelivery")){
+            return ResponseEntity.badRequest().body("非待收货订单状态");
+        }
+        return ResponseEntity.ok(orderService.receivedOrder(orderCode));
+    }
+
+
     @PostMapping("/grid")
     @ApiOperation(value = "后台管理-分页查询订单信息", response = PageQueryObject.class)
     public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) OrderGridParam param) throws IntrospectionException, InstantiationException, IllegalAccessException, InvocationTargetException {
@@ -438,6 +450,5 @@ public class OrderApi {
     public  ResponseEntity<OrderDetail> orderDetail(@PathVariable("id") Long id){
         return ResponseEntity.ok(orderService.detail(id));
     }
-
 
 }

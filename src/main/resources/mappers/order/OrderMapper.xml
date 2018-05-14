@@ -35,6 +35,7 @@
             <if test="orderStatus != null ">and o.order_status = #{orderStatus}</if>
         </trim>
         and DATE_SUB(CURDATE(),INTERVAL 30 DAY) &lt;= o.create_time
+        and invoice_status= 'no'
         ORDER BY o.create_time desc
         <include refid="common.pager"></include>
     </select>
@@ -47,7 +48,8 @@
     </select>
 
     <select id="searchOrderGoods"  parameterType="long" resultType="com.lhiot.mall.wholesale.order.domain.OrderGoods">
-        select t.id,g.goods_name goodsName,t.goods_standard_id goodsStandardId,u.unit_name unit,t.standard_weight standardWeight,t.goods_price goodsPrice,t.quanity,g.goods_image goodsImage,s.hd_sku_id,t.flash
+        select t.id,g.goods_name goodsName,t.goods_standard_id goodsStandardId,u.unit_name unit,t.standard_weight standardWeight,
+        t.goods_price goodsPrice,t.quanity,g.goods_image goodsImage,s.hd_sku_id,t.flash,t.discount_goods_price
         from t_whs_order_goods t
         LEFT JOIN t_whs_goods_standard s on t.goods_standard_id=s.id
         LEFT JOIN t_whs_goods g on g.id=s.goods_id
@@ -64,6 +66,15 @@
         select id,order_code orderCode,discount_fee discountFee,settlement_type settlementType,pay_status payStatus
         ,order_status orderStatus,create_time createTime,total_fee total,payable_fee payableFee,delivery_fee,remarks
         from t_whs_order where order_code in
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="searchOrdersByOrderIds" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        select id,order_code orderCode,discount_fee discountFee,settlement_type settlementType,pay_status payStatus
+        ,order_status orderStatus,create_time createTime,total_fee total,payable_fee payableFee,delivery_fee,remarks
+        from t_whs_order where id in
         <foreach collection="list" item="item" open="(" close=")" separator=",">
             #{item}
         </foreach>
@@ -124,8 +135,43 @@
             <if test="settlementType!=null and settlementType!=''">
                 settlement_type=#{settlementType},
             </if>
+            <if test="invoiceStatus!=null and invoiceStatus!=''">
+                invoice_status=#{invoiceStatus},
+            </if>
         </set>
          where order_code=#{orderCode}
+    </update>
+
+    <!--依据订单编号修改订单信息-->
+    <update id="updateOrderById" parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        UPDATE t_whs_order
+        <set>
+            <if test="hdCode!=null and hdCode!=''">
+                hd_code=#{hdCode},
+            </if>
+            <if test="remarks!=null and remarks!=''">
+                remarks=#{remarks},
+            </if>
+            <if test="receiveTime!=null">
+                receive_time=#{receiveTime},
+            </if>
+            <if test="payStatus!=null and payStatus!=''">
+                pay_status=#{payStatus},
+            </if>
+            <if test="hdStatus!=null and hdStatus!=''">
+                hd_status=#{hdStatus},
+            </if>
+            <if test="orderStatus!=null and orderStatus!=''">
+                order_status=#{orderStatus},
+            </if>
+            <if test="settlementType!=null and settlementType!=''">
+                settlement_type=#{settlementType},
+            </if>
+            <if test="invoiceStatus!=null and invoiceStatus!=''">
+                invoice_status=#{invoiceStatus},
+            </if>
+        </set>
+        where id=#{id}
     </update>
 
     
@@ -300,7 +346,12 @@
         </trim>
     </select>
 
-
+    <select id="select" parameterType="long" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        select id,order_code orderCode,IFNULL(discount_fee,0) discountFee,settlement_type settlementType,pay_status payStatus,user_id
+        ,order_status orderStatus,create_time createTime,IFNULL(total_fee,0) totalFee,IFNULL(payable_fee,0) payableFee,remarks,
+        hd_status,delivery_time,IFNULL(delivery_fee,0) deliveryFee,delivery_address,hd_code
+        from t_whs_order o where o.id = #{0}
+    </select>
 </mapper>
 
 

@@ -114,6 +114,9 @@ public class OrderDetail {
     @JsonProperty("orderCoupon")
     private Long orderCoupon;//优惠券
 
+    @JsonProperty("invoiceStatus")
+    private String invoiceStatus;//是否已开发票 no-未开发票 yes 已开发票(包括未收发票和已收发票)
+
     @JsonProperty("start")
     private Integer start;
 

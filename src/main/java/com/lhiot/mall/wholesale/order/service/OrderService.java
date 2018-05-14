@@ -3,6 +3,7 @@ package com.lhiot.mall.wholesale.order.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.base.DataMergeUtils;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
@@ -11,8 +12,10 @@ import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
+import com.lhiot.mall.wholesale.pay.domain.RefundLog;
 import com.lhiot.mall.wholesale.pay.hdsend.Abolish;
 import com.lhiot.mall.wholesale.pay.hdsend.Warehouse;
+import com.lhiot.mall.wholesale.pay.mapper.PaymentLogMapper;
 import com.lhiot.mall.wholesale.pay.mapper.RefundLogMapper;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
@@ -20,6 +23,8 @@ import com.lhiot.mall.wholesale.setting.service.SettingService;
 import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.mapper.SalesUserMapper;
+import com.lhiot.mall.wholesale.user.mapper.UserMapper;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
 import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
@@ -181,7 +186,18 @@ public class OrderService {
     }
 
     /**
-     * 修改订单状态
+     * 确认订单收货
+     */
+    public int receivedOrder(String orderCode){
+        OrderDetail orderDetail=new OrderDetail();
+        orderDetail.setOrderCode(orderCode);
+        orderDetail.setOrderStatus("received");
+        orderDetail.setCurrentOrderStatus("undelivery");
+        return orderMapper.updateOrderStatusByCode(orderDetail);
+    }
+
+    /**
+     * 依据订单码修改订单信息
      * @param orderDetail
      * @return
      */
@@ -190,17 +206,22 @@ public class OrderService {
     }
 
     /**
+     * 依据订单号修改订单信息
+     * @param orderDetail
+     * @return
+     */
+    public int updateOrderById(OrderDetail orderDetail){
+        return orderMapper.updateOrderById(orderDetail);
+    }
+
+
+    /**
      * 取消已支付订单 需要调用仓库取消掉订单
      * @param orderDetail
      * @return
      */
     public int cancelPayedOrder(OrderDetail orderDetail){
 
-       PaymentLog paymentLog= paymentLogService.getPaymentLog(orderDetail.getOrderCode());
-
-       if(Objects.isNull(paymentLog)){
-           throw new ServiceException("未找到支付记录");
-       }
        //退货到总仓
         /**********批发单服务-作废**********************************/
         Abolish abolish=new Abolish();
@@ -209,47 +230,74 @@ public class OrderService {
         abolish.setOper("退货管理员");
         String cancelResult=warehouse.abolish(abolish);
        log.info(cancelResult);
-        try {
-            Map<String,String> cancelResultJson= JacksonUtils.fromJson(cancelResult,Map.class);
-            if(Objects.equals("0",cancelResultJson.get("echoCode"))){
-                switch (orderDetail.getSettlementType()) {
-                    //1货到付款
-                    case "offline":
-                        //直接取消掉订单就可以了
-                        /*OrderDetail updateOrderDetail =new OrderDetail();
-                        updateOrderDetail.setOrderCode(orderDetail.getOrderCode());
-                        updateOrderDetail.setCurrentOrderStatus();
-                        updateOrderDetail.setOrderStatus();
-                        updateOrderStatus()*/
-                        break;
-                    //0 微信支付
-                    case "wechat":
-                        //查询支付日志
-
-                        //退款 如果微信支付就微信退款
-                        try {
-                            weChatUtil.refund(paymentLog.getTransactionId(), paymentLog.getTotalFee());
-
-                            //TODO 写入退款记录  t_whs_refund_log
-                    /*RefundLog refundLog=new RefundLog();
-                    refundLog.setPaymentLogId();
-                    refundLogMapper.insertRefundLog();*/
-                        } catch (Exception e) {
-                            throw new ServiceException("微信退款失败，请联系客服",e);
-                        }
-                        break;
-                    //余额支付
-                    case "balance":
-
-                        break;
-                    default:
-                        break;
+        //修改为已退货
+        OrderDetail updateOrderDetail =new OrderDetail();
+        updateOrderDetail.setOrderCode(orderDetail.getOrderCode());
+        updateOrderDetail.setCurrentOrderStatus("undelivery");
+        updateOrderDetail.setOrderStatus("refunded");
+        updateOrderStatus(updateOrderDetail);
+        //查询支付日志
+        PaymentLog paymentLog= paymentLogService.getPaymentLog(orderDetail.getOrderCode());
+        switch (orderDetail.getSettlementType()) {
+            //货到付款
+            case "offline":
+                //直接取消掉订单就可以了
+                break;
+            //微信支付
+            case "wechat":
+                if(Objects.isNull(paymentLog)){
+                    throw new ServiceException("未找到支付记录");
                 }
-            }else{
-                throw new ServiceException("批发单服务-作废失败，返回结果"+cancelResult);
-            }
-        } catch (IOException e) {
-            throw new ServiceException("批发单服务-作废失败，请联系客服",e);
+                //退款 如果微信支付就微信退款
+                try {
+                    weChatUtil.refund(paymentLog.getTransactionId(), paymentLog.getTotalFee());
+
+                    //写入退款记录  t_whs_refund_log
+                    RefundLog refundLog=new RefundLog();
+                    refundLog.setPaymentLogId(paymentLog.getId());
+                    refundLog.setRefundFee(paymentLog.getTotalFee());
+                    refundLog.setRefundReason("当天退款");
+                    refundLog.setRefundTime(new Timestamp(System.currentTimeMillis()));
+                    refundLog.setTransactionId(paymentLog.getTransactionId());
+                    refundLog.setRefundType("wechatRefund");
+                    refundLog.setUserId(orderDetail.getUserId());
+                    refundLogMapper.insertRefundLog(refundLog);
+                    PaymentLog updatePaymentLog=new PaymentLog();
+                    updatePaymentLog.setOrderCode(orderDetail.getOrderCode());
+                    updatePaymentLog.setRefundFee(paymentLog.getTotalFee());
+                    paymentLogService.updatePaymentLog(updatePaymentLog);
+                } catch (Exception e) {
+                    throw new ServiceException("微信退款失败，请联系客服",e);
+                }
+                break;
+            //余额支付
+            case "balance":
+
+                if(Objects.isNull(paymentLog)){
+                    throw new ServiceException("未找到支付记录");
+                }
+                User updateUser=new User();
+                updateUser.setId(orderDetail.getUserId());
+                updateUser.setBalance(paymentLog.getTotalFee());//需要退还的用户余额
+                userService.updateUser(updateUser);
+                //写入退款记录  t_whs_refund_log
+                RefundLog refundLog=new RefundLog();
+                refundLog.setPaymentLogId(paymentLog.getId());
+                refundLog.setRefundFee(paymentLog.getTotalFee());
+                refundLog.setRefundReason("当天退款");
+                refundLog.setRefundTime(new Timestamp(System.currentTimeMillis()));
+                refundLog.setTransactionId(paymentLog.getTransactionId());
+                refundLog.setRefundType("balanceRefund");
+                refundLog.setUserId(orderDetail.getUserId());
+                refundLogMapper.insertRefundLog(refundLog);
+                PaymentLog updatePaymentLog=new PaymentLog();
+                updatePaymentLog.setOrderCode(orderDetail.getOrderCode());
+                updatePaymentLog.setRefundFee(paymentLog.getTotalFee());
+                paymentLogService.updatePaymentLog(updatePaymentLog);
+                break;
+            default:
+                log.info("退款未找到类型");
+                break;
         }
         return 1;
     }
@@ -281,9 +329,10 @@ public class OrderService {
         String phone = param.getPhone();
         User userParam = new User();
         userParam.setPhone(phone);
-        List<OrderGridResult> orderGridResultList = new ArrayList<OrderGridResult>();
-        List<User> userList = new ArrayList<User>();
-        List<PaymentLog> paymentLogList = new ArrayList<PaymentLog>();
+        List<OrderGridResult> orderGridResultList = new ArrayList<>();
+        List<OrderGridResult> orderGridResults = new ArrayList<>();
+        List<User> userList = new ArrayList<>();
+        List<PaymentLog> paymentLogList = new ArrayList<>();
         int count = 0;
         int page = param.getPage();
         int rows = param.getRows();
@@ -346,7 +395,7 @@ public class OrderService {
             }
         }
         PageQueryObject result = new PageQueryObject();
-        if(orderGridResultList != null && orderGridResultList.size() > 0){//如果订单信息不为空,将订单列表与用户信息列表进行行数据组装
+        if(orderGridResultList != null && orderGridResultList.size() > 0) {//如果订单信息不为空,将订单列表与用户信息列表进行行数据组装
             //根据用户id与订单中的用户id匹配
             for (OrderGridResult orderGridResult : orderGridResultList) {
                 Long orderUserId = orderGridResult.getUserId();
