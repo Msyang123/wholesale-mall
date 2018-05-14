@@ -185,9 +185,10 @@ public class SalesUserService {
                 //updateSalesmanIdByUserId\
                 //updateSalesmanIdBySalesmanId
                 result = salesUserMapper.updateSalesmanIdByUserId(param);
-            }
-            if(StringUtils.isNotBlank(oldUserId)){
-                result = salesUserMapper.updateSalesmanIdBySalesmanId(param);
+            }else {
+                if (StringUtils.isNotBlank(oldUserId)) {
+                    result = salesUserMapper.updateSalesmanIdBySalesmanId(param);
+                }
             }
         }
         return result;
