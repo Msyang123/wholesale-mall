@@ -1,12 +1,10 @@
 package com.lhiot.mall.wholesale.user.service;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import com.leon.microx.util.SnowflakeId;
+import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
@@ -74,14 +72,16 @@ public class SalesUserPerformanceService{
             for(SalesUserPerformance salesUserPerformance:salesUserPerformances){
                 List<ShopResult> shopResults = salesUserService.searchShopInfo(salesUserPerformance.getId());
                 List<Long> shopIds = getShopIds(shopResults);
-                //上月业绩
-                salesUserPerformance.setPerMonthPerformance(orderService.countPayAbleFeeByUserId(shopIds,preMonthFirstDay,thisMonthFirstDay).get("ordersTotalFee")+"");
-                //本月业绩
-                salesUserPerformance.setThisMonthPerformance(orderService.countPayAbleFeeByUserId(shopIds,thisMonthFirstDay,null).get("ordersTotalFee")+"");
-                //业绩总额
-                salesUserPerformance.setPerformanceTotal(orderService.countPayAbleFeeByUserId(shopIds,null,null).get("ordersTotalFee")+"");
-                //累计欠款
-                salesUserPerformance.setOverDueTotal(orderService.countOverDue(shopIds).get("ordersTotalFee")+"");
+                if(!CollectionUtils.isEmpty(shopIds)){
+                    //上月业绩
+                    salesUserPerformance.setPerMonthPerformance(orderService.countPayAbleFeeByUserId(shopIds,preMonthFirstDay,thisMonthFirstDay).get("ordersTotalFee")+"");
+                    //本月业绩
+                    salesUserPerformance.setThisMonthPerformance(orderService.countPayAbleFeeByUserId(shopIds,thisMonthFirstDay,null).get("ordersTotalFee")+"");
+                    //业绩总额
+                    salesUserPerformance.setPerformanceTotal(orderService.countPayAbleFeeByUserId(shopIds,null,null).get("ordersTotalFee")+"");
+                    //累计欠款
+                    salesUserPerformance.setOverDueTotal(orderService.countOverDue(shopIds).get("ordersTotalFee")+"");
+                }
                 if(!CollectionUtils.isEmpty(shopResults)){
                     salesUserPerformance.setNewShopNumTotal(shopIds.size());
                     for(ShopResult shop:shopResults){
@@ -116,7 +116,10 @@ public class SalesUserPerformanceService{
         }
         return shopIds;
     }
-    public PageQueryObject pagePerformanceDetail(OrderGridParam param){
+    public PageQueryObject pagePerformanceDetail(OrderGridParam param, String salesmanName, String salesmanPhone, String salesmanId){
+        //
+        List<Long> userIds=getUserIds(salesmanName,salesmanPhone,salesmanId);
+        param.setUserIds(userIds);
         PageQueryObject result = new PageQueryObject();
         int count = orderMapper.pageQueryCount(param);
         int page = param.getPage();
@@ -129,17 +132,18 @@ public class SalesUserPerformanceService{
         if(totalPages < page){
             param.setPage(0);
             param.setStart(0);
-        }
-        try{
-            result=pageOrderQuery(param);
-        }catch(InvocationTargetException e){
-            e.printStackTrace();
-        }catch(IntrospectionException e){
-            e.printStackTrace();
-        }catch(InstantiationException e){
-            e.printStackTrace();
-        }catch(IllegalAccessException e){
-            e.printStackTrace();
+        }else{
+            try{
+                result=pageOrderQuery(param);
+            }catch(InvocationTargetException e){
+                e.printStackTrace();
+            }catch(IntrospectionException e){
+                e.printStackTrace();
+            }catch(InstantiationException e){
+                e.printStackTrace();
+            }catch(IllegalAccessException e){
+                e.printStackTrace();
+            }
         }
 //        result.setRows(salesUserPerformances);
 //        result.setPage(page);
@@ -148,15 +152,25 @@ public class SalesUserPerformanceService{
         return result;
     }
 
+    private List<Long> getUserIds(String salesmanName, String salesmanPhone, String salesmanId) {
+            Map<String,Object> param = new HashMap<String,Object>();
+            param.put("salesUserId",salesmanId);
+            param.put("phone",salesmanPhone);
+            param.put("userName",salesmanName);
+            List<Long> ids = userService.queryUserId(param);
+            if(CollectionUtils.isEmpty(ids)){
+                ids = new ArrayList<Long>();
+                ids.add(-1L);
+            }
+            return ids;
+    }
+
     /**
      * 后台管理系统--分页查询订单信息
      * @param param
      * @return
      */
     public PageQueryObject pageOrderQuery(OrderGridParam param) throws InvocationTargetException, IntrospectionException, InstantiationException, IllegalAccessException{
-        String phone=param.getPhone();
-        User userParam=new User();
-        userParam.setPhone(phone);
         List<OrderGridResult> orderGridResultList=new ArrayList<OrderGridResult>();
         List<User> userList=new ArrayList<User>();
         int count=0;
@@ -164,7 +178,7 @@ public class SalesUserPerformanceService{
         int rows=param.getRows();
         //总记录数
         int totalPages=0;
-        if(phone==null){//未传手机号查询条件,先根据条件查询分页的订单列表及用户ids，再根据ids查询用户信息列表
+        if(CollectionUtils.isEmpty(param.getUserIds())){
             count=orderMapper.pageQueryCount(param);
             //起始行
             param.setStart((page-1)*rows);
@@ -192,13 +206,9 @@ public class SalesUserPerformanceService{
             }
             userList = userService.search(userIds);//根据用户ID列表查询用户信息
         }else{//传了手机号查询条件，先根据条件查询用户列表及用户ids，再根据ids和订单其他信息查询订单信息列表
-            userList=userService.searchByPhoneOrName(userParam);
-            List<Long> userIds=new ArrayList<Long>();
+            List<Long> userIds=param.getUserIds();
+            userList = userService.search(userIds);//根据用户ID列表查询用户信息
             if(userList!=null&&userList.size()>0){
-                for(User user : userList){
-                    userIds.add(user.getId());
-                }
-                param.setUserIds(userIds);
                 count=orderMapper.pageQueryCount(param);
                 //起始行
                 param.setStart((page-1)*rows);
@@ -253,7 +263,9 @@ public class SalesUserPerformanceService{
         }
         return result;
     }
-    public PageQueryObject pagePerformanceShopDetail(UserPerformanceGridParam param){
+    public PageQueryObject pagePerformanceShopDetail(UserPerformanceGridParam param, String salesmanName, String salesmanPhone, String salesmanId){
+        List<Long> userIds=getUserIds(salesmanName,salesmanPhone,salesmanId);
+        param.setUserIds(userIds);
         PageQueryObject result=new PageQueryObject();
         int count=userService.performanceUserQueryCount(param);
         int page=param.getPage();
@@ -271,7 +283,7 @@ public class SalesUserPerformanceService{
         List<SalesUserPerformanceDetail> userGridResults=userService.pagePerformanceUserQuery(param);
         if(!CollectionUtils.isEmpty(userGridResults)){
             for(SalesUserPerformanceDetail userGridResult : userGridResults){
-                List<Long> userIds = new ArrayList<Long>();
+                userIds = new ArrayList<Long>();
                 userIds.add(userGridResult.getId());
                 Map<String,Object> payAbleFeeMap = orderService.countPayAbleFeeByUserId(userIds,null,null);
                 userGridResult.setPerformanceTotalStr(payAbleFeeMap.get("ordersTotalFee")+""+"/"+payAbleFeeMap.get("totalNum"));

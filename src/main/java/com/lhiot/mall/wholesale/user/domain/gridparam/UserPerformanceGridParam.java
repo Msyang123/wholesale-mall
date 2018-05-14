@@ -6,6 +6,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+
+import java.util.List;
+
 /**
  * @author zhangs on 2018/5/9.
  */
@@ -44,5 +47,8 @@ public class UserPerformanceGridParam{
 
     @ApiModelProperty(notes="店长",dataType="String")
     private String userName;
+
+    @ApiModelProperty(notes="用户ids",dataType="Long")
+    private List<Long> userIds;
 
 }

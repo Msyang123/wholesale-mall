@@ -280,5 +280,7 @@ public class UserService {
     public List<SalesUserPerformanceDetail> pagePerformanceUserQuery(UserPerformanceGridParam param){
         return userMapper.pagePerformanceUserQuery(param);
     }
-
+    public List<Long> queryUserId(Map<String, Object> param) {
+        return userMapper.queryUserId(param);
+    }
 }

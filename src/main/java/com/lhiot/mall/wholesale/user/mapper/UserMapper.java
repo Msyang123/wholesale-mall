@@ -2,6 +2,7 @@ package com.lhiot.mall.wholesale.user.mapper;
 
 
 import java.util.List;
+import java.util.Map;
 
 import com.lhiot.mall.wholesale.user.domain.*;
 import com.lhiot.mall.wholesale.user.domain.gridparam.UserPerformanceGridParam;
@@ -70,4 +71,6 @@ public interface UserMapper {
     List<SalesUserPerformanceDetail> pagePerformanceUserQuery(UserPerformanceGridParam param);
 
     Integer performanceUserQueryCount(UserPerformanceGridParam param);
+
+    List<Long> queryUserId(Map<String, Object> param);
 }
