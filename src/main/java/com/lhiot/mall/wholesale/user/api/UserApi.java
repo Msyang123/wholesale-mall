@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 
+import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -381,6 +383,7 @@ public class UserApi {
             restTemplate.postForObject(sendMessageUrl, body, String.class);
             return ResponseEntity.ok().build();
         }catch (Exception e){
+            e.printStackTrace();
             return ResponseEntity.badRequest().body("验证码发送失败");
         }
 
@@ -390,10 +393,8 @@ public class UserApi {
     @ApiOperation("用户注册")
     @ApiImplicitParams({
             @ApiImplicitParam(paramType = "body", name = "user", value = "注册用户数据", required = true, dataType = "User"),
-            @ApiImplicitParam(paramType = "query", name = "code", value = "业务员邀请码", required = true, dataType = "String"),
-            @ApiImplicitParam(paramType = "query", name = "verifCode", value = "手机验证码", required = true, dataType = "String")
     })
-    public ResponseEntity register(@RequestBody @NotNull User user, @RequestParam("code") String code,@RequestParam("verifCode") String verifCode) {
+    public ResponseEntity register(@RequestBody @NotNull User user) {
         //手机验证码
         RMapCache<String,String> cache =  redissonClient.getMapCache("userVerificationCode");
         if(Objects.isNull(cache.get("phone"+user.getPhone()))){
@@ -401,16 +402,21 @@ public class UserApi {
         }
         try {
             //到远端验证手机验证码是否正确
-            String verifiUrl=MessageFormat.format(weChatUtil.getProperties().getValidateMessageUrl(),"verification",user.getPhone());
+            String verifiUrl=MessageFormat.format(weChatUtil.getProperties().getValidateMessageUrl(),"verification-wholesale",user.getPhone());
             Map<String,String> body=new HashMap<>();
-            body.put("code",verifCode);
+            body.put("code",user.getCode());
             body.put("key","number");
             String result=restTemplate.postForObject(verifiUrl, body, String.class);
             log.info("verifiCode result:"+result);
             if (!Objects.equals(result,"true")){
                 return ResponseEntity.badRequest().body("手机验证码不正确");
             }
-            if (userService.register(user, code)) {
+
+            User u = userService.user(user.getId());
+            if (Objects.equals(u.getUserStatus(),"unaudited")){
+                return ResponseEntity.badRequest().body("您审核申请已提交，不能重复操作");
+            }
+            if (userService.register(user, user.getCode())) {
                 return ResponseEntity.ok().build();
             }
             return ResponseEntity.badRequest().body("用户注册失败");

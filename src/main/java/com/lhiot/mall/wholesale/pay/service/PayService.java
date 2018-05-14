@@ -365,7 +365,7 @@ public class PayService {
         User updateUser=new User();
         updateUser.setId(orderDetail.getUserId());
         updateUser.setBalance(-needPayFee);//需要扣除的值
-        boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
+        boolean updateResult=userService.updateBalance(updateUser);//扣除用户余额
         if(updateResult){
             //减商品库存
             orderDetail.setPayStatus("paid");//已支付
@@ -406,7 +406,7 @@ public class PayService {
         User updateUser=new User();
         updateUser.setId(debtOrder.getUserId());
         updateUser.setBalance(-needPayFee);//需要扣除的值
-        boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
+        boolean updateResult=userService.updateBalance(updateUser);//扣除用户余额
         if(updateResult){
             debtOrder.setCheckStatus("unaudited");//设置审核中
             debtOrderService.updateDebtOrderByCode(debtOrder);
@@ -528,7 +528,7 @@ public class PayService {
         User updateUser=new User();
         updateUser.setId(invoice.getUserId());
         updateUser.setBalance(-needPayFee);//需要扣除的值
-        boolean updateResult=userService.updateUser(updateUser);//扣除用户余额
+        boolean updateResult=userService.updateBalance(updateUser);//扣除用户余额
         if(updateResult){
 
             invoice.setInvoiceStatus("yes");//开票状态 0未开 1已付款 2已开
