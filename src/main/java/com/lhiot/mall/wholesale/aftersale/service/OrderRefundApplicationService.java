@@ -49,11 +49,11 @@ public class OrderRefundApplicationService {
         this.salesUserService = salesUserService;
     }
 
-    public int create(OrderRefundApplication orderRefundApplication){
+    public Integer create(OrderRefundApplication orderRefundApplication){
         return this.orderRefundApplicationMapper.create(orderRefundApplication);
     }
 
-    public int updateById(OrderRefundApplication orderRefundApplication){
+    public Integer updateById(OrderRefundApplication orderRefundApplication){
         return this.orderRefundApplicationMapper.updateById(orderRefundApplication);
     }
 
@@ -152,6 +152,7 @@ public class OrderRefundApplicationService {
         result.setRows(orderGridResultList);//将查询记录放入返回参数中
         return result;
     }
+
 
     /**
      * 后台管理--查询订单详情

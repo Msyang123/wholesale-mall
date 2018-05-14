@@ -61,4 +61,7 @@ public class OrderRefundApplication {
     @JsonProperty("auditStatus")
     private String auditStatus;
 
+    @JsonProperty("contactsPhone")
+    private String contactsPhone;
+
 }

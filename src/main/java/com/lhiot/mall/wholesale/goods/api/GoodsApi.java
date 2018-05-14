@@ -117,6 +117,13 @@ public class GoodsApi {
 	    return ResponseEntity.ok(inventoryResult);
     }
 
+    @GetMapping("/recommend-list")
+    @ApiOperation(value = "推荐商品列表")
+    public ResponseEntity<ArrayObject> recommendList(){
+	    List<GoodsInfo> recommendList = goodsService.recommendList();
+	    return ResponseEntity.ok(ArrayObject.of(recommendList));
+    }
+
 	@PostMapping("/goods/try-operation")
     @ApiOperation(value = "查询商品分类是否可以被修改或新增")
     public ResponseEntity<Boolean> tryOperation(@RequestBody(required = true) Goods goods) {

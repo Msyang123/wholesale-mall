@@ -1,6 +1,5 @@
 package com.lhiot.mall.wholesale.advertise.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModel;

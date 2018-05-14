@@ -12,39 +12,41 @@
 
     <insert id="create" parameterType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
         insert into t_whs_order_refund_application(
-            id,
-            refund_type,
-            exist_problem,
-            other_problem,
-            refund_evidence,
-            verify_status,
-            order_discount_fee,
-            delivery_fee,
-            comments,
-            order_id,
-            user_id
+        <trim suffixOverrides=",">
+            <if test="applicationType != null and applicationType != ''">application_type,</if>
+            <if test="existProblem != null and existProblem != ''">exist_problem,</if>
+            <if test="otherProblem != null and otherProblem != ''">other_problem,</if>
+            <if test="refundEvidence != null and refundEvidence != ''">refund_evidence,</if>
+            <if test="auditStatus != null and auditStatus != ''">audit_status,</if>
+            <if test="orderDiscountFee != null and orderDiscountFee != ''">order_discount_fee,</if>
+            <if test="deliveryFee != null ">delivery_fee,</if>
+            <if test="comments != null and comments != ''">comments,</if>
+            <if test="orderId != null and orderId != ''">order_id,</if>
+            <if test="userId != null and userId!=0">user_id,</if>
+            <if test="contactsPhone != null ">contacts_phone,</if>
+        </trim>
         )VALUES (
-            ${id},
-            #{refundType},
-            #{existProblem},
-            #{otherProblem},
-            #{refundEvidence},
-            #{verifyStatus},
-            #{orderDiscountFee},
-            #{deliveryFee},
-            #{comments},
-            #{orderId},
-            #{userId}
+        <trim suffixOverrides=",">
+            <if test="applicationType != null and applicationType != ''">#{applicationType},</if>
+            <if test="existProblem != null and existProblem != ''">#{existProblem},</if>
+            <if test="otherProblem != null and otherProblem != ''">#{otherProblem},</if>
+            <if test="refundEvidence != null and refundEvidence != ''">#{refundEvidence},</if>
+            <if test="auditStatus != null and auditStatus != ''">#{auditStatus},</if>
+            <if test="orderDiscountFee != null ">#{orderDiscountFee},</if>
+            <if test="deliveryFee != null ">#{deliveryFee},</if>
+            <if test="comments != null and comments != ''">#{comments},</if>
+            <if test="orderId != null and orderId != ''">#{orderId},</if>
+            <if test="userId != null ">#{userId},</if>
+            <if test="contactsPhone != null ">#{contactsPhone},</if>
+        </trim>
         )
     </insert>
-    <update id="updateById" parameterType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
+
+   <!-- <update id="updateById" parameterType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
         UPDATE t_whs_order_refund_application
         <set>
-          <if test="verifyStatus!=null and verifyStatus!=0">
-              verify_status=#{verifyStatus},
-          </if>
-          <if test="refundEvidence!=null and refundEvidence!=''">
-              refund_evidence=#{refundEvidence},
+          <if test="auditStatus!=null and auditStatus!=''">
+              audit_status=#{auditStatus},
           </if>
             <if test="orderDiscountFee!=null and orderDiscountFee!=''">
                 order_discount_fee=#{orderDiscountFee},
@@ -57,7 +59,8 @@
             </if>
         </set>
         where id=#{id}
-    </update>
+    </update>-->
+
     <select id="orderRefundApplicationList" parameterType="java.lang.Long"
             resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
         select application_type,exist_problem,other_problem,refund_evidence,audit_status,
@@ -85,7 +88,7 @@
     <select parameterType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication" id="refundInfo" resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
         select id,application_type applicationType,exist_problem existProblem,other_problem otherProblem,
         refund_evidence refundEvidence,audit_status auditStatus,order_discount_fee orderDiscountFee,
-        delivery_fee deliveryFee,comments comments,order_id orderId,user_id userId
+        delivery_fee deliveryFee,comments comments,order_id orderId,user_id userId,contacts_phone contactsPhone
         from t_whs_order_refund_application
         <trim prefix="where" prefixOverrides="and">
             <if test="orderId!=null and orderId!=''">
@@ -100,5 +103,27 @@
         FROM t_whs_order t1
         WHERE t1.id = #{0}
     </select>
+
+    <!--修改售后申请表-->
+
+
+
+    <update parameterType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication" id="updateById">
+        update t_whs_order_refund_application
+        <set>
+            <if test="id!=null"> id = #{id}, </if>
+            <if test="applicationType!=null"> application_type = #{applicationType}, </if>
+            <if test="existProblem!=null"> exist_problem = #{existProblem}, </if>
+            <if test="otherProblem!=null"> other_problem = #{otherProblem}, </if>
+            <if test="refundEvidence!=null"> refund_evidence = #{refundEvidence}, </if>
+            <if test="auditStatus!=null"> audit_status = #{auditStatus}, </if>
+            <if test="orderDiscountFee!=null"> order_discount_fee = #{orderDiscountFee}, </if>
+            <if test="deliveryFee!=null"> delivery_fee = #{deliveryFee}, </if>
+            <if test="comments!=null"> comments = #{comments}, </if>
+            <if test="orderId!=null"> order_id = #{orderId}, </if>
+            <if test="userId!=null"> user_id = #{userId}, </if>
+        </set>
+        where id=#{id}
+    </update>
 
 </mapper>
