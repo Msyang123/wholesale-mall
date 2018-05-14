@@ -381,7 +381,7 @@ public class UserApi {
             body.put("number",randomCode);
             String sendMessageUrl=MessageFormat.format(weChatUtil.getProperties().getSendMessageUrl(),"verification",phone);
             restTemplate.postForObject(sendMessageUrl, body, String.class);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok().body("发送验证码成功");
         }catch (Exception e){
             e.printStackTrace();
             return ResponseEntity.badRequest().body("验证码发送失败");
@@ -417,7 +417,7 @@ public class UserApi {
                 return ResponseEntity.badRequest().body("您审核申请已提交，不能重复操作");
             }
             if (userService.register(user, user.getCode())) {
-                return ResponseEntity.ok().build();
+                return ResponseEntity.ok().body("提交成功");
             }
             return ResponseEntity.badRequest().body("用户注册失败");
         } catch (ServiceException e) {
