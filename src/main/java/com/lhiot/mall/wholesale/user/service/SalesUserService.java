@@ -2,6 +2,7 @@ package com.lhiot.mall.wholesale.user.service;
 
 import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.ShopResult;
@@ -9,6 +10,7 @@ import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.mapper.SalesUserMapper;
 import com.lhiot.mall.wholesale.user.mapper.UserMapper;
 import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
+import com.sgsl.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -57,7 +59,7 @@ public class SalesUserService {
     }
 
     public SalesUser searchSalesUser(long id){
-        return salesUserMapper.searchSalesUser(id);
+         return salesUserMapper.findById(id);
     }
 
     public SalesUser searchSalesUserByOpenid(String openid){
@@ -131,8 +133,27 @@ public class SalesUserService {
         return this.salesUserMapper.list(salesUser);
     }
 
-    public List<SalesUser> page(Map<String,Object> param){
-        return this.salesUserMapper.page(param);
+    public PageQueryObject page(Map<String,Object> param){
+        PageQueryObject result = new PageQueryObject();
+        int count = salesUserMapper.pageCount(param);
+        int page = (Integer)param.get("page");
+        int rows = (Integer)param.get("rows");
+        //起始行
+        param.put("start",(page-1)*rows);
+        //param.setStart((page-1)*rows);
+        //总记录数
+        int totalPages = (count%rows==0?count/rows:count/rows+1);
+        if(totalPages < page){
+            page = 1;
+            param.put("page",page);
+            param.put("start",0);
+        }
+        List<SalesUser> salesUserPerformances = salesUserMapper.page(param);
+        result.setRows(salesUserPerformances);
+        result.setPage(page);
+        result.setRecords(rows);
+        result.setTotal(totalPages);
+        return result;
     }
 
 
@@ -150,5 +171,25 @@ public class SalesUserService {
 
     public List<SalesUser> salesUsers(){
     	return this.salesUserMapper.salesUsers();
+    }
+
+    public int assginShop(String assginUserId, String shopId, String oldUserId) {
+        int result = 0;
+        Map<String,Object> param = new HashMap<String,Object>();
+        param.put("userId",shopId);
+        param.put("salesmanId",assginUserId);
+        param.put("oldSalesmanId",oldUserId);
+        if(StringUtils.isNotBlank(assginUserId)){
+            if(StringUtils.isNotBlank(shopId)){
+                //salesUserMapper.updateUserSaleRelationship()
+                //updateSalesmanIdByUserId\
+                //updateSalesmanIdBySalesmanId
+                result = salesUserMapper.updateSalesmanIdByUserId(param);
+            }
+            if(StringUtils.isNotBlank(oldUserId)){
+                result = salesUserMapper.updateSalesmanIdBySalesmanId(param);
+            }
+        }
+        return result;
     }
 }
