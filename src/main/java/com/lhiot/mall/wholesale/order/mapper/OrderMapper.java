@@ -14,6 +14,8 @@ public interface OrderMapper {
 
     List<OrderDetail> searchOrdersByOrderCodes(List<String> orderCodes);
 
+    List<OrderDetail> searchOrdersByOrderIds(List ids);
+
     List<OrderGoods> searchOrderGoods(long orderId);
 
     String searchOutstandingAccountsOrder(String orderCode);
@@ -60,10 +62,16 @@ public interface OrderMapper {
     int updateOrderStatusByCode(OrderDetail orderDetail);
 
     /**
-     * 依据订单号修改订单信息
+     * 依据订单码修改订单信息
      * @return
      */
     int updateOrder(OrderDetail orderDetail);
+
+    /**
+     * 依据订单号修改订单信息
+     * @return
+     */
+    int updateOrderById(OrderDetail orderDetail);
 
 
     //统计商品的售卖数量，根据商品ids
