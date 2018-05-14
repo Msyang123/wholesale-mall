@@ -2,8 +2,10 @@ package com.lhiot.mall.wholesale.aftersale.api;
 
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication;
+import com.lhiot.mall.wholesale.aftersale.domain.OrderResult;
 import com.lhiot.mall.wholesale.aftersale.service.OrderRefundApplicationService;
 import com.lhiot.mall.wholesale.base.DataMergeUtils;
+import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Timestamp;
 import java.util.*;
 
 
@@ -46,7 +49,14 @@ public class OrderRefundApplicationApi {
     @PostMapping("/apply")
     @ApiOperation(value = "售后申请")
     public ResponseEntity apply(@RequestBody OrderRefundApplication orderRefundApplication) {
-        return ResponseEntity.ok(orderRefundApplicationService.create(orderRefundApplication));
+        String time = DateFormatUtil.format1(new java.util.Date());
+        Timestamp currentTime = Timestamp.valueOf(time);
+        orderRefundApplication.setOrderCreateTime(currentTime);
+        orderRefundApplication.setAuditStatus("unaudited");
+        if (orderRefundApplicationService.create(orderRefundApplication)>0){
+            return ResponseEntity.ok().body("提交成功");
+        }
+        return ResponseEntity.badRequest().body("提交失败");
     }
 
     @PutMapping("/verify")
@@ -62,7 +72,7 @@ public class OrderRefundApplicationApi {
         for (OrderRefundApplication orderRefund : orderRefundApplicationList) {
             OrderDetail orderDetail = orderService.searchOrder(orderRefund.getOrderId());
              List<OrderGoods> orderGoodsList =orderService.searchOrderGoods(orderDetail.getId());
-            orderRefund.setOrderCreateTime(orderDetail.getCreateTime());
+           // orderRefund.setOrderCreateTime(orderDetail.getCreateTime());
             orderRefund.setOrderGoodsList(orderGoodsList);
         }
         return ResponseEntity.ok(ArrayObject.of(orderRefundApplicationList));
@@ -75,13 +85,30 @@ public class OrderRefundApplicationApi {
         OrderRefundApplication orderRefundApplication=new OrderRefundApplication();
         List<OrderRefundApplication> orderRefundApplicationList = orderRefundApplicationService.list(orderRefundApplication);
         List<String> orderDetailList = new ArrayList<String>();
-        List<String> statuss = new ArrayList<String>();
+        List<Map> statuss = new ArrayList<Map>();
         for (OrderRefundApplication item:orderRefundApplicationList) {
             orderDetailList.add(item.getOrderId());
-            statuss.add(item.getAuditStatus());
+            //statuss.add(item.getAuditStatus());
+            Map map = new HashMap();
+            map.put("orderCode",item.getOrderId());
+            map.put("status",item.getAuditStatus());
+            statuss.add(map);
         }
         param.setOrderIds(orderDetailList);
         param.setAuditStatuss(statuss);
-        return ResponseEntity.ok(orderService.pageQuery(param));
+        return ResponseEntity.ok(orderRefundApplicationService.pageQuery(param));
+    }
+
+    @GetMapping("/detail/{id}")
+    @ApiOperation(value = "后台管理-根据订单id查看售后订单详情",response = OrderGridResult.class)
+    public  ResponseEntity<OrderResult> demandGoodsDetail(@PathVariable("id") Long id){
+        return ResponseEntity.ok(orderRefundApplicationService.detail(id));
+    }
+
+    @PostMapping("/update/{id}")
+    @ApiOperation(value = "依据id更新售后申请表")
+    public ResponseEntity updateOrderRefund(@PathVariable("id") Long id,@RequestBody OrderRefundApplication orderRefundApplication) {
+        orderRefundApplication.setId(id);
+        return ResponseEntity.ok(orderRefundApplicationService.updateById(orderRefundApplication));
     }
 }

@@ -24,6 +24,8 @@ public interface UserMapper {
 
     User searchUserByOpenid(String openId);
 
+    Integer updateBalance(User user);
+
     Integer updateUser(User user);
 
     Integer insertAddress(UserAddress userAddress);

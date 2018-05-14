@@ -1,6 +1,8 @@
 package com.lhiot.mall.wholesale.pay.api;
 
+import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
@@ -25,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.text.MessageFormat;
 import java.util.*;
 
 @Slf4j
@@ -203,7 +206,7 @@ public class WxPayApi {
                 User updateUser=new User();
                 updateUser.setId(user.getId());
                 updateUser.setBalance(fee);//需要增加用户余额
-                userService.updateUser(updateUser);//扣除用户余额
+                userService.updateBalance(updateUser);//扣除用户余额
 
                 paymentLog.setPaymentStep("paid");//支付步骤：sign-签名成功 paid-支付成功
                 paymentLog.setBankType(wrap.get("bank_type"));//银行类型
@@ -222,18 +225,29 @@ public class WxPayApi {
 
     @GetMapping("/invoicepay/sign")
     @ApiOperation(value = "微信发票支付签名", response = String.class)
-    public ResponseEntity<String> invoicepaySign(HttpServletRequest request,@RequestParam("openId") String openId,@RequestParam("orderCodes") String orderCodes) throws Exception {
-        //TODO 依据orderCodes 查询发票信息 拒绝重复开票
-        for(String item:orderCodes.split(",")){
-            Invoice invoice= invoiceService.listByorderCodesLike(orderCodes);
-            if(Objects.nonNull(invoice)){
-                return ResponseEntity.badRequest().body("订单编码("+item+")已经开票，请勿重复开票");
+    public ResponseEntity<String> invoicepaySign(HttpServletRequest request,@RequestParam("openId") String openId,
+                                                 @RequestParam("userId") Long userId,
+                                                 @RequestParam("invoiceTitleId") Long invoiceTitleId,
+                                                 @RequestParam("orderCodes") String orderCodes) throws Exception {
+        //构建发票信息
+	    Invoice invoice= new Invoice();
+        invoice.setInvoiceTitleId(invoiceTitleId);
+        invoice.setUserId(userId);
+        invoice.setInvoiceOrderIds(orderCodes);
+
+        for(String item:invoice.getInvoiceOrderIds().split(",")){
+            OrderDetail orderDetail=orderService.searchOrderById(Long.valueOf(item));
+            if(Objects.isNull(orderDetail)){
+                return ResponseEntity.badRequest().body("订单编号("+item+")不存在");
+            }else if(Objects.nonNull(orderDetail)&&Objects.equals("yes",orderDetail.getInvoiceStatus())){
+                return ResponseEntity.badRequest().body("订单编号("+item+")已经开票，请勿重复开票");
             }
         }
         //查询所有的订单计算税费
-        int orderTotal=100;
-        int taxFee=new BigDecimal(orderTotal).multiply(new BigDecimal(0.0336)).setScale(0, RoundingMode.DOWN).intValue();
-        String wxInvoiceSignStr=payService.wxInvoicePay(getRemoteAddr(request),openId,taxFee,getUserAgent(request),snowflakeId.stringId(),"附加发票相关信息包括发票抬头信息",weChatUtil);
+        invoiceService.calculateTaxFee(invoice);
+        String invoiceJson=MessageFormat.format("\"invoiceTitleId\":{0},\"taxFee\":{1},\"invoiceOrderIds\":\"{2}\",\"userId\":{3}",invoiceTitleId,invoice.getTaxFee(),orderCodes,userId);
+        invoiceJson="{"+invoiceJson+"}";
+        String wxInvoiceSignStr=payService.wxInvoicePay(getRemoteAddr(request),openId,invoice.getTaxFee(),getUserAgent(request),snowflakeId.stringId(),invoiceJson,weChatUtil);
         //回调再写发票信息到数据库中
         return ResponseEntity.ok(wxInvoiceSignStr);
     }
@@ -245,38 +259,27 @@ public class WxPayApi {
         XPathParser xpath = weChatUtil.getParametersByWeChatCallback(request);
         XPathWrapper wrap = new XPathWrapper(xpath);
         String resultCode = wrap.get("result_code");
-        if ("SUCCESS".equalsIgnoreCase(resultCode)) {
-            String attach = wrap.get("attach");
-            String openid= wrap.get("openid");
+        //获取签名的单号
+        String invoiceCode = wrap.get("out_trade_no");
+        List<XNode> nodes=xpath.evalNodes("//xml/*");
+        SortedMap<Object,Object> parameters=new TreeMap();
+        for (XNode node:nodes){
+            parameters.put(node.name(),node.body());
+        }
+        //计算签名
+        String signResult=payService.createSign(parameters,weChatUtil.getProperties().getWeChatPay().getPartnerKey());
+        log.info("signResult:"+signResult);
+        log.info("urlsign:"+wrap.get("sign"));
+        if ("SUCCESS".equalsIgnoreCase(resultCode)&&Objects.equals(signResult,wrap.get("sign"))) {
+            String invoiceJson = wrap.get("attach");
             String totalFee = wrap.get("total_fee");
             int fee = Integer.parseInt(totalFee);
             //获取传达的附加参数获取发票信息
-            log.info("attach:"+attach+"fee:"+fee);
-            long nvoiceTitleId=Long.valueOf(attach);
-            User user= userService.searchUserByOpenid(openid);
-            //依据附加参数查询发票抬头信息
-            InvoiceTitle invoiceTitle= invoiceService.selectInvoiceTitle(nvoiceTitleId);
-            //创建发票信息
-            Invoice invoice=new Invoice();
-                    
-            invoice.setInvoiceTitleId(invoiceTitle.getId());
-            invoice.setTaxpayerNumber(invoiceTitle.getTaxpayerNumber());
-            invoice.setCompanyName(invoiceTitle.getCompanyName());
-            invoice.setContactName(invoiceTitle.getContactName());
-            invoice.setContactPhone(invoiceTitle.getContactPhone());
-           /* invoice.setInvoiceFee();
-            invoice.setInvoiceTax();*/
-            invoice.setTaxFee(fee);
-            invoice.setAddressArea(invoiceTitle.getAddressArea());
-            invoice.setAddressDetail(invoiceTitle.getAddressDetail());
-            invoice.setBankName(invoiceTitle.getBankName());
-            invoice.setBankCardCode(invoiceTitle.getBankCardCode());
-            invoice.setCreateTime(new Timestamp(System.currentTimeMillis()));
-            /*invoice.setInvoiceOrderIds();
-            invoice.setInvoiceCode();*/
-            invoice.setUserId(user.getId());
-                    
-            int result=invoiceService.applyInvoice(invoice);
+            log.info("attach:"+invoiceJson+"fee:"+fee);
+            //long nvoiceTitleId=Long.valueOf(attach);
+            Invoice invoice= JacksonUtils.fromJson(invoiceJson, Invoice.class);
+            invoice.setInvoiceCode(invoiceCode);
+            int result=invoiceService.applyInvoice(invoice,"wechat",wrap.get("bank_type"),wrap.get("transaction_id"));
             boolean myDoIsOk=result>0;//我们处理的业务
             if (myDoIsOk) {
                 //广播订单支付成功true, "success"
@@ -301,8 +304,24 @@ public class WxPayApi {
         }else if(Objects.equals(debtOrder.getCheckStatus(),"paid") || Objects.equals(debtOrder.getCheckStatus(),"agree")){
             return ResponseEntity.badRequest().body("欠款订单已支付");
         }
+        //写帐款订单支付签名日志 保存的是订单的日志
+        List<OrderDetail> orderDetailList=orderService.searchOrdersByOrderCodes(debtOrder.getOrderIds().split(","));
+        if(orderDetailList==null||orderDetailList.isEmpty()){
+            throw new ServiceException("未查找到相关订单");
+        }
+        for (OrderDetail item:orderDetailList){
+            PaymentLog paymentLog=new PaymentLog();
+            paymentLog.setPaymentType("wechat");//balance-余额支付 wechat-微信 offline-线下支付
+            paymentLog.setPaymentStep("sign");//sign-签名成功 paid-支付成功
+            paymentLog.setOrderId(item.getId());
+            paymentLog.setOrderCode(item.getOrderCode());
+            paymentLog.setUserId(item.getUserId());
+            paymentLog.setPaymentFrom("debt");//支付来源于 order-订单 debt-账款 invoice-发票 recharge-充值
+            paymentLog.setTotalFee(item.getPayableFee()+item.getDeliveryFee());
+            paymentLogService.insertPaymentLog(paymentLog);
+        }
+
         String wxInvoiceSignStr=payService.wxDebtopderPay(getRemoteAddr(request),openId,debtOrder.getDebtFee(),getUserAgent(request),debtOrder.getOrderDebtCode(),weChatUtil);
-        //FIXME 写欠款订单支付签名日志
         return ResponseEntity.ok(wxInvoiceSignStr);
     }
 
@@ -313,16 +332,30 @@ public class WxPayApi {
         XPathParser xpath = weChatUtil.getParametersByWeChatCallback(request);
         XPathWrapper wrap = new XPathWrapper(xpath);
         String resultCode = wrap.get("result_code");
-        if ("SUCCESS".equalsIgnoreCase(resultCode)) {
+        //获取签名的单号
+        String orderDebtCode = wrap.get("out_trade_no");
+        List<XNode> nodes=xpath.evalNodes("//xml/*");
+        SortedMap<Object,Object> parameters=new TreeMap();
+        for (XNode node:nodes){
+            parameters.put(node.name(),node.body());
+        }
+        //计算签名
+        String signResult=payService.createSign(parameters,weChatUtil.getProperties().getWeChatPay().getPartnerKey());
+        log.info("signResult:"+signResult);
+        log.info("urlsign:"+wrap.get("sign"));
+        if ("SUCCESS".equalsIgnoreCase(resultCode)&&Objects.equals(signResult,wrap.get("sign"))) {
             String userId = wrap.get("attach");
             String totalFee = wrap.get("total_fee");
             int fee = Integer.parseInt(totalFee);
             //获取传达的附加参数获取用户信息
             log.info("userId:"+userId+"fee:"+fee);
+
+            DebtOrder debtOrder=debtOrderService.findByCode(orderDebtCode);
             boolean myDoIsOk=true;//我们处理的业务
-            //FIXME 需要依据欠款订单将订单状态改成已经支付
+            myDoIsOk=myDoIsOk&&Objects.nonNull(debtOrder);
             if (myDoIsOk) {
-                //广播订单支付成功true, "success"
+                //需要依据欠款订单将订单状态改成已经支付 并修改支付日志
+                payService.weixinPayDebt(debtOrder,wrap.get("bank_type"),wrap.get("transaction_id"),fee);
                 return ResponseEntity.ok("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                         + "<xml><return_code><![CDATA[SUCCESS]]></return_code>"
                         + "<return_msg><![CDATA[OK]]></return_msg></xml>");

@@ -20,7 +20,7 @@ public interface InvoiceMapper {
 
     int applyInvoice(Invoice invoice);
 
-    Invoice findInvoiceByCode(Long invoiceCode);
+    Invoice findInvoiceByCode(String invoiceCode);
 
     Invoice listByorderCodesLike(String orderCode);
 

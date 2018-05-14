@@ -1,7 +1,8 @@
-package com.lhiot.mall.wholesale.order.domain;
+package com.lhiot.mall.wholesale.aftersale.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,8 +17,7 @@ import java.util.List;
 @ApiModel
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class OrderDetail {
-
+public class OrderResult {
     @JsonProperty("id")
     private Long id;
 
@@ -83,7 +83,7 @@ public class OrderDetail {
     @JsonProperty("proList")
     private List<OrderGoods> orderGoodsList;
 
-     @JsonProperty("shopName")
+    @JsonProperty("shopName")
     private String shopName;
 
     @JsonProperty("userName")
@@ -98,7 +98,7 @@ public class OrderDetail {
     @JsonProperty("addressDetail")
     private String addressDetail;
 
-   @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @JsonProperty("paymentTime")
     private Timestamp paymentTime;
 
@@ -114,9 +114,6 @@ public class OrderDetail {
     @JsonProperty("orderCoupon")
     private Long orderCoupon;//优惠券
 
-    @JsonProperty("invoiceStatus")
-    private String invoiceStatus;//是否已开发票 no-未开发票 yes 已开发票(包括未收发票和已收发票)
-
     @JsonProperty("start")
     private Integer start;
 
@@ -127,8 +124,6 @@ public class OrderDetail {
 
     private Integer page;
 
-    private Integer code;//操作返回码 1001 更新成功 1002添加成功 1003支付成功 1004 审核成功
-
-    private String msg;//返回结果
-
+    @JsonProperty("orderRefundApplication")
+    private OrderRefundApplication orderRefundApplication;
 }

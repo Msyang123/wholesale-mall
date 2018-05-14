@@ -11,9 +11,13 @@ import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
+import com.lhiot.mall.wholesale.pay.domain.RefundLog;
 import com.lhiot.mall.wholesale.pay.hdsend.Abolish;
 import com.lhiot.mall.wholesale.pay.hdsend.Warehouse;
+import com.lhiot.mall.wholesale.pay.mapper.RefundLogMapper;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
+import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
+import com.lhiot.mall.wholesale.setting.service.SettingService;
 import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.User;
@@ -21,6 +25,7 @@ import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
 import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
 import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
+import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.beans.IntrospectionException;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.util.*;
@@ -38,6 +44,8 @@ import java.util.*;
 @Transactional
 public class OrderService {
     private final OrderMapper orderMapper;
+
+    private final RefundLogMapper refundLogMapper;
 
     private final UserService userService;
 
@@ -51,23 +59,25 @@ public class OrderService {
 
     private final SalesUserService salesUserService;
 
-
+    private final SettingService settingService;
 
     private final GoodsStandardService goodsStandardService;
 
     private final RabbitTemplate rabbit;
 
     @Autowired
-    public OrderService(OrderMapper orderMapper, UserService userService, PaymentLogService paymentLogService,
-                        PaymentProperties paymentProperties, SnowflakeId snowflakeId,Warehouse warehouse,
-                        SalesUserService salesUserService,GoodsStandardService goodsStandardService,RabbitTemplate rabbit) {
+    public OrderService(OrderMapper orderMapper, RefundLogMapper refundLogMapper, UserService userService, PaymentLogService paymentLogService,
+                        PaymentProperties paymentProperties, SnowflakeId snowflakeId, Warehouse warehouse,
+                        SalesUserService salesUserService, SettingService settingService, GoodsStandardService goodsStandardService, RabbitTemplate rabbit) {
         this.orderMapper = orderMapper;
+        this.refundLogMapper = refundLogMapper;
         this.userService = userService;
         this.weChatUtil=new WeChatUtil(paymentProperties);
         this.paymentLogService=paymentLogService;
         this.snowflakeId=snowflakeId;
         this.warehouse=warehouse;
         this.salesUserService=salesUserService;
+        this.settingService = settingService;
         this.goodsStandardService=goodsStandardService;
         this.rabbit=rabbit;
     }
@@ -121,15 +131,15 @@ public class OrderService {
         //产生订单编码
         orderDetail.setOrderCode(snowflakeId.stringId());
         orderDetail.setCreateTime(new Timestamp(System.currentTimeMillis()));
-        //非货到付款订单需要支付
-         if(!Objects.equals(orderDetail.getSettlementType(),"offline")){
-                orderDetail.setOrderStatus("unpaid");//待付款
-            //mq设置三十分钟失效
-            rabbit.convertAndSend("order-direct-exchange", "order-dlx-queue", JacksonUtils.toJson(orderDetail), message -> {
-                message.getMessageProperties().setExpiration(String.valueOf(30 * 60 * 1000));
-                return message;
-            });
-        }
+        orderDetail.setOrderStatus("unpaid");//先都设置为待付款 货到付款订单不需要需要支付
+        ParamConfig paramConfig= settingService.searchConfigParam("afterSalePeriod");//售后周期
+        //设置售后截止时间
+        orderDetail.setAfterSaleTime(new Timestamp(System.currentTimeMillis()+Integer.valueOf(paramConfig.getConfigParamValue())*24*60*60*1000));
+        //mq设置三十分钟失效
+        rabbit.convertAndSend("order-direct-exchange", "order-dlx-queue", JacksonUtils.toJson(orderDetail), message -> {
+            message.getMessageProperties().setExpiration(String.valueOf(30 * 60 * 1000));
+            return message;
+        });
 
         //保存订单信息
         orderMapper.save(orderDetail);
@@ -172,7 +182,18 @@ public class OrderService {
     }
 
     /**
-     * 修改订单状态
+     * 确认订单收货
+     */
+    public int receivedOrder(String orderCode){
+        OrderDetail orderDetail=new OrderDetail();
+        orderDetail.setOrderCode(orderCode);
+        orderDetail.setOrderStatus("received");
+        orderDetail.setCurrentOrderStatus("undelivery");
+        return orderMapper.updateOrderStatusByCode(orderDetail);
+    }
+
+    /**
+     * 依据订单码修改订单信息
      * @param orderDetail
      * @return
      */
@@ -181,17 +202,22 @@ public class OrderService {
     }
 
     /**
+     * 依据订单号修改订单信息
+     * @param orderDetail
+     * @return
+     */
+    public int updateOrderById(OrderDetail orderDetail){
+        return orderMapper.updateOrderById(orderDetail);
+    }
+
+
+    /**
      * 取消已支付订单 需要调用仓库取消掉订单
      * @param orderDetail
      * @return
      */
     public int cancelPayedOrder(OrderDetail orderDetail){
 
-       PaymentLog paymentLog= paymentLogService.getPaymentLog(orderDetail.getOrderCode());
-
-       if(Objects.isNull(paymentLog)){
-           throw new ServiceException("未找到支付记录");
-       }
        //退货到总仓
         /**********批发单服务-作废**********************************/
         Abolish abolish=new Abolish();
@@ -200,27 +226,73 @@ public class OrderService {
         abolish.setOper("退货管理员");
         String cancelResult=warehouse.abolish(abolish);
        log.info(cancelResult);
-
-       //FIXME 查询支付日志
-
-         switch (orderDetail.getSettlementType()) {
-            //1货到付款
+        //修改为已退货
+        OrderDetail updateOrderDetail =new OrderDetail();
+        updateOrderDetail.setOrderCode(orderDetail.getOrderCode());
+        updateOrderDetail.setCurrentOrderStatus("undelivery");
+        updateOrderDetail.setOrderStatus("refunded");
+        updateOrderStatus(updateOrderDetail);
+        //查询支付日志
+        PaymentLog paymentLog= paymentLogService.getPaymentLog(orderDetail.getOrderCode());
+        switch (orderDetail.getSettlementType()) {
+            //货到付款
             case "offline":
                 //直接取消掉订单就可以了
                 break;
-            //0 线上支付
-            case "online":
-
+            //微信支付
+            case "wechat":
+                if(Objects.isNull(paymentLog)){
+                    throw new ServiceException("未找到支付记录");
+                }
                 //退款 如果微信支付就微信退款
                 try {
                     weChatUtil.refund(paymentLog.getTransactionId(), paymentLog.getTotalFee());
 
-                    //TODO 写入退款记录  t_whs_refund_log
+                    //写入退款记录  t_whs_refund_log
+                    RefundLog refundLog=new RefundLog();
+                    refundLog.setPaymentLogId(paymentLog.getId());
+                    refundLog.setRefundFee(paymentLog.getTotalFee());
+                    refundLog.setRefundReason("当天退款");
+                    refundLog.setRefundTime(new Timestamp(System.currentTimeMillis()));
+                    refundLog.setTransactionId(paymentLog.getTransactionId());
+                    refundLog.setRefundType("wechatRefund");
+                    refundLog.setUserId(orderDetail.getUserId());
+                    refundLogMapper.insertRefundLog(refundLog);
+                    PaymentLog updatePaymentLog=new PaymentLog();
+                    updatePaymentLog.setOrderCode(orderDetail.getOrderCode());
+                    updatePaymentLog.setRefundFee(paymentLog.getTotalFee());
+                    paymentLogService.updatePaymentLog(updatePaymentLog);
                 } catch (Exception e) {
-                    throw new ServiceException("微信退款失败，请联系客服");
+                    throw new ServiceException("微信退款失败，请联系客服",e);
                 }
                 break;
+            //余额支付
+            case "balance":
+
+                if(Objects.isNull(paymentLog)){
+                    throw new ServiceException("未找到支付记录");
+                }
+                User updateUser=new User();
+                updateUser.setId(orderDetail.getUserId());
+                updateUser.setBalance(paymentLog.getTotalFee());//需要退还的用户余额
+                userService.updateUser(updateUser);
+                //写入退款记录  t_whs_refund_log
+                RefundLog refundLog=new RefundLog();
+                refundLog.setPaymentLogId(paymentLog.getId());
+                refundLog.setRefundFee(paymentLog.getTotalFee());
+                refundLog.setRefundReason("当天退款");
+                refundLog.setRefundTime(new Timestamp(System.currentTimeMillis()));
+                refundLog.setTransactionId(paymentLog.getTransactionId());
+                refundLog.setRefundType("balanceRefund");
+                refundLog.setUserId(orderDetail.getUserId());
+                refundLogMapper.insertRefundLog(refundLog);
+                PaymentLog updatePaymentLog=new PaymentLog();
+                updatePaymentLog.setOrderCode(orderDetail.getOrderCode());
+                updatePaymentLog.setRefundFee(paymentLog.getTotalFee());
+                paymentLogService.updatePaymentLog(updatePaymentLog);
+                break;
             default:
+                log.info("退款未找到类型");
                 break;
         }
         return 1;

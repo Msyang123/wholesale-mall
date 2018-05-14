@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.user.service;
 
+import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
@@ -12,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -22,8 +26,6 @@ import java.util.*;
 @Service
 @Transactional
 public class SalesUserService {
-
-    private final SnowflakeId snowflakeId;
 
     private final SalesUserMapper salesUserMapper;
 
@@ -37,8 +39,7 @@ public class SalesUserService {
 
 
     @Autowired
-    public SalesUserService(SqlSession sqlSession, SnowflakeId snowflakeId, SalesUserMapper salesUserMapper, RabbitTemplate rabbit, UserMapper userMapper, PaymentProperties properties, RestTemplate restTemplate) {
-        this.snowflakeId = snowflakeId;
+    public SalesUserService(SalesUserMapper salesUserMapper, RabbitTemplate rabbit, UserMapper userMapper, PaymentProperties properties, RestTemplate restTemplate) {
         this.salesUserMapper = salesUserMapper;
         this.rabbit = rabbit;
         this.userMapper = userMapper;
@@ -89,21 +90,22 @@ public class SalesUserService {
         if (salesUserMapper.updateUserSaleRelationship(salesUserRelation)>0){
             if (Objects.equals(salesUserRelation.getAuditStatus(),"agree")){
                 if (userMapper.updateUserStatus(salesUserRelation.getUserId())>0){//用户表改已认证或未认证
-                    //FIXME 审核通过的时候发送发券广播消息
+                    //审核通过的时候发送发券广播消息
                     rabbit.convertAndSend("store-check-event","", salesUserRelation.getUserId());
+
                     //发送短信
-                    String messageUrl= MessageFormat.format(properties.getSendMessageUrl(),"regist-pass",user.getPhone());
-                    Map<String,String> body=new HashMap<>();
-                    body.put("phone",user.getPhone());
-                    String result=restTemplate.postForObject(messageUrl, body, String.class);
-                    log.info("result:"+result);
+                    Map<String, Object> body = ImmutableMap.of("phone",user.getPhone());
+                    HttpEntity<Map<String, Object>> request = properties.getSendSms().createRequest(body);
+                    String messageUrl= MessageFormat.format(properties.getSendSms().getUrl(),"regist-pass", user.getPhone());
+                    String result = restTemplate.postForObject(messageUrl, request, String.class);
+                    log.info("result: " + result);
                 }
             }else {
                 //发送短信
-                String messageUrl= MessageFormat.format(properties.getSendMessageUrl(),"regist-unpass",user.getPhone());
-                Map<String,String> body=new HashMap<>();
-                body.put("phone",user.getPhone());
-                String result=restTemplate.postForObject(messageUrl, body, String.class);
+                Map<String, Object> body = ImmutableMap.of("phone",user.getPhone());
+                HttpEntity<Map<String, Object>> request = properties.getSendSms().createRequest(body);
+                String messageUrl= MessageFormat.format(properties.getSendSms().getUrl(),"regist-unpass",user.getPhone());
+                String result=restTemplate.postForObject(messageUrl, request, String.class);
                 log.info("result:"+result);
             }
         }
