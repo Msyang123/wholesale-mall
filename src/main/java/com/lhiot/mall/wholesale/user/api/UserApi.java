@@ -1,51 +1,13 @@
 package com.lhiot.mall.wholesale.user.api;
 
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.sql.Timestamp;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import javax.imageio.ImageIO;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotNull;
-
-import com.lhiot.mall.wholesale.base.DateFormatUtil;
-import org.redisson.api.RMapCache;
-import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
-
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.common.wrapper.ArrayObject;
-import com.lhiot.mall.wholesale.activity.domain.gridparam.ActivityGirdParam;
+import com.leon.microx.util.ImmutableMap;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.base.QRCodeUtil;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
@@ -67,6 +29,28 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RMapCache;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Api(description ="用户接口")
 @Slf4j
@@ -326,7 +310,9 @@ public class UserApi {
         UserAddress userAddressYes = userService.searchAddressListYes(userId);
         List<UserAddress> userAddressNo = userService.searchAddressListNO(userId);
         List<UserAddress> list = new ArrayList<UserAddress>();
+        if (userAddressYes!=null){
             list.add(0,userAddressYes);
+        }
         for (UserAddress userAddress:userAddressNo) {
             list.add(userAddress);
         }
@@ -352,9 +338,11 @@ public class UserApi {
         return ResponseEntity.badRequest().body("添加失败");
     }
 
-    @PostMapping("/set-default")
+    @PostMapping("/set-default/{id}")
     @ApiOperation("设置默认接口")
-    public ResponseEntity setDefault(@RequestBody UserAddress userAddress) {
+    public ResponseEntity setDefault(@PathVariable Long id) {
+        UserAddress userAddress = new UserAddress();
+        userAddress.setId(id);
         if (userService.updateDefault(userAddress)) {
             return ResponseEntity.ok(userAddress);
         }
@@ -369,19 +357,22 @@ public class UserApi {
     public ResponseEntity verificationCode(@PathVariable("phone") String phone){
         //手机验证码
         RMapCache<String,String> cache=  redissonClient.getMapCache("userVerificationCode");
-        if(Objects.nonNull(cache.get("phone"+phone))){
-            return ResponseEntity.badRequest().body("验证码2分钟内有效，请勿重复发送");
-        }
+//        if(Objects.nonNull(cache.get("phone"+phone))){
+//            return ResponseEntity.badRequest().body("验证码2分钟内有效，请勿重复发送");
+//        }
         try {
             String randomCode= ""+weChatUtil.buildRandom(6);
-            //将手机验证码(2分钟) 缓存起来
-            cache.put("phone"+phone,randomCode,2, TimeUnit.MINUTES);
             //发送验证码到第三方推送服务器
-            Map<String,String> body=new HashMap<>();
-            body.put("number",randomCode);
-            String sendMessageUrl=MessageFormat.format(weChatUtil.getProperties().getSendMessageUrl(),"verification",phone);
-            restTemplate.postForObject(sendMessageUrl, body, String.class);
-            return ResponseEntity.ok().build();
+
+            Map<String, Object> body = ImmutableMap.of("number", randomCode);
+            HttpEntity<Map<String, Object>> request = weChatUtil.getProperties().getSendSms().createRequest(body);
+            String messageUrl = MessageFormat.format(weChatUtil.getProperties().getSendSms().getUrl(),"verification-wholesale",phone);
+            ResponseEntity response = restTemplate.postForEntity(messageUrl, request, String.class);
+            if (response.getStatusCode().is2xxSuccessful()){
+                // 发送成功，将手机验证码(2分钟) 缓存起来
+                cache.put("phone"+phone,randomCode,2, TimeUnit.MINUTES);
+            }
+            return ResponseEntity.ok("发送成功");
         }catch (Exception e){
             e.printStackTrace();
             return ResponseEntity.badRequest().body("验证码发送失败");
@@ -402,14 +393,13 @@ public class UserApi {
         }
         try {
             //到远端验证手机验证码是否正确
-            String verifiUrl=MessageFormat.format(weChatUtil.getProperties().getValidateMessageUrl(),"verification-wholesale",user.getPhone());
-            Map<String,String> body=new HashMap<>();
-            body.put("code",user.getCode());
-            body.put("key","number");
-            String result=restTemplate.postForObject(verifiUrl, body, String.class);
-            log.info("verifiCode result:"+result);
-            if (!Objects.equals(result,"true")){
-                return ResponseEntity.badRequest().body("手机验证码不正确");
+            Map<String, Object> body = ImmutableMap.of("code",user.getCode(), "key","number","product","恰果果");
+            HttpEntity<Map<String, Object>> request = weChatUtil.getProperties().getSendSms().createRequest(body);
+            String verifiUrl = MessageFormat.format(weChatUtil.getProperties().getValidateSms().getUrl(),"verification-wholesale",user.getPhone());
+            ResponseEntity response =  restTemplate.postForEntity(verifiUrl, request, String.class);
+            log.info("verifiCode result:"+response);
+            if (response.getStatusCodeValue() >= 400){
+                return response;
             }
 
             User u = userService.user(user.getId());
@@ -417,7 +407,7 @@ public class UserApi {
                 return ResponseEntity.badRequest().body("您审核申请已提交，不能重复操作");
             }
             if (userService.register(user, user.getCode())) {
-                return ResponseEntity.ok().build();
+                return ResponseEntity.ok().body("提交成功");
             }
             return ResponseEntity.badRequest().body("用户注册失败");
         } catch (ServiceException e) {

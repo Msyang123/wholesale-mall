@@ -2,6 +2,7 @@ package com.lhiot.mall.wholesale.setting.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,9 @@ public class ParamConfig {
 
     @JsonProperty("configParamValue")
     private String configParamValue;
+    
+    @ApiModelProperty(notes="后台管理系统，使用字段",dataType="String")
+    private String showType;
     
     private String notes;
 }

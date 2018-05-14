@@ -33,13 +33,13 @@ public class SalesUserPerformance{
     private String salesStatus;
 
     @JsonProperty("perMonthPerformance")
-    private String perMonthPerformance;
+    private String perMonthPerformance = "0";
 
     @JsonProperty("thisMonthPerformance")
-    private String thisMonthPerformance;
+    private String thisMonthPerformance = "0";
 
     @JsonProperty("performanceTotal")
-    private String performanceTotal;
+    private String performanceTotal = "0";
 
     @JsonProperty("perMonthNewShopNum")
     private int perMonthNewShopNum = 0;
@@ -51,5 +51,5 @@ public class SalesUserPerformance{
     private int newShopNumTotal = 0;
 
     @JsonProperty("overDueTotal")
-    private String overDueTotal;
+    private String overDueTotal = "0";
 }

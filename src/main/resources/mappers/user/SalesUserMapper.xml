@@ -158,6 +158,25 @@
         </where>
     </select>
 
+    <!--分页查询业务员信息表-->
+    <select parameterType="map" id="pageCount" resultType="java.lang.Integer">
+        select count(id) from t_whs_salesuser
+        <where>
+            <if test="id!=0 and id!=null"> and id = #{id} </if>
+            <if test="openId!=null and openId!='null' and openId!=''"> and open_id = #{openId} </if>
+            <if test="unionId!=null and unionId!='null' and unionId!=''"> and union_id = #{unionId} </if>
+            <if test="salesmanName!=null and salesmanName!='null' and salesmanName!=''"> and salesman_name like CONCAT('%',#{salesmanName},'%') </if>
+            <if test="salesmanPhone!=null and salesmanPhone!='null' and salesmanPhone!=''"> and salesman_phone like CONCAT('%',#{salesmanPhone},'%') </if>
+            <if test="salesmanPassword!=null and salesmanPassword!='null' and salesmanPassword!=''"> and salesman_password = #{salesmanPassword} </if>
+            <if test="salesmanHeadImage!=null and salesmanHeadImage!='null' and salesmanHeadImage!=''"> and salesman_head_image = #{salesmanHeadImage} </if>
+            <if test="createPerson!=0 and createPerson!=null"> and create_person = #{createPerson} </if>
+            <if test="createAt!=null and createAt!='null' and createAt!=''"> and create_at = #{createAt} </if>
+            <if test="inviteCode!=null and inviteCode!='null' and inviteCode!=''"> and invite_code = #{inviteCode} </if>
+            <if test="acount!=null and acount!='null' and acount!=''"> and acount = #{acount} </if>
+            <if test="salesStatus!=null and salesStatus!='null' and salesStatus!=''"> and sales_status = #{salesStatus} </if>
+        </where>
+    </select>
+
     <select parameterType="Long" id="findById" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
      select * from t_whs_salesuser where id=#{0}
     </select>
@@ -207,4 +226,14 @@
             <if test="salesStatus!=null and salesStatus!='null' and salesStatus!=''"> and sales_status = #{salesStatus} </if>
         </where>
     </select>
+
+
+    <update id="updateSalesmanIdBySalesmanId" parameterType="map">
+        UPDATE t_whs_salesuser_relation set  salesman_id = #{salesmanId} where salesman_id = #{oldSalesmanId}
+    </update>
+
+
+    <update id="updateSalesmanIdByUserId" parameterType="map">
+        UPDATE t_whs_salesuser_relation set  salesman_id = #{salesmanId} where user_id = #{userId}
+    </update>
 </mapper>
