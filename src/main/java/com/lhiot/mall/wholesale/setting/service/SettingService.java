@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
@@ -31,7 +33,7 @@ public class SettingService {
     public ParamConfig searchConfigParam(String key){
         return settingMapper.searchConfigParam(key);
     }
-    
+
 	/**
 	 * 新增
 	 * @param param
@@ -40,7 +42,7 @@ public class SettingService {
 	public boolean create(ParamConfig param){
 		return settingMapper.insert(param)>0;
 	}
-	
+
 	/**
 	 * 批量删除
 	 * @param ids
@@ -53,7 +55,7 @@ public class SettingService {
 								.map(id -> Long.parseLong(id.trim())).collect(Collectors.toList());
 		settingMapper.delete(list);
 	}
-	
+
 	/**
 	 * 修改
 	 * @param param
@@ -62,12 +64,12 @@ public class SettingService {
 	public boolean update(ParamConfig param){
 		return settingMapper.update(param)>0;
 	}
-	
+
 	/**
 	 * 根据id查询商品版块
 	 * @param id
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public ParamConfig paramConfig(Long id) {
 		return settingMapper.select(id);

@@ -98,7 +98,8 @@
                     invoice_status,
                     invoice_order_ids,
                     invoice_code,
-                    user_id) values (
+                    user_id,
+                    order_number) values (
                     #{invoiceTitleId},
                     #{taxpayerNumber},
                     #{companyName},
@@ -112,10 +113,11 @@
                     #{bankName},
                     #{bankCardCode},
                     #{createTime},
-                    0,
+                    #{invoiceStatus},
                     #{invoiceOrderIds},
                     #{invoiceCode},
-                    #{userId}
+                    #{userId},
+                    #{orderNumber}
                 )
     </insert>
 
@@ -131,7 +133,7 @@
         </set>
         where invoice_code=#{invoiceCode}
     </update>
-    <select id="findInvoiceByCode" parameterType="Long" resultType="com.lhiot.mall.wholesale.invoice.domain.Invoice">
+    <select id="findInvoiceByCode" parameterType="String" resultType="com.lhiot.mall.wholesale.invoice.domain.Invoice">
         select * from t_whs_invoice  where invoice_code=#{0}
     </select>
 
@@ -163,6 +165,7 @@
             <if test="invoiceCode!=null and invoiceCode!=''"> and invoice_code = #{invoiceCode} </if>
             <if test="userId!=null and userId!=0"> and user_id = #{userId} </if>
         </where>
+        ORDER BY invoice_print_time desc
     </select>
 
     <!-- 根据id查询新品需求详情 -->

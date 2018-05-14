@@ -86,29 +86,28 @@ public class InvoiceApi {
         }
         return ResponseEntity.badRequest().body("开票失败");
     }*/
-    @GetMapping("/calculate/texfee")
+    @GetMapping("/calculate/taxfee")
     @ApiOperation(value = "计算发票税费")
-    public ResponseEntity calculateTexFee(@RequestParam("orderCodes") String orderCodes) {
+    public ResponseEntity calculateTaxFee(@RequestParam("orderCodes") String orderCodes) {
         if(StringUtils.isEmpty(orderCodes)){
             return ResponseEntity.badRequest().body("请传入订单编码");
         }
         Invoice invoice=new Invoice();
         invoice.setInvoiceOrderIds(orderCodes);
-        return ResponseEntity.ok(invoiceService.calculateTexFee(invoice));
+        return ResponseEntity.ok(invoiceService.calculateTaxFee(invoice));
     }
 
     @GetMapping("/{invoiceCode}")
     @ApiOperation(value = "开票信息查询(发票详情)")
-    public ResponseEntity findInvoiceBycode(@PathVariable("invoiceCode") Long invoiceCode){
+    public ResponseEntity findInvoiceBycode(@PathVariable("invoiceCode") String invoiceCode){
         if(StringUtils.isEmpty(invoiceCode)){
             return ResponseEntity.badRequest().body("请传入发票编码");
         }
         Invoice invoice = invoiceService.findInvoiceByCode(invoiceCode);
-        List<OrderDetail> orderDetailList = new ArrayList<OrderDetail>();
-        OrderDetail orderDetail = new OrderDetail();
+        List<OrderDetail> orderDetailList = new ArrayList<>();
+
         for (String item:invoice.getInvoiceOrderIds().split(",")){
-            orderDetail.setOrderCode(item);
-            OrderDetail order  = orderService.order(orderDetail);
+            OrderDetail order  = orderService.searchOrderById(Long.valueOf(item));
             List<OrderGoods> orderGoodsList = orderService.searchOrderGoods(order.getId());
             order.setOrderGoodsList(orderGoodsList);
             orderDetailList.add(order);
@@ -124,13 +123,11 @@ public class InvoiceApi {
         Invoice invoice = new Invoice();
         invoice.setUserId(userId);
         List<Invoice> invoiceList = invoiceService.list(invoice);
-        OrderDetail orderDetail = new OrderDetail();
         List<OrderDetail> orderDetailList = new ArrayList<OrderDetail>();
         for (Invoice item: invoiceList) {
             String orders = item.getInvoiceOrderIds();
-            for (String orderCode:orders.split(",")) {
-                orderDetail.setOrderCode(orderCode);
-                OrderDetail order  = orderService.order(orderDetail);
+            for (String orderId:orders.split(",")) {
+                OrderDetail order  = orderService.searchOrderById(Long.valueOf(orderId));
                 List<OrderGoods> orderGoodsList = orderService.searchOrderGoods(order.getId());
                 order.setOrderGoodsList(orderGoodsList);
                 orderDetailList.add(order);

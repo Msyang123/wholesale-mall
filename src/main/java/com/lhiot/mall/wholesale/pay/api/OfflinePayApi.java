@@ -26,15 +26,13 @@ public class OfflinePayApi {
     private final OrderService orderService;
     private final PayService payService;
     private final DebtOrderService debtOrderService;
-    private final Warehouse warehouse;
 
 	@Autowired
-	public OfflinePayApi(OrderService orderService, PayService payService, DebtOrderService debtOrderService, Warehouse warehouse){
+	public OfflinePayApi(OrderService orderService, PayService payService, DebtOrderService debtOrderService){
         this.orderService = orderService;
         this.payService = payService;
 
         this.debtOrderService=debtOrderService;
-        this.warehouse = warehouse;
     }
 
     @PutMapping("/confirm/{orderCode}")
@@ -73,6 +71,8 @@ public class OfflinePayApi {
         }else if(Objects.equals(searchDebtOrder.getCheckStatus(),"agree")||Objects.equals(searchDebtOrder.getCheckStatus(),"paid")){
             return ResponseEntity.badRequest().body("欠款订单已支付");
         }
+        //支付类型：balance-余额支付 wechat-微信 offline-线下支付
+        debtOrder.setPaymentType("offline");
         //提交账款订单审核
         debtOrder.setCheckStatus("unaudited");//审核状态：unpaid-未支付 failed-已失效 paid-已支付 unaudited-未审核 agree-审核通过 reject-审核不通过
         int result=debtOrderService.updateDebtOrderByCode(debtOrder);

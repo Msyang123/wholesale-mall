@@ -2,6 +2,8 @@ package com.lhiot.mall.wholesale.order.mapper;
 
 import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
+import com.lhiot.mall.wholesale.user.domain.SalesUserPerformanceDetail;
+import com.lhiot.mall.wholesale.user.domain.gridparam.UserPerformanceGridParam;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -13,6 +15,8 @@ public interface OrderMapper {
     List<OrderDetail> searchOrders(OrderDetail orderDetail);
 
     List<OrderDetail> searchOrdersByOrderCodes(List<String> orderCodes);
+
+    List<OrderDetail> searchOrdersByOrderIds(List ids);
 
     List<OrderGoods> searchOrderGoods(long orderId);
 
@@ -60,10 +64,16 @@ public interface OrderMapper {
     int updateOrderStatusByCode(OrderDetail orderDetail);
 
     /**
-     * 依据订单号修改订单信息
+     * 依据订单码修改订单信息
      * @return
      */
     int updateOrder(OrderDetail orderDetail);
+
+    /**
+     * 依据订单号修改订单信息
+     * @return
+     */
+    int updateOrderById(OrderDetail orderDetail);
 
 
     //统计商品的售卖数量，根据商品ids
@@ -84,7 +94,7 @@ public interface OrderMapper {
     //判断门店是否下过单
     int isExistsOrderByuserId(Long userId);
 
-    String countOverDue(Map<String,Object> param);
+    Map<String,Object> countPayAbleFee(Map<String, Object> param);
 
-    String countPayAbleFee(Map<String,Object> param);
+    Map<String,Object> countOverDue(Map<String, Object> param);
 }

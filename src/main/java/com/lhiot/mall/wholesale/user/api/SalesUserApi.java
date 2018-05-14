@@ -8,6 +8,7 @@ import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
 
+import com.lhiot.mall.wholesale.base.PageQueryObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -220,7 +221,7 @@ public class SalesUserApi {
 
     @GetMapping("/page")
     @ApiOperation(value = "分页查询业务员信息表列表")
-    public ResponseEntity<ArrayObject> list(
+    public ResponseEntity<PageQueryObject> list(
             @RequestParam(value="salesmanName", required = false) String salesmanName,
             @RequestParam(value="salesmanPhone", required = false) String salesmanPhone,
             @RequestParam(value="rows", required = false, defaultValue="10") Integer rows,
@@ -234,12 +235,7 @@ public class SalesUserApi {
         param.put("rows",rows);
         param.put("sidx",sidx);
         param.put("sord",sord);
-        ArrayObject result=ArrayObject.of(salesUserService.page(param));
-        //TODO 此处需要做记录总数查询
-        result.setPage(page);
-        result.setRows(rows);
-        result.setSidx(sidx);
-        result.setSord(sord);
+        PageQueryObject result  = salesUserService.page(param);
         return ResponseEntity.ok(result);
     }
 
@@ -258,6 +254,15 @@ public class SalesUserApi {
     @GetMapping("/sales-users")
     @ApiOperation(value = "查询所有业务员")
     public ResponseEntity<List<SalesUser>> findAll(){
+        return ResponseEntity.ok(salesUserService.salesUsers());
+    }
+
+    @GetMapping("/assginShop")
+    @ApiOperation(value = "查询所有业务员")
+    public ResponseEntity<List<SalesUser>> assginShop(@RequestParam(value="assginUserId") String assginUserId,
+                                                      @RequestParam(value="shopId", required = false) String shopId,
+                                                      @RequestParam(value="oldUserId", required = false) String oldUserId){
+        salesUserService.assginShop(assginUserId,shopId,oldUserId);
         return ResponseEntity.ok(salesUserService.salesUsers());
     }
 }

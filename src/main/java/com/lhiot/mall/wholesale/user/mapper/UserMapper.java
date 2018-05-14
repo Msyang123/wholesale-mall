@@ -2,15 +2,13 @@ package com.lhiot.mall.wholesale.user.mapper;
 
 
 import java.util.List;
+import java.util.Map;
 
+import com.lhiot.mall.wholesale.user.domain.*;
+import com.lhiot.mall.wholesale.user.domain.gridparam.UserPerformanceGridParam;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
-import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
-import com.lhiot.mall.wholesale.user.domain.User;
-import com.lhiot.mall.wholesale.user.domain.UserAddress;
-import com.lhiot.mall.wholesale.user.domain.UserGridParam;
-import com.lhiot.mall.wholesale.user.domain.UserResult;
 
 @Mapper
 public interface UserMapper {
@@ -26,6 +24,8 @@ public interface UserMapper {
     User user(long id);
 
     User searchUserByOpenid(String openId);
+
+    Integer updateBalance(User user);
 
     Integer updateUser(User user);
 
@@ -67,4 +67,10 @@ public interface UserMapper {
     List<UserResult> pageQuery(UserGridParam param);
     //查询分类的总记录数
     int pageQueryCount(UserGridParam param);
+
+    List<SalesUserPerformanceDetail> pagePerformanceUserQuery(UserPerformanceGridParam param);
+
+    Integer performanceUserQueryCount(UserPerformanceGridParam param);
+
+    List<Long> queryUserId(Map<String, Object> param);
 }
