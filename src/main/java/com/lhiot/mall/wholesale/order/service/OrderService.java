@@ -443,6 +443,7 @@ public class OrderService {
     public Integer lateOrdersFee(OrderParam orderParam) {
         return orderMapper.lateOrdersFee(orderParam);
     }
+
     /**
      * 后台管理--查询订单详情
      * @return
@@ -477,6 +478,16 @@ public class OrderService {
             }
         }
         return orderDetail;
+    }
+
+    /**
+     * 后台管理--查询订单金额之和
+     * @return
+     */
+    public OrderDetail countFee(String orderCode) {
+        String[] orderCodes = orderCode.split(",");
+        List<String> list = Arrays.asList(orderCodes);
+        return orderMapper.countFee(list);
     }
 
 
