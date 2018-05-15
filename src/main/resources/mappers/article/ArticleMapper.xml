@@ -65,7 +65,7 @@
         <if test="rankNum != null and rankNum != ''">#{rankNum},</if>
         <if test="publishStatus != null and publishStatus != ''">#{publishStatus},</if>
         <if test="resouceUrl != null and resouceUrl != ''">#{resouceUrl},</if>
-        <if test="articleUrl != null and articleUrl != ''">#{createPerson},</if>
+        <if test="articleUrl != null and articleUrl != ''">#{articleUrl},</if>
         <if test="createTime != null ">#{createTime,jdbcType=TIMESTAMP},</if>
     </trim>
     )
