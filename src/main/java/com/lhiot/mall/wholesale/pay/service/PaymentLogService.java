@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -57,5 +58,15 @@ public class PaymentLogService {
      */
     public List<PaymentLog> getPaymentLogList(List<Long> orderIds){
         return paymentLogMapper.getPaymentLogList(orderIds);
+    }
+
+    /**
+     * 后台管理--根据订单查询订单实付金额之和
+     * @return
+     */
+    public PaymentLog countFee(String orderCode) {
+        String[] orderCodes = orderCode.split(",");
+        List<String> list = Arrays.asList(orderCodes);
+        return paymentLogMapper.countFee(list);
     }
 }

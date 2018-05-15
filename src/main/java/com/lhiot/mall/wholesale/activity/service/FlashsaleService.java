@@ -28,6 +28,8 @@ import com.lhiot.mall.wholesale.goods.domain.GoodsMinPrice;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
 import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 import com.lhiot.mall.wholesale.goods.service.GoodsStandardService;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
+import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 
 /**
  * 抢购中心
@@ -215,7 +217,7 @@ public class FlashsaleService {
 			flashActivityGoods = activityService.nextActivity(flasesale);
 		}
 		if(Objects.isNull(flashActivityGoods)){
-			return flashActivityGoods;
+			return new FlashActivityGoods();
 		}
 		//查询活动商品
 		List<FlashsaleGoods> flashGoods = flashsaleMapper.search(flashActivityGoods.getId());
@@ -325,12 +327,48 @@ public class FlashsaleService {
 	}
 	
 	/**
-	 * 新增抢购
-	 * @param param
+	 * 修改抢购数量，以及创建抢购记录
+	 * @param orderDetail
 	 * @return
 	 */
-	public boolean createFlashRecord(FlashGoodsRecord param){
-		int count = flashsaleMapper.insertRecord(param);
-		return count>0;
+	public boolean modifyFlashActiviy(OrderDetail orderDetail){
+		//订单商品
+		List<OrderGoods> list = orderDetail.getOrderGoodsList();
+		boolean success = false;
+		if(list.isEmpty()){
+			return success;
+		}
+		//获取当前的抢购活动及商品
+		FlashActivityGoods ac = this.flashGoods(ActivityPeriodsType.current);
+		//抢购活动配置的活动商品
+		List<FlashsaleGoods> proList = ac.getProList();
+		//获取参数中抢购活动商品,1-是抢购商品
+		List<OrderGoods> orderGoodses = list.stream().filter(goods -> Objects.equals(1, goods.getFlash()))
+												.collect(Collectors.toList());
+		
+		Long orderId = orderDetail.getUserId();
+		Long userId = orderDetail.getUserId();
+		//构建批量修改抢购商品剩余数量及创建抢购记录的参数
+		List<FlashGoodsRecord> param = new ArrayList<>();
+		for(OrderGoods orderGoods : orderGoodses){
+			for(FlashsaleGoods flashsaleGoods : proList){
+				if(Objects.equals(orderGoods.getGoodsStandardId(), flashsaleGoods.getGoodsStandardId())){
+					FlashGoodsRecord record = new FlashGoodsRecord();
+					record.setBuyCount(orderGoods.getQuanity());
+					record.setFlashsaleGoodsId(flashsaleGoods.getId());
+					record.setOrderId(orderId);
+					record.setUserId(userId);
+					param.add(record);
+				}
+			}
+		}
+		if(param.isEmpty()){
+			return success;
+		}
+		//批量修改抢购商品剩余数量
+		flashsaleMapper.updateInBatch(param);
+		//构建创建抢购记录的数据
+		flashsaleMapper.insertRecord(param);
+		return true;
 	}
 }

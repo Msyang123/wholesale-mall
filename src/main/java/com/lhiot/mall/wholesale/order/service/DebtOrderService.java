@@ -5,11 +5,12 @@ import com.lhiot.mall.wholesale.base.DataMergeUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
 import com.lhiot.mall.wholesale.order.domain.DebtOrderResult;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.gridparam.DebtOrderGridParam;
 import com.lhiot.mall.wholesale.order.mapper.DebtOrderMapper;
-import com.lhiot.mall.wholesale.user.domain.SalesUser;
+import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
+import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
 import com.lhiot.mall.wholesale.user.domain.User;
-import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +35,18 @@ public class DebtOrderService {
 
     private final UserService userService;
 
+    private final OrderService orderService;
+
+    private final PaymentLogService paymentLogService;
+
     private final SnowflakeId snowflakeId;
 
     @Autowired
-    public DebtOrderService(DebtOrderMapper debtOrderMapper, UserService userService, SnowflakeId snowflakeId) {
+    public DebtOrderService(DebtOrderMapper debtOrderMapper, UserService userService, OrderService orderService, PaymentLogService paymentLogService, SnowflakeId snowflakeId) {
         this.debtOrderMapper = debtOrderMapper;
         this.userService = userService;
+        this.orderService = orderService;
+        this.paymentLogService = paymentLogService;
         this.snowflakeId=snowflakeId;
     }
 
@@ -183,6 +190,19 @@ public class DebtOrderService {
                 debtOrderResult.setShopName(user1.getShopName());
                 debtOrderResult.setUserName(user1.getUserName());
                 debtOrderResult.setPhone(user1.getPhone());
+            }
+            //订单信息
+            OrderDetail orderDetail = orderService.countFee(debtOrderResult.getOrderIds());
+            if (Objects.nonNull(orderDetail)) {
+                debtOrderResult.setPayableFee(orderDetail.getPayableFee());
+                debtOrderResult.setDeliveryFee(orderDetail.getDeliveryFee());
+                debtOrderResult.setDiscountFee(orderDetail.getDiscountFee());
+                debtOrderResult.setTotalFee(orderDetail.getTotalFee());
+            }
+            //支付信息
+            PaymentLog paymentLog = paymentLogService.countFee(debtOrderResult.getOrderIds());
+            if (Objects.nonNull(paymentLog)) {
+                debtOrderResult.setPayTotalFee(paymentLog.getTotalFee());
             }
         }
         return debtOrderResult;

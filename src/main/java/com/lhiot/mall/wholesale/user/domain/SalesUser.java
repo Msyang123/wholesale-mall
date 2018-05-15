@@ -35,7 +35,7 @@ public class SalesUser {
     @JsonProperty("phone")
     private String salesmanPhone;
 
-    @JsonProperty("psw")
+    @JsonProperty("salesmanPassword")
     private String salesmanPassword;
 
     @JsonProperty("src")
