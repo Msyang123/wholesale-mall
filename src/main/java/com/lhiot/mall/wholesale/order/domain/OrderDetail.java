@@ -117,6 +117,9 @@ public class OrderDetail {
     @JsonProperty("invoiceStatus")
     private String invoiceStatus;//是否已开发票 no-未开发票 yes 已开发票(包括未收发票和已收发票)
 
+    @JsonProperty("afterStatus")
+    private String afterStatus;//是否已售后 no-未售后 yes 已售后
+
     @JsonProperty("start")
     private Integer start;
 

@@ -103,7 +103,7 @@ public class GoodsApi {
         
         GoodsDetailResult goodsDetailResult = new GoodsDetailResult();
         goodsDetailResult.setGoodsInfo(goodsInfo);
-        goodsDetailResult.setGoodsFlashsale(flashsaleService.goodsFlashsale(id, userId));
+        goodsDetailResult.setGoodsFlashsale(flashsaleService.goodsFlashsale(goodsInfo.getGoodsStandardId(), userId));
         return ResponseEntity.ok(goodsDetailResult);
     }
 
