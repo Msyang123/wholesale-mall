@@ -474,27 +474,26 @@ public class OrderService {
         return orderDetail;
     }
 
-    public String countPayAbleFeeByUserId(List<Long> userIds,String startTime,String endTime){
-        Map<String,Object> param = new HashMap<String,Object>();
-        param.put("userIds",userIds);
-        param.put("startTime",startTime);
-        param.put("endTime",endTime);
-        return orderMapper.countPayAbleFee(param);
-    }
+
     public boolean isExistsOrderByuserId(Long userId){
         if(null != userId){
             return orderMapper.isExistsOrderByuserId(userId) > 0;
         }
         return false;
     }
+    public Map<String,Object> countPayAbleFeeByUserId(List<Long> userIds,String startTime,String endTime){
+        Map<String,Object> param = new HashMap<String,Object>();
+        param.put("userIds",userIds);
+        param.put("startTime",startTime);
+        param.put("endTime",endTime);
+        return orderMapper.countPayAbleFee(param);
+    }
     //根据userId查询欠款总额
-    public String countOverDue(List<Long> shopIds){
+    public Map<String,Object> countOverDue(List<Long> shopIds){
         Map<String,Object> param = new HashMap<String,Object>();
         param.put("userIds",shopIds);
         return orderMapper.countOverDue(param);
     }
-
-
     public OrderDetail userOrder(OrderParam orderParam){
         return orderMapper.userOrder(orderParam);
     }

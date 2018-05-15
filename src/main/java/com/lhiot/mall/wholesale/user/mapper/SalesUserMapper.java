@@ -52,4 +52,10 @@ public interface SalesUserMapper {
     Integer pageCountSalesUserPerformance(Map<String,Object> param);
 
     List<SalesUserPerformance> pageSalesUserPerformance(Map<String,Object> param);
+
+    int pageCount(Map<String, Object> param);
+
+    int updateSalesmanIdByUserId(Map<String, Object> param);
+
+    int updateSalesmanIdBySalesmanId(Map<String, Object> param);
 }
