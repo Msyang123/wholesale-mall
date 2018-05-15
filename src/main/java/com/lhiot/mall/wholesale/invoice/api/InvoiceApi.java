@@ -151,7 +151,7 @@ public class InvoiceApi {
     }
 
     @PutMapping("/status")
-    @ApiOperation(value = "后台管理-修改开票状态")
+    @ApiOperation(value = "后台管理-修改开票状态，驳回原因")
     public ResponseEntity updateInvoiceStatus(@RequestBody Invoice invoice){
         if (invoiceService.updateInvoiceStatus(invoice)>0){
             return ResponseEntity.ok().body("修改完成");

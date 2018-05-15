@@ -97,4 +97,6 @@ public interface OrderMapper {
     Map<String,Object> countPayAbleFee(Map<String, Object> param);
 
     Map<String,Object> countOverDue(Map<String, Object> param);
+
+    OrderDetail countFee(List<String> orderCode);
 }
