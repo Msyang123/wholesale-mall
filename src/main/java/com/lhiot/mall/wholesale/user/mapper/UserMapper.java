@@ -73,4 +73,6 @@ public interface UserMapper {
     Integer performanceUserQueryCount(UserPerformanceGridParam param);
 
     List<Long> queryUserId(Map<String, Object> param);
+    
+    List<UserResult> exportData(UserGridParam param);
 }
