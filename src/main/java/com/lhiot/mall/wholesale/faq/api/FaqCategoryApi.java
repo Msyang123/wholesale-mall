@@ -28,7 +28,7 @@ public class FaqCategoryApi {
     }
 
 
-    @PostMapping("/faqcategory")
+    @PostMapping("/faqcategory/add")
     @ApiOperation(value = "后台管理系统---新增FAQ分类",response = Faq.class)
     public  ResponseEntity add(@RequestBody FaqCategory faqCategory) {
         faqCategory.setCreateTime(new Timestamp(new Date().getTime()));

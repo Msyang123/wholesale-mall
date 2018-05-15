@@ -80,7 +80,8 @@ public class UserService {
     }
 
     public boolean updateDefault(UserAddress userAddress){
-        userMapper.updateDefaultAddress(userAddress.getUserId());
+        UserAddress address = userMapper.userAddress(userAddress.getId());
+        userMapper.updateDefaultAddress(address.getUserId());
         userAddress.setIsDefault("yes");
         return userMapper.updateAddress(userAddress)>0;
     }

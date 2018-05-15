@@ -22,7 +22,6 @@ public class FaqCategoryService {
     }
 
     public int save(FaqCategory faqCategory) {
-        //faqCategory.setId(faqCategoryMapper.pageQueryCount()+1);
         return faqCategoryMapper.insertFaqCategory(faqCategory);
     }
 

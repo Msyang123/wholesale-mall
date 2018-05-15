@@ -17,7 +17,13 @@ import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import com.lhiot.mall.wholesale.user.domain.UserGridParam;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
-import com.lhiot.mall.wholesale.user.wechat.*;
+import com.lhiot.mall.wholesale.user.wechat.AccessToken;
+import com.lhiot.mall.wholesale.user.wechat.JsapiPaySign;
+import com.lhiot.mall.wholesale.user.wechat.JsapiTicket;
+import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
+import com.lhiot.mall.wholesale.user.wechat.Token;
+import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -304,7 +310,9 @@ public class UserApi {
         UserAddress userAddressYes = userService.searchAddressListYes(userId);
         List<UserAddress> userAddressNo = userService.searchAddressListNO(userId);
         List<UserAddress> list = new ArrayList<UserAddress>();
+        if (userAddressYes!=null){
             list.add(0,userAddressYes);
+        }
         for (UserAddress userAddress:userAddressNo) {
             list.add(userAddress);
         }
@@ -330,9 +338,11 @@ public class UserApi {
         return ResponseEntity.badRequest().body("添加失败");
     }
 
-    @PostMapping("/set-default")
+    @PostMapping("/set-default/{id}")
     @ApiOperation("设置默认接口")
-    public ResponseEntity setDefault(@RequestBody UserAddress userAddress) {
+    public ResponseEntity setDefault(@PathVariable Long id) {
+        UserAddress userAddress = new UserAddress();
+        userAddress.setId(id);
         if (userService.updateDefault(userAddress)) {
             return ResponseEntity.ok(userAddress);
         }
@@ -347,18 +357,22 @@ public class UserApi {
     public ResponseEntity verificationCode(@PathVariable("phone") String phone){
         //手机验证码
         RMapCache<String,String> cache=  redissonClient.getMapCache("userVerificationCode");
-        if(Objects.nonNull(cache.get("phone"+phone))){
-            return ResponseEntity.badRequest().body("验证码2分钟内有效，请勿重复发送");
-        }
+//        if(Objects.nonNull(cache.get("phone"+phone))){
+//            return ResponseEntity.badRequest().body("验证码2分钟内有效，请勿重复发送");
+//        }
         try {
             String randomCode= ""+weChatUtil.buildRandom(6);
-            //将手机验证码(2分钟) 缓存起来
-            cache.put("phone"+phone,randomCode,2, TimeUnit.MINUTES);
             //发送验证码到第三方推送服务器
+
             Map<String, Object> body = ImmutableMap.of("number", randomCode);
             HttpEntity<Map<String, Object>> request = weChatUtil.getProperties().getSendSms().createRequest(body);
-            String messageUrl = MessageFormat.format(weChatUtil.getProperties().getSendSms().getUrl(),"verification",phone);
-            return restTemplate.postForEntity(messageUrl, request, String.class);
+            String messageUrl = MessageFormat.format(weChatUtil.getProperties().getSendSms().getUrl(),"verification-wholesale",phone);
+            ResponseEntity response = restTemplate.postForEntity(messageUrl, request, String.class);
+            if (response.getStatusCode().is2xxSuccessful()){
+                // 发送成功，将手机验证码(2分钟) 缓存起来
+                cache.put("phone"+phone,randomCode,2, TimeUnit.MINUTES);
+            }
+            return ResponseEntity.ok("发送成功");
         }catch (Exception e){
             e.printStackTrace();
             return ResponseEntity.badRequest().body("验证码发送失败");
@@ -379,7 +393,7 @@ public class UserApi {
         }
         try {
             //到远端验证手机验证码是否正确
-            Map<String, Object> body = ImmutableMap.of("code",user.getCode(), "key","number");
+            Map<String, Object> body = ImmutableMap.of("code",user.getCode(), "key","number","product","恰果果");
             HttpEntity<Map<String, Object>> request = weChatUtil.getProperties().getSendSms().createRequest(body);
             String verifiUrl = MessageFormat.format(weChatUtil.getProperties().getValidateSms().getUrl(),"verification-wholesale",user.getPhone());
             ResponseEntity response =  restTemplate.postForEntity(verifiUrl, request, String.class);
