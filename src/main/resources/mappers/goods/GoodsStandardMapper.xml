@@ -124,6 +124,7 @@
 			<if test="vaild != null and vaild != ''">and t1.vaild = #{vaild}</if>
 			<if test="minPrice != null and minPrice != ''">and t1.price &gt;= #{minPrice}</if>
 			<if test="maxPrice != null and maxPrice != ''">and t1.price &lt;= #{maxPrice}</if>
+			<if test="goodsId != null and goodsId != ''">and t2.id = #{goodsId}</if>
 		</trim>
 	</select>
 	
@@ -142,6 +143,7 @@
 			<if test="vaild != null and vaild != ''">and t1.vaild = #{vaild}</if>
 			<if test="minPrice != null and minPrice != ''">and t1.price &gt;= #{minPrice}</if>
 			<if test="maxPrice != null and maxPrice != ''">and t1.price &lt;= #{maxPrice}</if>
+			<if test="goodsId != null and goodsId != ''">and t2.id = #{goodsId}</if>
 		</trim>
 		<include refid="common.pager"></include>
 	</select>
