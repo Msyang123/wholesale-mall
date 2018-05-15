@@ -51,12 +51,12 @@ public class OrderRefundApplicationApi {
     @ApiOperation(value = "售后申请")
     public ResponseEntity apply(@RequestBody OrderRefundApplication orderRefundApplication) {
         RMapCache<String,Object> cache=  redissonClient.getMapCache("afterSale");
-        if(Objects.nonNull(cache.get("orderId"+orderRefundApplication.getOrderCode()))){
+        if(Objects.nonNull(cache.get("orderId"+orderRefundApplication.getOrderId()))){
             return ResponseEntity.badRequest().body("申请正在提交中，请不要重复操作");
         }
         // 发送中，将用户信息 缓存起来
-        cache.put("orderId"+orderRefundApplication.getOrderCode(),
-                orderRefundApplication.getOrderCode(),20, TimeUnit.SECONDS);
+        cache.put("orderId"+orderRefundApplication.getOrderId(),
+                orderRefundApplication.getOrderId(),20, TimeUnit.SECONDS);
         String time = DateFormatUtil.format1(new java.util.Date());
         Timestamp currentTime = Timestamp.valueOf(time);
         orderRefundApplication.setOrderCreateTime(currentTime);
@@ -78,7 +78,7 @@ public class OrderRefundApplicationApi {
     public ResponseEntity<ArrayObject> orderRefundApplicationList(@PathVariable("userId") Long userId) {
         List<OrderRefundApplication> orderRefundApplicationList = orderRefundApplicationService.orderRefundApplicationList(userId);
         for (OrderRefundApplication orderRefund : orderRefundApplicationList) {
-            OrderDetail orderDetail = orderService.searchOrder(orderRefund.getOrderCode());
+            OrderDetail orderDetail = orderService.searchOrder(orderRefund.getOrderId());
              List<OrderGoods> orderGoodsList =orderService.searchOrderGoods(orderDetail.getId());
            // orderRefund.setOrderCreateTime(orderDetail.getCreateTime());
             orderRefund.setOrderGoodsList(orderGoodsList);
@@ -94,13 +94,15 @@ public class OrderRefundApplicationApi {
         List<OrderRefundApplication> orderRefundApplicationList = orderRefundApplicationService.list(orderRefundApplication);
         List<String> orderDetailList = new ArrayList<String>();
         List<Map> statuss = new ArrayList<Map>();
-        for (OrderRefundApplication item:orderRefundApplicationList) {
-            orderDetailList.add(item.getOrderCode());
-            //statuss.add(item.getAuditStatus());
-            Map map = new HashMap();
-            map.put("orderCode",item.getOrderCode());
-            map.put("status",item.getAuditStatus());
-            statuss.add(map);
+        if (!orderRefundApplicationList.isEmpty()){
+            for (OrderRefundApplication item:orderRefundApplicationList) {
+                orderDetailList.add(item.getOrderId());
+                //statuss.add(item.getAuditStatus());
+                Map map = new HashMap();
+                map.put("orderCode",item.getOrderId());
+                map.put("status",item.getAuditStatus());
+                statuss.add(map);
+            }
         }
         param.setOrderIds(orderDetailList);
         param.setAuditStatuss(statuss);
