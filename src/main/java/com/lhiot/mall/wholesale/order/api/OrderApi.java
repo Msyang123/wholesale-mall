@@ -166,6 +166,7 @@ public class OrderApi {
         orderDetail.setUserId(userId);
         orderDetail.setPayStatus("paid");
         orderDetail.setOrderStatus("received");
+        orderDetail.setInvoiceStatus("no");
         orderDetail.setPage(page);
         orderDetail.setRows(rows);
         orderDetail.setStart((page-1)*rows);
@@ -178,7 +179,7 @@ public class OrderApi {
         Timestamp currentTime = Timestamp.valueOf(time);
         for (OrderDetail order:orders) {
             //发票订单是收货已付款且过售后时间的订单
-            //if ("received".equals(order.getOrderStatus())&&"paid".equals(order.getPayStatus())&&order.getAfterSaleTime().before(currentTime)){
+            if ("received".equals(order.getOrderStatus())&&"paid".equals(order.getPayStatus())&&order.getAfterSaleTime().before(currentTime)){
                 List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
                 if (goods.isEmpty()){
                     order.setOrderGoodsList(new ArrayList<OrderGoods>());
@@ -186,7 +187,7 @@ public class OrderApi {
                     order.setOrderGoodsList(goods);
                 }
                 orderResults.add(order);
-            //}
+            }
         }
         return ResponseEntity.ok(ArrayObject.of(orderResults));
     }
@@ -217,6 +218,7 @@ public class OrderApi {
         orderDetail.setUserId(userId);
         orderDetail.setOrderStatus("received");
         orderDetail.setPayStatus("paid");
+        orderDetail.setAfterStatus("no");
         orderDetail.setPage(page);
         orderDetail.setRows(rows);
         orderDetail.setStart((page-1)*rows);

@@ -18,13 +18,13 @@ public interface OrderMapper {
 
     List<OrderDetail> searchOrdersByOrderIds(List ids);
 
-    List<OrderGoods> searchOrderGoods(long orderId);
+    List<OrderGoods> searchOrderGoods(Long orderId);
 
     String searchOutstandingAccountsOrder(String orderCode);
 
     OrderDetail searchOrder(String orderCode);
 
-    OrderDetail searchOrderById(long orderId);
+    OrderDetail searchOrderById(Long orderId);
 
     /**
      * 后台管理--分页查询订单
@@ -48,32 +48,32 @@ public interface OrderMapper {
      * @param orderDetail
      * @return
      */
-    long save(OrderDetail orderDetail);
+    Long save(OrderDetail orderDetail);
 
     /**
      * 保存订单商品
      * @param orderGoods
      * @return
      */
-    int saveOrderGoods(List<OrderGoods> orderGoods);
+    Integer saveOrderGoods(List<OrderGoods> orderGoods);
 
     /**
      * 依据订单号修改订单状态
      * @return
      */
-    int updateOrderStatusByCode(OrderDetail orderDetail);
+    Integer updateOrderStatusByCode(OrderDetail orderDetail);
 
     /**
      * 依据订单码修改订单信息
      * @return
      */
-    int updateOrder(OrderDetail orderDetail);
+    Integer updateOrder(OrderDetail orderDetail);
 
     /**
      * 依据订单号修改订单信息
      * @return
      */
-    int updateOrderById(OrderDetail orderDetail);
+    Integer updateOrderById(OrderDetail orderDetail);
 
 
     //统计商品的售卖数量，根据商品ids
@@ -83,16 +83,16 @@ public interface OrderMapper {
 
     List<OrderDetail> lateOrders(OrderParam orderParam);
 
-    OrderDetail lateOneOrder(long userId);
+    OrderDetail lateOneOrder(Long userId);
 
     Integer lateOrdersFee(OrderParam orderParam);
 
-    OrderDetail select(long id);
+    OrderDetail select(Long id);
 
     OrderDetail userOrder(OrderParam orderParam);
 
     //判断门店是否下过单
-    int isExistsOrderByuserId(Long userId);
+    Integer isExistsOrderByuserId(Long userId);
 
     Map<String,Object> countPayAbleFee(Map<String, Object> param);
 

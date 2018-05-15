@@ -136,6 +136,7 @@ public class OrderService {
         orderDetail.setOrderCode(snowflakeId.stringId());
         orderDetail.setCreateTime(new Timestamp(System.currentTimeMillis()));
         orderDetail.setOrderStatus("unpaid");//先都设置为待付款 货到付款订单不需要需要支付
+        orderDetail.setAfterStatus("no");//售后订单默认为否
         ParamConfig paramConfig= settingService.searchConfigParam("afterSalePeriod");//售后周期
         //设置售后截止时间
         orderDetail.setAfterSaleTime(new Timestamp(System.currentTimeMillis()+Integer.valueOf(paramConfig.getConfigParamValue())*24*60*60*1000));
