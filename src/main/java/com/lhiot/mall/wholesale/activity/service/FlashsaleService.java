@@ -217,7 +217,7 @@ public class FlashsaleService {
 			flashActivityGoods = activityService.nextActivity(flasesale);
 		}
 		if(Objects.isNull(flashActivityGoods)){
-			return flashActivityGoods;
+			return new FlashActivityGoods();
 		}
 		//查询活动商品
 		List<FlashsaleGoods> flashGoods = flashsaleMapper.search(flashActivityGoods.getId());
