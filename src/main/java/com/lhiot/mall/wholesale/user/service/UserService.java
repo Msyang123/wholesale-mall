@@ -1,5 +1,18 @@
 package com.lhiot.mall.wholesale.user.service;
 
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.ImmutableMap;
@@ -8,22 +21,19 @@ import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.base.StringReplaceUtil;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
-import com.lhiot.mall.wholesale.user.domain.*;
+import com.lhiot.mall.wholesale.user.domain.SalesUser;
+import com.lhiot.mall.wholesale.user.domain.SalesUserPerformanceDetail;
+import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
+import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.domain.UserAddress;
+import com.lhiot.mall.wholesale.user.domain.UserGridParam;
+import com.lhiot.mall.wholesale.user.domain.UserResult;
 import com.lhiot.mall.wholesale.user.domain.gridparam.UserPerformanceGridParam;
 import com.lhiot.mall.wholesale.user.mapper.UserMapper;
 import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
 import com.sgsl.util.StringUtils;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.text.MessageFormat;
-import java.util.*;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -283,5 +293,10 @@ public class UserService {
     }
     public List<Long> queryUserId(Map<String, Object> param) {
         return userMapper.queryUserId(param);
+    }
+    
+    //导出用户数据
+    public List<UserResult> exportData(UserGridParam param){
+    	return userMapper.exportData(param);
     }
 }

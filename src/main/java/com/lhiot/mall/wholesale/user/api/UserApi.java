@@ -15,6 +15,7 @@ import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import com.lhiot.mall.wholesale.user.domain.UserGridParam;
+import com.lhiot.mall.wholesale.user.domain.UserResult;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
 import com.lhiot.mall.wholesale.user.wechat.AccessToken;
@@ -469,4 +470,9 @@ public class UserApi {
         return ResponseEntity.ok(userService.pageQuery(param));
     }
     
+    @PostMapping("/info/export")
+    @ApiOperation(value = "新建一个查询，数据导出", response = UserResult.class,responseContainer="list")
+    public ResponseEntity<List<UserResult>> exportData(@RequestBody(required = true) UserGridParam param) {
+        return ResponseEntity.ok(userService.exportData(param));
+    }
 }
