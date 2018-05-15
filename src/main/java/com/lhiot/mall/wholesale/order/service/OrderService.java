@@ -3,6 +3,7 @@ package com.lhiot.mall.wholesale.order.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.SnowflakeId;
+import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
@@ -245,9 +246,8 @@ public class OrderService {
                     throw new ServiceException("未找到支付记录");
                 }
                 //退款 如果微信支付就微信退款
-                try {
-                    weChatUtil.refund(paymentLog.getTransactionId(), paymentLog.getTotalFee());
-
+                String refundChatFee=weChatUtil.refund(paymentLog.getTransactionId(), paymentLog.getTotalFee());
+                if(StringUtils.isNotBlank(refundChatFee)){
                     //写入退款记录  t_whs_refund_log
                     RefundLog refundLog=new RefundLog();
                     refundLog.setPaymentLogId(paymentLog.getId());
@@ -262,8 +262,8 @@ public class OrderService {
                     updatePaymentLog.setOrderCode(orderDetail.getOrderCode());
                     updatePaymentLog.setRefundFee(paymentLog.getTotalFee());
                     paymentLogService.updatePaymentLog(updatePaymentLog);
-                } catch (Exception e) {
-                    throw new ServiceException("微信退款失败，请联系客服",e);
+                }else{
+                    throw new ServiceException("微信退款失败，请联系客服");
                 }
                 break;
             //余额支付
