@@ -158,7 +158,8 @@ public class SalesUserService {
 
 
     public SalesUser findById(Long id){
-        return this.salesUserMapper.findById(id);
+        SalesUser salesUser =  this.salesUserMapper.findById(id);
+        return salesUser;
     }
 
     public SalesUser findCode(String code){

@@ -42,11 +42,9 @@ public class FaqService {
     }
 
     public int saveOrUpdateFaq(Faq faq) {
-        if (faq.getId()>0 || Objects.nonNull(faq.getId())){
+        if (Objects.nonNull(faq.getId()) && faq.getId()>0 ){
             return faqMapper.updateFaq(faq);
         }else {
-            //FIXME 自增后不需要再setId
-            faq.setId(10l);
             return faqMapper.insertFaq(faq);
         }
     }

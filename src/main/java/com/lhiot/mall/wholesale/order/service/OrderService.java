@@ -3,6 +3,7 @@ package com.lhiot.mall.wholesale.order.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.base.DataMergeUtils;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
@@ -14,6 +15,7 @@ import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.domain.RefundLog;
 import com.lhiot.mall.wholesale.pay.hdsend.Abolish;
 import com.lhiot.mall.wholesale.pay.hdsend.Warehouse;
+import com.lhiot.mall.wholesale.pay.mapper.PaymentLogMapper;
 import com.lhiot.mall.wholesale.pay.mapper.RefundLogMapper;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
@@ -21,6 +23,8 @@ import com.lhiot.mall.wholesale.setting.service.SettingService;
 import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.mapper.SalesUserMapper;
+import com.lhiot.mall.wholesale.user.mapper.UserMapper;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
 import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
@@ -325,9 +329,10 @@ public class OrderService {
         String phone = param.getPhone();
         User userParam = new User();
         userParam.setPhone(phone);
-        List<OrderGridResult> orderGridResultList = new ArrayList<OrderGridResult>();
-        List<User> userList = new ArrayList<User>();
-        List<PaymentLog> paymentLogList = new ArrayList<PaymentLog>();
+        List<OrderGridResult> orderGridResultList = new ArrayList<>();
+        List<OrderGridResult> orderGridResults = new ArrayList<>();
+        List<User> userList = new ArrayList<>();
+        List<PaymentLog> paymentLogList = new ArrayList<>();
         int count = 0;
         int page = param.getPage();
         int rows = param.getRows();
@@ -390,7 +395,7 @@ public class OrderService {
             }
         }
         PageQueryObject result = new PageQueryObject();
-        if(orderGridResultList != null && orderGridResultList.size() > 0){//如果订单信息不为空,将订单列表与用户信息列表进行行数据组装
+        if(orderGridResultList != null && orderGridResultList.size() > 0) {//如果订单信息不为空,将订单列表与用户信息列表进行行数据组装
             //根据用户id与订单中的用户id匹配
             for (OrderGridResult orderGridResult : orderGridResultList) {
                 Long orderUserId = orderGridResult.getUserId();
