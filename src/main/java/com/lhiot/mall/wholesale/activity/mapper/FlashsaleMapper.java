@@ -36,5 +36,8 @@ public interface FlashsaleMapper {
 
     GoodsFlashsale searchFlashGoods(Long standardId);
     
-    int insertRecord(FlashGoodsRecord flashGoodsRecord);
+    int insertRecord(List<FlashGoodsRecord> flashGoodsRecord);
+    
+    //批量修改抢购数量
+    int updateInBatch(List<FlashGoodsRecord> flashGoodsRecord);
 }
