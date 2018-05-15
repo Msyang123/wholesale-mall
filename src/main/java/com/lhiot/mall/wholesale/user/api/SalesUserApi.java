@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 
 import com.lhiot.mall.wholesale.base.PageQueryObject;
@@ -202,7 +203,7 @@ public class SalesUserApi {
 
     @PutMapping("/update/{id}")
     @ApiOperation(value = "依据id更新业务员信息表")
-    public ResponseEntity updateById(@PathVariable("id") Long id,@RequestBody SalesUser salesUser) {
+    public ResponseEntity updateById(@PathVariable("id") Long id, @RequestBody SalesUser salesUser) {
         salesUser.setId(id);
         return ResponseEntity.ok(salesUserService.updateById(salesUser));
     }
