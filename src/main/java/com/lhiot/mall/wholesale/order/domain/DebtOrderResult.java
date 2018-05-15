@@ -61,7 +61,7 @@ public class DebtOrderResult {
     @JsonProperty("phone")
     private String phone;
 
-    //订单表 根据账款订单的orderIds查询订单金额、折扣金额、应付金额
+    //订单表 根据账款订单的orderIds查询订单金额、折扣金额、应付金额、配送费
     @JsonProperty("totalFee")
     private Integer totalFee;
 
@@ -70,4 +70,11 @@ public class DebtOrderResult {
 
     @JsonProperty("payableFee")
     private Integer payableFee;
+
+    @JsonProperty("deliveryFee")
+    private Integer deliveryFee;
+
+    //账款订单支付总金额
+    @JsonProperty("payTotalFee")
+    private Integer payTotalFee;
 }

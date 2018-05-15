@@ -18,8 +18,10 @@
     <select id="pageQueryCount" resultType="Integer">
         select count(t1.id) from t_whs_article t1
         <trim prefix="where" prefixOverrides="and">
-            <if test="articleTitle != null and articleTitle != ''">and t1.article_title = #{articleTitle}</if>
+            <if test="articleTitle != null and articleTitle != ''">and t1.article_title like CONCAT('%', #{articleTitle},'%') </if>
             <if test="articleType != null and articleType != ''">and t1.article_type = #{articleType}</if>
+            <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
+            <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
         </trim>
     </select>
 
@@ -29,8 +31,10 @@
         select <include refid="articleColumn"/>
         from t_whs_article t1
         <trim prefix="where" prefixOverrides="and">
-            <if test="articleTitle != null and articleTitle != ''">and t1.article_title = #{articleTitle}</if>
+            <if test="articleTitle != null and articleTitle != ''">and t1.article_title like CONCAT('%', #{articleTitle},'%') </if>
             <if test="articleType != null and articleType != ''">and t1.article_type = #{articleType}</if>
+            <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
+            <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
         </trim>
         <include refid="common.pager"></include>
     </select>
