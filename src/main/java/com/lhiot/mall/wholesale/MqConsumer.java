@@ -116,6 +116,7 @@ public class MqConsumer{
         log.info("flasesale-publisher"+getMessage);
         try {
             OrderDetail orderDetail = JacksonUtils.fromJson(getMessage, OrderDetail.class);
+            flashsaleService.modifyFlashActiviy(orderDetail);
         }  catch (IOException e) {
             log.error("消息处理错误" + e.getLocalizedMessage());
         }

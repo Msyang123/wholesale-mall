@@ -90,4 +90,5 @@ public class Invoice {
 
     @JsonProperty("orderNumber")
     private Integer orderNumber;
+
 }

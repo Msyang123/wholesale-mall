@@ -28,6 +28,8 @@ import com.lhiot.mall.wholesale.goods.domain.GoodsMinPrice;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
 import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 import com.lhiot.mall.wholesale.goods.service.GoodsStandardService;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
+import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 
 /**
  * 抢购中心
@@ -54,7 +56,6 @@ public class FlashsaleService {
 	
 	/**
 	 * 新增
-	 * @param activityId活动id,standardIds
 	 * @return
 	 */
 	public boolean create(FlashActivity flashActivity){
@@ -154,7 +155,6 @@ public class FlashsaleService {
 	/**
 	 * 去重复的
 	 * @param standardIds
-	 * @param id活动id
 	 */
 	public void duplicate(List<Long> standardIds,Long id){
 		List<FlashsaleGoods> list = flashsaleMapper.search(id);
@@ -171,7 +171,6 @@ public class FlashsaleService {
 	/**
 	 * 将商品数据组装到分页查询的结果中
 	 * @param flashsales
-	 * @param standardIds
 	 */
 	public void contructData(List<FlashsaleGoods> flashsales){
 		if(flashsales.isEmpty()){
@@ -202,7 +201,6 @@ public class FlashsaleService {
 	
 	/**
 	 * 获取当前或者下期抢购活动商品
-	 * @param type
 	 * @return
 	 */
 	public FlashActivityGoods flashGoods(ActivityPeriodsType activityPeriodsType){
@@ -215,7 +213,7 @@ public class FlashsaleService {
 			flashActivityGoods = activityService.nextActivity(flasesale);
 		}
 		if(Objects.isNull(flashActivityGoods)){
-			return flashActivityGoods;
+			return new FlashActivityGoods();
 		}
 		//查询活动商品
 		List<FlashsaleGoods> flashGoods = flashsaleMapper.search(flashActivityGoods.getId());
@@ -240,7 +238,6 @@ public class FlashsaleService {
 	/**
 	 * 查询用户当前活动的抢购数量
 	 * @param userId
-	 * @param activityId
 	 * @return
 	 */
 	public Integer userRecords(Long userId,Long standardId){
@@ -253,7 +250,7 @@ public class FlashsaleService {
 
 	/**
 	 * 给一个默认8.5折的抢购价
-	 * @param price
+	 * @param standardId
 	 * @return
 	 */
 	public Integer specialPrice(Long standardId){
@@ -319,18 +316,55 @@ public class FlashsaleService {
 		}
 		Long activityId = goodsFlashSale.getActivityId();
 		Map<String,Object> param = ImmutableMap.of("userId", userId, "activityId", activityId,"standardId",standardId);
-		goodsFlashSale.setUserPucharse(flashsaleMapper.userRecord(param));
+		Integer num = flashsaleMapper.userRecord(param);
+		goodsFlashSale.setUserPucharse(num);
 		
 		return goodsFlashSale;
 	}
 	
 	/**
-	 * 新增抢购
-	 * @param param
+	 * 修改抢购数量，以及创建抢购记录
+	 * @param orderDetail
 	 * @return
 	 */
-	public boolean createFlashRecord(FlashGoodsRecord param){
-		int count = flashsaleMapper.insertRecord(param);
-		return count>0;
+	public boolean modifyFlashActiviy(OrderDetail orderDetail){
+		//订单商品
+		List<OrderGoods> list = orderDetail.getOrderGoodsList();
+		boolean success = false;
+		if(list.isEmpty()){
+			return success;
+		}
+		//获取当前的抢购活动及商品
+		FlashActivityGoods ac = this.flashGoods(ActivityPeriodsType.current);
+		//抢购活动配置的活动商品
+		List<FlashsaleGoods> proList = ac.getProList();
+		//获取参数中抢购活动商品,1-是抢购商品
+		List<OrderGoods> orderGoodses = list.stream().filter(goods -> Objects.equals(1, goods.getFlash()))
+												.collect(Collectors.toList());
+		
+		Long orderId = orderDetail.getUserId();
+		Long userId = orderDetail.getUserId();
+		//构建批量修改抢购商品剩余数量及创建抢购记录的参数
+		List<FlashGoodsRecord> param = new ArrayList<>();
+		for(OrderGoods orderGoods : orderGoodses){
+			for(FlashsaleGoods flashsaleGoods : proList){
+				if(Objects.equals(orderGoods.getGoodsStandardId(), flashsaleGoods.getGoodsStandardId())){
+					FlashGoodsRecord record = new FlashGoodsRecord();
+					record.setBuyCount(orderGoods.getQuanity());
+					record.setFlashsaleGoodsId(flashsaleGoods.getId());
+					record.setOrderId(orderId);
+					record.setUserId(userId);
+					param.add(record);
+				}
+			}
+		}
+		if(param.isEmpty()){
+			return success;
+		}
+		//批量修改抢购商品剩余数量
+		flashsaleMapper.updateInBatch(param);
+		//构建创建抢购记录的数据
+		flashsaleMapper.insertRecord(param);
+		return true;
 	}
 }

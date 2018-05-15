@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.order.api;
 
 import com.leon.microx.common.wrapper.ArrayObject;
+import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
@@ -13,9 +14,19 @@ import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
 import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 import com.lhiot.mall.wholesale.goods.service.GoodsService;
 import com.lhiot.mall.wholesale.order.domain.Distribution;
+import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
+import com.lhiot.mall.wholesale.order.service.DebtOrderService;
+import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
+import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
+import com.lhiot.mall.wholesale.user.service.SalesUserService;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
-import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
+import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.setting.service.SettingService;
@@ -42,6 +53,7 @@ import java.util.Objects;
 public class OrderApi {
 
     private final OrderService orderService;
+
     private final SettingService settingService;
 
     private final GoodsService goodsService;
@@ -52,11 +64,8 @@ public class OrderApi {
 
     private final GoodsPriceRegionService priceRegionService;
 
-
     @Autowired
-    public OrderApi(OrderService orderService,
-                    SettingService settingService, GoodsService goodsService, CouponEntityService couponEntityService,
-                    FlashsaleService flashsaleService, GoodsPriceRegionService priceRegionService) {
+    public OrderApi(OrderService orderService, SettingService settingService,  GoodsService goodsService, CouponEntityService couponEntityService, FlashsaleService flashsaleService, GoodsPriceRegionService priceRegionService) {
 
         this.orderService = orderService;
         this.settingService = settingService;
@@ -157,6 +166,7 @@ public class OrderApi {
         orderDetail.setUserId(userId);
         orderDetail.setPayStatus("paid");
         orderDetail.setOrderStatus("received");
+        orderDetail.setInvoiceStatus("no");
         orderDetail.setPage(page);
         orderDetail.setRows(rows);
         orderDetail.setStart((page-1)*rows);
@@ -169,7 +179,7 @@ public class OrderApi {
         Timestamp currentTime = Timestamp.valueOf(time);
         for (OrderDetail order:orders) {
             //发票订单是收货已付款且过售后时间的订单
-            //if ("received".equals(order.getOrderStatus())&&"paid".equals(order.getPayStatus())&&order.getAfterSaleTime().before(currentTime)){
+            if ("received".equals(order.getOrderStatus())&&"paid".equals(order.getPayStatus())&&order.getAfterSaleTime().before(currentTime)){
                 List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
                 if (goods.isEmpty()){
                     order.setOrderGoodsList(new ArrayList<OrderGoods>());
@@ -177,7 +187,7 @@ public class OrderApi {
                     order.setOrderGoodsList(goods);
                 }
                 orderResults.add(order);
-            //}
+            }
         }
         return ResponseEntity.ok(ArrayObject.of(orderResults));
     }
@@ -208,6 +218,7 @@ public class OrderApi {
         orderDetail.setUserId(userId);
         orderDetail.setOrderStatus("received");
         orderDetail.setPayStatus("paid");
+        orderDetail.setAfterStatus("no");
         orderDetail.setPage(page);
         orderDetail.setRows(rows);
         orderDetail.setStart((page-1)*rows);
@@ -436,6 +447,10 @@ public class OrderApi {
         return ResponseEntity.ok(orderService.pageQuery(param));
     }
 
-
+    @GetMapping("/detail/{id}")
+    @ApiOperation(value = "后台管理-根据订单id查看订单详情",response = OrderGridResult.class)
+    public  ResponseEntity<OrderDetail> orderDetail(@PathVariable("id") Long id){
+        return ResponseEntity.ok(orderService.detail(id));
+    }
 
 }

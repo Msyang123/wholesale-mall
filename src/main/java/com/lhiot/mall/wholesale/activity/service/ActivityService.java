@@ -242,7 +242,7 @@ public class ActivityService {
 		for(String key1 : dataInParam.keySet()){
 			for(String key2 : dataInDb.keySet()){
 				if(key1.equals(key2)){
-					if(!Objects.equals(dataInParam.get(key1), 
+					if(!Objects.isNull(dataInParam.get(key1)) && !Objects.equals(dataInParam.get(key1), 
 							dataInDb.get(key2))){
 						success = false;
 						break;

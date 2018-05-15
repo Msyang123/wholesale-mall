@@ -68,7 +68,7 @@
 	
 	<!-- lynn 查询用户的已抢购数 -->
 	<select id="userRecord" parameterType="map" resultType="Integer">
-		SELECT sum(t1.buy_count)
+		SELECT IFNULL(sum(t1.buy_count),0) userPucharse
 		FROM t_whs_flashsale_goods_record t1
 		LEFT JOIN t_whs_flashsale_goods t2 ON t1.flashsale_goods_id = t2.id
 		WHERE t1.user_id = #{userId} and t2.activity_id = #{activityId} and flashsale_goods_id = #{standardId}
@@ -87,6 +87,27 @@
 	<!-- lynn新增抢购记录 -->
 	<insert id="insertRecord" parameterType="com.lhiot.mall.wholesale.activity.domain.FlashGoodsRecord">
 		insert into t_whs_flashsale_goods_record(user_id,flashsale_goods_id,buy_count,create_at,order_id)
-		value(#{userId},#{flashsaleGoodsId},#{buyCount},now(),#{orderId})
+		values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.userId},#{item.flashsaleGoodsId},#{item.buyCount},now(),#{item.orderId})
+		</foreach>
 	</insert>
+	
+	<!-- 批量修改抢购商品的剩余数量 -->
+	<update id="updateInBatch" parameterType="java.util.List">
+		update t_whs_flashsale_goods
+	    <trim prefix="set" suffixOverrides=",">
+      		<trim prefix="remain=case id" suffix="end,">
+      			<foreach collection="list" item="item" index="index">  
+      				<if test="item.buyCount != null and item.buyCount != ''">
+      					when #{item.flashsaleGoodsId} then (remain - #{item.buyCount} )
+      				</if>
+      			</foreach>
+      		</trim>
+      	</trim>
+      	where id in  
+      	<foreach collection="list" index="index" item="item" separator="," open="(" close=")">  
+        	#{item.flashsaleGoodsId}  
+      	</foreach>  
+	</update>
 </mapper>

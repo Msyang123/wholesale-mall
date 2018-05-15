@@ -33,9 +33,10 @@
             <if test="settlementType != null ">and o.settlement_type=#{settlementType}</if>
             <if test="payStatus != null ">and o.pay_status=#{payStatus}</if>
             <if test="orderStatus != null ">and o.order_status = #{orderStatus}</if>
+            <if test="invoiceStatus != null and invoiceStatus !=''">and invoice_status = #{invoiceStatus}</if>
+            <if test="afterStatus != null and afterStatus !=''">and after_status = #{afterStatus}</if>
         </trim>
         and DATE_SUB(CURDATE(),INTERVAL 30 DAY) &lt;= o.create_time
-        and invoice_status= 'no'
         ORDER BY o.create_time desc
         <include refid="common.pager"></include>
     </select>
@@ -138,6 +139,9 @@
             <if test="invoiceStatus!=null and invoiceStatus!=''">
                 invoice_status=#{invoiceStatus},
             </if>
+            <if test="afterStatus!=null and afterStatus!=''">
+                after_status=#{afterStatus},
+            </if>
         </set>
          where order_code=#{orderCode}
     </update>
@@ -174,7 +178,7 @@
         where id=#{id}
     </update>
 
-    
+
     <!-- 统计商品的售卖数量 -->
     <select id="soldQuantity" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.order.domain.SoldQuantity">
     	select t1.goods_id as goodsId,sum(quanity) as soldQuantity
@@ -351,6 +355,15 @@
         ,order_status orderStatus,create_time createTime,IFNULL(total_fee,0) totalFee,IFNULL(payable_fee,0) payableFee,remarks,
         hd_status,delivery_time,IFNULL(delivery_fee,0) deliveryFee,delivery_address,hd_code
         from t_whs_order o where o.id = #{0}
+    </select>
+
+    <!-- 后台管理系统 计算订单折扣总金额，应付总金额，实付总金额，配送费总金额之和-->
+    <select id="countFee" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        select IFNULL(SUM(o.discount_fee),0) as discountFee,IFNULL(SUM(o.total_fee),0) as totalFee,IFNULL(SUM(o.payable_fee),0) as payableFee,IFNULL(SUM(o.delivery_fee),0) as deliveryFee
+        from t_whs_order o where o.order_code in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
     </select>
 </mapper>
 

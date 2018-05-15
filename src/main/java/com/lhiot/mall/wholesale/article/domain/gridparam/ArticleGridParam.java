@@ -18,7 +18,7 @@ public class ArticleGridParam extends PageObject {
     private String articleTitle;
 
     @ApiModelProperty(notes="文章类别",dataType="String")
-    private Integer articleType;
+    private String articleType;
 
     @ApiModelProperty(notes="创建时间起",dataType="String")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

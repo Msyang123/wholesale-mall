@@ -24,6 +24,12 @@
     <!-- 后台管理 查询FAQ总数 -->
     <select id="pageQueryCount" resultType="Integer">
         select count(t1.id) from t_whs_faq t1
+        <trim prefix="where" prefixOverrides="and">
+            <if test="faqCategoryId != null and faqCategoryId != ''">and t1.faq_category_id = #{faqCategoryId}</if>
+            <if test="title != null and title != ''">and t1.title like CONCAT('%', #{title},'%')</if>
+            <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
+            <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
+        </trim>
     </select>
 
     <!-- 后台管理 分页查询FAQ表详情 -->
@@ -32,7 +38,15 @@
         select <include refid="faqColumn"/>,<include refid="faqCategoryColumn"/>
         from t_whs_faq t1
         LEFT JOIN t_whs_faq_category t2 on t1.faq_category_id = t2.id
+        <trim prefix="where" prefixOverrides="and">
+            <if test="faqCategoryId != null and faqCategoryId != ''">and t1.faq_category_id = #{faqCategoryId}</if>
+            <if test="title != null and title != ''">and t1.title like CONCAT('%', #{title},'%') </if>
+            <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
+            <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
+        </trim>
+        order by t1.create_time desc
         <include refid="common.pager"></include>
+
     </select>
 
     <!-- 后台管理系统新增FAQ -->
@@ -47,6 +61,7 @@
         <if test="linkUrl != null and linkUrl != ''">link_url,</if>
         <if test="createTime != null">create_time,</if>
         <if test="createPerson != null and createPerson != ''">create_person,</if>
+        <if test="faqStatus != null and faqStatus != ''">faq_status,</if>
     </trim>
     )
     values(
@@ -59,6 +74,7 @@
         <if test="linkUrl != null and linkUrl != ''">#{linkUrl},</if>
         <if test="createTime != null ">#{createTime,jdbcType=TIMESTAMP},</if>
         <if test="createPerson != null and createPerson != ''">#{createPerson},</if>
+        <if test="faqStatus != null and faqStatus != ''">#{faqStatus},</if>
     </trim>
     )
     </insert>

@@ -87,9 +87,9 @@
     <!--新增业务员信息表-->
     <insert keyProperty="id" useGeneratedKeys="true" parameterType="com.lhiot.mall.wholesale.user.domain.SalesUser" id="create">
         insert into t_whs_salesuser(
-        <trim suffixOverrides=","> id, open_id, union_id, salesman_name, salesman_phone, salesman_password, salesman_head_image, create_person, create_at, invite_code,acount,sales_status, </trim>
+        <trim suffixOverrides=","> id, open_id, union_id, salesman_name, salesman_phone, salesman_password, salesman_head_image, create_person, create_at, invite_code,account,sales_status, </trim>
         )VALUES (
-        <trim suffixOverrides=","> #{id}, #{openId}, #{unionId}, #{salesmanName}, #{salesmanPhone}, #{salesmanPassword}, #{salesmanHeadImage}, #{createPerson}, now(), #{inviteCode}, #{acount},#{salesStatus},</trim>
+        <trim suffixOverrides=","> #{id}, #{openId}, #{unionId}, #{salesmanName}, #{salesmanPhone}, #{salesmanPassword}, #{salesmanHeadImage}, #{createPerson}, now(), #{inviteCode}, #{account},#{salesStatus},</trim>
         )
     </insert>
 
@@ -107,7 +107,7 @@
             <if test="createPerson!=null"> create_person = #{createPerson}, </if>
             <if test="createAt!=null"> create_at = #{createAt}, </if>
             <if test="inviteCode!=null"> invite_code = #{inviteCode}, </if>
-            <if test="acount!=null"> acount = #{acount} </if>
+            <if test="account!=null"> account = #{account}, </if>
             <if test="salesStatus!=null"> sales_status = #{salesStatus} </if>
         </set>
         where id=#{id}
@@ -133,7 +133,7 @@
             <if test="createPerson!=0 and createPerson!=null"> and create_person = #{createPerson} </if>
             <if test="createAt!=null and createAt!='null' and createAt!=''"> and create_at = #{createAt} </if>
             <if test="inviteCode!=null and inviteCode!='null' and inviteCode!=''"> and invite_code = #{inviteCode} </if>
-            <if test="acount!=null and acount!='null' and acount!=''"> and acount = #{acount} </if>
+            <if test="account!=null and account!='null' and account!=''"> and account = #{account} </if>
             <if test="salesStatus!=null and salesStatus!='null' and salesStatus!=''"> and sales_status = #{salesStatus} </if>
         </where>
 
@@ -153,7 +153,7 @@
             <if test="createPerson!=0 and createPerson!=null"> and create_person = #{createPerson} </if>
             <if test="createAt!=null and createAt!='null' and createAt!=''"> and create_at = #{createAt} </if>
             <if test="inviteCode!=null and inviteCode!='null' and inviteCode!=''"> and invite_code = #{inviteCode} </if>
-            <if test="acount!=null and acount!='null' and acount!=''"> and acount = #{acount} </if>
+            <if test="account!=null and account!='null' and account!=''"> and account = #{account} </if>
             <if test="salesStatus!=null and salesStatus!='null' and salesStatus!=''"> and sales_status = #{salesStatus} </if>
         </where>
     </select>
@@ -172,7 +172,7 @@
             <if test="createPerson!=0 and createPerson!=null"> and create_person = #{createPerson} </if>
             <if test="createAt!=null and createAt!='null' and createAt!=''"> and create_at = #{createAt} </if>
             <if test="inviteCode!=null and inviteCode!='null' and inviteCode!=''"> and invite_code = #{inviteCode} </if>
-            <if test="acount!=null and acount!='null' and acount!=''"> and acount = #{acount} </if>
+            <if test="account!=null and account!='null' and account!=''"> and account = #{account} </if>
             <if test="salesStatus!=null and salesStatus!='null' and salesStatus!=''"> and sales_status = #{salesStatus} </if>
         </where>
     </select>
@@ -203,7 +203,7 @@
             <if test="createPerson!=0 and createPerson!=null"> and create_person = #{createPerson} </if>
             <if test="createAt!=null and createAt!='null' and createAt!=''"> and create_at = #{createAt} </if>
             <if test="inviteCode!=null and inviteCode!='null' and inviteCode!=''"> and invite_code = #{inviteCode} </if>
-            <if test="acount!=null and acount!='null' and acount!=''"> and acount = #{acount} </if>
+            <if test="account!=null and account!='null' and account!=''"> and account = #{account} </if>
             <if test="salesStatus!=null and salesStatus!='null' and salesStatus!=''"> and sales_status = #{salesStatus} </if>
         </where>
         <include refid="common.pager"/>
@@ -222,7 +222,7 @@
             <if test="createPerson!=0 and createPerson!=null"> and create_person = #{createPerson} </if>
             <if test="createAt!=null and createAt!='null' and createAt!=''"> and create_at = #{createAt} </if>
             <if test="inviteCode!=null and inviteCode!='null' and inviteCode!=''"> and invite_code = #{inviteCode} </if>
-            <if test="acount!=null and acount!='null' and acount!=''"> and acount = #{acount} </if>
+            <if test="account!=null and account!='null' and account!=''"> and account = #{account} </if>
             <if test="salesStatus!=null and salesStatus!='null' and salesStatus!=''"> and sales_status = #{salesStatus} </if>
         </where>
     </select>
