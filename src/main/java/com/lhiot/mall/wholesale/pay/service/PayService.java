@@ -589,6 +589,9 @@ public class PayService {
         if(afterPay<0){
             throw new ServiceException("用户余额不足");
         }
+        if(needPayFee<=0){
+            throw new ServiceException("支付金额不能小于0");
+        }
         User updateUser=new User();
         updateUser.setId(invoice.getUserId());
         updateUser.setBalance(-needPayFee);//需要扣除的值

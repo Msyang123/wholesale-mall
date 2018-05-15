@@ -60,6 +60,7 @@ public class CurrencyPayApi {
         if(!Objects.equals(orderDetail.getOrderStatus(),"unpaid")){
             return ResponseEntity.badRequest().body("订单状态异常，请检查订单状态");
         }
+
         //余额支付订单 发送到总仓
         int payResult=payService.currencyPay(orderDetail);
         if(payResult>0){

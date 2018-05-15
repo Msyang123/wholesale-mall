@@ -108,7 +108,7 @@ public class WeChatUtil {
 	 * @return 微信返回的XML
 	 * @throws Exception 
 	 */
-	public  String refund(final String tradeNo, final int totalFee) throws Exception {
+	public  String refund(final String tradeNo, final int totalFee){
 		return refund(tradeNo, tradeNo, totalFee, totalFee);
 	}
 
@@ -127,7 +127,7 @@ public class WeChatUtil {
 	 * @return 微信返回的XML
 	 * @throws Exception 
 	 */
-	public String refund(final String tradeNo, final String refundNo, final int totalFee, final int refundFee) throws Exception {
+	public String refund(final String tradeNo, final String refundNo, final int totalFee, final int refundFee){
 		String currTime = DateFormatUtil.format3(new Date());
 		String strTime = currTime.substring(8, currTime.length());
 		String nonce = strTime + this.buildRandom(4);
@@ -146,13 +146,15 @@ public class WeChatUtil {
 		String xml = this.getRequestXml(packageParams); // 获取请求微信的XML
 		HttpPost httpPost = new HttpPost(REFUND_URL);
 		try {
-			KeyStore ks = KeyStore.getInstance("pkcs12");
-			ks.load(new FileInputStream(properties.getWeChatPay().getPkcs12().getFile()), properties.getWeChatPay().getPartnerId().toCharArray());
-			SSLContext sslcontext = SSLContexts.custom().loadKeyMaterial(ks, properties.getWeChatPay().getPartnerId().toCharArray())
-					.build();
-			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext, new String[] { "TLSv1" },
-					null, SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
-			HttpClient client = HttpClients.custom().setSSLSocketFactory(sslsf).build();
+			InputStream in = properties.getWeChatPay().getPkcs12().getInputStream();
+			KeyStore keystore = KeyStore.getInstance("PKCS12");
+			keystore.load(in, properties.getWeChatPay().getPartnerId().toCharArray());
+			SSLContext sslContext = SSLContexts.custom().loadKeyMaterial(keystore, properties.getWeChatPay().getPartnerId().toCharArray()).build();
+			SSLConnectionSocketFactory sslConnection = new SSLConnectionSocketFactory(sslContext,
+					new String[]{"TLSv1", "TLSv1.1", "TLSv1.2"}, null,
+					SSLConnectionSocketFactory.getDefaultHostnameVerifier()
+			);
+			HttpClient client = HttpClients.custom().setSSLSocketFactory(sslConnection).build();
 			httpPost.setEntity(new StringEntity(xml, "UTF-8"));
 			HttpResponse resp = client.execute(httpPost);
 			HttpEntity entity = resp.getEntity();
