@@ -56,7 +56,6 @@ public class FlashsaleService {
 	
 	/**
 	 * 新增
-	 * @param activityId活动id,standardIds
 	 * @return
 	 */
 	public boolean create(FlashActivity flashActivity){
@@ -156,7 +155,6 @@ public class FlashsaleService {
 	/**
 	 * 去重复的
 	 * @param standardIds
-	 * @param id活动id
 	 */
 	public void duplicate(List<Long> standardIds,Long id){
 		List<FlashsaleGoods> list = flashsaleMapper.search(id);
@@ -173,7 +171,6 @@ public class FlashsaleService {
 	/**
 	 * 将商品数据组装到分页查询的结果中
 	 * @param flashsales
-	 * @param standardIds
 	 */
 	public void contructData(List<FlashsaleGoods> flashsales){
 		if(flashsales.isEmpty()){
@@ -204,7 +201,6 @@ public class FlashsaleService {
 	
 	/**
 	 * 获取当前或者下期抢购活动商品
-	 * @param type
 	 * @return
 	 */
 	public FlashActivityGoods flashGoods(ActivityPeriodsType activityPeriodsType){
@@ -242,7 +238,6 @@ public class FlashsaleService {
 	/**
 	 * 查询用户当前活动的抢购数量
 	 * @param userId
-	 * @param activityId
 	 * @return
 	 */
 	public Integer userRecords(Long userId,Long standardId){
@@ -255,7 +250,7 @@ public class FlashsaleService {
 
 	/**
 	 * 给一个默认8.5折的抢购价
-	 * @param price
+	 * @param standardId
 	 * @return
 	 */
 	public Integer specialPrice(Long standardId){
@@ -321,7 +316,8 @@ public class FlashsaleService {
 		}
 		Long activityId = goodsFlashSale.getActivityId();
 		Map<String,Object> param = ImmutableMap.of("userId", userId, "activityId", activityId,"standardId",standardId);
-		goodsFlashSale.setUserPucharse(flashsaleMapper.userRecord(param));
+		Integer num = flashsaleMapper.userRecord(param);
+		goodsFlashSale.setUserPucharse(num);
 		
 		return goodsFlashSale;
 	}
