@@ -465,14 +465,32 @@ public class UserApi {
     }
     
     @PostMapping("/info/gird")
-    @ApiOperation(value = "新建一个查询，分页查询", response = PageQueryObject.class)
+    @ApiOperation(value = "新建一个查询，会员分析分页查询", response = PageQueryObject.class)
     public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) UserGridParam param) {
         return ResponseEntity.ok(userService.pageQuery(param));
     }
     
     @PostMapping("/info/export")
-    @ApiOperation(value = "新建一个查询，数据导出", response = UserResult.class,responseContainer="list")
+    @ApiOperation(value = "新建一个查询，会员分析数据导出", response = UserResult.class,responseContainer="list")
     public ResponseEntity<List<UserResult>> exportData(@RequestBody(required = true) UserGridParam param) {
         return ResponseEntity.ok(userService.exportData(param));
+    }
+    
+    @PostMapping("/member/gird")
+    @ApiOperation(value = "新建一个查询，会员信息分页查询", response = PageQueryObject.class)
+    public ResponseEntity<PageQueryObject> userGrid(@RequestBody(required = true) UserGridParam param) {
+        return ResponseEntity.ok(userService.pageQueryUsers(param));
+    }
+    
+    @PostMapping("/member/export")
+    @ApiOperation(value = "新建一个查询，会员信息数据导出", response = UserResult.class,responseContainer="list")
+    public ResponseEntity<List<UserResult>> exportUserData(@RequestBody(required = true) UserGridParam param) {
+        return ResponseEntity.ok(userService.exportData(param));
+    }
+    
+    @GetMapping("/member/detail/{id}")
+    @ApiOperation(value = "后台管理，会员信息数据导出", response = UserResult.class)
+    public ResponseEntity<UserResult> user(@PathVariable String id) {
+        return ResponseEntity.ok(userService.detail(Long.valueOf(id)));
     }
 }
