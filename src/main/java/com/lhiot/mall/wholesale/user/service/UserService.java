@@ -295,8 +295,44 @@ public class UserService {
         return userMapper.queryUserId(param);
     }
     
-    //导出用户数据
+    //导出用户分析数据
     public List<UserResult> exportData(UserGridParam param){
     	return userMapper.exportData(param);
     }
+    
+    //导出会员数据
+    public List<UserResult> exportUsers(UserGridParam param){
+    	return userMapper.exportUsers(param);
+    }
+    
+    //后台管理--会员详情
+    public UserResult detail(Long userId){
+    	return userMapper.searchById(userId);
+    }
+    
+	/**
+	 * 分页查询会员
+	 * @return
+	 */
+	public PageQueryObject pageQueryUsers(UserGridParam param){
+		int count = userMapper.pageQueryUserCount(param);
+		int page = param.getPage();
+		int rows = param.getRows();
+		//起始行
+		param.setStart((page-1)*rows);
+		//总记录数
+		int totalPages = (count%rows==0?count/rows:count/rows+1);
+		if(totalPages < page){
+			page = 1;
+			param.setPage(page);
+			param.setStart(0);
+		}
+		List<UserResult> activitys = userMapper.pageQueryUser(param);
+		PageQueryObject result = new PageQueryObject();
+		result.setRows(activitys);
+		result.setPage(page);
+		result.setRecords(rows);
+		result.setTotal(totalPages);
+		return result;
+	}
 }
