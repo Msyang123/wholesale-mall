@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -64,7 +65,7 @@ public class ArticleService {
 
     //新增/修改服务协议
     public int saveOrUpdateArticle(Article article) {
-        if (article.getId()>0){
+        if (Objects.nonNull(article.getId()) && article.getId() >0){
             return articleMapper.updateArticle(article);
         }else {
             //article.setId(articleMapper.pageQueryCount()+1);

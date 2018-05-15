@@ -47,6 +47,7 @@
         <if test="articleAuthor != null and articleAuthor != ''">article_author,</if>
         <if test="articleContent != null and articleContent != ''">article_content,</if>
         <if test="rankNum != null and rankNum != ''">rank_num,</if>
+        <if test="publishStatus != null and publishStatus != ''">publish_status,</if>
         <if test="resouceUrl != null and resouceUrl != ''">resouce_url,</if>
         <if test="articleUrl != null and articleUrl != ''">article_url,</if>
         <if test="createTime != null">create_time,</if>
@@ -61,9 +62,10 @@
         <if test="articleSubhead != null and articleSubhead != ''">#{articleSubhead},</if>
         <if test="articleAuthor != null and articleAuthor != ''">#{articleAuthor},</if>
         <if test="articleContent != null and articleContent != ''">#{articleContent},</if>
-        <if test="rankNum != null and rankNum != ''">rank_num,</if>
-        <if test="resouceUrl != null and resouceUrl != ''">link_url,</if>
-        <if test="articleUrl != null and articleUrl != ''">#{createPerson},</if>
+        <if test="rankNum != null and rankNum != ''">#{rankNum},</if>
+        <if test="publishStatus != null and publishStatus != ''">#{publishStatus},</if>
+        <if test="resouceUrl != null and resouceUrl != ''">#{resouceUrl},</if>
+        <if test="articleUrl != null and articleUrl != ''">#{articleUrl},</if>
         <if test="createTime != null ">#{createTime,jdbcType=TIMESTAMP},</if>
     </trim>
     )
@@ -81,6 +83,7 @@
             <if test="articleAuthor != null and articleAuthor != ''">article_author=#{articleAuthor},</if>
             <if test="articleContent != null and articleContent != ''">article_content=#{articleContent},</if>
             <if test="rankNum != null and rankNum != ''">rank_num=#{rankNum},</if>
+            <if test="publishStatus != null and publishStatus != ''">publish_status=#{publishStatus},</if>
             <if test="resouceUrl != null and resouceUrl != ''">resouce_url=#{resouceUrl},</if>
             <if test="articleUrl != null and articleUrl != ''">article_url=#{articleUrl},</if>
             <if test="createTime != null ">create_time=#{createTime,jdbcType=TIMESTAMP},</if>

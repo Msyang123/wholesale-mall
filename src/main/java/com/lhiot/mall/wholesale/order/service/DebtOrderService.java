@@ -34,18 +34,12 @@ public class DebtOrderService {
 
     private final UserService userService;
 
-    private final OrderService orderService;
-
-    private final SalesUserService salesUserService;
-
     private final SnowflakeId snowflakeId;
 
     @Autowired
-    public DebtOrderService(DebtOrderMapper debtOrderMapper, UserService userService, OrderService orderService, SalesUserService salesUserService, SnowflakeId snowflakeId) {
+    public DebtOrderService(DebtOrderMapper debtOrderMapper, UserService userService, SnowflakeId snowflakeId) {
         this.debtOrderMapper = debtOrderMapper;
         this.userService = userService;
-        this.orderService = orderService;
-        this.salesUserService = salesUserService;
         this.snowflakeId=snowflakeId;
     }
 
@@ -190,7 +184,6 @@ public class DebtOrderService {
                 debtOrderResult.setUserName(user1.getUserName());
                 debtOrderResult.setPhone(user1.getPhone());
             }
-           //业务员信息
         }
         return debtOrderResult;
     }
