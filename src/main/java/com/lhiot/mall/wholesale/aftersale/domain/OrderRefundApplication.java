@@ -45,7 +45,7 @@ public class OrderRefundApplication {
     private String comments;
 
     @JsonProperty("orderId")
-    private String orderId;
+    private String orderCode;
 
     @JsonProperty("userId")
     private Long userId;
@@ -60,6 +60,9 @@ public class OrderRefundApplication {
 
     @JsonProperty("auditStatus")
     private String auditStatus;
+
+    @JsonProperty("afterStatus")
+    private String afterStatus;
 
     @JsonProperty("contactsPhone")
     private String contactsPhone;

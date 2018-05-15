@@ -33,9 +33,10 @@
             <if test="settlementType != null ">and o.settlement_type=#{settlementType}</if>
             <if test="payStatus != null ">and o.pay_status=#{payStatus}</if>
             <if test="orderStatus != null ">and o.order_status = #{orderStatus}</if>
+            <if test="invoiceStatus != null and invoiceStatus !=''">and invoice_status = #{invoiceStatus}</if>
+            <if test="afterStatus != null and afterStatus !=''">and after_status = #{afterStatus}</if>
         </trim>
         and DATE_SUB(CURDATE(),INTERVAL 30 DAY) &lt;= o.create_time
-        and invoice_status= 'no'
         ORDER BY o.create_time desc
         <include refid="common.pager"></include>
     </select>
@@ -137,6 +138,9 @@
             </if>
             <if test="invoiceStatus!=null and invoiceStatus!=''">
                 invoice_status=#{invoiceStatus},
+            </if>
+            <if test="afterStatus!=null and afterStatus!=''">
+                after_status=#{afterStatus},
             </if>
         </set>
          where order_code=#{orderCode}

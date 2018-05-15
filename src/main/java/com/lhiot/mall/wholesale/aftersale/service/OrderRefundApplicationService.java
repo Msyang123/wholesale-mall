@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.aftersale.service;
 
+import com.leon.microx.common.exception.ServiceException;
 import com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication;
 import com.lhiot.mall.wholesale.aftersale.domain.OrderResult;
 import com.lhiot.mall.wholesale.aftersale.mapper.OrderRefundApplicationMapper;
@@ -54,6 +55,14 @@ public class OrderRefundApplicationService {
     }
 
     public Integer updateById(OrderRefundApplication orderRefundApplication){
+        if (Objects.equals(orderRefundApplication.getAfterStatus(),"yes")){
+            OrderDetail order = new OrderDetail();
+            order.setOrderCode(orderRefundApplication.getOrderCode());
+            order.setAfterStatus("yes");
+            if (orderMapper.updateOrder(order)<=0){
+                return -1;
+            }
+        }
         return this.orderRefundApplicationMapper.updateById(orderRefundApplication);
     }
 
@@ -164,7 +173,7 @@ public class OrderRefundApplicationService {
         if (Objects.nonNull(order)){
             //售后订单详细信息
             OrderRefundApplication orderRefund=new OrderRefundApplication();
-            orderRefund.setOrderId(order.getOrderCode());
+            orderRefund.setOrderCode(order.getOrderCode());
             OrderRefundApplication orderRefundApplication = orderRefundApplicationMapper.refundInfo(orderRefund);
             order.setOrderRefundApplication(orderRefundApplication);
         }
