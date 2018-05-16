@@ -1,12 +1,12 @@
 package com.lhiot.mall.wholesale.order.mapper;
 
-import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
 import com.lhiot.mall.wholesale.order.domain.DebtOrderResult;
 import com.lhiot.mall.wholesale.order.domain.gridparam.DebtOrderGridParam;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface DebtOrderMapper {
@@ -63,4 +63,12 @@ public interface DebtOrderMapper {
      * @return
      */
     DebtOrderResult searchDebtOrderById(long id);
+
+
+    /**
+     * 后台管理--导出账款订单
+     * @param param
+     * @return
+     */
+    List<Map<String, Object>> exportData(DebtOrderGridParam param);
 }

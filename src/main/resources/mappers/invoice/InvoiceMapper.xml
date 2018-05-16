@@ -204,6 +204,7 @@
         <trim prefix="set" suffixOverrides=",">
             <if test="invoiceStatus != null and invoiceStatus != ''">invoice_status=#{invoiceStatus},</if>
             <if test="rejectReason != null and rejectReason != ''">reject_reason=#{rejectReason},</if>
+            <if test="invoicePrintTime != null and invoicePrintTime != ''">invoice_print_time=#{invoicePrintTime},</if>
         </trim>
         where id=#{id}
     </update>
@@ -216,4 +217,20 @@
         </trim>
         where id=#{id}
     </update>
+
+    <!-- 后台管理系统 数据导出 -->
+    <select id="exportData" parameterType="com.lhiot.mall.wholesale.invoice.domain.gridparam.InvoiceGridParam"
+            resultType="map">
+        select t1.company_name as companyName,t1.taxpayer_number as taxpayerNumber,FORMAT(t1.invoice_fee/100.0,2) as invoiceFee,
+        CONCAT(FORMAT(t1.invoice_tax/100.0,2),'%')as invoiceTax,FORMAT(t1.tax_fee/100.0,2) as taxFee,t1.contact_name as contactName,
+        t1.contact_phone as contactPhone,t1.address_area as addressArea,t1.address_detail as addressDetail,
+        t1.bank_name as bankName,t1.bank_card_code as bankCardCode,DATE_FORMAT(t1.create_time,'%Y-%m-%d %H:%i:%s') as createTime,case t1.invoice_status when 'yes' then '已开票' when 'no' then '未开票' end as invoiceStatus,
+        DATE_FORMAT(t1.invoice_print_time,'%Y-%m-%d %H:%i:%s') as invoicePrintTime
+        from t_whs_invoice t1
+        <trim prefix="where" prefixOverrides="and">
+            <if test="invoiceStatus != null and invoiceStatus != ''">and t1.invoice_status = #{invoiceStatus}</if>
+            <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
+            <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
+        </trim>
+    </select>
 </mapper>
