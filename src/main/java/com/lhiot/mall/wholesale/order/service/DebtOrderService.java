@@ -165,13 +165,9 @@ public class DebtOrderService {
                         orderIds.add(debtOrder.getId());
                     }
                 }
-                //TODO 根据orderIDs查询orderDetailList 查询订单金额之和
             }
         }
         PageQueryObject result = new PageQueryObject();
-        if(debtOrderList != null && debtOrderList.size() > 0){//如果账款订单信息不为空,将账款订单列表与用户信息列表进行行数据组装
-            debtOrderResults = DataMergeUtils.dataMerge(debtOrderList,userList,"userId","id",DebtOrderResult.class);
-        }
         if(debtOrderList != null && debtOrderList.size() > 0){//如果账款订单信息不为空,将账款订单列表与用户信息列表进行行数据组装
             debtOrderResults = DataMergeUtils.dataMerge(debtOrderList,userList,"userId","id",DebtOrderResult.class);
         }

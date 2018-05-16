@@ -65,8 +65,10 @@ public class PaymentLogService {
      * @return
      */
     public PaymentLog countFee(String orderCode) {
+        //FIXME 应根据orderIds查询，后期统一修改
         String[] orderCodes = orderCode.split(",");
         List<String> list = Arrays.asList(orderCodes);
         return paymentLogMapper.countFee(list);
     }
+
 }

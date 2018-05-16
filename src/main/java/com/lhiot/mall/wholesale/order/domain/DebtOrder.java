@@ -52,4 +52,17 @@ public class DebtOrder {
 
     @JsonProperty("remarks")
     private String remarks;
+
+    //订单表 根据账款订单的orderIds查询订单金额、折扣金额、应付金额、配送费
+    @JsonProperty("totalFee")
+    private Integer totalFee;
+
+    @JsonProperty("discountFee")
+    private Integer discountFee;
+
+    @JsonProperty("payableFee")
+    private Integer payableFee;
+
+    @JsonProperty("deliveryFee")
+    private Integer deliveryFee;
 }
