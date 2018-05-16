@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
@@ -105,6 +106,7 @@ public class DebtOrderService {
         userParam.setShopName(shopName);
         List<DebtOrder> debtOrderList = new ArrayList<DebtOrder>();
         List<User> userList = new ArrayList<User>();
+        List<OrderDetail> orderDetailList = new ArrayList<OrderDetail>();
         List<DebtOrderResult> debtOrderResults = new ArrayList<>();
         int count = 0;
         int page = param.getPage();
@@ -163,9 +165,13 @@ public class DebtOrderService {
                         orderIds.add(debtOrder.getId());
                     }
                 }
+                //TODO 根据orderIDs查询orderDetailList 查询订单金额之和
             }
         }
         PageQueryObject result = new PageQueryObject();
+        if(debtOrderList != null && debtOrderList.size() > 0){//如果账款订单信息不为空,将账款订单列表与用户信息列表进行行数据组装
+            debtOrderResults = DataMergeUtils.dataMerge(debtOrderList,userList,"userId","id",DebtOrderResult.class);
+        }
         if(debtOrderList != null && debtOrderList.size() > 0){//如果账款订单信息不为空,将账款订单列表与用户信息列表进行行数据组装
             debtOrderResults = DataMergeUtils.dataMerge(debtOrderList,userList,"userId","id",DebtOrderResult.class);
         }
@@ -206,6 +212,14 @@ public class DebtOrderService {
             }
         }
         return debtOrderResult;
+    }
+
+    /**
+     * 导出账款订单
+     * @return
+     */
+    public List<Map<String, Object>> exportData(DebtOrderGridParam param){
+        return debtOrderMapper.exportData(param);
     }
 
 }

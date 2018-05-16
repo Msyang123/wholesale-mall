@@ -18,6 +18,7 @@ import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -204,5 +205,13 @@ public class InvoiceService {
      */
     public int updateInvoiceStatus(Invoice invoice) {
         return invoiceMapper.updateInvoiceStatus(invoice);
+    }
+
+    /**
+     * 导出开票信息
+     * @return
+     */
+    public List<Map<String, Object>> exportData(InvoiceGridParam param){
+        return invoiceMapper.exportData(param);
     }
 }

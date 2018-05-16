@@ -2,8 +2,6 @@ package com.lhiot.mall.wholesale.order.mapper;
 
 import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
-import com.lhiot.mall.wholesale.user.domain.SalesUserPerformanceDetail;
-import com.lhiot.mall.wholesale.user.domain.gridparam.UserPerformanceGridParam;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -99,4 +97,7 @@ public interface OrderMapper {
     Map<String,Object> countOverDue(Map<String, Object> param);
 
     OrderDetail countFee(List<String> orderCode);
+
+    //后台管理系统 导出订单
+    List<Map<String, Object>> exportData(OrderGridParam param);
 }

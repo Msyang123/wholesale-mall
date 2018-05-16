@@ -365,7 +365,7 @@ public class UserApi {
             String randomCode= ""+weChatUtil.buildRandom(6);
             //发送验证码到第三方推送服务器
 
-            Map<String, Object> body = ImmutableMap.of("number", randomCode,"product","恰果果");
+            Map<String, Object> body = ImmutableMap.of("code", randomCode);
             HttpEntity<Map<String, Object>> request = weChatUtil.getProperties().getSendSms().createRequest(body);
             String messageUrl = MessageFormat.format(weChatUtil.getProperties().getSendSms().getUrl(),"verification-wholesale",phone);
             ResponseEntity response = restTemplate.postForEntity(messageUrl, request, String.class);
@@ -394,7 +394,7 @@ public class UserApi {
         }
         try {
             //到远端验证手机验证码是否正确
-            Map<String, Object> body = ImmutableMap.of("code",user.getCode());
+            Map<String, Object> body = ImmutableMap.of("code",user.getCode(),"key","number");
             HttpEntity<Map<String, Object>> request = weChatUtil.getProperties().getSendSms().createRequest(body);
             String verifiUrl = MessageFormat.format(weChatUtil.getProperties().getValidateSms().getUrl(),"verification-wholesale",user.getPhone());
             ResponseEntity response =  restTemplate.postForEntity(verifiUrl, request, String.class);
@@ -491,7 +491,7 @@ public class UserApi {
     @PostMapping("/member/export")
     @ApiOperation(value = "新建一个查询，会员信息数据导出", response = UserResult.class,responseContainer="list")
     public ResponseEntity<List<UserResult>> exportUserData(@RequestBody(required = true) UserGridParam param) {
-        return ResponseEntity.ok(userService.exportData(param));
+        return ResponseEntity.ok(userService.exportUsers(param));
     }
     
     @GetMapping("/member/detail/{id}")

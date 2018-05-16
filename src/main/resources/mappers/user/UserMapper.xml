@@ -432,9 +432,9 @@
 	<select id="pageQueryUser" parameterType="com.lhiot.mall.wholesale.user.domain.UserGridParam"
 		resultType="com.lhiot.mall.wholesale.user.domain.UserResult">
 		SELECT  
-		u.id,u.sex,u.phone,u.city,u.register_time,u.nickname,u.open_id,CONCAT('￥-',CONVERT(FORMAT(u.balance/100.0,2),CHAR)) as balance,
+		u.id,u.sex,u.phone,u.city,u.register_time,u.nickname,u.open_id,CONCAT('￥',CONVERT(FORMAT(u.balance/100.0,2),CHAR)) as balance,
 		u.union_id,u.user_status,u.profile_photo,u.shop_name,u.user_name,u.address_detail,
-		t1.arrears
+		t1.arrears,s.salesman_name
 		FROM t_whs_user u
 		LEFT JOIN (
 			SELECT user_id, CONCAT('￥-',CONVERT(FORMAT(SUM(payable_fee)/100.0,2),CHAR)) as arrears
@@ -458,9 +458,9 @@
 	<select id="exportUsers" parameterType="com.lhiot.mall.wholesale.user.domain.UserGridParam"
 		resultType="com.lhiot.mall.wholesale.user.domain.UserResult">
 		SELECT  
-		u.id,u.phone,u.city,u.register_time,u.nickname,u.open_id,CONCAT('￥-',CONVERT(FORMAT(u.balance/100.0,2),CHAR)) as balance,
+		u.id,u.phone,u.city,u.register_time,u.nickname,u.open_id,CONCAT('￥',CONVERT(FORMAT(u.balance/100.0,2),CHAR)) as balance,
 		u.union_id,u.profile_photo,u.shop_name,u.user_name,u.address_detail,
-		t1.arrears,
+		t1.arrears,s.salesman_name,
 		CASE u.sex WHEN 'uncertified' THEN '未认证'
 		WHEN 'female' THEN '女'
 		WHEN 'male' THEN '男'
@@ -495,9 +495,18 @@
 	<select id="searchById" parameterType="Long"
 		resultType="com.lhiot.mall.wholesale.user.domain.UserResult">
 		SELECT  
-		u.id,u.sex,u.phone,u.city,u.register_time,u.nickname,u.open_id,CONCAT('￥-',CONVERT(FORMAT(u.balance/100.0,2),CHAR)) as balance,
-		u.union_id,u.user_status,u.profile_photo,u.shop_name,u.user_name,u.address_detail,
-		t1.arrears
+		u.id,u.phone,u.city,u.register_time,u.nickname,u.open_id,CONCAT('￥',CONVERT(FORMAT(u.balance/100.0,2),CHAR)) as balance,
+		u.union_id,u.profile_photo,u.shop_name,u.user_name,u.address_detail,
+		t1.arrears,s.salesman_name,
+		CASE u.sex WHEN 'uncertified' THEN '未认证'
+		WHEN 'female' THEN '女'
+		WHEN 'male' THEN '男'
+		WHEN 'unknown' THEN '未知'
+		END AS sex,
+		CASE u.user_status WHEN 'uncertified' THEN '未认证'
+		WHEN 'unaudited' THEN '认证中待审核'
+		WHEN 'certified' THEN '已认证'
+		END AS user_status
 		FROM t_whs_user u
 		LEFT JOIN (
 			SELECT user_id, CONCAT('￥-',CONVERT(FORMAT(SUM(payable_fee)/100.0,2),CHAR)) as arrears

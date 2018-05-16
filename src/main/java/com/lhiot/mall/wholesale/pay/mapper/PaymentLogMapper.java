@@ -1,6 +1,5 @@
 package com.lhiot.mall.wholesale.pay.mapper;
 
-import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import org.apache.ibatis.annotations.Mapper;
 

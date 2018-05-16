@@ -2,21 +2,14 @@ package com.lhiot.mall.wholesale.introduction.service;
 
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
-import com.lhiot.mall.wholesale.demand.domain.gridparam.DemandGoodsGridParam;
-import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.introduction.domain.Introduction;
 import com.lhiot.mall.wholesale.introduction.domain.gridparam.IntroductionGridParam;
 import com.lhiot.mall.wholesale.introduction.mapper.IntroductionMapper;
-import com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle;
-import com.lhiot.mall.wholesale.user.domain.UserAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 @Service

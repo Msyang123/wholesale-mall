@@ -526,4 +526,12 @@ public class OrderService {
         return orderMapper.pageQuery(param);
     }
 
+    /**
+     * 导出订单信息
+     * @return
+     */
+    public List<Map<String, Object>> exportData(OrderGridParam param){
+        return orderMapper.exportData(param);
+    }
+
 }
