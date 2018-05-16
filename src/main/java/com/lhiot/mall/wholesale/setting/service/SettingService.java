@@ -1,9 +1,7 @@
 package com.lhiot.mall.wholesale.setting.service;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,5 +96,27 @@ public class SettingService {
 		result.setRecords(rows);
 		result.setTotal(totalPages);
 		return result;
+	}
+
+	//判断是否在营业时间内
+	public boolean isBuyTime(){
+		ParamConfig paramConfig = settingMapper.searchConfigParam("buyTime");
+		String start =paramConfig.getConfigParamValue().split("-")[0];
+		Integer startHours=Integer.valueOf(start.split(":")[0]);
+		Integer startMinute=Integer.valueOf(start.split(":")[1]);
+
+		String end =paramConfig.getConfigParamValue().split("-")[1];
+		Integer endHours=Integer.valueOf(end.split(":")[0]);//时
+		Integer endMinute=Integer.valueOf(end.split(":")[1]);//分
+
+		Calendar date=Calendar.getInstance();//获取当前时间
+		Calendar date1=(Calendar) date.clone();
+		Calendar date2=(Calendar) date.clone();
+		date1.set(Calendar.HOUR_OF_DAY, startHours);//将一个时间设为当前营业时间起
+		date1.set(Calendar.MINUTE, startMinute);
+		date2.set(Calendar.HOUR_OF_DAY, endHours);//将第二个时间设为当前营业时间止
+		date2.set(Calendar.MINUTE, endMinute);
+
+		return date.after(date1)&&date.before(date2);
 	}
 }

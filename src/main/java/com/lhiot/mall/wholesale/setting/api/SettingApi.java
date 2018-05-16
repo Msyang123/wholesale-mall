@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.setting.api;
 
 import java.net.URI;
+import java.util.Calendar;
 
 import javax.validation.constraints.NotNull;
 
@@ -82,6 +83,12 @@ public class SettingApi {
     @ApiOperation(value = "新建一个查询，分页查询", response = ArrayObject.class)
     public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) ParamConfigGirdParam param) {
         return ResponseEntity.ok(settingService.pageQuery(param));
+    }
+
+    @GetMapping("/buyTime")
+    @ApiOperation(value = "判断是否在营业时间内", response = ParamConfig.class)
+    public ResponseEntity time(){
+        return ResponseEntity.ok(settingService.isBuyTime());
     }
     
 }
