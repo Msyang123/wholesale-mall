@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -64,10 +65,9 @@ public class IntroductionService {
 
     //新增/修改服务协议
     public int saveOrUpdateIntroduction(Introduction introduction) {
-        if (introduction.getId()>0){
+        if (Objects.nonNull(introduction.getId()) && introduction.getId()>0 ){
             return introductionMapper.updateIntroduction(introduction);
         }else {
-            introduction.setId(10l);
             return introductionMapper.insertIntroduction(introduction);
         }
     }
