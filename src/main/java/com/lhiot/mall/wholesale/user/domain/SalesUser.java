@@ -58,4 +58,7 @@ public class SalesUser {
     @JsonProperty("status")
     private String salesStatus;
 
+    @JsonProperty("storeNum")
+    private String storeNum;
+
 }
