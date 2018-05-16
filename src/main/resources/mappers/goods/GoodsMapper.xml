@@ -206,7 +206,7 @@
 			<if test=" _parameter != null and _parameter != ''">
 				gk.keyword like concat('%',#{0},'%')
 			</if>
-			and gk.kw_type = 'goods'
+			and gk.kw_type = 'goods' and t2.vaild = 'yes'
 		</trim>
 	</select>
 	
@@ -223,6 +223,6 @@
 		LEFT JOIN t_whs_goods t3 ON t2.goods_id = t3.id
 		LEFT JOIN t_whs_goods_unit t4 ON t2.unit_code = t4.id
 		LEFT JOIN t_whs_goods_unit t5 ON t3.base_unit = t5.id
-		where t1.plate_id = #{0}
+		where t2.vaild='yes' and t1.plate_id = #{0}
 	</select>
 </mapper>
