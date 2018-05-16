@@ -12,5 +12,6 @@ public interface FaqCategoryMapper {
 
     int insertFaqCategory(FaqCategory faqCategory);
 
+    //后台管理系统----FAQ分类下拉框
     List<FaqCategory> searchFaqCategory();
 }

@@ -52,8 +52,6 @@ public class FaqApi {
     @ApiOperation(value = "后台管理系统---新增/修改FAQ",response = Faq.class)
     public  ResponseEntity saveFaq(@RequestBody Faq faq) {
         faq.setCreateTime(new Timestamp(new Date().getTime()));
-        //FIXME 修改为登录用户
-        //faq.setCreatePerson("张三");
         if (faqService.saveOrUpdateFaq(faq)>0){
             return ResponseEntity.ok().body("新增/修改完成");
         }else{
@@ -67,5 +65,11 @@ public class FaqApi {
         return ResponseEntity.ok(faqService.pageQuery(param));
     }
 
+    @DeleteMapping("/faq/{id}")
+    @ApiOperation(value = "根据id批量删除服务协议")
+    public ResponseEntity<?> delete(@PathVariable("id") String id) {
+        faqService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 
 }

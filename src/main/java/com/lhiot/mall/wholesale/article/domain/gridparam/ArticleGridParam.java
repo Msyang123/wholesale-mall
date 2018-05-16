@@ -20,6 +20,9 @@ public class ArticleGridParam extends PageObject {
     @ApiModelProperty(notes="文章类别",dataType="String")
     private String articleType;
 
+    @ApiModelProperty(notes="创建类别",dataType="String")
+    private String createType;
+
     @ApiModelProperty(notes="创建时间起",dataType="String")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private String createTimeBegin;

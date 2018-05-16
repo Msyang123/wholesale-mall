@@ -20,6 +20,7 @@
         <trim prefix="where" prefixOverrides="and">
             <if test="articleTitle != null and articleTitle != ''">and t1.article_title like CONCAT('%', #{articleTitle},'%') </if>
             <if test="articleType != null and articleType != ''">and t1.article_type = #{articleType}</if>
+            <if test="createType != null and createType != ''">and t1.create_type = #{createType}</if>
             <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
             <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
         </trim>
@@ -33,6 +34,7 @@
         <trim prefix="where" prefixOverrides="and">
             <if test="articleTitle != null and articleTitle != ''">and t1.article_title like CONCAT('%', #{articleTitle},'%') </if>
             <if test="articleType != null and articleType != ''">and t1.article_type = #{articleType}</if>
+            <if test="createType != null and createType != ''">and t1.create_type = #{createType}</if>
             <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
             <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
         </trim>
@@ -94,5 +96,13 @@
         </trim>
         where id = #{id}
     </update>
+
+    <!-- 后台管理系统 批量删除 -->
+    <delete id="removeInbatch" parameterType="java.util.List">
+        delete from t_whs_article where id in
+        <foreach collection="list" item = "item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
 
 </mapper>

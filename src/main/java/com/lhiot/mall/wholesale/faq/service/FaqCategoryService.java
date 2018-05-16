@@ -23,6 +23,7 @@ public class FaqCategoryService {
         return faqCategoryMapper.insertFaqCategory(faqCategory);
     }
 
+    //后台管理系统----FAQ分类下拉框
     public List<FaqCategory> searchFaqCategory() {
         return faqCategoryMapper.searchFaqCategory();
     }

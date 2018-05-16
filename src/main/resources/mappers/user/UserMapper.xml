@@ -25,9 +25,14 @@
                       #{profilePhoto},#{addressDetail})
     </insert>
 
-    <update id="updateUserStatus" parameterType="long">
-        UPDATE t_whs_user SET user_status = 'certified'
-        WHERE id = #{id}
+    <update id="updateUserStatus" parameterType="map">
+        UPDATE t_whs_user
+		<trim prefix="set" prefixOverrides=",">
+			<if test="status !=null and status !=''">
+				,user_status=#{status}
+			</if>
+		</trim>
+        WHERE id = #{userId}
     </update>
 
     <select id="user"  parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.User">
@@ -39,7 +44,7 @@
         select IFNULL(SUM(payable_fee),0) debtFee from t_whs_order
         where user_id=#{0} and order_status in
         ('undelivery','delivery','received','unrefunded','refundfailed')
-        and settlement_type='cod' and pay_status='unpaid'
+        and settlement_type='offline' and pay_status='unpaid'
     </select>
 
     <update id="updateUser" parameterType="com.lhiot.mall.wholesale.user.domain.User">

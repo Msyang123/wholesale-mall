@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.article.service;
 
 import com.leon.microx.util.SnowflakeId;
+import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.article.domain.Article;
 import com.lhiot.mall.wholesale.article.domain.gridparam.ArticleGridParam;
 import com.lhiot.mall.wholesale.article.mapper.ArticleMapper;
@@ -9,8 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -69,4 +72,16 @@ public class ArticleService {
         }
     }
 
+    /**
+     * 批量删除
+     * @param ids
+     */
+    public void delete(String ids){
+        if(StringUtils.isBlank(ids)){
+            return ;
+        }
+        List<Long> list = Arrays.asList(ids.split(",")).stream()
+                .map(id -> Long.parseLong(id.trim())).collect(Collectors.toList());
+        articleMapper.removeInbatch(list);
+    }
 }

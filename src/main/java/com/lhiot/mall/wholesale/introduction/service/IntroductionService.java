@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.introduction.service;
 
 import com.leon.microx.util.SnowflakeId;
+import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.introduction.domain.Introduction;
 import com.lhiot.mall.wholesale.introduction.domain.gridparam.IntroductionGridParam;
@@ -9,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -69,4 +72,16 @@ public class IntroductionService {
         }
     }
 
+    /**
+     * 批量删除
+     * @param ids
+     */
+    public void delete(String ids){
+        if(StringUtils.isBlank(ids)){
+            return ;
+        }
+        List<Long> list = Arrays.asList(ids.split(",")).stream()
+                .map(id -> Long.parseLong(id.trim())).collect(Collectors.toList());
+        introductionMapper.removeInbatch(list);
+    }
 }

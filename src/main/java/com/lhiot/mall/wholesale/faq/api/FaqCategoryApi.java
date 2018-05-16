@@ -28,11 +28,9 @@ public class FaqCategoryApi {
 
 
     @PostMapping("/faqcategory/add")
-    @ApiOperation(value = "后台管理系统---新增FAQ分类",response = Faq.class)
+    @ApiOperation(value = "后台管理系统---新增FAQ分类",response = FaqCategory.class)
     public  ResponseEntity add(@RequestBody FaqCategory faqCategory) {
         faqCategory.setCreateTime(new Timestamp(new Date().getTime()));
-        //FIXME 用户修改为后台管理登录用户
-        faqCategory.setCreatePerson("李四");
         if (faqCategoryService.save(faqCategory)>0) {
             return ResponseEntity.ok().body("新增完成");
         }

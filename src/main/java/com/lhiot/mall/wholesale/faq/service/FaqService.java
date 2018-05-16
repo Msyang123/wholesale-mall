@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.faq.service;
 
+import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.faq.domain.Faq;
 import com.lhiot.mall.wholesale.faq.domain.gridparam.FaqGridParam;
@@ -8,8 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -68,5 +71,17 @@ public class FaqService {
         return result;
     }
 
+    /**
+     * 批量删除
+     * @param ids
+     */
+    public void delete(String ids){
+        if(StringUtils.isBlank(ids)){
+            return ;
+        }
+        List<Long> list = Arrays.asList(ids.split(",")).stream()
+                .map(id -> Long.parseLong(id.trim())).collect(Collectors.toList());
+        faqMapper.removeInbatch(list);
+    }
 
 }
