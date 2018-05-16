@@ -44,7 +44,7 @@
         select IFNULL(SUM(payable_fee),0) debtFee from t_whs_order
         where user_id=#{0} and order_status in
         ('undelivery','delivery','received','unrefunded','refundfailed')
-        and settlement_type='cod' and pay_status='unpaid'
+        and settlement_type='offline' and pay_status='unpaid'
     </select>
 
     <update id="updateUser" parameterType="com.lhiot.mall.wholesale.user.domain.User">

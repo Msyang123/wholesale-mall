@@ -14,20 +14,19 @@ import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 import com.lhiot.mall.wholesale.goods.service.GoodsService;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.order.domain.Distribution;
-import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
-import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
+import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.service.OrderService;
+import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.setting.service.SettingService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.beans.IntrospectionException;
@@ -187,21 +186,20 @@ public class OrderApi {
 
     @GetMapping("/distribution/{fee}")
     @ApiOperation(value = "查询配送费")
-    public  ResponseEntity<Integer> distribution(@PathVariable("fee") @NotNull Integer fee) throws Exception{
+    public  ResponseEntity distribution(@PathVariable("fee") @NotNull Integer fee) throws Exception{
         ParamConfig paramConfig = settingService.searchConfigParam("distributionFeeSet");
         String distribution = paramConfig.getConfigParamValue();
         Distribution[] distributionsJson = JacksonUtils.fromJson(distribution,  Distribution[].class);//字符串转json
         //[{"minPrice": 200,"maxPrice":300,"distributionFee": 25},
         // {"minPrice": 300,"maxPrice": 500,"distributionFee": 15},
         // {"minPrice":500,"maxPrice": 1000,"distributionFee": 0}]
-        Integer deliverFee = fee/100;
         for (Distribution item:distributionsJson){
-            if (deliverFee>=item.getMinPrice()&&deliverFee<item.getMaxPrice()){
+            if (fee>=item.getMinPrice()&&fee<item.getMaxPrice()){
                 Integer distributionFee = item.getDistributionFee();
                 return ResponseEntity.ok(distributionFee);
             }
         }
-        return ResponseEntity.ok(100);
+        return ResponseEntity.badRequest().body("没有设置此区间段的配送费");
     }
 
     @GetMapping("/after-sale/{userId}")
