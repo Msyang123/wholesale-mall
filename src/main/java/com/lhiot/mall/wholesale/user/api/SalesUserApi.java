@@ -240,6 +240,20 @@ public class SalesUserApi {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/export")
+    @ApiOperation(value = "分页查询业务员信息表列表")
+    public ResponseEntity<PageQueryObject> export(
+            @RequestParam(value="salesmanName", required = false) String salesmanName,
+            @RequestParam(value="salesmanPhone", required = false) String salesmanPhone){
+        Map<String,Object> param=new HashMap<>();
+        param.put("salesmanName",salesmanName);
+        param.put("salesmanPhone",salesmanPhone);
+        param.put("page",1);
+        param.put("rows",5000);
+        PageQueryObject result  = salesUserService.page(param);
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/find/{id}")
     @ApiOperation(value = "依据id查询业务员信息表详细信息")
     public ResponseEntity<SalesUser> find(@PathVariable("id") Long id){
