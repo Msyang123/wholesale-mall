@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.aftersale.service;
 
 import com.leon.microx.common.exception.ServiceException;
+import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication;
 import com.lhiot.mall.wholesale.aftersale.domain.OrderResult;
 import com.lhiot.mall.wholesale.aftersale.mapper.OrderRefundApplicationMapper;
@@ -92,7 +93,7 @@ public class OrderRefundApplicationService {
         //总记录数
         int totalPages = 0;
         List<Long> userIds = new ArrayList<Long>();
-        if (phone == null) {//未传手机号查询条件,先根据条件查询分页的订单列表及用户ids，再根据ids查询用户信息列表
+        if (StringUtils.isBlank(phone)) {//未传手机号查询条件,先根据条件查询分页的订单列表及用户ids，再根据ids查询用户信息列表
             count = orderMapper.pageQueryCount(param);
             //起始行
             param.setStart((page - 1) * rows);

@@ -387,6 +387,9 @@ public class UserApi {
             @ApiImplicitParam(paramType = "body", name = "user", value = "注册用户数据", required = true, dataType = "User"),
     })
     public ResponseEntity register(@RequestBody @NotNull User user) {
+        if(Objects.isNull(user)||Objects.isNull(user.getId())){
+            return ResponseEntity.badRequest().body("用户信息错误");
+        }
         //手机验证码
         RMapCache<String,String> cache =  redissonClient.getMapCache("userVerificationCode");
         if(Objects.isNull(cache.get("phone"+user.getPhone()))){
@@ -440,28 +443,34 @@ public class UserApi {
     }
 
     @ApiOperation("获取二维码图片")
-    @GetMapping("/qrcode/{code}")
-    public void getCaptcha(@PathVariable("code") @NotNull String code,
-                           HttpServletResponse response) throws IOException {
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", name = "code", value = "传递的二维码内容", required = true, dataType = "String"),
+            @ApiImplicitParam(paramType = "query", name = "needDecode", value = "是否需要decode 值: yes/no", required = false, dataType = "String") })
+    @GetMapping("/qrcode")
+    public void getCaptcha(@RequestParam @NotNull String code,@RequestParam(required = false,defaultValue = "no") String needDecode,
+                           HttpServletResponse response){
         response.setContentType("image/jpeg");
         response.setHeader("Pragma", "no-cache");
         response.setHeader("Cache-Control", "no-cache");
         response.setDateHeader("Expires", 0);
 
-            try {
-                int qrcodeWidth = 300;
-                int qrcodeHeight = 300;
-                String qrcodeFormat = "png";
-                HashMap<EncodeHintType, String> hints = new HashMap<EncodeHintType, String>();
-                hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
-                BitMatrix bitMatrix = new MultiFormatWriter().encode(code, BarcodeFormat.QR_CODE, qrcodeWidth, qrcodeHeight, hints);
-
-                BufferedImage image = QRCodeUtil.toBufferedImage(bitMatrix);
-                image.flush();
-                ImageIO.write(image, qrcodeFormat, response.getOutputStream());
-            } catch (Exception e) {
-                e.printStackTrace();
+        try {
+            if(Objects.equals(needDecode,"yes")) {
+                code = URLDecoder.decode(code, "utf-8");
             }
+            int qrcodeWidth = 300;
+            int qrcodeHeight = 300;
+            String qrcodeFormat = "png";
+            HashMap<EncodeHintType, String> hints = new HashMap<>();
+            hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+            BitMatrix bitMatrix = new MultiFormatWriter().encode(code, BarcodeFormat.QR_CODE, qrcodeWidth, qrcodeHeight, hints);
+
+            BufferedImage image = QRCodeUtil.toBufferedImage(bitMatrix);
+            image.flush();
+            ImageIO.write(image, qrcodeFormat, response.getOutputStream());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     @PostMapping("/info/gird")
