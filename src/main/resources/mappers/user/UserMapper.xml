@@ -411,4 +411,111 @@
 			</if>
 		</trim>
 	</select>
+	
+	<!-- lynn 会员查询 分页数量 -->
+	<select id="pageQueryUserCount" parameterType="com.lhiot.mall.wholesale.user.domain.UserGridParam"
+		resultType="Integer">
+		SELECT count(u.id)
+		FROM t_whs_user u
+		LEFT JOIN t_whs_salesuser_relation sr ON u.id = sr.user_id
+		LEFT JOIN t_whs_salesuser s ON sr.salesman_id = s.id
+		<trim prefix="where" prefixOverrides="and">
+			<if test="userName != null and userName != ''">and u.user_name like concat('%',#{userName},'%')</if>
+			<if test="phone != null and phone != ''">and u.phone like concat('%',#{phone},'%')</if>
+			<if test="saleId != null and saleId != ''">and s.id = #{saleId}</if>
+			<if test="beginTime != null and beginTime != ''">and date_format(u.register_time,'%Y-%m-%d) &gt;= #{beginTime}</if>
+			<if test="endTime != null and endTime != ''">and date_format(u.register_time,'%Y-%m-%d) &lt;=#{endTime}</if>
+		</trim>
+	</select>
+	
+	<!-- lynn 会员查询 分页查询 -->
+	<select id="pageQueryUser" parameterType="com.lhiot.mall.wholesale.user.domain.UserGridParam"
+		resultType="com.lhiot.mall.wholesale.user.domain.UserResult">
+		SELECT  
+		u.id,u.sex,u.phone,u.city,u.register_time,u.nickname,u.open_id,CONCAT('￥',CONVERT(FORMAT(u.balance/100.0,2),CHAR)) as balance,
+		u.union_id,u.user_status,u.profile_photo,u.shop_name,u.user_name,u.address_detail,
+		t1.arrears,s.salesman_name
+		FROM t_whs_user u
+		LEFT JOIN (
+			SELECT user_id, CONCAT('￥-',CONVERT(FORMAT(SUM(payable_fee)/100.0,2),CHAR)) as arrears
+			FROM t_whs_order
+			WHERE settlement_type = 'offline' and pay_status = 'unpaid'
+			GROUP BY user_id 
+		) as t1 ON u.id = t1.user_id
+		LEFT JOIN t_whs_salesuser_relation sr ON u.id = sr.user_id
+		LEFT JOIN t_whs_salesuser s ON sr.salesman_id = s.id
+		<trim prefix="where" prefixOverrides="and">
+			<if test="userName != null and userName != ''">and u.user_name like concat('%',#{userName},'%')</if>
+			<if test="phone != null and phone != ''">and u.phone like concat('%',#{phone},'%')</if>
+			<if test="saleId != null and saleId != ''">and s.id = #{saleId}</if>
+			<if test="beginTime != null and beginTime != ''">and date_format(u.register_time,'%Y-%m-%d) &gt;= #{beginTime}</if>
+			<if test="endTime != null and endTime != ''">and date_format(u.register_time,'%Y-%m-%d) &lt;=#{endTime}</if>
+		</trim>
+		<include refid="common.pager"/>
+	</select>
+	
+	<!-- lynn 会员查询 用户导出 -->
+	<select id="exportUsers" parameterType="com.lhiot.mall.wholesale.user.domain.UserGridParam"
+		resultType="com.lhiot.mall.wholesale.user.domain.UserResult">
+		SELECT  
+		u.id,u.phone,u.city,u.register_time,u.nickname,u.open_id,CONCAT('￥',CONVERT(FORMAT(u.balance/100.0,2),CHAR)) as balance,
+		u.union_id,u.profile_photo,u.shop_name,u.user_name,u.address_detail,
+		t1.arrears,s.salesman_name,
+		CASE u.sex WHEN 'uncertified' THEN '未认证'
+		WHEN 'female' THEN '女'
+		WHEN 'male' THEN '男'
+		WHEN 'unknown' THEN '未知'
+		END AS sex,
+		CASE u.user_status WHEN 'uncertified' THEN '未认证'
+		WHEN 'unaudited' THEN '认证中待审核'
+		WHEN 'certified' THEN '已认证'
+		END AS user_status
+		FROM t_whs_user u
+		LEFT JOIN (
+			SELECT user_id, CONCAT('￥-',CONVERT(FORMAT(SUM(payable_fee)/100.0,2),CHAR)) as arrears
+			FROM t_whs_order
+			WHERE settlement_type = 'offline' and pay_status = 'unpaid'
+			GROUP BY user_id 
+		) as t1 ON u.id = t1.user_id
+		LEFT JOIN t_whs_salesuser_relation sr ON u.id = sr.user_id
+		LEFT JOIN t_whs_salesuser s ON sr.salesman_id = s.id
+		<trim prefix="where" prefixOverrides="and">
+			<if test="userName != null and userName != ''">and u.user_name like concat('%',#{userName},'%')</if>
+			<if test="phone != null and phone != ''">and u.phone like concat('%',#{phone},'%')</if>
+			<if test="saleId != null and saleId != ''">and s.id = #{saleId}</if>
+			<if test="beginTime != null and beginTime != ''">and date_format(u.register_time,'%Y-%m-%d) &gt;= #{beginTime}</if>
+			<if test="endTime != null and endTime != ''">and date_format(u.register_time,'%Y-%m-%d) &lt;=#{endTime}</if>
+			<if test="beginTime == null and beginTime == '' and endTime == null and endTime == ''">
+				and date_format(u.register_time,'%Y-%m') = date_format(now(),'%Y-%m')
+			</if>
+		</trim>
+	</select>
+	
+	<!-- lynn 后台管理 会员详情-->
+	<select id="searchById" parameterType="Long"
+		resultType="com.lhiot.mall.wholesale.user.domain.UserResult">
+		SELECT  
+		u.id,u.phone,u.city,u.register_time,u.nickname,u.open_id,CONCAT('￥',CONVERT(FORMAT(u.balance/100.0,2),CHAR)) as balance,
+		u.union_id,u.profile_photo,u.shop_name,u.user_name,u.address_detail,
+		t1.arrears,s.salesman_name,
+		CASE u.sex WHEN 'uncertified' THEN '未认证'
+		WHEN 'female' THEN '女'
+		WHEN 'male' THEN '男'
+		WHEN 'unknown' THEN '未知'
+		END AS sex,
+		CASE u.user_status WHEN 'uncertified' THEN '未认证'
+		WHEN 'unaudited' THEN '认证中待审核'
+		WHEN 'certified' THEN '已认证'
+		END AS user_status
+		FROM t_whs_user u
+		LEFT JOIN (
+			SELECT user_id, CONCAT('￥-',CONVERT(FORMAT(SUM(payable_fee)/100.0,2),CHAR)) as arrears
+			FROM t_whs_order
+			WHERE settlement_type = 'offline' and pay_status = 'unpaid'
+			GROUP BY user_id 
+		) as t1 ON u.id = t1.user_id
+		LEFT JOIN t_whs_salesuser_relation sr ON u.id = sr.user_id
+		LEFT JOIN t_whs_salesuser s ON sr.salesman_id = s.id
+		where u.id = #{0}
+	</select>
 </mapper>

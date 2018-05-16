@@ -48,7 +48,6 @@ public interface UserMapper {
     //后台管理 根据用户手机号或用户名分页查询用户信息
     List<User> searchByPhoneOrName(User param);
 
-
     List<User> searchByPhones(List<String> phones);
     
     List<User> fuzzySearchByPhone(String phone);
@@ -63,9 +62,9 @@ public interface UserMapper {
 
     Integer debtFee(long userId);
 
-    //分页查询分类
+    //分页查询分类-会员分析
     List<UserResult> pageQuery(UserGridParam param);
-    //查询分类的总记录数
+    //查询分类的总记录数-会员分析
     int pageQueryCount(UserGridParam param);
 
     List<SalesUserPerformanceDetail> pagePerformanceUserQuery(UserPerformanceGridParam param);
@@ -75,4 +74,13 @@ public interface UserMapper {
     List<Long> queryUserId(Map<String, Object> param);
     
     List<UserResult> exportData(UserGridParam param);
+    
+    //分页查询分类-会员管理
+    List<UserResult> pageQueryUser(UserGridParam param);
+    //查询分类的总记录数-会员管理
+    int pageQueryUserCount(UserGridParam param);
+    //会员管理数据导出
+    List<UserResult> exportUsers(UserGridParam param);
+    //后台管理用户数据详情
+    UserResult searchById(Long userId);
 }

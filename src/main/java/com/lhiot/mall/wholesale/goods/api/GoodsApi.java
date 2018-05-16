@@ -139,7 +139,7 @@ public class GoodsApi {
 	
 	@GetMapping("/goods/plate/{plateId}")
     @ApiOperation(value = "根据版块获取商品列表" ,response= PlateCategory.class)
-    public ResponseEntity<PlateCategory> findGoodsByKeyword(@PathVariable("plateId") Long plateId) {
+    public ResponseEntity<PlateCategory> findGoodsByPlate(@PathVariable("plateId") Long plateId) {
         return ResponseEntity.ok(goodsService.plateGoods(plateId));
     }
 	
