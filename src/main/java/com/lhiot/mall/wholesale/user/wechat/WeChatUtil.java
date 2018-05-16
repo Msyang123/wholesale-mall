@@ -159,9 +159,11 @@ public class WeChatUtil {
 			HttpResponse resp = client.execute(httpPost);
 			HttpEntity entity = resp.getEntity();
 			if (resp.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+				log.info("refund:"+resp.getStatusLine().getStatusCode());
 				return resp.getStatusLine().getStatusCode() + "";
 			}
 			String resource = EntityUtils.toString(entity, encoding);
+			log.info("refund resource:"+resource);
 			return resource.replace("<![CDATA[", "").replace("]]>", "");
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

@@ -251,7 +251,7 @@ public class OrderService {
                     throw new ServiceException("未找到支付记录");
                 }
                 //退款 如果微信支付就微信退款
-                String refundChatFee = weChatUtil.refund(paymentLog.getTransactionId(), paymentLog.getTotalFee());
+                String refundChatFee = weChatUtil.refund(paymentLog.getOrderCode(), paymentLog.getTotalFee());
                 if (StringUtils.isNotBlank(refundChatFee)) {
                     //写入退款记录  t_whs_refund_log
                     RefundLog refundLog = new RefundLog();
@@ -280,7 +280,7 @@ public class OrderService {
                 User updateUser = new User();
                 updateUser.setId(orderDetail.getUserId());
                 updateUser.setBalance(paymentLog.getTotalFee());//需要退还的用户余额
-                userService.updateUser(updateUser);
+                userService.updateBalance(updateUser);
                 //写入退款记录  t_whs_refund_log
                 RefundLog refundLog = new RefundLog();
                 refundLog.setPaymentLogId(paymentLog.getId());
