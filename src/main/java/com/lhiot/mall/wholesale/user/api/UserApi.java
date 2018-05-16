@@ -387,6 +387,9 @@ public class UserApi {
             @ApiImplicitParam(paramType = "body", name = "user", value = "注册用户数据", required = true, dataType = "User"),
     })
     public ResponseEntity register(@RequestBody @NotNull User user) {
+        if(Objects.isNull(user)||Objects.isNull(user.getId())){
+            return ResponseEntity.badRequest().body("用户信息错误");
+        }
         //手机验证码
         RMapCache<String,String> cache =  redissonClient.getMapCache("userVerificationCode");
         if(Objects.isNull(cache.get("phone"+user.getPhone()))){
