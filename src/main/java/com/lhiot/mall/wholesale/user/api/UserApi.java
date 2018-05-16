@@ -390,6 +390,10 @@ public class UserApi {
         if(Objects.isNull(user)||Objects.isNull(user.getId())){
             return ResponseEntity.badRequest().body("用户信息错误");
         }
+        if (Objects.isNull(user.getPhone())||Objects.isNull(user.getUserName())||Objects.isNull(user.getShopName())
+                ||Objects.isNull(user.getAddressDetail())||Objects.isNull(user.getCode())){
+            return ResponseEntity.badRequest().body("请完善商户信息再提交");
+        }
         //手机验证码
         RMapCache<String,String> cache =  redissonClient.getMapCache("userVerificationCode");
         if(Objects.isNull(cache.get("phone"+user.getPhone()))){
