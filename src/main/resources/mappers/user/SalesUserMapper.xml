@@ -78,7 +78,8 @@
     </select>
 
     <select id="login" parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
-        select * from t_whs_salesuser where account=#{account}
+        select s.*,(select count(*) from t_whs_salesuser_relation where salesman_id=s.id and audit_status='unaudited') storeNum
+        from t_whs_salesuser s where s.account=#{account}
     </select>
 
 
@@ -178,7 +179,8 @@
     </select>
 
     <select parameterType="Long" id="findById" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
-     select * from t_whs_salesuser where id=#{0}
+     select s.*,(select count(*) from t_whs_salesuser_relation where salesman_id=s.id and audit_status='unaudited') storeNum
+      from t_whs_salesuser s where s.id= #{0}
     </select>
 
     <select parameterType="String" id="findCode" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
