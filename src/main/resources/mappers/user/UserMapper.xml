@@ -25,9 +25,14 @@
                       #{profilePhoto},#{addressDetail})
     </insert>
 
-    <update id="updateUserStatus" parameterType="long">
-        UPDATE t_whs_user SET user_status = 'certified'
-        WHERE id = #{id}
+    <update id="updateUserStatus" parameterType="map">
+        UPDATE t_whs_user
+		<trim prefix="set" prefixOverrides=",">
+			<if test="status !=null and status !=''">
+				,user_status=#{status}
+			</if>
+		</trim>
+        WHERE id = #{userId}
     </update>
 
     <select id="user"  parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.User">

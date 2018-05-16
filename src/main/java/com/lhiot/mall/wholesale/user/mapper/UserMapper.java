@@ -17,7 +17,7 @@ public interface UserMapper {
 
     /*List<User> search(String userName);*/
 
-    Integer updateUserStatus(long id);
+    Integer updateUserStatus(Map<String,Object> param);
 
     Integer save(User user);
 

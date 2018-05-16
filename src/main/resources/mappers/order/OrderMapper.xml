@@ -198,12 +198,12 @@
     <select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam" resultType="Integer">
         select count(t1.id) from t_whs_order t1
         <trim prefix="where" prefixOverrides="and">
-            <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
-            <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
-            <if test="orderCode != null and orderCode != ''">and t1.order_code = #{orderCode}</if>
-            <if test="orderStatus != null and orderStatus != ''">and t1.order_status = #{orderStatus}</if>
-            <if test="payStatus != null and payStatus != ''">and t1.pay_status = #{payStatus}</if>
-            <if test="settlementType != null and settlementType != ''">and t1.settlement_type = #{settlementType}</if>
+            <if test="createTimeBegin != null and createTimeBegin != '' and createTimeBegin != 'null' ">and t1.create_time &gt;= #{createTimeBegin}</if>
+            <if test="createTimeEnd != null and createTimeEnd != '' and createTimeEnd != 'null' ">and t1.create_time &lt;= #{createTimeEnd}</if>
+            <if test="orderCode != null and orderCode != '' and orderCode != 'null' ">and t1.order_code = #{orderCode}</if>
+            <if test="orderStatus != null and orderStatus != '' and orderStatus != 'null' ">and t1.order_status = #{orderStatus}</if>
+            <if test="payStatus != null and payStatus != '' and payStatus != 'null' ">and t1.pay_status = #{payStatus}</if>
+            <if test="settlementType != null and settlementType != '' and settlementType != 'null'">and t1.settlement_type = #{settlementType}</if>
             <if test="id != null and id != ''">and t1.id = #{id}</if>
             <if test="userIds != null and userIds.size()>0">
                 and t1.user_id in
@@ -220,12 +220,12 @@
         select <include refid="orderColumn"/>
         from t_whs_order t1
         <trim prefix="where" prefixOverrides="and">
-            <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
-            <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
-            <if test="orderCode != null and orderCode != ''">and t1.order_code like CONCAT('%', #{orderCode},'%')</if>
-            <if test="orderStatus != null and orderStatus != ''">and t1.order_status = #{orderStatus}</if>
-            <if test="payStatus != null and payStatus != ''">and t1.pay_status = #{payStatus}</if>
-            <if test="settlementType != null and settlementType != ''">and t1.settlement_type = #{settlementType}</if>
+            <if test="createTimeBegin != null and createTimeBegin != '' and createTimeBegin != 'null' ">and t1.create_time &gt;= #{createTimeBegin}</if>
+            <if test="createTimeEnd != null and createTimeEnd != '' and createTimeEnd != 'null' ">and t1.create_time &lt;= #{createTimeEnd}</if>
+            <if test="orderCode != null and orderCode != '' and orderCode != 'null' ">and t1.order_code like CONCAT('%', #{orderCode},'%')</if>
+            <if test="orderStatus != null and orderStatus != '' and orderStatus != 'null' ">and t1.order_status = #{orderStatus}</if>
+            <if test="payStatus != null and payStatus != '' and payStatus != 'null' ">and t1.pay_status = #{payStatus}</if>
+            <if test="settlementType != null and settlementType != '' and settlementType != 'null' ">and t1.settlement_type = #{settlementType}</if>
             <if test="id != null and id != ''">and t1.id  like CONCAT('%',  #{id},'%')</if>
             <if test="userIds != null and userIds.size()>0">
                 and t1.user_id in

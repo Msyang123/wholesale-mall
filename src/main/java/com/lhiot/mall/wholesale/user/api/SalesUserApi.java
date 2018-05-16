@@ -75,7 +75,7 @@ public class SalesUserApi {
         if (salesUserRelations.isEmpty()) {
             return ResponseEntity.ok(ArrayObject.of(new ArrayList<>()));
         }
-        List ids = new ArrayList();
+        List<Object> ids = new ArrayList<Object>();
         for (SalesUserRelation salesUserRelation : salesUserRelations) {
             ids.add(salesUserRelation.getUserId());
         }
@@ -85,9 +85,9 @@ public class SalesUserApi {
             for (SalesUserRelation salesUserRelation:salesUserRelations) {
                 if (Objects.equals(user.getId(),salesUserRelation.getUserId())){
                     user.setAuditStatus(salesUserRelation.getAuditStatus());
+                    sellers.add(user);
                 }
             }
-            sellers.add(user);
         }
         return ResponseEntity.ok(ArrayObject.of(sellers));
     }

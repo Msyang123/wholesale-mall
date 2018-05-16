@@ -8,10 +8,10 @@
             <if test="id !=null and id !=''">
                 SALESMAN_ID = #{id}
             </if>
-            <if test="auditStatus !=null and auditStatus !='' and auditStatus =='no'">
+            <if test="check !=null and check !='' and check =='no'">
                 and audit_status = 'unaudited'
             </if>
-            <if test="auditStatus !=null and auditStatus !='' and auditStatus =='yes'">
+            <if test="check !=null and check !='' and check =='yes'">
                 and audit_status in('agree','reject')
             </if>
         </trim>

@@ -59,8 +59,8 @@ public class UserService {
 /*
 
  */
-    public Integer updateUserStatus(long id) {
-        return userMapper.updateUserStatus(id);
+    public Integer updateUserStatus(Map param) {
+        return userMapper.updateUserStatus(param);
     }
 
 
@@ -130,7 +130,7 @@ public class UserService {
             userAddress.setAddressDetail(user.getAddressDetail());
             userAddress.setUserId(user.getId());
             userAddress.setSex(user.getSex());
-            this.saveOrUpdateAddress(userAddress);
+            this.updateDefault(userAddress);
 
             SalesUserRelation salesUserRelation = new SalesUserRelation();
             salesUserRelation.setUserId(user.getId());
