@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Api(description ="账款订单接口")
@@ -86,5 +87,11 @@ public class DebtOrderApi {
     @ApiOperation(value = "后台管理-账款订单详情页面",response = DebtOrderResult.class)
     public  ResponseEntity<DebtOrderResult> detail(@PathVariable("id") Long id){
         return ResponseEntity.ok(debtOrderService.detail(id));
+    }
+
+    @PostMapping("/export")
+    @ApiOperation(value = "后台管理系统新建一个查询，数据导出", response = DebtOrderResult.class,responseContainer="list")
+    public ResponseEntity<List<Map<String, Object>>> exportData(@RequestBody(required = true) DebtOrderGridParam param) {
+        return ResponseEntity.ok(debtOrderService.exportData(param));
     }
 }

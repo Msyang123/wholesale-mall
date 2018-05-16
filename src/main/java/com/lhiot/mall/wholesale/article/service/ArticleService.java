@@ -5,9 +5,6 @@ import com.lhiot.mall.wholesale.article.domain.Article;
 import com.lhiot.mall.wholesale.article.domain.gridparam.ArticleGridParam;
 import com.lhiot.mall.wholesale.article.mapper.ArticleMapper;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.introduction.domain.Introduction;
-import com.lhiot.mall.wholesale.introduction.domain.gridparam.IntroductionGridParam;
-import com.lhiot.mall.wholesale.introduction.mapper.IntroductionMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,7 +65,6 @@ public class ArticleService {
         if (Objects.nonNull(article.getId()) && article.getId() >0){
             return articleMapper.updateArticle(article);
         }else {
-            //article.setId(articleMapper.pageQueryCount()+1);
             return articleMapper.insertArticle(article);
         }
     }

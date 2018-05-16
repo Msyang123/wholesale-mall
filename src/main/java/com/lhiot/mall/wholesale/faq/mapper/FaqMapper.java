@@ -3,8 +3,6 @@ package com.lhiot.mall.wholesale.faq.mapper;
 import com.lhiot.mall.wholesale.faq.domain.Faq;
 import com.lhiot.mall.wholesale.faq.domain.FaqCategory;
 import com.lhiot.mall.wholesale.faq.domain.gridparam.FaqGridParam;
-import com.lhiot.mall.wholesale.introduction.domain.Introduction;
-import com.lhiot.mall.wholesale.introduction.domain.gridparam.IntroductionGridParam;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

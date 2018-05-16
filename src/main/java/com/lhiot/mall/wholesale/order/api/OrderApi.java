@@ -1,7 +1,6 @@
 package com.lhiot.mall.wholesale.order.api;
 
 import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
@@ -13,13 +12,10 @@ import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
 import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 import com.lhiot.mall.wholesale.goods.service.GoodsService;
+import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.order.domain.Distribution;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
-import com.lhiot.mall.wholesale.order.service.DebtOrderService;
-import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
-import com.lhiot.mall.wholesale.user.service.SalesUserService;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,14 +24,10 @@ import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
 import com.lhiot.mall.wholesale.order.service.OrderService;
-import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.setting.service.SettingService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.beans.IntrospectionException;
@@ -44,6 +36,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Api(description ="订单接口")
@@ -453,4 +446,9 @@ public class OrderApi {
         return ResponseEntity.ok(orderService.detail(id));
     }
 
+    @PostMapping("/export")
+    @ApiOperation(value = "后台管理系统新建一个查询，数据导出", response = Invoice.class,responseContainer="list")
+    public ResponseEntity<List<Map<String, Object>>> exportData(@RequestBody(required = true) OrderGridParam param) {
+        return ResponseEntity.ok(orderService.exportData(param));
+    }
 }

@@ -14,11 +14,14 @@ public interface DemandGoodsMapper {
 
     DemandGoodsResult select(long id);
 
-    //分页查询新品需求
+    //后台管理系统分页查询新品需求
     List<DemandGoods> pageQuery(DemandGoodsGridParam param);
 
-    //查询分类的总记录数
+    //后台管理系统查询分类的总记录数
     int pageQueryCount(DemandGoodsGridParam param);
 
     int insertDemandGoods(DemandGoods demandGoods);
+
+    //后台管理系统 导出新品需求
+    List<Map<String, Object>> exportData(DemandGoodsGridParam param);
 }

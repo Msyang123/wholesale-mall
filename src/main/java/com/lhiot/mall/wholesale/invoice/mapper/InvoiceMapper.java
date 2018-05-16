@@ -1,13 +1,12 @@
 package com.lhiot.mall.wholesale.invoice.mapper;
 
-import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
-import com.lhiot.mall.wholesale.demand.domain.gridparam.DemandGoodsGridParam;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle;
 import com.lhiot.mall.wholesale.invoice.domain.gridparam.InvoiceGridParam;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface InvoiceMapper {
@@ -42,4 +41,7 @@ public interface InvoiceMapper {
 
     //修改开票原因
     int updateInvoiceReason(Invoice invoice);
+
+    //后台管理系统 导出开票信息
+    List<Map<String, Object>> exportData(InvoiceGridParam param);
 }

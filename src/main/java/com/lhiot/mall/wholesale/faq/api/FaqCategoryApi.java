@@ -3,7 +3,6 @@ package com.lhiot.mall.wholesale.faq.api;
 import com.lhiot.mall.wholesale.faq.domain.Faq;
 import com.lhiot.mall.wholesale.faq.domain.FaqCategory;
 import com.lhiot.mall.wholesale.faq.service.FaqCategoryService;
-import com.lhiot.mall.wholesale.faq.service.FaqService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
