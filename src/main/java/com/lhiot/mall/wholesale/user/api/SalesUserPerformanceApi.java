@@ -68,11 +68,19 @@ public class SalesUserPerformanceApi{
             @RequestParam(value="salesmanName", required = false) String salesmanName,
             @RequestParam(value="salesmanPhone", required = false) String salesmanPhone,
             @RequestParam(value="salesmanId", required = false) String salesmanId,
+            @RequestParam(value="orderStatus", required = false)String orderStatus,
+            @RequestParam(value="settementType", required = false)String settementType,
+            @RequestParam(value="createTimeBegin", required = false)String createTimeBegin,
+            @RequestParam(value="createTimeEnd", required = false)String createTimeEnd,
             @RequestParam(value="rows", required = false, defaultValue="10") Integer rows,
             @RequestParam(value="page", required = false, defaultValue="1") Integer page,
             @RequestParam(value="sidx", required = false, defaultValue="") String sidx,
             @RequestParam(value="sord", required = false, defaultValue="") String sord){
         OrderGridParam param = new OrderGridParam();
+        param.setOrderStatus(orderStatus);
+        param.setSettlementType(settementType);
+        param.setCreateTimeBegin(createTimeBegin);
+        param.setCreateTimeEnd(createTimeEnd);
         param.setPage(page);
         param.setSord(sord);
         param.setRows(rows);
@@ -96,6 +104,26 @@ public class SalesUserPerformanceApi{
         param.setSord(sord);
         param.setRows(rows);
         PageQueryObject pageQueryObject = salesUserPerformanceService.pagePerformanceShopDetail(param,salesmanName,salesmanPhone,salesmanId);
+        return ResponseEntity.ok(pageQueryObject);
+    }
+    @GetMapping("/export")
+    @ApiOperation(value = "分页查询业务员信息表列表")
+    public ResponseEntity<PageQueryObject> export(
+            @RequestParam(value="salesmanPhone", required = false, defaultValue="") String salesmanPhone,
+            @RequestParam(value="salesmanName", required = false, defaultValue="") String salesmanName,
+            @RequestParam(value="salesmanId", required = false, defaultValue="") String salesmanId,
+            @RequestParam(value="orderStatus", required = false, defaultValue="") String orderStatus,
+            @RequestParam(value="settementType", required = false, defaultValue="") String settementType,
+            @RequestParam(value="createTimeBegin", required = false, defaultValue="") String createTimeBegin,
+            @RequestParam(value="createTimeEnd", required = false, defaultValue="") String createTimeEnd){
+        OrderGridParam param = new OrderGridParam();
+        param.setOrderStatus(orderStatus);
+        param.setSettlementType(settementType);
+        param.setCreateTimeBegin(createTimeBegin);
+        param.setCreateTimeEnd(createTimeEnd);
+        param.setPage(1);
+        param.setRows(5000);
+        PageQueryObject pageQueryObject = salesUserPerformanceService.pagePerformanceDetail(param,salesmanName,salesmanPhone,salesmanId);
         return ResponseEntity.ok(pageQueryObject);
     }
 }
