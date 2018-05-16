@@ -3,10 +3,7 @@ package com.lhiot.mall.wholesale.user.service;
 import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.user.domain.SalesUser;
-import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
-import com.lhiot.mall.wholesale.user.domain.ShopResult;
-import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.domain.*;
 import com.lhiot.mall.wholesale.user.mapper.SalesUserMapper;
 import com.lhiot.mall.wholesale.user.mapper.UserMapper;
 import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
@@ -97,6 +94,19 @@ public class SalesUserService {
                 if (userMapper.updateUserStatus(param)>0){//用户表改已认证
                     //审核通过的时候发送发券广播消息
                     rabbit.convertAndSend("store-check-event","", salesUserRelation.getUserId());
+
+                    //冗余地址
+                    UserAddress userAddress = new UserAddress();
+                    userAddress.setPhone(user.getPhone());
+                    userAddress.setIsDefault("yes");
+                    userAddress.setContactsName(user.getUserName());
+                    userAddress.setAddressArea(user.getCity());
+                    userAddress.setAddressDetail(user.getAddressDetail());
+                    userAddress.setUserId(user.getId());
+                    userAddress.setSex(user.getSex());
+                    //userMapper.updateDefault(userAddress);
+                    userMapper.insertAddress(userAddress);
+
 
                     //发送短信
                     Map<String, Object> body = ImmutableMap.of("phone",user.getPhone());
