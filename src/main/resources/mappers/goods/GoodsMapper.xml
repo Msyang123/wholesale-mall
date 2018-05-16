@@ -186,11 +186,11 @@
 	<select id="categoryGoods" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.Goods">
 		select <include refid="goodsColumn"/>,t2.weight,t2.standard,t2.price,t3.unit_name as baseUnitName,
 		t4.unit_name as goodsUnit
-		from t_whs_goods t1
-		left join t_whs_goods_standard t2 on t1.id = t2.goods_id
+		from t_whs_goods_standard t2
+		left join t_whs_goods t1 on  t2.goods_id = t1.id
 		left join t_whs_goods_unit t3 on t1.base_unit = t3.id
 		left join t_whs_goods_unit t4 on t2.unit_code = t4.id
-		where t1.category_id = #{0}
+		where t2.vaild='yes' AND t1.category_id = #{0}
 	</select>
 	
 	<!-- 根据关键词查询商品 -->
