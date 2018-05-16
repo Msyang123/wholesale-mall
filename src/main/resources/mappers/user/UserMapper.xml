@@ -106,7 +106,7 @@
             <if test="addressDetail != null and addressDetail != ''">#{addressDetail},</if>
             <if test="isDefault != null">#{isDefault},</if>
             <if test="userId != null and userId != ''">#{userId},</if>
-            <if test="contactsName != null and contactsName != ''">#{userId},</if>
+            <if test="contactsName != null and contactsName != ''">#{contactsName},</if>
         </trim>
         )
     </insert>
