@@ -11,13 +11,16 @@ public interface IntroductionMapper {
 
     Introduction select(long id);
 
-    //分页查询新品需求
+    //后台管理系统 分页查询服务协议
     List<Introduction> pageQuery(IntroductionGridParam param);
 
-    //查询分类的总记录数
+    //后台管理系统 查询分类的总记录数
     int pageQueryCount(IntroductionGridParam param);
 
     int updateIntroduction(Introduction introduction);
 
     int insertIntroduction(Introduction introduction);
+
+    //后台管理系统 批量删除
+    void removeInbatch(List<Long> ids);
 }

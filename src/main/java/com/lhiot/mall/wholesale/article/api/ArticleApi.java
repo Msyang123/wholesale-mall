@@ -48,4 +48,11 @@ public class ArticleApi {
         }
         return ResponseEntity.badRequest().body("添加失败");
     }
+
+    @DeleteMapping("/article/{id}")
+    @ApiOperation(value = "根据id批量删除服务协议")
+    public ResponseEntity<?> delete(@PathVariable("id") String id) {
+        articleService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }
