@@ -453,7 +453,7 @@ public class OrderService {
      * @return
      */
     public OrderDetail detail(Long id) {
-        //账款订单详情信息
+        //订单详情信息
         OrderDetail orderDetail = orderMapper.searchOrderById(id);
         if (Objects.nonNull(orderDetail)) {
             //用户信息
@@ -527,11 +527,10 @@ public class OrderService {
     }
 
     /**
-     * 导出订单信息
+     * 后台管理系统--导出订单信息
      * @return
      */
     public List<Map<String, Object>> exportData(OrderGridParam param){
         return orderMapper.exportData(param);
     }
-
 }
