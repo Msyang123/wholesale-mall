@@ -89,9 +89,12 @@ public class SalesUserService {
      */
     public boolean userCheck(SalesUserRelation salesUserRelation){
         User user = userMapper.user(salesUserRelation.getUserId());
+        Map<String,Object> param = new HashMap<String,Object>();
+        param.put("userId",salesUserRelation.getUserId());
         if (salesUserMapper.updateUserSaleRelationship(salesUserRelation)>0){
             if (Objects.equals(salesUserRelation.getAuditStatus(),"agree")){
-                if (userMapper.updateUserStatus(salesUserRelation.getUserId())>0){//用户表改已认证或未认证
+                param.put("status","certified");
+                if (userMapper.updateUserStatus(param)>0){//用户表改已认证
                     //审核通过的时候发送发券广播消息
                     rabbit.convertAndSend("store-check-event","", salesUserRelation.getUserId());
 
@@ -103,12 +106,15 @@ public class SalesUserService {
                     log.info("result: " + result);
                 }
             }else {
-                //发送短信
-                Map<String, Object> body = ImmutableMap.of("phone",user.getPhone());
-                HttpEntity<Map<String, Object>> request = properties.getSendSms().createRequest(body);
-                String messageUrl= MessageFormat.format(properties.getSendSms().getUrl(),"regist-unpass",user.getPhone());
-                String result=restTemplate.postForObject(messageUrl, request, String.class);
-                log.info("result:"+result);
+                param.put("status","uncertified");
+                if (userMapper.updateUserStatus(param)>0){//用户未认证
+                    //发送短信
+                    Map<String, Object> body = ImmutableMap.of("phone",user.getPhone());
+                    HttpEntity<Map<String, Object>> request = properties.getSendSms().createRequest(body);
+                    String messageUrl= MessageFormat.format(properties.getSendSms().getUrl(),"regist-unpass",user.getPhone());
+                    String result=restTemplate.postForObject(messageUrl, request, String.class);
+                    log.info("result:"+result);
+                }
             }
         }
         return true;

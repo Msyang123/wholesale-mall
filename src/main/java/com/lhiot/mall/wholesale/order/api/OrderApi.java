@@ -194,8 +194,9 @@ public class OrderApi {
         //[{"minPrice": 200,"maxPrice":300,"distributionFee": 25},
         // {"minPrice": 300,"maxPrice": 500,"distributionFee": 15},
         // {"minPrice":500,"maxPrice": 1000,"distributionFee": 0}]
+        Integer deliverFee = fee/100;
         for (Distribution item:distributionsJson){
-            if (fee>=item.getMinPrice()&&fee<item.getMaxPrice()){
+            if (deliverFee>=item.getMinPrice()&&deliverFee<item.getMaxPrice()){
                 Integer distributionFee = item.getDistributionFee();
                 return ResponseEntity.ok(distributionFee);
             }
