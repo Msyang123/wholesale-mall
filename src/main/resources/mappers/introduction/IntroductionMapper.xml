@@ -66,4 +66,12 @@
 		</trim>
 		)
 	</insert>
+
+	<!-- 后台管理系统 批量删除 -->
+	<delete id="removeInbatch" parameterType="java.util.List">
+		delete from t_whs_introduction where id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
 </mapper>

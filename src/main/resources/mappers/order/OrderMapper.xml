@@ -391,10 +391,6 @@
             <if test="phone != null and phone != ''">and t2.phone  like CONCAT('%',  #{phone},'%')</if>
         </trim>
     </select>
-
-
-
-
 </mapper>
 
 

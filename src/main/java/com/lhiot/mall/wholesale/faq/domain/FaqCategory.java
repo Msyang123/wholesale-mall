@@ -31,6 +31,6 @@ public class FaqCategory {
     @JsonProperty("faqCategoryCreateTime")
     private Timestamp createTime;
 
-    @JsonProperty("faqCategoryCreatePerson")
+    @JsonProperty("createPerson")
     private String createPerson;
 }

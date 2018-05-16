@@ -23,4 +23,8 @@ public interface ArticleMapper {
     int updateArticle(Article article);
 
     int insertArticle(Article article);
+
+    //后台管理系统 批量删除
+    void removeInbatch(List<Long> ids);
+
 }

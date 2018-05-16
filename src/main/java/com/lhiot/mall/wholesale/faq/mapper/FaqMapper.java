@@ -25,4 +25,7 @@ public interface FaqMapper {
     int updateFaq(Faq faq);
 
     int insertFaq(Faq faq);
+
+    //后台管理系统 批量删除
+    void removeInbatch(List<Long> ids);
 }
