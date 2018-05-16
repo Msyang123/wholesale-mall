@@ -186,21 +186,20 @@ public class OrderApi {
 
     @GetMapping("/distribution/{fee}")
     @ApiOperation(value = "查询配送费")
-    public  ResponseEntity<Integer> distribution(@PathVariable("fee") @NotNull Integer fee) throws Exception{
+    public  ResponseEntity distribution(@PathVariable("fee") @NotNull Integer fee) throws Exception{
         ParamConfig paramConfig = settingService.searchConfigParam("distributionFeeSet");
         String distribution = paramConfig.getConfigParamValue();
         Distribution[] distributionsJson = JacksonUtils.fromJson(distribution,  Distribution[].class);//字符串转json
         //[{"minPrice": 200,"maxPrice":300,"distributionFee": 25},
         // {"minPrice": 300,"maxPrice": 500,"distributionFee": 15},
         // {"minPrice":500,"maxPrice": 1000,"distributionFee": 0}]
-        Integer deliverFee = fee/100;
         for (Distribution item:distributionsJson){
-            if (deliverFee>=item.getMinPrice()&&deliverFee<item.getMaxPrice()){
+            if (fee>=item.getMinPrice()&&fee<item.getMaxPrice()){
                 Integer distributionFee = item.getDistributionFee();
                 return ResponseEntity.ok(distributionFee);
             }
         }
-        return ResponseEntity.ok(100);
+        return ResponseEntity.badRequest().body("没有设置此区间段的配送费");
     }
 
     @GetMapping("/after-sale/{userId}")
