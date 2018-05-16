@@ -162,18 +162,18 @@ public class SalesUserApi {
     public ResponseEntity salesLogin(@RequestParam String account,@RequestParam String psw){
         SalesUser salesUser=salesUserService.login(account);
         if (salesUser==null){
-            return ResponseEntity.badRequest().body(ResultObject.of("账号不存在"));
+            return ResponseEntity.badRequest().body("账号不存在");
         }
         if (psw.equals(salesUser.getSalesmanPassword())){
             return ResponseEntity.ok().body(salesUser);
         }
-        return ResponseEntity.badRequest().body(ResultObject.of("密码错误"));
+        return ResponseEntity.badRequest().body("密码错误");
     }
 
-    @GetMapping("/salesman")
+    @GetMapping("/salesman/{salesId}")
     @ApiOperation(value = "业务员主页信息")
-    public ResponseEntity<SalesUser> salesman(@RequestParam long userId){
-        SalesUser salesUser = salesUserService.findById(userId);
+    public ResponseEntity<SalesUser> salesman(@PathVariable long salesId){
+        SalesUser salesUser = salesUserService.findById(salesId);
         if (salesUser==null){
             return ResponseEntity.ok(new SalesUser());
         }

@@ -394,7 +394,7 @@ public class UserApi {
         }
         try {
             //到远端验证手机验证码是否正确
-            Map<String, Object> body = ImmutableMap.of("code",user.getCode(),"key","number");
+            Map<String, Object> body = ImmutableMap.of("code",user.getCode(),"key","code");
             HttpEntity<Map<String, Object>> request = weChatUtil.getProperties().getSendSms().createRequest(body);
             String verifiUrl = MessageFormat.format(weChatUtil.getProperties().getValidateSms().getUrl(),"verification-wholesale",user.getPhone());
             ResponseEntity response =  restTemplate.postForEntity(verifiUrl, request, String.class);
