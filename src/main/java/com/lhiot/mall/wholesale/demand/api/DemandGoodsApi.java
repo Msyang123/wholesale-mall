@@ -17,6 +17,8 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @Api(description = "新品需求接口")
 @Slf4j
@@ -51,5 +53,11 @@ public class DemandGoodsApi {
         }else{
             return ResponseEntity.ok(ResultObject.of("提交失败"));
         }
+    }
+
+    @PostMapping("demandgoods/export")
+    @ApiOperation(value = "后台管理系统新建一个查询，数据导出", response = DemandGoodsResult.class,responseContainer="list")
+    public ResponseEntity<List<Map<String, Object>>> exportData(@RequestBody(required = true) DemandGoodsGridParam param) {
+        return ResponseEntity.ok(demandGoodsService.exportData(param));
     }
 }

@@ -5,8 +5,6 @@ import com.lhiot.mall.wholesale.article.domain.gridparam.ArticleGridParam;
 import com.lhiot.mall.wholesale.article.service.ArticleService;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.introduction.domain.Introduction;
-import com.lhiot.mall.wholesale.introduction.domain.gridparam.IntroductionGridParam;
-import com.lhiot.mall.wholesale.introduction.service.IntroductionService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;

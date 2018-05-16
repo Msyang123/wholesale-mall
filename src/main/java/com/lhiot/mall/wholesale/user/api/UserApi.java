@@ -485,7 +485,7 @@ public class UserApi {
     @PostMapping("/member/export")
     @ApiOperation(value = "新建一个查询，会员信息数据导出", response = UserResult.class,responseContainer="list")
     public ResponseEntity<List<UserResult>> exportUserData(@RequestBody(required = true) UserGridParam param) {
-        return ResponseEntity.ok(userService.exportData(param));
+        return ResponseEntity.ok(userService.exportUsers(param));
     }
     
     @GetMapping("/member/detail/{id}")

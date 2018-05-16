@@ -8,12 +8,7 @@ import com.lhiot.mall.wholesale.demand.domain.DemandGoods;
 import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
 import com.lhiot.mall.wholesale.demand.domain.gridparam.DemandGoodsGridParam;
 import com.lhiot.mall.wholesale.demand.mapper.DemandGoodsMapper;
-import com.lhiot.mall.wholesale.order.domain.DebtOrder;
-import com.lhiot.mall.wholesale.order.domain.DebtOrderResult;
-import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
-import com.lhiot.mall.wholesale.order.domain.gridparam.DebtOrderGridParam;
 import com.lhiot.mall.wholesale.user.domain.User;
-import com.lhiot.mall.wholesale.user.mapper.UserMapper;
 import com.lhiot.mall.wholesale.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +18,7 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 
@@ -137,5 +133,13 @@ public class DemandGoodsService {
 
     public int insertDemandGoods(DemandGoods demandGoods){
         return demandGoodsMapper.insertDemandGoods(demandGoods);
+    }
+
+    /**
+     * 导出需求详情
+     * @return
+     */
+    public List<Map<String, Object>> exportData(DemandGoodsGridParam param){
+        return demandGoodsMapper.exportData(param);
     }
 }
