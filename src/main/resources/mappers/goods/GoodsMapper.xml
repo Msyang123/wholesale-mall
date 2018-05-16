@@ -198,8 +198,8 @@
 		select <include refid="goodsColumn"/>,t2.weight,t2.standard,t2.price,t3.unit_name as baseUnitName,
 		t4.unit_name as goodsUnit,gk.id as keywordId
 		from t_whs_goods_keywords gk
-		left join t_whs_goods t1 on gk.mapping_id = t1.id
-		left join t_whs_goods_standard t2 on t1.id = t2.goods_id
+		left join t_whs_goods_standard t2 on t2.id = gk.mapping_id
+		left join t_whs_goods t1 on t1.id = t2.goods_id
 		left join t_whs_goods_unit t3 on t1.base_unit = t3.id
 		left join t_whs_goods_unit t4 on t2.unit_code = t4.id
 		<trim prefix="where" prefixOverrides="and">
