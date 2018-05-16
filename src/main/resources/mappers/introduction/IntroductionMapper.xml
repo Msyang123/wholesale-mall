@@ -16,6 +16,11 @@
 	<!-- 后台管理 分页查询总数 -->
 	<select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.introduction.domain.gridparam.IntroductionGridParam" resultType="Integer">
 		select count(id) from t_whs_introduction t1
+		<trim prefix="where" prefixOverrides="and">
+			<if test="serviceType != null and serviceType != ''">and t1.service_type = #{serviceType}</if>
+			<if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
+			<if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
+		</trim>
 	</select>
 
 	<!-- 后台管理 分页查询列表信息 -->
@@ -23,7 +28,11 @@
 			resultType="com.lhiot.mall.wholesale.introduction.domain.Introduction">
 		select <include refid="introductionColumn"/>
 		from t_whs_introduction t1
-		WHERE 1=1
+		<trim prefix="where" prefixOverrides="and">
+			<if test="serviceType != null and serviceType != ''">and t1.service_type = #{serviceType}</if>
+			<if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
+			<if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
+		</trim>
 		<include refid="common.pager"></include>
 	</select>
 
