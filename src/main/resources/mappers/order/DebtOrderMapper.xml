@@ -96,7 +96,7 @@
     <!-- 后台管理系统 数据导出 -->
     <select id="exportData" parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.DebtOrderGridParam"
             resultType="map">
-        select t1.order_debt_code as order_debt_code,t2.shop_name as shopName,t2.user_name as userName,t2.phone as phone,
+        select t1.id as id,t1.order_debt_code as order_debt_code,t2.shop_name as shopName,t2.user_name as userName,t2.phone as phone,
         case t1.payment_type when 'balance' then '余额支付' when 'wechat' then '微信支付' when 'offline' then '线下支付' end as paymentType,t1.payment_evidence as paymentEvidence
         FORMAT(t1.debt_fee/100.0,2) as debtFee,DATE_FORMAT(t1.create_time,'%Y-%m-%d %H:%i:%s') as createTime,DATE_FORMAT(t1.check_time,'%Y-%m-%d %H:%i:%s') as checkTime,t1.remarks as remarks,
         case t1.check_status when 'unpaid' then '未支付' when 'failed' then '已失效' when 'paid' then '已支付' when 'unaudited' then '未审核' when 'agree' then '审核通过' when 'reject' then '审核不通过' end as checkStatus,
