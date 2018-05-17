@@ -70,5 +70,4 @@ public class PaymentLogService {
         List<String> list = Arrays.asList(orderCodes);
         return paymentLogMapper.countFee(list);
     }
-
 }

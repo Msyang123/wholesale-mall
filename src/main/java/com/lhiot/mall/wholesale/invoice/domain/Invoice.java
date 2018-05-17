@@ -69,7 +69,7 @@ public class Invoice {
     @JsonProperty("invoiceStatus")
     private String invoiceStatus;
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @JsonProperty("invoicePrintTime")
     private Timestamp invoicePrintTime;
 
