@@ -8,9 +8,14 @@
 
     <!-- 后台管理 查询FAQ分类记录总数 -->
     <select id="pageQueryCount" resultType="Integer">
-        select count(id) from t_whs_faq_category
+        select count(t1.id) from t_whs_faq_category t1
     </select>
 
+    <select id="pageQuery" parameterType="com.lhiot.mall.wholesale.faq.domain.gridparam.FaqGridParam" 
+    	resultType="com.lhiot.mall.wholesale.faq.domain.FaqCategory">
+        select <include refid="faqCategoryColumn"/> from t_whs_faq_category t1
+        <include refid="common.pager"/>
+    </select>
 
     <!-- 后台管理系统新增FAQ分类 -->
     <insert id="insertFaqCategory" parameterType="com.lhiot.mall.wholesale.faq.domain.FaqCategory">
@@ -39,8 +44,21 @@
     </select>
     
     <!-- lynn查询faq分类，tree结果 -->
-    <select id="ztree" resultType="com.lhiot.mall.wholesale.faq.domain.FaqCategory">
-        select <include refid="faqCategoryColumn"/>,(SELECT @parentId := '0' as pId) as i
+    <select id="ztree" resultType="com.lhiot.mall.wholesale.faq.domain.FaqCategoryTree">
+        select <include refid="faqCategoryColumn"/>,(SELECT @parentId := '0' as pId) as parentId
         from t_whs_faq_category t1
     </select>
+    
+    <!-- lynn 删除 -->
+    <delete id="delete" parameterType="java.util.List">
+    	delete from t_whs_faq_category where id in
+    	<foreach collection="list" item = "item" open="(" separator="," close=")">
+    		#{item}
+    	</foreach>
+    </delete>
+    
+    <!-- lynn 修改 -->
+    <update id="update" parameterType="com.lhiot.mall.wholesale.faq.domain.FaqCategory">
+    	update t_whs_faq_category set faq_category_name = #{faqCategoryName} where id = #{id}
+    </update>
 </mapper>
