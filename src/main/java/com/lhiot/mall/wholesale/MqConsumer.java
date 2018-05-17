@@ -101,7 +101,7 @@ public class MqConsumer{
         }  catch (IOException e) {
             log.error("消息处理错误" + e.getLocalizedMessage());
         }
-        if(Objects.isNull(coupon)){
+        if(!Objects.isNull(coupon)){
         	couponEntityService.update(coupon);
         }
     }
