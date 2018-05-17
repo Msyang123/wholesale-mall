@@ -98,6 +98,7 @@ public class OrderApi {
         orderDetail.setUserId(userId);
         orderDetail.setSettlementType("offline");
         orderDetail.setPayStatus("unpaid");
+        orderDetail.setOrderStatusIn(new String[]{"undelivery","delivery","received","unrefunded","refundfailed"});
         orderDetail.setPage(page);
         orderDetail.setStart((page-1)*rows);
         orderDetail.setRows(rows);

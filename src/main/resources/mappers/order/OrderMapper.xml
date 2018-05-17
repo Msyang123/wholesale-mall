@@ -19,6 +19,12 @@
             <if test="settlementType != null ">and o.settlement_type=#{settlementType}</if>
             <if test="payStatus != null ">and o.pay_status=#{payStatus}</if>
             <if test="orderStatus != null and  orderStatus != 'all' ">and o.order_status = #{orderStatus}</if>
+            <if test="orderStatusIn != null">
+                and o.order_status in
+                <foreach collection="orderStatusIn" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
         </trim>
         ORDER BY o.create_time desc
         <include refid="common.pager"></include>
