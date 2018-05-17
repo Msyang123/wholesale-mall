@@ -139,7 +139,7 @@ public class OrderService {
         Date d = new Date(System.currentTimeMillis());
         Calendar c = Calendar.getInstance();
         c.setTime(d);
-        c.add(Calendar.DATE, Integer.valueOf(paramConfig.getConfigParamValue()));
+        c.add(Calendar.DAY_OF_MONTH, Integer.valueOf(paramConfig.getConfigParamValue()));
         orderDetail.setAfterSaleTime(new Timestamp(c.getTimeInMillis()));
         //mq设置三十分钟失效
         rabbit.convertAndSend("order-direct-exchange", "order-dlx-queue", JacksonUtils.toJson(orderDetail), message -> {
