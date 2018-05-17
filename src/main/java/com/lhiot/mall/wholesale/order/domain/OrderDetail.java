@@ -33,6 +33,9 @@ public class OrderDetail {
     @JsonProperty("status")
     private String orderStatus;
 
+    @JsonProperty("orderStatusIn")
+    private String[] orderStatusIn;//订单列表订单状态包含
+
     //订单当前状态 用于修改的时候约束条件
     @JsonProperty("currentOrderStatus")
     private String currentOrderStatus;

@@ -396,12 +396,12 @@ public class UserApi {
         }
         //手机验证码
         RMapCache<String,String> cache =  redissonClient.getMapCache("userVerificationCode");
-        if(Objects.isNull(cache.get("phone"+user.getPhone()))){
+        /*if(Objects.isNull(cache.get("phone"+user.getPhone()))){
             return ResponseEntity.badRequest().body("验证码已失效，请再次发送验证码");
-        }
+        }*/
         try {
             //到远端验证手机验证码是否正确
-            Map<String, Object> body = ImmutableMap.of("code",user.getCode(),"key","code");
+            Map<String, Object> body = ImmutableMap.of("code",user.getVerifCode(),"key","code");
             HttpEntity<Map<String, Object>> request = weChatUtil.getProperties().getSendSms().createRequest(body);
             String verifiUrl = MessageFormat.format(weChatUtil.getProperties().getValidateSms().getUrl(),"verification-wholesale",user.getPhone());
             ResponseEntity response =  restTemplate.postForEntity(verifiUrl, request, String.class);

@@ -84,8 +84,8 @@ public class User {
     private String auditStatus;
 
     @JsonProperty("code")
-    private String code;
+    private String code;//邀请码
 
     @JsonProperty("verifCode")
-    private String verifCode;
+    private String verifCode;//验证码
 }
