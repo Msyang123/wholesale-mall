@@ -131,6 +131,7 @@ public class UserService {
             }
             //发送短信
             Map<String, Object> body = ImmutableMap.of("phone",salesUser.getSalesmanPhone());
+
             HttpEntity<Map<String, Object>> request = properties.getSendSms().createRequest(body);
             String messageUrl= MessageFormat.format(properties.getSendSms().getUrl(),"check-reminding",salesUser.getSalesmanPhone());
             String result=restTemplate.postForObject(messageUrl, request, String.class);
