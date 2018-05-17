@@ -29,6 +29,7 @@ import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -135,7 +136,11 @@ public class OrderService {
         orderDetail.setAfterStatus("no");//售后订单默认为否
         ParamConfig paramConfig = settingService.searchConfigParam("afterSalePeriod");//售后周期
         //设置售后截止时间
-        orderDetail.setAfterSaleTime(new Timestamp(System.currentTimeMillis() + Integer.valueOf(paramConfig.getConfigParamValue()) * 24 * 60 * 60 * 1000));
+        Date d = new Date(System.currentTimeMillis());
+        Calendar c = Calendar.getInstance();
+        c.setTime(d);
+        c.add(Calendar.DATE, Integer.valueOf(paramConfig.getConfigParamValue()));
+        orderDetail.setAfterSaleTime(new Timestamp(c.getTimeInMillis()));
         //mq设置三十分钟失效
         rabbit.convertAndSend("order-direct-exchange", "order-dlx-queue", JacksonUtils.toJson(orderDetail), message -> {
             message.getMessageProperties().setExpiration(String.valueOf(30 * 60 * 1000));
@@ -158,6 +163,23 @@ public class OrderService {
         //发送订单创建广播
         rabbit.convertAndSend("order-created-event", "", JacksonUtils.toJson(orderDetail));
         return orderMapper.saveOrderGoods(orderDetail.getOrderGoodsList());
+    }
+
+    @Scheduled(cron="0 0/2 *  * * ?")
+    public void orderStatusTask(){
+        boolean isBuyTime = settingService.isBuyTime();
+        if (!isBuyTime){
+            OrderDetail order = new OrderDetail();
+            order.setOrderStatus("undelivery");
+            List<OrderDetail> orderList = orderMapper.searchOrders(order);
+            for (OrderDetail item:orderList) {
+                OrderDetail updateOrderDetail=new OrderDetail();
+                updateOrderDetail.setOrderStatus("delivery");
+                updateOrderDetail.setCurrentOrderStatus("undelivery");
+                updateOrderDetail.setOrderCode(item.getOrderCode());
+                orderMapper.updateOrderStatusByCode(updateOrderDetail);
+            }
+        }
     }
 
     /**

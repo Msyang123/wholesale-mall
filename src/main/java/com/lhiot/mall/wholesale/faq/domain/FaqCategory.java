@@ -3,6 +3,8 @@ package com.lhiot.mall.wholesale.faq.domain;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiParam;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -33,4 +35,8 @@ public class FaqCategory {
 
     @JsonProperty("createPerson")
     private String createPerson;
+    
+    @JsonProperty("pId")
+    @ApiModelProperty(notes="父节点，默认为零",dataType="Long")
+    private String parentId;
 }
