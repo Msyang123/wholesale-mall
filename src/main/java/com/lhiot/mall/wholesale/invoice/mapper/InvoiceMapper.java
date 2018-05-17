@@ -36,11 +36,8 @@ public interface InvoiceMapper {
     //查询分类的开票信息总记录数
     int pageQueryCount(InvoiceGridParam param);
 
-    //修改开票状态
+    //修改开票状态或驳回原因
     int updateInvoiceStatus(Invoice invoice);
-
-    //修改开票原因
-    int updateInvoiceReason(Invoice invoice);
 
     //后台管理系统 导出开票信息
     List<Map<String, Object>> exportData(InvoiceGridParam param);

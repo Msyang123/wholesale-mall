@@ -204,7 +204,7 @@
         <trim prefix="set" suffixOverrides=",">
             <if test="invoiceStatus != null and invoiceStatus != ''">invoice_status=#{invoiceStatus},</if>
             <if test="rejectReason != null and rejectReason != ''">reject_reason=#{rejectReason},</if>
-            <if test="invoicePrintTime != null and invoicePrintTime != ''">invoice_print_time=#{invoicePrintTime},</if>
+            <if test="invoicePrintTime != null">invoice_print_time=#{invoicePrintTime,jdbcType=TIMESTAMP},</if>
         </trim>
         where id=#{id}
     </update>
