@@ -28,4 +28,11 @@ public class FaqCategoryService {
         return faqCategoryMapper.searchFaqCategory();
     }
 
+    /**
+     * 树结构
+     * @return
+     */
+    public List<FaqCategory> tree(){
+    	return faqCategoryMapper.ztree();
+    }
 }

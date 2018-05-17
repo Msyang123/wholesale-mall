@@ -43,4 +43,10 @@ public class FaqCategoryApi {
         List<FaqCategory> faqCategoryList = faqCategoryService.searchFaqCategory();
         return ResponseEntity.ok(faqCategoryList);
     }
+    
+    @GetMapping("/faqcategory/tree")
+    @ApiOperation(value = "后台管理系统----查询faq分类tree")
+    public ResponseEntity<List<FaqCategory>> searchTree() {
+        return ResponseEntity.ok(faqCategoryService.tree());
+    }
 }

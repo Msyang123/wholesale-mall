@@ -37,4 +37,10 @@
         select <include refid="faqCategoryColumn"/>
         from t_whs_faq_category t1
     </select>
+    
+    <!-- lynn查询faq分类，tree结果 -->
+    <select id="ztree" resultType="com.lhiot.mall.wholesale.faq.domain.FaqCategory">
+        select <include refid="faqCategoryColumn"/>,(SELECT @parentId := '0' as pId) as i
+        from t_whs_faq_category t1
+    </select>
 </mapper>

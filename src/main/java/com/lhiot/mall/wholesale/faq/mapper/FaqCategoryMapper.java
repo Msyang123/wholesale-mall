@@ -14,4 +14,6 @@ public interface FaqCategoryMapper {
 
     //后台管理系统----FAQ分类下拉框
     List<FaqCategory> searchFaqCategory();
+    
+    List<FaqCategory> ztree();
 }
