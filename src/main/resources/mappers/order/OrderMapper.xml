@@ -21,6 +21,9 @@
             <if test="orderStatus != null and  orderStatus != 'all' ">and o.order_status = #{orderStatus}</if>
         </trim>
         ORDER BY o.create_time desc
+        <if test="userId != null ">
+
+        </if>
         <include refid="common.pager"></include>
     </select>
 
@@ -253,6 +256,7 @@
             <if test="userId!=null and userId!=0"> and user_id = #{userId} </if>
             <if test="salesmanId!=null and salesmanId!=0"> and salesman_id = #{salesmanId} </if>
             <if test="createTime!=null and createTime!=''"> and create_time = #{createTime} </if>
+            <if test="orderStatus!=null and orderStatus!=''"> and order_status = #{orderStatus} </if>
         </where>
     </select>
 
