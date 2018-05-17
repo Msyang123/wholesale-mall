@@ -98,11 +98,10 @@ public class MqConsumer{
             coupon = new CouponEntity();
             coupon.setId(orderDetail.getOrderCoupon());
             coupon.setCouponStatus(CouponStatusType.used.toString());
+            //修改优惠券状态
+            couponEntityService.update(coupon);
         }  catch (IOException e) {
             log.error("消息处理错误" + e.getLocalizedMessage());
-        }
-        if(Objects.isNull(coupon)){
-        	couponEntityService.update(coupon);
         }
     }
 

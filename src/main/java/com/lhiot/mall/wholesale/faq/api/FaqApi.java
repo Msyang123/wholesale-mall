@@ -1,21 +1,29 @@
 package com.lhiot.mall.wholesale.faq.api;
 
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.faq.domain.Faq;
 import com.lhiot.mall.wholesale.faq.domain.FaqCategory;
 import com.lhiot.mall.wholesale.faq.domain.gridparam.FaqGridParam;
 import com.lhiot.mall.wholesale.faq.service.FaqCategoryService;
 import com.lhiot.mall.wholesale.faq.service.FaqService;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
 
 @Api(description = "FAQ帮助接口")
 @Slf4j
@@ -50,7 +58,7 @@ public class FaqApi {
 
     @PutMapping("/faq/addorupdate")
     @ApiOperation(value = "后台管理系统---新增/修改FAQ",response = Faq.class)
-    public  ResponseEntity saveFaq(@RequestBody Faq faq) {
+    public  ResponseEntity<?> saveFaq(@RequestBody Faq faq) {
         faq.setCreateTime(new Timestamp(new Date().getTime()));
         if (faqService.saveOrUpdateFaq(faq)>0){
             return ResponseEntity.ok().body("新增/修改完成");
