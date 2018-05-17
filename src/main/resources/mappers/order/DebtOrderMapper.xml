@@ -37,6 +37,9 @@
             <if test="paymentType != null">
                 payment_type=#{paymentType},
             </if>
+            <if test="remarks != null">
+                remarks=#{remarks},
+            </if>
         </set>
         where order_debt_code=#{orderDebtCode}
     </update>

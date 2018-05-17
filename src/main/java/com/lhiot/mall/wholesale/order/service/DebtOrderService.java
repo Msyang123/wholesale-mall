@@ -66,6 +66,32 @@ public class DebtOrderService {
     }
 
     /**
+     * 审核通过账款订单
+     * @param debtOrder
+     * @return
+     */
+    public int passAuditing(DebtOrder debtOrder){
+        debtOrder.setCheckTime(new Timestamp(System.currentTimeMillis()));
+        List<OrderDetail> orderDetailList=orderService.searchOrdersByOrderCodes(debtOrder.getOrderIds().split(","));
+        for (OrderDetail item:orderDetailList){
+            OrderDetail updateOrderDetial=new OrderDetail();
+            updateOrderDetial.setOrderCode(item.getOrderCode());
+            updateOrderDetial.setPayStatus("paid");//支付状态：paid-已支付 unpaid-未支付
+            orderService.updateOrder(updateOrderDetial);
+        }
+        return debtOrderMapper.updateDebtOrderByCode(debtOrder);
+    }
+    /**
+     * 审核不通过账款订单
+     * @param debtOrder
+     * @return
+     */
+    public int unpassAuditing(DebtOrder debtOrder){
+        debtOrder.setCheckTime(new Timestamp(System.currentTimeMillis()));
+        return debtOrderMapper.updateDebtOrderByCode(debtOrder);
+    }
+
+    /**
      * 提交欠款账款订单审核
      * @param debtOrder
      * @return

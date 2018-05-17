@@ -427,8 +427,8 @@ public class OrderApi {
         if (Objects.isNull(orderDetail)){
             return ResponseEntity.badRequest().body("没有该订单信息");
         }
-        if(!Objects.equals(orderDetail.getOrderStatus(),"undelivery")){
-            return ResponseEntity.badRequest().body("非待收货订单状态");
+        if(!Objects.equals(orderDetail.getOrderStatus(),"undelivery")&&!Objects.equals(orderDetail.getOrderStatus(),"delivery")){
+            return ResponseEntity.badRequest().body("非待收货或者非配送中订单状态");
         }
         return ResponseEntity.ok(orderService.receivedOrder(orderCode));
     }

@@ -7,7 +7,7 @@
         <if test="sidx != null and sidx != ''">
 			ORDER BY  ${sidx} ${sord}
 		</if>
-		<if test="start != null and start != '' and rows != null and rows != ''">
+		<if test="start != null  and rows != null">
 			LIMIT #{start}, #{rows}
 		</if>
 	</sql>
