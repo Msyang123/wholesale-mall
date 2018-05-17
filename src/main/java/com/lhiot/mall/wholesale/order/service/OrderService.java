@@ -136,11 +136,9 @@ public class OrderService {
         orderDetail.setAfterStatus("no");//售后订单默认为否
         ParamConfig paramConfig = settingService.searchConfigParam("afterSalePeriod");//售后周期
         //设置售后截止时间
-        Date d = new Date(System.currentTimeMillis());
-        Calendar c = Calendar.getInstance();
-        c.setTime(d);
-        c.add(Calendar.DAY_OF_MONTH, Integer.valueOf(paramConfig.getConfigParamValue()));
-        orderDetail.setAfterSaleTime(new Timestamp(c.getTimeInMillis()));
+        Date d = new Date(System.currentTimeMillis()+Integer.valueOf(paramConfig.getConfigParamValue())*24*60*60*1000);
+
+        orderDetail.setAfterSaleTime(new Timestamp(d.getTime()));
         //mq设置三十分钟失效
         rabbit.convertAndSend("order-direct-exchange", "order-dlx-queue", JacksonUtils.toJson(orderDetail), message -> {
             message.getMessageProperties().setExpiration(String.valueOf(30 * 60 * 1000));
@@ -164,7 +162,6 @@ public class OrderService {
         rabbit.convertAndSend("order-created-event", "", JacksonUtils.toJson(orderDetail));
         return orderMapper.saveOrderGoods(orderDetail.getOrderGoodsList());
     }
-
     @Scheduled(cron="0 0/2 *  * * ?")
     public void orderStatusTask(){
         boolean isBuyTime = settingService.isBuyTime();
@@ -213,8 +210,7 @@ public class OrderService {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setOrderCode(orderCode);
         orderDetail.setOrderStatus("received");
-        orderDetail.setCurrentOrderStatus("undelivery");
-        return orderMapper.updateOrderStatusByCode(orderDetail);
+        return orderMapper.updateOrder(orderDetail);
     }
 
     /**
