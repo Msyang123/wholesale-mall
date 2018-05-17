@@ -157,6 +157,7 @@
             <if test="account!=null and account!='null' and account!=''"> and account = #{account} </if>
             <if test="salesStatus!=null and salesStatus!='null' and salesStatus!=''"> and sales_status = #{salesStatus} </if>
         </where>
+        <include refid="common.pager"/>
     </select>
 
     <!--分页查询业务员信息表-->
