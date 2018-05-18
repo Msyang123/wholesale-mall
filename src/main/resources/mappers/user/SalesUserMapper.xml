@@ -120,6 +120,18 @@
         <foreach close=")" separator="," open="(" item="id" collection="list"> #{id} </foreach>
     </delete>
 
+  <!--  &lt;!&ndash;根据userId查询关联关系&ndash;&gt;
+    <select id="selectRelation" parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
+        select s.*,(select count(*) from t_whs_salesuser_relation where salesman_id=s.id and audit_status='unaudited') storeNum
+        from t_whs_salesuser s where s.account=#{account}
+    </select>
+-->
+    <!--审核不通过时候删除多余的关联数据-->
+    <delete parameterType="java.util.List" id="deleteRelation">
+        delete from t_whs_salesuser_relation where id in
+        <foreach close=")" separator="," open="(" item="id" collection="list"> #{id} </foreach>
+    </delete>
+
     <!--查询业务员信息表-->
     <select parameterType="com.lhiot.mall.wholesale.user.domain.SalesUser" id="list" resultType="com.lhiot.mall.wholesale.user.domain.SalesUser">
         select * from t_whs_salesuser
