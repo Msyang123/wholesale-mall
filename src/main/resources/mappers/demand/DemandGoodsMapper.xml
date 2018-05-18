@@ -20,6 +20,7 @@
 		<trim prefix="where" prefixOverrides="and">
             <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
             <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
+            <if test="contactPhone != null and contactPhone != ''">and t1.contact_phone like CONCAT('%',#{contactPhone},'%') </if>
             <if test="userIds != null and userIds.size()>0">
                 and t1.user_id in
                 <foreach collection="userIds" item="item" open="(" separator="," close=")">
@@ -37,6 +38,7 @@
         <trim prefix="where" prefixOverrides="and">
             <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
             <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
+            <if test="contactPhone != null and contactPhone != ''">and t1.contact_phone like CONCAT('%',#{contactPhone},'%') </if>
             <if test="userIds != null and userIds.size()>0">
                 and t1.user_id in
                 <foreach collection="userIds" item="item" open="(" separator="," close=")">
@@ -80,7 +82,7 @@
     <!-- 后台管理系统 数据导出 -->
     <select id="exportData" parameterType="com.lhiot.mall.wholesale.demand.domain.gridparam.DemandGoodsGridParam"
             resultType="map">
-        select t2.shop_name as shopName,t2.user_name as userName,t2.phone as phone,t1.goods_name as goodsName,t1.goods_brand as goodsBrand,
+        select t2.shop_name as shopName,t2.user_name as userName,t1.contact_phone as contactPhone,t1.goods_name as goodsName,t1.goods_brand as goodsBrand,
         t1.goods_standard as goodsStandard,FORMAT(t1.reference_price/100.0,2) as referencePrice,t1.supplier as supplier,t1.comments as comments,
         DATE_FORMAT(t1.create_time,'%Y-%m-%d %H:%i:%s') as createTime
         from t_whs_demand_goods t1
@@ -88,7 +90,8 @@
         <trim prefix="where" prefixOverrides="and">
             <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
             <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
-            <if test="namePhone != null and namePhone != ''">and t2.user_name like CONCAT('%',#{namePhone},'%') or t2.phone like CONCAT('%',#{namePhone},'%')</if>
+            <if test="contactPhone != null and contactPhone != ''">and t1.contact_phone like CONCAT('%',#{contactPhone},'%') </if>
+            <if test="userName != null and userName != ''">and t2.user_name like CONCAT('%',#{userName},'%')</if>
         </trim>
     </select>
 </mapper>

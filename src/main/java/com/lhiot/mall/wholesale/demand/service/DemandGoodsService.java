@@ -47,9 +47,9 @@ public class DemandGoodsService {
      * @return
      */
     public PageQueryObject pageQuery(DemandGoodsGridParam param) throws InvocationTargetException, IntrospectionException, InstantiationException, IllegalAccessException {
-        String namePhone = param.getNamePhone();
+        String userName = param.getUserName();
         User userParam = new User();
-        userParam.setNamePhone(namePhone);
+        userParam.setUserName(userName);
         List<DemandGoods> demandGoodsList = new ArrayList<DemandGoods>();
         List<User> userList = new ArrayList<User>();
         List<DemandGoodsResult> demandGoodsResults = new ArrayList<>();
@@ -58,7 +58,7 @@ public class DemandGoodsService {
         int rows = param.getRows();
         //总记录数
         int totalPages = 0;
-        if(namePhone == null ){//未传手机号/用户名 查询条件,先根据条件查询分页的新品需求列表及用户ids，再根据ids查询用户信息列表
+        if(userName == null ){//未传手机号/用户名 查询条件,先根据条件查询分页的新品需求列表及用户ids，再根据ids查询用户信息列表
             count = demandGoodsMapper.pageQueryCount(param);
             //起始行
             param.setStart((page-1)*rows);
