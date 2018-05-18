@@ -255,6 +255,11 @@ public class OrderApi {
             orderDetail.setMsg("订单金额传递为空");
             return ResponseEntity.ok(orderDetail);
         }
+        if(!settingService.isBuyTime()){
+            orderDetail.setCode(-1002);
+            orderDetail.setMsg("请在营业时间内下单,营业时间为:"+settingService.searchConfigParam("buyTime").getConfigParamValue());
+            return ResponseEntity.ok(orderDetail);
+        }
         for(OrderGoods item: orderDetail.getOrderGoodsList()){
             Goods goods=goodsService.goods(item.getGoodsId());
             Integer stockLimit=goods.getStockLimit();

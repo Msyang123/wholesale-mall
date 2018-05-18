@@ -40,12 +40,15 @@ public class DebtOrderService {
 
     private final SnowflakeId snowflakeId;
 
+    private final PaymentLogService paymentLogService;
+
     @Autowired
-    public DebtOrderService(DebtOrderMapper debtOrderMapper, UserService userService, OrderService orderService, SnowflakeId snowflakeId) {
+    public DebtOrderService(DebtOrderMapper debtOrderMapper, UserService userService, OrderService orderService, SnowflakeId snowflakeId, PaymentLogService paymentLogService) {
         this.debtOrderMapper = debtOrderMapper;
         this.userService = userService;
         this.orderService = orderService;
         this.snowflakeId=snowflakeId;
+        this.paymentLogService = paymentLogService;
     }
 
     /**
@@ -75,6 +78,17 @@ public class DebtOrderService {
             updateOrderDetial.setOrderCode(item.getOrderCode());
             updateOrderDetial.setPayStatus("paid");//支付状态：paid-已支付 unpaid-未支付
             orderService.updateOrder(updateOrderDetial);
+
+            PaymentLog paymentLog=new PaymentLog();
+            //写入日志
+            paymentLog.setPaymentType("offline");//balance-余额支付 wechat-微信 offline-线下支付
+            paymentLog.setPaymentStep("paid");//sign-签名成功 paid-支付成功
+            paymentLog.setOrderCode(item.getOrderCode());
+            paymentLog.setOrderId(item.getId());
+            paymentLog.setUserId(item.getUserId());
+            paymentLog.setPaymentFrom("debt");//支付来源于 order-订单 debt-账款 invoice-发票 recharge-充值
+            paymentLog.setTotalFee(item.getPayableFee()+item.getDeliveryFee());
+            paymentLogService.insertPaymentLog(paymentLog);
         }
         return debtOrderMapper.updateDebtOrderByCode(debtOrder);
     }
