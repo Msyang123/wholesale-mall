@@ -394,11 +394,22 @@ public class UserApi {
                 ||Objects.isNull(user.getAddressDetail())||Objects.isNull(user.getCode())){
             return ResponseEntity.badRequest().body("请完善商户信息再提交");
         }
+
+        User u = userService.user(user.getId());
+        if(Objects.isNull(u)){
+            return ResponseEntity.badRequest().body("未找到用户相关信息");
+        }
+        if (Objects.equals(u.getUserStatus(),"unaudited")){
+            return ResponseEntity.badRequest().body("您审核申请已提交，不能重复操作");
+        }
+        if (Objects.equals(u.getUserStatus(),"certified")){
+            return ResponseEntity.badRequest().body("您审核已通过，不能重复操作");
+        }
         //手机验证码
         RMapCache<String,String> cache =  redissonClient.getMapCache("userVerificationCode");
-        /*if(Objects.isNull(cache.get("phone"+user.getPhone()))){
+        if(Objects.isNull(cache.get("phone"+user.getPhone()))){
             return ResponseEntity.badRequest().body("验证码已失效，请再次发送验证码");
-        }*/
+        }
         try {
             //到远端验证手机验证码是否正确
             Map<String, Object> body = ImmutableMap.of("code",user.getVerifCode(),"key","code");
@@ -410,10 +421,6 @@ public class UserApi {
                 return response;
             }
 
-            User u = userService.user(user.getId());
-            if (Objects.equals(u.getUserStatus(),"unaudited")){
-                return ResponseEntity.badRequest().body("您审核申请已提交，不能重复操作");
-            }
             if (userService.register(user, user.getCode())) {
                 return ResponseEntity.ok().body("提交成功");
             }
