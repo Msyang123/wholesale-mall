@@ -40,7 +40,7 @@
 		from t_whs_plate_goods t4
 		left join t_whs_goods_standard t1 on t4.goods_standard_id = t1.id
 		left join t_whs_goods t2 on t1.goods_id = t2.id
-		left join t_whs_goods_unit t3 on t1.unit_code = t3.id
+		left join t_whs_goods_unit t3 on t1.unit_code = t3.unit_code
 		where t4.id = #{0}
 	</select>
 	
@@ -51,7 +51,7 @@
 		from t_whs_plate_goods t4
 		left join t_whs_goods_standard t1 on t4.goods_standard_id = t1.id
 		left join t_whs_goods t2 on t1.goods_id = t2.id
-		left join t_whs_goods_unit t3 on t1.unit_code = t3.id
+		left join t_whs_goods_unit t3 on t1.unit_code = t3.unit_code
 	</select>
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
@@ -60,7 +60,7 @@
 		from t_whs_plate_goods t4
 		left join t_whs_goods_standard t1 on t4.goods_standard_id = t1.id
 		left join t_whs_goods t2 on t1.goods_id = t2.id
-		left join t_whs_goods_unit t3 on t1.unit_code = t3.id
+		left join t_whs_goods_unit t3 on t1.unit_code = t3.unit_code
 		<trim prefix="where" prefixOverrides="and">
 			<if test="goodsName != null and goodsName != ''">
 				and t2.goods_name = #{goodsName}
@@ -79,7 +79,7 @@
 		from t_whs_plate_goods t4
 		left join t_whs_goods_standard t1 on t4.goods_standard_id = t1.id
 		left join t_whs_goods t2 on t1.goods_id = t2.id
-		left join t_whs_goods_unit t3 on t1.unit_code = t3.id
+		left join t_whs_goods_unit t3 on t1.unit_code = t3.unit_code
 		<trim prefix="where" prefixOverrides="and">
 			<if test="goodsName != null and goodsName != ''">
 				and t2.goods_name = #{goodsName}
