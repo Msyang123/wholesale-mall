@@ -38,16 +38,13 @@ public class DebtOrderService {
 
     private final OrderService orderService;
 
-    private final PaymentLogService paymentLogService;
-
     private final SnowflakeId snowflakeId;
 
     @Autowired
-    public DebtOrderService(DebtOrderMapper debtOrderMapper, UserService userService, OrderService orderService, PaymentLogService paymentLogService, SnowflakeId snowflakeId) {
+    public DebtOrderService(DebtOrderMapper debtOrderMapper, UserService userService, OrderService orderService, SnowflakeId snowflakeId) {
         this.debtOrderMapper = debtOrderMapper;
         this.userService = userService;
         this.orderService = orderService;
-        this.paymentLogService = paymentLogService;
         this.snowflakeId=snowflakeId;
     }
 
@@ -63,6 +60,32 @@ public class DebtOrderService {
         debtOrder.setOrderDebtCode(snowflakeId.stringId());
         debtOrder.setCreateTime(new Timestamp(System.currentTimeMillis()));
         return debtOrderMapper.save(debtOrder);
+    }
+
+    /**
+     * 审核通过账款订单
+     * @param debtOrder
+     * @return
+     */
+    public int passAuditing(DebtOrder debtOrder){
+        debtOrder.setCheckTime(new Timestamp(System.currentTimeMillis()));
+        List<OrderDetail> orderDetailList=orderService.searchOrdersByOrderCodes(debtOrder.getOrderIds().split(","));
+        for (OrderDetail item:orderDetailList){
+            OrderDetail updateOrderDetial=new OrderDetail();
+            updateOrderDetial.setOrderCode(item.getOrderCode());
+            updateOrderDetial.setPayStatus("paid");//支付状态：paid-已支付 unpaid-未支付
+            orderService.updateOrder(updateOrderDetial);
+        }
+        return debtOrderMapper.updateDebtOrderByCode(debtOrder);
+    }
+    /**
+     * 审核不通过账款订单
+     * @param debtOrder
+     * @return
+     */
+    public int unpassAuditing(DebtOrder debtOrder){
+        debtOrder.setCheckTime(new Timestamp(System.currentTimeMillis()));
+        return debtOrderMapper.updateDebtOrderByCode(debtOrder);
     }
 
     /**
@@ -104,16 +127,17 @@ public class DebtOrderService {
         User userParam = new User();
         userParam.setPhone(phone);
         userParam.setShopName(shopName);
-        List<DebtOrder> debtOrderList = new ArrayList<DebtOrder>();
-        List<User> userList = new ArrayList<User>();
-        List<OrderDetail> orderDetailList = new ArrayList<OrderDetail>();
+        List<DebtOrder> debtOrderList = new ArrayList<>();
+        List<User> userList = new ArrayList<>();
+        List<OrderDetail> orderDetailList = new ArrayList<>();
+        List<PaymentLog> paymentLogList = new ArrayList<>();
         List<DebtOrderResult> debtOrderResults = new ArrayList<>();
         int count = 0;
         int page = param.getPage();
         int rows = param.getRows();
         //总记录数
         int totalPages = 0;
-        if(phone == null && shopName == null){//未传手机号查询条件,先根据条件查询分页的账款订单列表及用户ids，再根据ids查询用户信息列表
+        if( (Objects.equals(phone,"") || Objects.isNull(phone) ) && (Objects.equals(shopName,"") || Objects.isNull(shopName))){//未传手机号查询条件,先根据条件查询分页的账款订单列表及用户ids，再根据ids查询用户信息列表
             count = debtOrderMapper.pageQueryCount(param);
             //起始行
             param.setStart((page-1)*rows);
@@ -125,8 +149,8 @@ public class DebtOrderService {
                 param.setStart(0);
             }
             debtOrderList = debtOrderMapper.pageQuery(param);
-            List<Long> userIds = new ArrayList<Long>();
-            List<Long> orderIds = new ArrayList<Long>();
+            List<Long> userIds = new ArrayList<>();
+            List<Long> orderIds = new ArrayList<>();
             if(debtOrderList != null && debtOrderList.size() > 0){//查询账款订单对应的用户ID列表与账款订单ID列表
                 for(DebtOrder debtOrder : debtOrderList){
                     long userId = debtOrder.getUserId();
@@ -138,8 +162,8 @@ public class DebtOrderService {
                         orderIds.add(orderId);
                     }
                 }
+                userList = userService.search(userIds);//根据用户ID列表查询用户信息
             }
-            userList = userService.search(userIds);//根据用户ID列表查询用户信息
         }else{//传了手机号查询条件，先根据条件查询用户列表及用户ids，再根据ids和账款订单其他信息查询账款订单信息列表
             userList = userService.searchByPhoneOrName(userParam);
             List<Long> userIds = new ArrayList<Long>();
@@ -201,11 +225,11 @@ public class DebtOrderService {
                 debtOrderResult.setDiscountFee(orderDetail.getDiscountFee());
                 debtOrderResult.setTotalFee(orderDetail.getTotalFee());
             }
-            //支付信息
+           /* //支付信息
             PaymentLog paymentLog = paymentLogService.countFee(debtOrderResult.getOrderIds());
             if (Objects.nonNull(paymentLog)) {
                 debtOrderResult.setPayTotalFee(paymentLog.getTotalFee());
-            }
+            }*/
         }
         return debtOrderResult;
     }

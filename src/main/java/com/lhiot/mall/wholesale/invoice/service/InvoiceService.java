@@ -201,11 +201,15 @@ public class InvoiceService {
     }
 
     /**
-     * 修改开票状态和驳回原因
+     * 修改开票状态或驳回原因
      * @return
      */
     public int updateInvoiceStatus(Invoice invoice) {
-        return invoiceMapper.updateInvoiceStatus(invoice);
+        if (Objects.nonNull(invoice.getId()) && invoice.getId()>0 ){
+            return invoiceMapper.updateInvoiceStatus(invoice);
+        }else {
+            return 0;
+        }
     }
 
     /**

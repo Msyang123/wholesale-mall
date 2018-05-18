@@ -37,6 +37,9 @@
             <if test="paymentType != null">
                 payment_type=#{paymentType},
             </if>
+            <if test="remarks != null">
+                remarks=#{remarks},
+            </if>
         </set>
         where order_debt_code=#{orderDebtCode}
     </update>
@@ -55,24 +58,8 @@
 
     <!-- 后台管理 分页查询总数 -->
     <select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.DebtOrderGridParam" resultType="Integer">
-        select count(t1.id) from t_whs_debt_order t1
-        <trim prefix="where" prefixOverrides="and">
-            <if test="checkStatus != null and checkStatus != ''">and t1.check_status = #{checkStatus}</if>
-            <if test="userIds != null and userIds.size()>0">
-                and t1.user_id in
-                <foreach collection="userIds" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-        </trim>
-    </select>
-
-    <!-- 后台管理 分页查询账款订单记录 -->
-    <select id="pageQuery" parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.DebtOrderGridParam"
-            resultType="com.lhiot.mall.wholesale.order.domain.DebtOrder">
-        select <include refid="debtOrderColumn"/>,IFNULL(SUM(t2.total_fee),0) as totalFee,IFNULL(SUM(t2.discount_fee),0) as discountFee,IFNULL(SUM(t2.payable_fee),0) as payableFee
+        select count(t1.id)
         from t_whs_debt_order t1
-        left join t_whs_order t2 on FIND_IN_SET(t2.order_code,t1.order_ids)
         <trim prefix="where" prefixOverrides="and">
             <if test="checkStatus != null and checkStatus != ''">and t1.check_status = #{checkStatus}</if>
             <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
@@ -83,6 +70,28 @@
                     #{item}
                 </foreach>
             </if>
+            and t1.payment_type = "offline"
+        </trim>
+</select>
+
+    <!-- 后台管理 分页查询账款订单记录 -->
+    <select id="pageQuery" parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.DebtOrderGridParam"
+            resultType="com.lhiot.mall.wholesale.order.domain.DebtOrder">
+        select <include refid="debtOrderColumn"/>,IFNULL(SUM(t2.total_fee),0) as totalFee,IFNULL(SUM(t2.discount_fee),0) as discountFee,IFNULL(SUM(t2.payable_fee),0) as payableFee,IFNULL(SUM(t4.total_fee),0) as payTotalFee
+        from t_whs_debt_order t1
+        left join t_whs_order t2 on FIND_IN_SET(t2.order_code,t1.order_ids)
+        LEFT JOIN t_whs_payment_log t4 ON FIND_IN_SET(t4.order_code,t1.order_ids)
+        <trim prefix="where" prefixOverrides="and">
+            <if test="checkStatus != null and checkStatus != ''">and t1.check_status = #{checkStatus}</if>
+            <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
+            <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
+            <if test="userIds != null and userIds.size()>0">
+                and t1.user_id in
+                <foreach collection="userIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            and t1.payment_type = "offline"
         </trim>
         GROUP BY t1.id
         <include refid="common.pager"></include>
@@ -117,7 +126,7 @@
             <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
             <if test="shopName != null and shopName != ''">and t2.shop_name like CONCAT('%',#{shopName},'%')</if>
             <if test="phone != null and phone != ''">and t2.phone like CONCAT('%',#{phone},'%')</if>
-            and t4.payment_from = "debt"
+            and t1.payment_type = "offline"
         </trim>
         GROUP BY t1.id
     </select>

@@ -20,10 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Api(description ="开票接口")
 @Slf4j
@@ -156,7 +153,10 @@ public class InvoiceApi {
     @PutMapping("/status")
     @ApiOperation(value = "后台管理-修改开票状态，驳回原因")
     public ResponseEntity updateInvoiceStatus(@RequestBody Invoice invoice){
-        invoice.setInvoicePrintTime(new Timestamp(new Date().getTime()));
+        //开票时设置发票打印时间
+        if (Objects.equals(invoice.getInvoiceStatus(),"yes")){
+            invoice.setInvoicePrintTime(new Timestamp(new Date().getTime()));
+        }
         if (invoiceService.updateInvoiceStatus(invoice)>0){
             return ResponseEntity.ok().body("修改完成");
         }else{
