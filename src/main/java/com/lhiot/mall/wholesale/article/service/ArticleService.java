@@ -1,8 +1,10 @@
 package com.lhiot.mall.wholesale.article.service;
 
+import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.util.SnowflakeId;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.article.domain.Article;
+import com.lhiot.mall.wholesale.article.domain.ArticleCategoryResult;
 import com.lhiot.mall.wholesale.article.domain.gridparam.ArticleGridParam;
 import com.lhiot.mall.wholesale.article.mapper.ArticleMapper;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
@@ -10,9 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -35,6 +35,16 @@ public class ArticleService {
 
     public Article article(long id) {
         return articleMapper.select(id);
+    }
+
+    public List<Article> articles(String articleType,Integer page,Integer rows){
+        Article art = new Article();
+        art.setPage(page);
+        art.setRows(rows);
+        art.setStart((page-1)*rows);
+        art.setArticleType(articleType);
+
+        return articleMapper.articles(art);
     }
 
     /**

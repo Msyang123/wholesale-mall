@@ -37,13 +37,15 @@ public interface UserMapper {
 
     UserAddress userAddress(long id);
 
-    void deleteAddress(long id);
+    Integer deleteAddress(long id);
 
-    int updateDefaultAddress(long userId);
+    Integer removeAddressList(List<Long> userIds);
 
-    int insertRelation(SalesUserRelation salesUserRelation);
+    Integer updateDefaultAddress(long userId);
 
-    int updateDefaultAddress();
+    Integer insertRelation(SalesUserRelation salesUserRelation);
+
+    Integer updateDefaultAddress();
 
     //后台管理 根据用户手机号或用户名分页查询用户信息
     List<User> searchByPhoneOrName(User param);

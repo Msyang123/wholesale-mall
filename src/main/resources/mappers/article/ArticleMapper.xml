@@ -14,6 +14,15 @@
         WHERE t1.id = #{0}
     </select>
 
+    <select id="articleCategory"  resultType="com.lhiot.mall.wholesale.article.domain.Article">
+        select * from t_whs_article GROUP BY article_type
+    </select>
+
+    <select id="articles" parameterType="com.lhiot.mall.wholesale.article.domain.Article" resultType="com.lhiot.mall.wholesale.article.domain.Article">
+        select * from t_whs_article where article_type=#{articleType}
+        <include refid="common.pager"></include>
+    </select>
+
     <!-- 后台管理 查询新闻总数 -->
     <select id="pageQueryCount" resultType="Integer">
         select count(t1.id) from t_whs_article t1
@@ -52,11 +61,11 @@
         <if test="articleSubhead != null and articleSubhead != ''">article_subhead,</if>
         <if test="articleAuthor != null and articleAuthor != ''">article_author,</if>
         <if test="articleContent != null and articleContent != ''">article_content,</if>
-        <if test="rankNum != null and rankNum != ''">rank_num,</if>
         <if test="publishStatus != null and publishStatus != ''">publish_status,</if>
         <if test="resouceUrl != null and resouceUrl != ''">resouce_url,</if>
         <if test="articleUrl != null and articleUrl != ''">article_url,</if>
         <if test="createTime != null">create_time,</if>
+        rank_num
     </trim>
     )
     values(
@@ -68,11 +77,11 @@
         <if test="articleSubhead != null and articleSubhead != ''">#{articleSubhead},</if>
         <if test="articleAuthor != null and articleAuthor != ''">#{articleAuthor},</if>
         <if test="articleContent != null and articleContent != ''">#{articleContent},</if>
-        <if test="rankNum != null and rankNum != ''">#{rankNum},</if>
         <if test="publishStatus != null and publishStatus != ''">#{publishStatus},</if>
         <if test="resouceUrl != null and resouceUrl != ''">#{resouceUrl},</if>
         <if test="articleUrl != null and articleUrl != ''">#{articleUrl},</if>
         <if test="createTime != null ">#{createTime,jdbcType=TIMESTAMP},</if>
+        1
     </trim>
     )
     </insert>

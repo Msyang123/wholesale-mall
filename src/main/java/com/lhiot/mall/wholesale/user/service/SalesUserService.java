@@ -95,6 +95,15 @@ public class SalesUserService {
                     //审核通过的时候发送发券广播消息
                     rabbit.convertAndSend("store-check-event","", salesUserRelation.getUserId());
 
+                    List<UserAddress> userAddresses = userMapper.searchAddressList(salesUserRelation.getUserId());
+                    if (!userAddresses.isEmpty()){
+                        for (UserAddress userAddress : userAddresses){
+                            if (userMapper.deleteAddress(userAddress.getId())<=0){
+                                log.info("用户残余地址未删除成功");
+                                return false;
+                            }
+                        }
+                    }
                     //冗余地址
                     UserAddress userAddress = new UserAddress();
                     userAddress.setPhone(user.getPhone());
@@ -104,7 +113,6 @@ public class SalesUserService {
                     userAddress.setAddressDetail(user.getAddressDetail());
                     userAddress.setUserId(user.getId());
                     userAddress.setSex(user.getSex());
-                    //userMapper.updateDefault(userAddress);
                     userMapper.insertAddress(userAddress);
 
 
@@ -113,9 +121,17 @@ public class SalesUserService {
                     HttpEntity<Map<String, Object>> request = properties.getSendSms().createRequest(body);
                     String messageUrl= MessageFormat.format(properties.getSendSms().getUrl(),"regist-pass", user.getPhone());
                     String result = restTemplate.postForObject(messageUrl, request, String.class);
-                    log.info("result: " + result);
                 }
             }else {
+               /* List<SalesUserRelation> relationList = salesUserMapper.selectUserRelation(salesUserRelation.getUserId());
+                if (!relationList.isEmpty()){
+                    for (SalesUserRelation relation:relationList) {
+                        if (salesUserMapper.deleteRelation(relation.getId())<=0){
+                            log.info("用户和业务员关联残余数据未删除成功");
+                            return false;
+                        }
+                    }
+                }*/
                 param.put("status","uncertified");
                 if (userMapper.updateUserStatus(param)>0){//用户未认证
                     //发送短信
@@ -123,7 +139,6 @@ public class SalesUserService {
                     HttpEntity<Map<String, Object>> request = properties.getSendSms().createRequest(body);
                     String messageUrl= MessageFormat.format(properties.getSendSms().getUrl(),"regist-unpass",user.getPhone());
                     String result=restTemplate.postForObject(messageUrl, request, String.class);
-                    log.info("result:"+result);
                 }
             }
         }

@@ -27,4 +27,8 @@ public interface ArticleMapper {
     //后台管理系统 批量删除
     void removeInbatch(List<Long> ids);
 
+    List<Article> articleCategory();
+
+    List<Article> articles(Article article);
+
 }

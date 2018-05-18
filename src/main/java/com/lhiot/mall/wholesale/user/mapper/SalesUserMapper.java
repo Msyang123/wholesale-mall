@@ -21,7 +21,7 @@ public interface SalesUserMapper {
 
     SalesUser searchSalesUserByOpenid(String openid);
 
-    int insertRelation(SalesUserRelation salesUserRelation);
+    Integer insertRelation(SalesUserRelation salesUserRelation);
 
     SalesUserRelation isSeller(long userId);
 
@@ -29,13 +29,15 @@ public interface SalesUserMapper {
 
     List<ShopResult> searchShopInfo(long salesId);
 
+    List<SalesUserRelation> selectUserRelation(Long userId);
+
 /********************后台管理系统接口***********************/
 
-    int create(SalesUser salesUser);
+    Integer create(SalesUser salesUser);
 
-    int updateById(SalesUser salesUser);
+    Integer updateById(SalesUser salesUser);
 
-    int deleteByIds(List<String> ids);
+    Integer deleteByIds(List<String> ids);
 
     List<SalesUser> list(SalesUser salesUser);
 
@@ -53,9 +55,11 @@ public interface SalesUserMapper {
 
     List<SalesUserPerformance> pageSalesUserPerformance(Map<String,Object> param);
 
-    int pageCount(Map<String, Object> param);
+    Integer pageCount(Map<String, Object> param);
 
-    int updateSalesmanIdByUserId(Map<String, Object> param);
+    Integer updateSalesmanIdByUserId(Map<String, Object> param);
 
-    int updateSalesmanIdBySalesmanId(Map<String, Object> param);
+    Integer updateSalesmanIdBySalesmanId(Map<String, Object> param);
+
+    Integer deleteRelation(Long id);
 }

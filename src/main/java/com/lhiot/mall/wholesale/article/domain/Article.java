@@ -54,5 +54,14 @@ public class Article {
     @JsonProperty("publishStatus")
     private String publishStatus;
 
+    @JsonProperty("rows")
+    private Integer rows;
+
+    @JsonProperty("page")
+    private Integer page;
+
+    private Integer start;
+
+    private String sidx;
 
 }
