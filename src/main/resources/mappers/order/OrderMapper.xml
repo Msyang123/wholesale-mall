@@ -30,6 +30,16 @@
         <include refid="common.pager"></include>
     </select>
 
+    <select id="unDeliveryOrders"  parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
+        select id,order_code orderCode,ifnull(discount_fee,0) discountFee,settlement_type settlementType,pay_status payStatus,user_id
+        ,order_status orderStatus,create_time createTime,ifnull(total_fee,0) totalFee,ifnull(payable_fee,0) payableFee,remarks,after_sale_time afterSaleTime
+        from t_whs_order o
+        <trim prefix="where" prefixOverrides="and">
+            <if test="orderStatus != null and  orderStatus != 'all' "> and o.order_status = #{orderStatus}</if>
+        </trim>
+        ORDER BY o.create_time desc
+    </select>
+
     <select id="searchAfterSaleOrders"  parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
         select id,order_code orderCode,ifnull(discount_fee,0) discountFee,settlement_type settlementType,pay_status payStatus,user_id
         ,order_status orderStatus,create_time createTime,ifnull(total_fee,0) totalFee,ifnull(payable_fee,0) payableFee,remarks,after_sale_time afterSaleTime

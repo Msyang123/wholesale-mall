@@ -41,6 +41,8 @@ public interface OrderMapper {
 
     List<OrderDetail> searchAfterSaleOrders(OrderDetail orderDetail);
 
+    List<OrderDetail> unDeliveryOrders(OrderDetail orderDetail);
+
     /**
      * 保存订单信息
      * @param orderDetail

@@ -162,13 +162,14 @@ public class OrderService {
         rabbit.convertAndSend("order-created-event", "", JacksonUtils.toJson(orderDetail));
         return orderMapper.saveOrderGoods(orderDetail.getOrderGoodsList());
     }
+
     @Scheduled(cron="0 0/2 *  * * ?")
     public void orderStatusTask(){
         boolean isBuyTime = settingService.isBuyTime();
         if (!isBuyTime){
             OrderDetail order = new OrderDetail();
             order.setOrderStatus("undelivery");
-            List<OrderDetail> orderList = orderMapper.searchOrders(order);
+            List<OrderDetail> orderList = orderMapper.unDeliveryOrders(order);
             for (OrderDetail item:orderList) {
                 OrderDetail updateOrderDetail=new OrderDetail();
                 updateOrderDetail.setOrderStatus("delivery");
