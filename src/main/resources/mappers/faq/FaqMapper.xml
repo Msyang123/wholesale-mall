@@ -44,9 +44,7 @@
             <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
             <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
         </trim>
-        order by t1.create_time desc
         <include refid="common.pager"></include>
-
     </select>
 
     <!-- 后台管理系统新增FAQ -->
@@ -57,11 +55,11 @@
         <if test="faqCategoryId != null and faqCategoryId != ''">faq_category_id,</if>
         <if test="title != null and title != ''">title,</if>
         <if test="content != null and content != ''">content,</if>
-        <if test="rankNum != null and rankNum != ''">rank_num,</if>
         <if test="linkUrl != null and linkUrl != ''">link_url,</if>
         <if test="createTime != null">create_time,</if>
         <if test="createPerson != null and createPerson != ''">create_person,</if>
         <if test="faqStatus != null and faqStatus != ''">faq_status,</if>
+        rank_num
     </trim>
     )
     values(
@@ -70,11 +68,11 @@
         <if test="faqCategoryId != null and faqCategoryId != ''">#{faqCategoryId},</if>
         <if test="title != null and title != ''">#{title},</if>
         <if test="content != null and content != ''">#{content},</if>
-        <if test="rankNum != null and rankNum != ''">#{rankNum},</if>
         <if test="linkUrl != null and linkUrl != ''">#{linkUrl},</if>
         <if test="createTime != null ">#{createTime,jdbcType=TIMESTAMP},</if>
         <if test="createPerson != null and createPerson != ''">#{createPerson},</if>
         <if test="faqStatus != null and faqStatus != ''">#{faqStatus},</if>
+        1
     </trim>
     )
     </insert>
