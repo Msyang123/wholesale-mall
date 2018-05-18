@@ -27,12 +27,12 @@ public class ArticleApi {
         this.articleService = articleService;
     }
 
-    @GetMapping("/articles")
+    @GetMapping("/articles/{articleType}")
     @ApiOperation(value = "资讯列表", response = Introduction.class)
-    public ResponseEntity articles(@RequestParam(defaultValue="1") Integer page,
+    public ResponseEntity articles(@PathVariable("articleType") String articleType, @RequestParam(defaultValue="1") Integer page,
                                     @RequestParam(defaultValue="10") Integer rows) {
 
-        return ResponseEntity.ok(articleService.articles(page,rows));
+        return ResponseEntity.ok(articleService.articles(articleType,page,rows));
     }
 
     @GetMapping("/article/detail/{id}")

@@ -37,22 +37,14 @@ public class ArticleService {
         return articleMapper.select(id);
     }
 
-    public ArticleCategoryResult articles(Integer page,Integer rows){
-        ArticleCategoryResult articleCategoryResult = new ArticleCategoryResult();
-        List<Article> articleTypes = articleMapper.articleCategory();
+    public List<Article> articles(String articleType,Integer page,Integer rows){
         Article art = new Article();
         art.setPage(page);
         art.setRows(rows);
         art.setStart((page-1)*rows);
-        for (Article articleType:articleTypes) {
-            art.setArticleType(articleType.getArticleType());
-            if (Objects.equals(articleType.getArticleType(),"industry")){
-                articleCategoryResult.setIndustryList(articleMapper.articles(art));
-            }else if (Objects.equals(articleType.getArticleType(),"perday")){
-                articleCategoryResult.setPerdayList(articleMapper.articles(art));
-            }
-        }
-        return articleCategoryResult;
+        art.setArticleType(articleType);
+
+        return articleMapper.articles(art);
     }
 
     /**
