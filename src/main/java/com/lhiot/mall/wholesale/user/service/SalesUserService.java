@@ -95,7 +95,7 @@ public class SalesUserService {
                     //审核通过的时候发送发券广播消息
                     rabbit.convertAndSend("store-check-event","", salesUserRelation.getUserId());
 
-                    List<UserAddress> userAddresses = userMapper.searchAddressList(user.getId());
+                    List<UserAddress> userAddresses = userMapper.searchAddressList(salesUserRelation.getUserId());
                     if (!userAddresses.isEmpty()){
                         for (UserAddress userAddress : userAddresses){
                             if (userMapper.deleteAddress(userAddress.getId())<=0){
@@ -123,7 +123,15 @@ public class SalesUserService {
                     String result = restTemplate.postForObject(messageUrl, request, String.class);
                 }
             }else {
-
+               /* List<SalesUserRelation> relationList = salesUserMapper.selectUserRelation(salesUserRelation.getUserId());
+                if (!relationList.isEmpty()){
+                    for (SalesUserRelation relation:relationList) {
+                        if (salesUserMapper.deleteRelation(relation.getId())<=0){
+                            log.info("用户和业务员关联残余数据未删除成功");
+                            return false;
+                        }
+                    }
+                }*/
                 param.put("status","uncertified");
                 if (userMapper.updateUserStatus(param)>0){//用户未认证
                     //发送短信
