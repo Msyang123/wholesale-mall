@@ -81,7 +81,9 @@ public class IndexService {
 		
 		//获取滚动排版的版块商品
 		List<PlateCategory> hotPro = goodsService.plateGoodses(LayoutType.roll);
-		index.setHotPro(hotPro.get(FIRST_INDEX));
+		if(!hotPro.isEmpty()){
+			index.setHotPro(hotPro.get(FIRST_INDEX));
+		}
 		
 		//获取平铺排版的版块商品
 		List<PlateCategory> channelList = goodsService.plateGoodses(LayoutType.tile);

@@ -364,10 +364,10 @@ public class OrderApi {
             return ResponseEntity.ok(orderDetail);
         }
         needPay =needPay+distributionFee;
-        //验证实际计算订单金额+配送费=传递的订单应付金额+应付配送费
+        //验证实际计算订单金额+配送费-优惠金额=传递的订单应付金额+应付配送费
         if (needPay!=orderDetail.getPayableFee()+orderDetail.getDeliveryFee()){
             orderDetail.setCode(-1002);
-            orderDetail.setMsg("订单计算应付金额与实际传递订单金额不一致");
+            orderDetail.setMsg("订单计算应付金额("+needPay+")与实际传递订单金额("+(orderDetail.getPayableFee()+orderDetail.getDeliveryFee())+")不一致");
             return ResponseEntity.ok(orderDetail);
         }
         //总金额不需要计算
