@@ -14,6 +14,15 @@
         WHERE t1.id = #{0}
     </select>
 
+    <select id="articleCategory"  resultType="com.lhiot.mall.wholesale.article.domain.Article">
+        select * from t_whs_article GROUP BY article_type
+    </select>
+
+    <select id="articles" parameterType="com.lhiot.mall.wholesale.article.domain.Article" resultType="com.lhiot.mall.wholesale.article.domain.Article">
+        select * from t_whs_article where article_type=#{articleType}
+        <include refid="common.pager"></include>
+    </select>
+
     <!-- 后台管理 查询新闻总数 -->
     <select id="pageQueryCount" resultType="Integer">
         select count(t1.id) from t_whs_article t1

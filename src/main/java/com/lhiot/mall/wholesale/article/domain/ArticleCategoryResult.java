@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 
 @Data
@@ -16,43 +17,11 @@ import java.sql.Timestamp;
 @ApiModel
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class Article {
-    @JsonProperty("id")
-    private Long id;
+public class ArticleCategoryResult {
+    @JsonProperty("industryList")
+    private List<Article> industryList;
 
-    @JsonProperty("articleType")
-    private String articleType;
-
-    @JsonProperty("createType")
-    private String createType;
-
-    @JsonProperty("articleTitle")
-    private String articleTitle;
-
-    @JsonProperty("articleSubhead")
-    private String articleSubhead;
-
-    @JsonProperty("articleAuthor")
-    private String articleAuthor;
-
-    @JsonProperty("articleContent")
-    private String articleContent;
-
-    @JsonProperty("rankNum")
-    private Integer rankNum;
-
-    @JsonProperty("resouceUrl")
-    private String resouceUrl;
-
-    @JsonProperty("articleUrl")
-    private String articleUrl;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    @JsonProperty("createTime")
-    private Timestamp createTime;
-
-    @JsonProperty("publishStatus")
-    private String publishStatus;
-
+    @JsonProperty("perdayList")
+    private List<Article> perdayList;
 
 }

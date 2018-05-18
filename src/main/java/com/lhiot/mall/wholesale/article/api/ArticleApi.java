@@ -27,6 +27,20 @@ public class ArticleApi {
         this.articleService = articleService;
     }
 
+    @GetMapping("/articles")
+    @ApiOperation(value = "资讯列表", response = Introduction.class)
+    public ResponseEntity articles(@RequestParam(defaultValue="1") Integer page,
+                                    @RequestParam(defaultValue="10") Integer rows) {
+
+        return ResponseEntity.ok(articleService.articles(page,rows));
+    }
+
+    @GetMapping("/article/detail/{id}")
+    @ApiOperation(value = "新闻详情", response = Introduction.class)
+    public ResponseEntity<Article> detail(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(articleService.article(id));
+    }
+
     @GetMapping("/article/{id}")
     @ApiOperation(value = "后台管理系统--根据ID查询新闻文章", response = Introduction.class)
     public ResponseEntity<Article> introduction(@PathVariable("id") Long id) {
