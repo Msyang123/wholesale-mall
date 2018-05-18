@@ -25,8 +25,8 @@ public class GoodsStandard {
 	@ApiModelProperty(notes="重量",dataType="weight")
 	private BigDecimal weight;
 	
-	@ApiModelProperty(notes="计量单位",dataType="Long")
-	private Long unitCode;
+	@ApiModelProperty(notes="计量单位",dataType="String")
+	private String unitCode;
 	
 	@ApiModelProperty(notes="规格",dataType="String")
 	private String standard;
