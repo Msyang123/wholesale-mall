@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.lhiot.mall.wholesale.advertise.domain.Advertise;
+import com.lhiot.mall.wholesale.article.domain.Information;
 import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
 import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
 
@@ -16,7 +17,7 @@ import lombok.Data;
 public class Index {
 
 	@ApiModelProperty(notes="新闻资讯--开发中",dataType="java.util.List")
-	private List<Object> newsList = new ArrayList<>();
+	private List<Information> newsList = new ArrayList<>();
 	
 	@ApiModelProperty(notes="分类列表",dataType="java.util.List")
 	private List<GoodsCategory> categoryList = new ArrayList<>();
