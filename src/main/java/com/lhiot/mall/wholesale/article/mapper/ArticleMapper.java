@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.article.mapper;
 
 import com.lhiot.mall.wholesale.article.domain.Article;
+import com.lhiot.mall.wholesale.article.domain.Information;
 import com.lhiot.mall.wholesale.article.domain.gridparam.ArticleGridParam;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -31,4 +32,6 @@ public interface ArticleMapper {
 
     List<Article> articles(Article article);
 
+    //查询前五条的资讯
+    List<Information> information();
 }

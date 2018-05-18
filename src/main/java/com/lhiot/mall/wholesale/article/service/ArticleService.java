@@ -1,19 +1,21 @@
 package com.lhiot.mall.wholesale.article.service;
 
-import com.leon.microx.common.wrapper.ArrayObject;
-import com.leon.microx.util.SnowflakeId;
-import com.leon.microx.util.StringUtils;
-import com.lhiot.mall.wholesale.article.domain.Article;
-import com.lhiot.mall.wholesale.article.domain.ArticleCategoryResult;
-import com.lhiot.mall.wholesale.article.domain.gridparam.ArticleGridParam;
-import com.lhiot.mall.wholesale.article.mapper.ArticleMapper;
-import com.lhiot.mall.wholesale.base.PageQueryObject;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import com.leon.microx.util.SnowflakeId;
+import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.article.domain.Article;
+import com.lhiot.mall.wholesale.article.domain.Information;
+import com.lhiot.mall.wholesale.article.domain.gridparam.ArticleGridParam;
+import com.lhiot.mall.wholesale.article.mapper.ArticleMapper;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
 
 
 @Service
@@ -93,5 +95,13 @@ public class ArticleService {
         List<Long> list = Arrays.asList(ids.split(",")).stream()
                 .map(id -> Long.parseLong(id.trim())).collect(Collectors.toList());
         articleMapper.removeInbatch(list);
+    }
+    
+    /**
+     * 首页滚动的前五条资讯
+     * @return
+     */
+    public List<Information> infomations(){
+    	return articleMapper.information();
     }
 }

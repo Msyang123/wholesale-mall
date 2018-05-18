@@ -114,4 +114,12 @@
         </foreach>
     </delete>
 
+	<!-- lynn 首页滚动资讯 前五条 -->
+	<select id="information" resultType="com.lhiot.mall.wholesale.article.domain.Information">
+		SELECT id,article_title as articleTitle
+		FROM t_whs_article 
+		WHERE publish_status = 'published' 
+		ORDER BY create_time DESC,rank_num ASC 
+		LIMIT 5
+	</select>
 </mapper>
