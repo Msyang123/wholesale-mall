@@ -17,8 +17,11 @@ import java.util.List;
 @ApiModel
 public class DemandGoodsGridParam extends PageObject {
 
-    @ApiModelProperty(notes="手机号或用户名",dataType="String")
-    private String namePhone;
+    @ApiModelProperty(notes="用户名",dataType="String")
+    private String userName;
+
+    @ApiModelProperty(notes="联系方式",dataType="String")
+    private String contactPhone;
 
     @ApiModelProperty(notes="创建时间起",dataType="String")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
