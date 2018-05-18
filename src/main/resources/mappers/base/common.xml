@@ -7,8 +7,6 @@
         <if test="sidx != null and sidx != ''">
 			ORDER BY  ${sidx} ${sord}
 		</if>
-		<if test="start != null  and rows != null">
 			LIMIT #{start}, #{rows}
-		</if>
 	</sql>
 </mapper>

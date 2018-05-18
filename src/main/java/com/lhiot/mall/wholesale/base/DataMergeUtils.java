@@ -53,6 +53,13 @@ public class DataMergeUtils {
         }
     }
 
+    /*public static Map<?, ?> objectToMap(Object obj) {
+        if(obj == null)
+            return null;
+
+        return new org.apache.commons.beanutils.BeanMap(obj);
+    }*/
+
 //    public static <T> List<T> merge(List<?> mainList, List<?> subList, String mainIdName, String subIdName, Class<T> type) throws IntrospectionException, IllegalAccessException, InvocationTargetException, InstantiationException {
 //        List<T> resultList = new ArrayList<T>();
 //        List<Map<String, Object>> mainMapList = new ArrayList<>();
