@@ -144,6 +144,9 @@ public class GoodsService {
 
 	public List<GoodsInfo> recommendList(){
 		List<Long> plateIds=plateCategoryService.recommendGoodsId(LayoutType.list);
+		if (plateIds.isEmpty()){
+			return new ArrayList<GoodsInfo>();
+		}
 		return goodsMapper.recommendList(plateIds);
 	}
 	

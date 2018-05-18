@@ -146,6 +146,13 @@
         where a.user_id=#{userId} ORDER BY a.id desc
     </select>
 
+	<!--<delete id="removeAddressList" parameterType="java.util.List">
+		delete from t_whs_user_address where id in
+		<foreach collection="list" item = "item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>-->
+
     <select id="searchAddressListYes"  parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.UserAddress">
         select a.* from t_whs_user_address a
         where a.user_id=#{userId} and is_default='yes'
