@@ -67,6 +67,25 @@ public class DebtOrderApi {
         return ResponseEntity.ok(debtOrder);
     }
 
+    @PutMapping("/modify")
+    @ApiOperation(value = "审核账款订单")
+    public ResponseEntity modify(@RequestBody DebtOrder debtOrder)  {
+        DebtOrder searchDebtOrder=debtOrderService.findByCode(debtOrder.getOrderDebtCode());
+
+        if(Objects.isNull(searchDebtOrder)){
+            return ResponseEntity.badRequest().body("未查找到相关账款订单");
+        }
+       if (Objects.equals(debtOrder.getCheckStatus(),"agree")){
+           debtOrder.setOrderIds(searchDebtOrder.getOrderIds());
+           debtOrderService.passAuditing(debtOrder);
+       }else if(Objects.equals(debtOrder.getCheckStatus(),"reject")){
+           debtOrderService.unpassAuditing(debtOrder);
+       }else{
+           return ResponseEntity.badRequest().body("账款订单传递审核状态不正确"+debtOrder.getCheckStatus());
+       }
+        return ResponseEntity.ok(debtOrder);
+    }
+
     @GetMapping("/{debtorderCode}")
     @ApiOperation(value = "根据订单编号查询订单详情")
     public ResponseEntity queryOrderByCode(@PathVariable("debtorderCode") String debtorderCode){

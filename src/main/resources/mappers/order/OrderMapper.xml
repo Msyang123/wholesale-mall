@@ -27,9 +27,6 @@
             </if>
         </trim>
         ORDER BY o.create_time desc
-        <if test="userId != null ">
-
-        </if>
         <include refid="common.pager"></include>
     </select>
 
