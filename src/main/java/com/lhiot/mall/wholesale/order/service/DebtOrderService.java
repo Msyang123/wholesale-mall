@@ -74,9 +74,11 @@ public class DebtOrderService {
         debtOrder.setCheckTime(new Timestamp(System.currentTimeMillis()));
         List<OrderDetail> orderDetailList=orderService.searchOrdersByOrderCodes(debtOrder.getOrderIds().split(","));
         for (OrderDetail item:orderDetailList){
+            //审核通过
             OrderDetail updateOrderDetial=new OrderDetail();
             updateOrderDetial.setOrderCode(item.getOrderCode());
             updateOrderDetial.setPayStatus("paid");//支付状态：paid-已支付 unpaid-未支付
+            updateOrderDetial.setCheckStatus("agree");//审核状态：unaudited-未审核 auditeding-审核中 agree-审核通过 reject-审核不通过
             orderService.updateOrder(updateOrderDetial);
 
             PaymentLog paymentLog=new PaymentLog();
@@ -98,6 +100,15 @@ public class DebtOrderService {
      * @return
      */
     public int unpassAuditing(DebtOrder debtOrder){
+        //修改订单为已支付状态
+        List<OrderDetail> orderDetailList=orderService.searchOrdersByOrderCodes(debtOrder.getOrderIds().split(","));
+        for (OrderDetail item:orderDetailList) {
+            //更新订单为审核不通过
+            OrderDetail updateOrderDetail = new OrderDetail();
+            updateOrderDetail.setOrderCode(item.getOrderCode());
+            updateOrderDetail.setCheckStatus("reject");//审核状态：unaudited-未审核 auditeding-审核中 agree-审核通过 reject-审核不通过
+            orderService.updateOrder(updateOrderDetail);
+        }
         debtOrder.setCheckTime(new Timestamp(System.currentTimeMillis()));
         return debtOrderMapper.updateDebtOrderByCode(debtOrder);
     }
@@ -107,8 +118,24 @@ public class DebtOrderService {
      * @param debtOrder
      * @return
      */
-    public int updateDebtOrderByCode(DebtOrder debtOrder){
-        return debtOrderMapper.updateDebtOrderByCode(debtOrder);
+    public String updateDebtOrderByCode(DebtOrder debtOrder){
+        //修改订单为已支付状态
+        List<OrderDetail> orderDetailList=orderService.searchOrdersByOrderCodes(debtOrder.getOrderIds().split(","));
+        if(orderDetailList==null||orderDetailList.isEmpty()){
+            return  "未查找到相关订单";
+        }
+        for (OrderDetail item:orderDetailList) {
+            if(Objects.equals("auditeding",item.getCheckStatus())||Objects.equals("agree",item.getCheckStatus())){
+                return "订单编码("+item.getOrderCode()+")审核中或者审核通过";
+            }
+            //更新订单为审核中
+            OrderDetail updateOrderDetail = new OrderDetail();
+            updateOrderDetail.setOrderCode(item.getOrderCode());
+            updateOrderDetail.setCheckStatus("auditeding");//审核状态：unaudited-未审核 auditeding-审核中 agree-审核通过 reject-审核不通过
+            orderService.updateOrder(updateOrderDetail);
+        }
+        debtOrderMapper.updateDebtOrderByCode(debtOrder);
+        return null;
     }
 
     /**

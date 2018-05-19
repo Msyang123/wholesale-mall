@@ -11,8 +11,9 @@
 
     <!-- 查询订单信息 -->
     <select id="searchOrders"  parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
-       select id,order_code orderCode,ifnull(discount_fee,0) discountFee,settlement_type settlementType,pay_status payStatus,user_id
-        ,order_status orderStatus,create_time createTime,ifnull(total_fee,0) totalFee,ifnull(payable_fee,0) payableFee,remarks,after_sale_time afterSaleTime
+       select id,order_code orderCode,ifnull(discount_fee,0) discountFee,settlement_type settlementType,pay_status payStatus,user_id,
+        order_status orderStatus,create_time createTime,ifnull(total_fee,0) totalFee,ifnull(payable_fee,0) payableFee,
+        remarks,after_sale_time afterSaleTime,check_status
        from t_whs_order o
         <trim prefix="where" prefixOverrides="and">
             <if test="userId != null ">and o.user_id=#{userId}</if>
@@ -157,6 +158,9 @@
             </if>
             <if test="afterStatus!=null and afterStatus!=''">
                 after_status=#{afterStatus},
+            </if>
+            <if test="checkStatus!=null and checkStatus!=''">
+                check_status=#{checkStatus},
             </if>
         </set>
          where order_code=#{orderCode}
