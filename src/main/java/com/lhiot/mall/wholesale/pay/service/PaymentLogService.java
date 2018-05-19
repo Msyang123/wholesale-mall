@@ -3,6 +3,7 @@ package com.lhiot.mall.wholesale.pay.service;
 import com.lhiot.mall.wholesale.pay.domain.Balance;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.mapper.PaymentLogMapper;
+import com.lhiot.mall.wholesale.user.domain.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,8 +53,8 @@ public class PaymentLogService {
         return paymentLogMapper.updatePaymentLog(paymentLog);
     }
 
-    public List<Balance> getBalanceRecord(Integer userId){
-        return paymentLogMapper.getBalanceRecord(userId);
+    public List<Balance> getBalanceRecord(User user){
+        return paymentLogMapper.getBalanceRecord(user);
     }
 
     /**

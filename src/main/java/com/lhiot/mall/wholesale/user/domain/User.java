@@ -88,4 +88,8 @@ public class User {
 
     @JsonProperty("verifCode")
     private String verifCode;//验证码
+
+    private String sidx;
+
+    private Integer page;
 }
