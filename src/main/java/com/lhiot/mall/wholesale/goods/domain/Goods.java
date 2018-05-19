@@ -36,8 +36,8 @@ public class Goods {
 	private String baseBar;
 	
 	@JsonProperty("baseUintId")
-	@ApiModelProperty(notes="基础单位id",dataType="Long")
-	private Long baseUnit;
+	@ApiModelProperty(notes="基础单位id",dataType="String")
+	private String baseUnit;
 	
 	@JsonProperty("stock")
 	@ApiModelProperty(notes="安全库存",dataType="Integer")
@@ -55,9 +55,6 @@ public class Goods {
 	
 	@ApiModelProperty(notes="服务保障图片",dataType="String")
 	private String otherImage;
-	
-	@ApiModelProperty(notes="基础单位编码",dataType="String")
-	private String baseUnitCode;
 	
 	@JsonProperty("baseUnit")
 	@ApiModelProperty(notes="商品基础单位名称",dataType="String")

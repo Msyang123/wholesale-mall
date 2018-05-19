@@ -355,17 +355,17 @@ public class PayService {
      * 余额支付订单
      * @return
      */
-    public int currencyPay(OrderDetail orderDetail) {
+    public String currencyPay(OrderDetail orderDetail) {
         User user= userService.user(orderDetail.getUserId());
         if(Objects.isNull(user)){
-            throw new ServiceException("用户信息不存在");
+            return "用户信息不存在";
         }
         //需要支付金额
         int needPayFee=orderDetail.getPayableFee()+orderDetail.getDeliveryFee();
         //扣除之后金额
         int afterPay=user.getBalance()-needPayFee;
         if(afterPay<0){
-            throw new ServiceException("用户余额不足");
+            return "用户余额不足";
         }
         User updateUser=new User();
         updateUser.setId(orderDetail.getUserId());
@@ -386,9 +386,9 @@ public class PayService {
             paymentLog.setPaymentFrom("order");//支付来源于 order-订单 debt-账款 invoice-发票 recharge-充值
             paymentLog.setTotalFee(needPayFee);
             paymentLogService.insertPaymentLog(paymentLog);
-            return 1;
+            return null;
         }else{
-            throw new ServiceException("扣除用户余额失败");
+            return "扣除用户余额失败";
         }
     }
 
@@ -396,17 +396,17 @@ public class PayService {
      * 余额支付账款订单
      * @return
      */
-    public int currencyPay(DebtOrder debtOrder) {
+    public String currencyPay(DebtOrder debtOrder) {
         User user= userService.user(debtOrder.getUserId());
         if(Objects.isNull(user)){
-            throw new ServiceException("用户信息不存在");
+            return "用户信息不存在";
         }
         //需要支付金额
         int needPayFee=debtOrder.getDebtFee();
         //扣除之后金额
         int afterPay=user.getBalance()-needPayFee;
         if(afterPay<0){
-            throw new ServiceException("用户余额不足");
+            return "用户余额不足";
         }
         User updateUser=new User();
         updateUser.setId(debtOrder.getUserId());
@@ -422,7 +422,7 @@ public class PayService {
             //修改订单为已支付状态
             List<OrderDetail> orderDetailList=orderService.searchOrdersByOrderCodes(debtOrder.getOrderIds().split(","));
             if(orderDetailList==null||orderDetailList.isEmpty()){
-                throw new ServiceException("未查找到相关订单");
+                return "未查找到相关订单";
             }
             for (OrderDetail item:orderDetailList){
                 OrderDetail updateOrderDetail =new OrderDetail();
@@ -444,9 +444,9 @@ public class PayService {
                 paymentLogService.insertPaymentLog(paymentLog);
             }
 
-            return 1;
+            return null;
         }else{
-            throw new ServiceException("扣除用户余额失败");
+            return "扣除用户余额失败";
         }
     }
 
@@ -454,10 +454,10 @@ public class PayService {
      * 微信支付账款订单
      * @return
      */
-    public int weixinPayDebt(DebtOrder debtOrder,String bankType,String transactionId,Integer totalFee) {
+    public String weixinPayDebt(DebtOrder debtOrder,String bankType,String transactionId,Integer totalFee) {
         User user= userService.user(debtOrder.getUserId());
         if(Objects.isNull(user)){
-            throw new ServiceException("用户信息不存在");
+            return "用户信息不存在";
         }
         //修改账款订单为已支付
         DebtOrder saveDebtOrder=new DebtOrder();
@@ -468,7 +468,7 @@ public class PayService {
         //修改订单为已支付状态
         List<OrderDetail> orderDetailList=orderService.searchOrdersByOrderCodes(debtOrder.getOrderIds().split(","));
         if(orderDetailList==null||orderDetailList.isEmpty()){
-            throw new ServiceException("未查找到相关订单");
+            return "未查找到相关订单";
         }
         for (OrderDetail item:orderDetailList){
             OrderDetail updateOrderDetail =new OrderDetail();
@@ -485,7 +485,7 @@ public class PayService {
         }
 
 
-        return 1;
+        return null;
     }
 
     /**
@@ -577,20 +577,20 @@ public class PayService {
      * 余额支付发票
      * @return
      */
-    public int currencyPay(Invoice invoice) {
+    public String currencyPay(Invoice invoice) {
         User user= userService.user(invoice.getUserId());
         if(Objects.isNull(user)){
-            throw new ServiceException("用户信息不存在");
+            return "用户信息不存在";
         }
         //需要支付金额
         int needPayFee=invoice.getTaxFee();
         //扣除之后金额
         int afterPay=user.getBalance()-needPayFee;
         if(afterPay<0){
-            throw new ServiceException("用户余额不足");
+            return "用户余额不足";
         }
         if(needPayFee<=0){
-            throw new ServiceException("支付金额不能小于0");
+            return "支付金额不能小于0";
         }
         User updateUser=new User();
         updateUser.setId(invoice.getUserId());
@@ -598,9 +598,10 @@ public class PayService {
         boolean updateResult=userService.updateBalance(updateUser);//扣除用户余额
         if(updateResult){
             //保存开票信息
-            return invoiceService.applyInvoice(invoice,"balance",null,null);
+            invoiceService.applyInvoice(invoice,"balance",null,null);
+            return null;
         }else{
-            throw new ServiceException("扣除用户余额失败");
+            return "扣除用户余额失败";
         }
     }
 

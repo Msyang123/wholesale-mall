@@ -1,14 +1,12 @@
 package com.lhiot.mall.wholesale.user.mapper;
 
 
-import java.util.List;
-import java.util.Map;
-
 import com.lhiot.mall.wholesale.user.domain.*;
 import com.lhiot.mall.wholesale.user.domain.gridparam.UserPerformanceGridParam;
 import org.apache.ibatis.annotations.Mapper;
 
-import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
+import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface UserMapper {
@@ -55,8 +53,6 @@ public interface UserMapper {
     List<User> fuzzySearchByPhone(String phone);
     
     List<User> searchInbatch(List<Long> userIds);
-
-    List <PaymentLog> getBalanceRecord(Integer userId);
 
     UserAddress searchAddressListYes(long userId);
 

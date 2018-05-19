@@ -21,6 +21,7 @@ import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.setting.service.SettingService;
+import com.sgsl.util.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -33,10 +34,7 @@ import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Api(description ="订单接口")
 @Slf4j
@@ -188,19 +186,42 @@ public class OrderApi {
     @GetMapping("/distribution/{fee}")
     @ApiOperation(value = "查询配送费")
     public  ResponseEntity distribution(@PathVariable("fee") @NotNull Integer fee) throws Exception{
+        //最低订单金额限制
+        ParamConfig orderMinFeeConfig = settingService.searchConfigParam("orderMinFee");
+        if(Objects.nonNull(orderMinFeeConfig)&&Integer.valueOf(orderMinFeeConfig.getConfigParamValue())>fee){
+            return ResponseEntity.badRequest().body("未达到最低配送金额："+Integer.valueOf(orderMinFeeConfig.getConfigParamValue())/100.0);
+        }
         ParamConfig paramConfig = settingService.searchConfigParam("distributionFeeSet");
         String distribution = paramConfig.getConfigParamValue();
         Distribution[] distributionsJson = JacksonUtils.fromJson(distribution,  Distribution[].class);//字符串转json
+        List<Distribution> distributionsList=Arrays.asList(distributionsJson);
         //[{"minPrice": 200,"maxPrice":300,"distributionFee": 25},
         // {"minPrice": 300,"maxPrice": 500,"distributionFee": 15},
         // {"minPrice":500,"maxPrice": 1000,"distributionFee": 0}]
-        for (Distribution item:distributionsJson){
-            if (fee>=item.getMinPrice()&&fee<item.getMaxPrice()){
+        //先排序
+        Collections.sort(distributionsList, new Comparator() {
+            @Override
+            public int compare(Object o1, Object o2) {
+                Distribution distribution1 = (Distribution) o1;
+                Distribution distribution2 = (Distribution) o2;
+                if (distribution1.getMaxPrice() > distribution2.getMaxPrice()) {
+                    return 1;
+                } else if (distribution1.getMaxPrice() == distribution2.getMaxPrice()) {
+                    return 0;
+                } else {
+                    return -1;
+                }
+            }
+        });
+        for (Distribution item:distributionsList){
+            //只限定查询最大值
+            if (fee<item.getMaxPrice()){
                 Integer distributionFee = item.getDistributionFee();
                 return ResponseEntity.ok(distributionFee);
             }
         }
-        return ResponseEntity.badRequest().body("没有设置此区间段的配送费");
+        //没有就设置成默认的运费0
+        return ResponseEntity.ok(0);
     }
 
     @GetMapping("/after-sale/{userId}")
@@ -350,8 +371,24 @@ public class OrderApi {
         String distribution = paramConfig.getConfigParamValue();
         Distribution[] distributionsJson = JacksonUtils.fromJson(distribution,  Distribution[].class);//字符串转json
         int distributionFee=0;//配送费
-        for (Distribution item:distributionsJson){
-            if (needPay>=item.getMinPrice()&&needPay<item.getMaxPrice()){
+        List<Distribution> distributionsList=Arrays.asList(distributionsJson);
+        //先排序
+        Collections.sort(distributionsList, new Comparator() {
+            @Override
+            public int compare(Object o1, Object o2) {
+                Distribution distribution1 = (Distribution) o1;
+                Distribution distribution2 = (Distribution) o2;
+                if (distribution1.getMaxPrice() > distribution2.getMaxPrice()) {
+                    return 1;
+                } else if (distribution1.getMaxPrice() == distribution2.getMaxPrice()) {
+                    return 0;
+                } else {
+                    return -1;
+                }
+            }
+        });
+        for (Distribution item:distributionsList){
+            if (needPay<item.getMaxPrice()){
                 distributionFee = item.getDistributionFee();
                 break;
             }
@@ -360,7 +397,7 @@ public class OrderApi {
         ParamConfig orderMinFeeConfig = settingService.searchConfigParam("orderMinFee");
         if(Objects.nonNull(orderMinFeeConfig)&&Integer.valueOf(orderMinFeeConfig.getConfigParamValue())>needPay){
             orderDetail.setCode(-1002);
-            orderDetail.setMsg("订单金额低于最低限制金额："+orderMinFeeConfig.getConfigParamValue());
+            orderDetail.setMsg("未达到最低配送金额："+orderMinFeeConfig.getConfigParamValue());
             return ResponseEntity.ok(orderDetail);
         }
         needPay =needPay+distributionFee;
@@ -420,7 +457,12 @@ public class OrderApi {
                 &&!Objects.equals("offline",orderDetail.getSettlementType())){
             return ResponseEntity.badRequest().body("订单未支付");
         }
-       return ResponseEntity.ok(orderService.cancelPayedOrder(orderDetail));
+        String cancelPayedOrderResult=orderService.cancelPayedOrder(orderDetail);
+        if(StringUtils.isNotEmpty(cancelPayedOrderResult)){
+            return ResponseEntity.ok("1");
+        }
+        return ResponseEntity.badRequest().body(cancelPayedOrderResult);
+
     }
 
     @PutMapping("/received/{orderCode}")

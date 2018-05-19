@@ -6,11 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.google.common.base.Objects;
 import com.lhiot.mall.wholesale.activity.service.ActivityService;
 import com.lhiot.mall.wholesale.advertise.domain.Advertise;
 import com.lhiot.mall.wholesale.advertise.domain.AdvertiseType;
 import com.lhiot.mall.wholesale.advertise.service.AdvertiseService;
+import com.lhiot.mall.wholesale.article.domain.Information;
+import com.lhiot.mall.wholesale.article.service.ArticleService;
 import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
 import com.lhiot.mall.wholesale.goods.domain.LayoutType;
 import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
@@ -33,17 +34,20 @@ public class IndexService {
 	private final ActivityService activityService;
 	private final GoodsService goodsService;
 	private final GoodsCategoryService goodsCategoryService;
+	private final ArticleService articleService;
 	
 	
 	@Autowired
 	public IndexService(AdvertiseService advertiseService,
 			GoodsService goodsService,
 			GoodsCategoryService goodsCategoryService,
-			ActivityService activityService){
+			ActivityService activityService,
+			ArticleService articleService){
 		this.advertiseService = advertiseService;
 		this.goodsService = goodsService;
 		this.goodsCategoryService = goodsCategoryService;
 		this.activityService = activityService;
+		this.articleService = articleService;
 	}
 	
 	/**
@@ -52,7 +56,9 @@ public class IndexService {
 	 */
 	public Index index(){
 		Index index = new Index();
-		//查询新闻资讯列表--开发中
+		//查询新闻资讯列表
+		List<Information> infos = articleService.infomations();
+		index.setNewsList(infos);
 		//查询父分类列表
 		List<GoodsCategory> categoryList = goodsCategoryService.findCategories(PARENT_ID);
 		index.setCategoryList(categoryList);

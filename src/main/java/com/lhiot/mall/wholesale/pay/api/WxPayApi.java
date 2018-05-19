@@ -1,10 +1,8 @@
 package com.lhiot.mall.wholesale.pay.api;
 
-import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
-import com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
@@ -307,7 +305,7 @@ public class WxPayApi {
         //写帐款订单支付签名日志 保存的是订单的日志
         List<OrderDetail> orderDetailList=orderService.searchOrdersByOrderCodes(debtOrder.getOrderIds().split(","));
         if(orderDetailList==null||orderDetailList.isEmpty()){
-            throw new ServiceException("未查找到相关订单");
+            return ResponseEntity.badRequest().body("未查找到相关订单");
         }
         for (OrderDetail item:orderDetailList){
             PaymentLog paymentLog=new PaymentLog();

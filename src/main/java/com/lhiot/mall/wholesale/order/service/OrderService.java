@@ -1,7 +1,6 @@
 package com.lhiot.mall.wholesale.order.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.SnowflakeId;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
@@ -241,7 +240,7 @@ public class OrderService {
      * @param orderDetail
      * @return
      */
-    public int cancelPayedOrder(OrderDetail orderDetail) {
+    public String cancelPayedOrder(OrderDetail orderDetail) {
 
         //退货到总仓
         /**********批发单服务-作废**********************************/
@@ -267,7 +266,7 @@ public class OrderService {
             //微信支付
             case "wechat":
                 if (Objects.isNull(paymentLog)) {
-                    throw new ServiceException("未找到支付记录");
+                    return "未找到支付记录";
                 }
                 //退款 如果微信支付就微信退款
                 String refundChatFee = weChatUtil.refund(paymentLog.getOrderCode(), paymentLog.getTotalFee());
@@ -287,14 +286,14 @@ public class OrderService {
                     updatePaymentLog.setRefundFee(paymentLog.getTotalFee());
                     paymentLogService.updatePaymentLog(updatePaymentLog);
                 } else {
-                    throw new ServiceException("微信退款失败，请联系客服");
+                    return "微信退款失败，请联系客服";
                 }
                 break;
             //余额支付
             case "balance":
 
                 if (Objects.isNull(paymentLog)) {
-                    throw new ServiceException("未找到支付记录");
+                    return  "未找到支付记录";
                 }
                 User updateUser = new User();
                 updateUser.setId(orderDetail.getUserId());
@@ -319,7 +318,7 @@ public class OrderService {
                 log.info("退款未找到类型");
                 break;
         }
-        return 1;
+        return null;
     }
 
     /**
