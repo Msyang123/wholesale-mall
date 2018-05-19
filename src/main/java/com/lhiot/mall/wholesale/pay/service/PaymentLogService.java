@@ -51,6 +51,10 @@ public class PaymentLogService {
         return paymentLogMapper.updatePaymentLog(paymentLog);
     }
 
+    public List<PaymentLog> getBalanceRecord(Integer userId){
+        return paymentLogMapper.getBalanceRecord(userId);
+    }
+
     /**
      * 依据订单id集合查询支付日志
      * @param orderIds

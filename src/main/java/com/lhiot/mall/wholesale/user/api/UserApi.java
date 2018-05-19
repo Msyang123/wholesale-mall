@@ -10,7 +10,6 @@ import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.util.ImmutableMap;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.base.QRCodeUtil;
-import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.domain.UserAddress;
@@ -25,6 +24,7 @@ import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
 import com.lhiot.mall.wholesale.user.wechat.Token;
 import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
 
+import com.sgsl.util.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -36,7 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -420,11 +419,11 @@ public class UserApi {
             if (response.getStatusCodeValue() >= 400){
                 return response;
             }
-
-            if (userService.register(user, user.getCode())) {
+            String result=userService.register(user, user.getCode());
+            if (StringUtils.isNotEmpty(result)) {
                 return ResponseEntity.ok().body("提交成功");
             }
-            return ResponseEntity.badRequest().body("用户注册失败");
+            return ResponseEntity.badRequest().body(result);
         } catch (ServiceException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -436,13 +435,6 @@ public class UserApi {
         return ResponseEntity.ok(salesUserService.isSeller(sellerId));
     }
 
-
-    @GetMapping("/balance/{userId}")
-    @ApiOperation(value = "余额收支明细")
-    public ResponseEntity<ArrayObject> getBalanceRecord(@PathVariable("userId") Integer userId) {
-        List<PaymentLog> paymentLogList = userService.getBalanceRecord(userId);//待测
-        return ResponseEntity.ok(ArrayObject.of(paymentLogList));
-    }
 
     @GetMapping("/my/{userId}")
     @ApiOperation(value = "我的页面用户数据接口")

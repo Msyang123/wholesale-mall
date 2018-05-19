@@ -21,6 +21,7 @@ import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.setting.service.SettingService;
+import com.sgsl.util.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -456,7 +457,12 @@ public class OrderApi {
                 &&!Objects.equals("offline",orderDetail.getSettlementType())){
             return ResponseEntity.badRequest().body("订单未支付");
         }
-       return ResponseEntity.ok(orderService.cancelPayedOrder(orderDetail));
+        String cancelPayedOrderResult=orderService.cancelPayedOrder(orderDetail);
+        if(StringUtils.isNotEmpty(cancelPayedOrderResult)){
+            return ResponseEntity.ok("1");
+        }
+        return ResponseEntity.badRequest().body(cancelPayedOrderResult);
+
     }
 
     @PutMapping("/received/{orderCode}")
