@@ -265,7 +265,28 @@ public class OrderService {
         switch (orderDetail.getSettlementType()) {
             //货到付款
             case "offline":
-                //直接取消掉订单就可以了
+                //如果未支付直接取消掉订单就可以了 如果支付了直接退成余额
+                if (Objects.nonNull(paymentLog)) {
+                    User updateUser = new User();
+                    updateUser.setId(orderDetail.getUserId());
+                    updateUser.setBalance(paymentLog.getTotalFee());//需要退还的用户余额
+                    userService.updateBalance(updateUser);
+
+                    //写入退款记录  t_whs_refund_log
+                    RefundLog refundLog = new RefundLog();
+                    refundLog.setPaymentLogId(paymentLog.getId());
+                    refundLog.setRefundFee(paymentLog.getTotalFee());
+                    refundLog.setRefundReason("当天退款");
+                    refundLog.setRefundTime(new Timestamp(System.currentTimeMillis()));
+                    refundLog.setTransactionId(paymentLog.getTransactionId());
+                    refundLog.setRefundType("balanceRefund");
+                    refundLog.setUserId(orderDetail.getUserId());
+                    refundLogMapper.insertRefundLog(refundLog);
+                    PaymentLog updatePaymentLog = new PaymentLog();
+                    updatePaymentLog.setOrderCode(orderDetail.getOrderCode());
+                    updatePaymentLog.setRefundFee(paymentLog.getTotalFee());
+                    paymentLogService.updatePaymentLog(updatePaymentLog);
+                }
                 break;
             //微信支付
             case "wechat":
