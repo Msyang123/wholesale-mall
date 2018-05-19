@@ -26,12 +26,12 @@ public class GoodsFlashsale {
     private Long activityId;
 
     @ApiModelProperty(notes = "结束时间", dataType = "Timestamp")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @JsonProperty("endTime")
     private Timestamp endTime;
 
     @ApiModelProperty(notes = "开始时间", dataType = "Timestamp")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @JsonProperty("startTime")
     private Timestamp startTime;
 

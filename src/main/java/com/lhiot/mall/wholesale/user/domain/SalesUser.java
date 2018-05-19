@@ -45,7 +45,7 @@ public class SalesUser {
     @JsonProperty("createPerson")
     private int createPerson;
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @JsonProperty("createTime")
     private Timestamp createAt;
 

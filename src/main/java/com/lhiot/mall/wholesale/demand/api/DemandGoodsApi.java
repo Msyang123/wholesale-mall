@@ -19,6 +19,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Api(description = "新品需求接口")
 @Slf4j
@@ -47,11 +48,16 @@ public class DemandGoodsApi {
     @PostMapping("/demandGoods")
     @ApiOperation(value = "新品需求提交")
     public ResponseEntity demandGoods(@RequestBody DemandGoods demandGoods) {
+        if(Objects.isNull(demandGoods.getGoodsName())||Objects.equals(demandGoods.getGoodsName(),"")
+                ||Objects.isNull(demandGoods.getGoodsBrand())||Objects.equals(demandGoods.getGoodsBrand(),"")
+                ||Objects.isNull(demandGoods.getGoodsStandard())||Objects.equals(demandGoods.getGoodsStandard(),"")){
+            return ResponseEntity.badRequest().body("请完善信息");
+        }
         demandGoods.setCreateTime(new Timestamp(new Date().getTime()));
         if (demandGoodsService.insertDemandGoods(demandGoods)>0){
-            return ResponseEntity.ok(ResultObject.of("提交成功"));
+            return ResponseEntity.ok().body("提交成功");
         }else{
-            return ResponseEntity.ok(ResultObject.of("提交失败"));
+            return ResponseEntity.badRequest().body("提交失败");
         }
     }
 
