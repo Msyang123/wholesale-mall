@@ -131,6 +131,10 @@ public class UserService {
         return "更新用户信息失败";
     }
 
+    public List<User> searchUser(User user){
+        return userMapper.searchUser(user);
+    }
+
     /**
      * 微信关注注册用户信息
      * @param user

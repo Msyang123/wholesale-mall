@@ -355,12 +355,17 @@ public class UserApi {
             @ApiImplicitParam(paramType = "path", name = "phone", value = "手机号", required = true, dataType = "String")
     })
     public ResponseEntity verificationCode(@PathVariable("phone") String phone){
-
+        User user = new User();
+        user.setPhone(phone);
+        List<User> userlist = userService.searchUser(user);
+        if (!userlist.isEmpty()){
+            return ResponseEntity.badRequest().body("用户已存在");
+        }
         //手机验证码
         RMapCache<String,String> cache=  redissonClient.getMapCache("userVerificationCode");
-//        if(Objects.nonNull(cache.get("phone"+phone))){
-//            return ResponseEntity.badRequest().body("验证码2分钟内有效，请勿重复发送");
-//        }
+        if(Objects.nonNull(cache.get("phone"+phone))){
+            return ResponseEntity.badRequest().body("验证码2分钟内有效，请勿重复发送");
+        }
         try {
             String randomCode= ""+weChatUtil.buildRandom(6);
             //发送验证码到第三方推送服务器
@@ -375,7 +380,6 @@ public class UserApi {
             }
             return ResponseEntity.ok("发送成功");
         }catch (Exception e){
-            e.printStackTrace();
             return ResponseEntity.badRequest().body("验证码发送失败");
         }
 
@@ -390,9 +394,12 @@ public class UserApi {
         if(Objects.isNull(user)||Objects.isNull(user.getId())){
             return ResponseEntity.badRequest().body("用户信息错误");
         }
-        if (Objects.isNull(user.getPhone())||Objects.isNull(user.getUserName())||Objects.isNull(user.getShopName())
-                ||Objects.isNull(user.getAddressDetail())||Objects.isNull(user.getCode())){
-            return ResponseEntity.badRequest().body("请完善商户信息再提交");
+        if (Objects.isNull(user.getPhone())||Objects.equals(user.getPhone(),"")
+                ||Objects.isNull(user.getUserName())||Objects.equals(user.getUserName(),"")
+                ||Objects.isNull(user.getShopName())||Objects.equals(user.getShopName(),"")
+                ||Objects.isNull(user.getAddressDetail())||Objects.equals(user.getAddressDetail(),"")
+                ||Objects.isNull(user.getCode())||Objects.equals(user.getCode(),"")){
+            return ResponseEntity.badRequest().body("请完善用户信息再提交");
         }
 
         User u = userService.user(user.getId());
