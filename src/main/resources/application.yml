@@ -105,7 +105,8 @@ hd:
     hd-card: http://172.16.10.108:8180/hdcard-services/api
     authentication-username: guest
     authentication-password: guest
-    h4rest: http://172.16.10.109:7281/h4rest-server/rest/h5rest-server/core/
+    h4rest: http://172.16.10.109:7280/h4rest-server/rest/h5rest-server/core/
+#正式库http://172.16.10.106:7280/h4rest-server/rest/h5rest-server/core/
 
 microx:
   swagger:
