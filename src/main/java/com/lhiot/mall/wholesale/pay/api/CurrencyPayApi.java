@@ -1,7 +1,7 @@
 package com.lhiot.mall.wholesale.pay.api;
 
+import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.util.SnowflakeId;
-import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
@@ -11,6 +11,7 @@ import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.service.PayService;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
+import com.sgsl.util.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -62,11 +62,11 @@ public class CurrencyPayApi {
         }
 
         //余额支付订单 发送到总仓
-        int payResult=payService.currencyPay(orderDetail);
-        if(payResult>0){
+        String payResult=payService.currencyPay(orderDetail);
+        if(StringUtils.isNotEmpty(payResult)){
             return ResponseEntity.ok(orderDetail);
         }
-        return ResponseEntity.badRequest().body("余额支付订单失败");
+        return ResponseEntity.badRequest().body(payResult);
     }
 
     @PutMapping("/debtorderpay/{orderDebtCode}")
@@ -84,11 +84,11 @@ public class CurrencyPayApi {
             return ResponseEntity.badRequest().body("欠款订单已支付");
         }
         //余额支付账款订单支付
-        int payResult=payService.currencyPay(debtOrder);
-        if(payResult>0){
+        String payResult=payService.currencyPay(debtOrder);
+        if(StringUtils.isNotEmpty(payResult)){
             return ResponseEntity.ok(debtOrder);
         }
-        return ResponseEntity.badRequest().body("余额支付账款订单失败");
+        return ResponseEntity.badRequest().body(payResult);
     }
 
 
@@ -111,12 +111,12 @@ public class CurrencyPayApi {
         //计算发票税费
         invoiceService.calculateTaxFee(invoice);
         invoice.setInvoiceCode(snowflakeId.stringId());
-        int payResult=payService.currencyPay(invoice);
-        if(payResult>0){
+        String payResult=payService.currencyPay(invoice);
+        if(StringUtils.isNotEmpty(payResult)){
 
             return ResponseEntity.ok(invoice);
         }
-        return ResponseEntity.badRequest().body("余额支付发票失败");
+        return ResponseEntity.badRequest().body(payResult);
     }
 
     @GetMapping("/orderpay/payment")
@@ -124,5 +124,12 @@ public class CurrencyPayApi {
     public  ResponseEntity<List<PaymentLog>> paymentList(@PathVariable("orderIds") Long[] orderIds){
         List<Long> orderIdList =  Arrays.asList(orderIds);
         return ResponseEntity.ok(paymentLogService.getPaymentLogList(orderIdList));
+    }
+
+    @GetMapping("/balance/{userId}")
+    @ApiOperation(value = "余额收支明细")
+    public ResponseEntity<ArrayObject> getBalanceRecord(@PathVariable("userId") Integer userId) {
+        List<PaymentLog> paymentLogList = paymentLogService.getBalanceRecord(userId);
+        return ResponseEntity.ok(ArrayObject.of(paymentLogList));
     }
 }

@@ -13,11 +13,11 @@ public interface PaymentLogMapper {
 
     int updatePaymentLog(PaymentLog paymentLog);
 
+    List <PaymentLog> getBalanceRecord(Integer userId);
+
     PaymentLog getPaymentLog(String orderCode);
 
     List<PaymentLog> getPaymentLogList(List<Long> userIds);
-
-    List <PaymentLog> getBalanceRecord(Integer userId);
 
     PaymentLog countFee(List<String> orderCode);
 }

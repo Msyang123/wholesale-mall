@@ -1,39 +1,29 @@
 package com.lhiot.mall.wholesale.user.service;
 
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.leon.microx.util.ImmutableMap;
+import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.base.DateFormatUtil;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.base.StringReplaceUtil;
+import com.lhiot.mall.wholesale.user.domain.*;
+import com.lhiot.mall.wholesale.user.domain.gridparam.UserPerformanceGridParam;
+import com.lhiot.mall.wholesale.user.mapper.UserMapper;
+import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
+import com.sgsl.util.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.leon.microx.common.exception.ServiceException;
-import com.leon.microx.util.ImmutableMap;
-import com.leon.microx.util.SnowflakeId;
-import com.lhiot.mall.wholesale.base.DateFormatUtil;
-import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.base.StringReplaceUtil;
-import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
-import com.lhiot.mall.wholesale.user.domain.SalesUser;
-import com.lhiot.mall.wholesale.user.domain.SalesUserPerformanceDetail;
-import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
-import com.lhiot.mall.wholesale.user.domain.User;
-import com.lhiot.mall.wholesale.user.domain.UserAddress;
-import com.lhiot.mall.wholesale.user.domain.UserGridParam;
-import com.lhiot.mall.wholesale.user.domain.UserResult;
-import com.lhiot.mall.wholesale.user.domain.gridparam.UserPerformanceGridParam;
-import com.lhiot.mall.wholesale.user.mapper.UserMapper;
-import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
-import com.sgsl.util.StringUtils;
-
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -112,13 +102,13 @@ public class UserService {
         userMapper.deleteAddress(id);
     }
 
-    public boolean register(User user, String code) {
+    public String register(User user, String code) {
         String time = DateFormatUtil.format1(new java.util.Date());
         user.setRegisterTime(Timestamp.valueOf(time));
         user.setUserStatus("unaudited");//审核认证中
         SalesUser salesUser = salesUserService.findCode(code);
         if (Objects.isNull(salesUser)) {
-            throw new ServiceException("不是有效的业务员");
+            return "不是有效的业务员";
         }
         if (this.updateUser(user)) {
 
@@ -127,7 +117,7 @@ public class UserService {
             salesUserRelation.setSalesmanId(salesUser.getId());
             salesUserRelation.setAuditStatus("unaudited");//待审核
             if (salesUserService.insertRelation(salesUserRelation) < 1) {
-                throw new ServiceException("注册审核提交失败");
+                return "注册审核提交失败";
             }
             //发送短信
             Map<String, Object> body = ImmutableMap.of("phone",salesUser.getSalesmanPhone());
@@ -136,9 +126,9 @@ public class UserService {
             String messageUrl= MessageFormat.format(properties.getSendSms().getUrl(),"check-reminding",salesUser.getSalesmanPhone());
             String result=restTemplate.postForObject(messageUrl, request, String.class);
             log.info("result:"+result);
-            return true;
+            return null;
         }
-        return false;
+        return "更新用户信息失败";
     }
 
     /**
@@ -230,9 +220,6 @@ public class UserService {
     	return userMapper.searchInbatch(userIds);
     }
 
-    public List<PaymentLog> getBalanceRecord(Integer userId){
-        return userMapper.getBalanceRecord(userId);
-    }
 
     public UserAddress searchAddressListYes(long userId) {
         return userMapper.searchAddressListYes(userId);

@@ -224,12 +224,6 @@
 			#{item}
 		</foreach>
 	</select>
-
-    <select id="getBalanceRecord" parameterType="Integer" resultType="com.lhiot.mall.wholesale.pay.domain.Balance">
-        (select payment_time time,payment_from type,total_fee fee from t_whs_payment_log where user_id=#{id} )
-          union all
-        (select refund_time time,refund_type type,refund_fee fee from t_whs_refund_log where user_id=#{id})
-    </select>
     
     <!--lynn 分页查询用户数量 -->
     <select id="pageQueryCount" parameterType="com.lhiot.mall.wholesale.user.domain.UserGridParam"
