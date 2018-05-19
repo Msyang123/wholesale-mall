@@ -90,4 +90,15 @@ public class Invoice {
 
     @JsonProperty("orderNumber")
     private Integer orderNumber;
+
+    @JsonProperty("start")
+    private Integer start;
+
+    @JsonProperty("rows")
+    private Integer rows;
+
+    private String sidx;
+
+    private Integer page;
+
 }

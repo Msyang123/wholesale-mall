@@ -75,8 +75,17 @@ public class OrderRefundApplicationApi {
 
     @GetMapping("/list/{userId}")
     @ApiOperation(value = "售后申请列表")
-    public ResponseEntity<ArrayObject> orderRefundApplicationList(@PathVariable("userId") Long userId) {
-        List<OrderRefundApplication> orderRefundApplicationList = orderRefundApplicationService.orderRefundApplicationList(userId);
+    public ResponseEntity<ArrayObject> orderRefundApplicationList(@PathVariable("userId") Long userId,@RequestParam(defaultValue="1") Integer page,
+                                                                  @RequestParam(defaultValue="10") Integer rows) {
+        OrderRefundApplication orderRefundApplication = new OrderRefundApplication();
+        orderRefundApplication.setUserId(userId);
+        orderRefundApplication.setPage(page);
+        orderRefundApplication.setRows(rows);
+        orderRefundApplication.setStart((page-1)*rows);
+        List<OrderRefundApplication> orderRefundApplicationList = orderRefundApplicationService.orderRefundApplicationList(orderRefundApplication);
+        if (orderRefundApplicationList.isEmpty()){
+            ResponseEntity.ok(ArrayObject.of(new ArrayList<OrderRefundApplication>()));
+        }
         for (OrderRefundApplication orderRefund : orderRefundApplicationList) {
             OrderDetail orderDetail = orderService.searchOrder(orderRefund.getOrderId());
              List<OrderGoods> orderGoodsList =orderService.searchOrderGoods(orderDetail.getId());

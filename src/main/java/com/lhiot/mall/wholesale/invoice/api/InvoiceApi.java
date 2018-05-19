@@ -119,11 +119,18 @@ public class InvoiceApi {
 
     @GetMapping("/record/{userId}")
     @ApiOperation(value = "开票信息记录查询")
-    public ResponseEntity<ArrayObject> invoiceRecord(@PathVariable("userId") long userId){
+    public ResponseEntity<ArrayObject> invoiceRecord(@PathVariable("userId") long userId,@RequestParam(defaultValue="1") Integer page,
+                                                     @RequestParam(defaultValue="10") Integer rows){
         Invoice invoice = new Invoice();
         invoice.setUserId(userId);
+        invoice.setPage(page);
+        invoice.setRows(rows);
+        invoice.setStart((page-1)*rows);
         List<Invoice> invoiceList = invoiceService.list(invoice);
         List<OrderDetail> orderDetailList = new ArrayList<OrderDetail>();
+        if (invoiceList.isEmpty()){
+            return ResponseEntity.ok(ArrayObject.of(new ArrayList<Invoice>()));
+        }
         for (Invoice item: invoiceList) {
             String orders = item.getInvoiceOrderIds();
             for (String orderId:orders.split(",")) {

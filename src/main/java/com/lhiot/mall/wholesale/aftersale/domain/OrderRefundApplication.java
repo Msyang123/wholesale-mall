@@ -67,4 +67,14 @@ public class OrderRefundApplication {
     @JsonProperty("contactsPhone")
     private String contactsPhone;
 
+    @JsonProperty("start")
+    private Integer start;
+
+    @JsonProperty("rows")
+    private Integer rows;
+
+    private String sidx;
+
+    private Integer page;
+
 }

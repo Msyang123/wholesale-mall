@@ -355,6 +355,7 @@ public class UserApi {
             @ApiImplicitParam(paramType = "path", name = "phone", value = "手机号", required = true, dataType = "String")
     })
     public ResponseEntity verificationCode(@PathVariable("phone") String phone){
+
         //手机验证码
         RMapCache<String,String> cache=  redissonClient.getMapCache("userVerificationCode");
 //        if(Objects.nonNull(cache.get("phone"+phone))){
