@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.pay.mapper;
 
+import com.lhiot.mall.wholesale.pay.domain.Balance;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -13,7 +14,7 @@ public interface PaymentLogMapper {
 
     int updatePaymentLog(PaymentLog paymentLog);
 
-    List <PaymentLog> getBalanceRecord(Integer userId);
+    List <Balance> getBalanceRecord(Integer userId);
 
     PaymentLog getPaymentLog(String orderCode);
 

@@ -8,6 +8,7 @@ import com.lhiot.mall.wholesale.order.domain.DebtOrder;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.service.DebtOrderService;
 import com.lhiot.mall.wholesale.order.service.OrderService;
+import com.lhiot.mall.wholesale.pay.domain.Balance;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.service.PayService;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
@@ -129,7 +130,7 @@ public class CurrencyPayApi {
     @GetMapping("/balance/{userId}")
     @ApiOperation(value = "余额收支明细")
     public ResponseEntity<ArrayObject> getBalanceRecord(@PathVariable("userId") Integer userId) {
-        List<PaymentLog> paymentLogList = paymentLogService.getBalanceRecord(userId);
+        List<Balance> paymentLogList = paymentLogService.getBalanceRecord(userId);
         return ResponseEntity.ok(ArrayObject.of(paymentLogList));
     }
 }
