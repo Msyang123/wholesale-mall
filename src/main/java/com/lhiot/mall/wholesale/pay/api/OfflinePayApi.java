@@ -7,6 +7,7 @@ import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.pay.hdsend.Inventory;
 import com.lhiot.mall.wholesale.pay.hdsend.Warehouse;
 import com.lhiot.mall.wholesale.pay.service.PayService;
+import com.sgsl.util.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +47,7 @@ public class OfflinePayApi {
         }
         OrderDetail searchOrderDetail=orderService.searchOrder(orderCode);
         searchOrderDetail.setSettlementType("offline");
+        searchOrderDetail.setCheckStatus("unaudited");//审核状态：unaudited-未审核 auditeding-审核中 agree-审核通过 reject-审核不通过
         int result=payService.sendToStock(searchOrderDetail);
         if(result>0){
             orderDetail.setCode(1001);
@@ -75,12 +77,12 @@ public class OfflinePayApi {
         debtOrder.setPaymentType("offline");
         //提交账款订单审核
         debtOrder.setCheckStatus("unaudited");//审核状态：unpaid-未支付 failed-已失效 paid-已支付 unaudited-未审核 agree-审核通过 reject-审核不通过
-        int result=debtOrderService.updateDebtOrderByCode(debtOrder);
-        if(result>0){
+        String result=debtOrderService.updateDebtOrderByCode(debtOrder);
+        if(StringUtils.isEmpty(result)){
             //修改账款订单状态
             return ResponseEntity.ok(debtOrder);
         }
-        return ResponseEntity.badRequest().body("线下支付账款订单提交审核失败");
+        return ResponseEntity.badRequest().body(result);
     }
 
 
