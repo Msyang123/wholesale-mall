@@ -67,7 +67,7 @@
     <select id="getBalanceRecord" parameterType="Integer" resultType="com.lhiot.mall.wholesale.pay.domain.Balance">
         (select payment_time time,payment_from type,total_fee fee from t_whs_payment_log where user_id=#{id} and payment_step='paid')
         union all
-        (select refund_time time,refund_type type,refund_fee fee from t_whs_refund_log where user_id=#{id})
+        (select refund_time time,refund_type type,refund_fee fee from t_whs_refund_log where user_id=#{id}) ORDER BY time desc
     </select>
 
     <!-- 后台管理系统 计算订单实付总金额之和-->
