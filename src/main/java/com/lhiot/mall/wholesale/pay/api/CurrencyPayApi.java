@@ -12,6 +12,7 @@ import com.lhiot.mall.wholesale.pay.domain.Balance;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.service.PayService;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
+import com.lhiot.mall.wholesale.user.domain.User;
 import com.sgsl.util.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -129,8 +130,14 @@ public class CurrencyPayApi {
 
     @GetMapping("/balance/{userId}")
     @ApiOperation(value = "余额收支明细")
-    public ResponseEntity<ArrayObject> getBalanceRecord(@PathVariable("userId") Integer userId) {
-        List<Balance> paymentLogList = paymentLogService.getBalanceRecord(userId);
+    public ResponseEntity<ArrayObject> getBalanceRecord(@PathVariable("userId") Integer userId,@RequestParam(defaultValue="1") Integer page,
+                                                        @RequestParam(defaultValue="10") Integer rows) {
+	    User user = new User();
+	    user.setId(userId);
+        user.setPage(page);
+        user.setRows(rows);
+        user.setStart((page-1)*rows);
+        List<Balance> paymentLogList = paymentLogService.getBalanceRecord(user);
         return ResponseEntity.ok(ArrayObject.of(paymentLogList));
     }
 }
