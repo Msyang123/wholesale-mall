@@ -119,20 +119,23 @@ public class DebtOrderService {
      * @return
      */
     public String updateDebtOrderByCode(DebtOrder debtOrder){
-        //修改订单为已支付状态
-        List<OrderDetail> orderDetailList=orderService.searchOrdersByOrderCodes(debtOrder.getOrderIds().split(","));
-        if(orderDetailList==null||orderDetailList.isEmpty()){
-            return  "未查找到相关订单";
-        }
-        for (OrderDetail item:orderDetailList) {
-            if(Objects.equals("auditeding",item.getCheckStatus())||Objects.equals("agree",item.getCheckStatus())){
-                return "订单编码("+item.getOrderCode()+")审核中或者审核通过";
+        //支付类型：balance-余额支付 wechat-微信 offline-线下支付
+        if(Objects.equals(debtOrder.getPaymentType(),"offline")) {
+            //修改订单审核状态
+            List<OrderDetail> orderDetailList = orderService.searchOrdersByOrderCodes(debtOrder.getOrderIds().split(","));
+            if (orderDetailList == null || orderDetailList.isEmpty()) {
+                return "未查找到相关订单";
             }
-            //更新订单为审核中
-            OrderDetail updateOrderDetail = new OrderDetail();
-            updateOrderDetail.setOrderCode(item.getOrderCode());
-            updateOrderDetail.setCheckStatus("auditeding");//审核状态：unaudited-未审核 auditeding-审核中 agree-审核通过 reject-审核不通过
-            orderService.updateOrder(updateOrderDetail);
+            for (OrderDetail item : orderDetailList) {
+                if (Objects.equals("auditeding", item.getCheckStatus()) || Objects.equals("agree", item.getCheckStatus())) {
+                    return "订单编码(" + item.getOrderCode() + ")审核中或者审核通过";
+                }
+                //更新订单为审核中
+                OrderDetail updateOrderDetail = new OrderDetail();
+                updateOrderDetail.setOrderCode(item.getOrderCode());
+                updateOrderDetail.setCheckStatus("auditeding");//审核状态：unaudited-未审核 auditeding-审核中 agree-审核通过 reject-审核不通过
+                orderService.updateOrder(updateOrderDetail);
+            }
         }
         debtOrderMapper.updateDebtOrderByCode(debtOrder);
         return null;

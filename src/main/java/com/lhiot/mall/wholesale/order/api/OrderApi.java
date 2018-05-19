@@ -106,8 +106,8 @@ public class OrderApi {
             return ResponseEntity.ok(ArrayObject.of(new ArrayList<OrderDetail>()));
         }else {
             for (OrderDetail order:orderDetailList){
-                String checkStatus = orderService.searchOutstandingAccountsOrder(order.getOrderCode());
-                order.setCheckStatus(checkStatus);
+/*                String checkStatus = orderService.searchOutstandingAccountsOrder(order.getOrderCode());
+                order.setCheckStatus(checkStatus);*/
                 List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
                 order.setOrderGoodsList(goods);
             }

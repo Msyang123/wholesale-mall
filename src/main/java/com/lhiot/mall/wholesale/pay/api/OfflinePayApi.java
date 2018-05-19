@@ -77,6 +77,7 @@ public class OfflinePayApi {
         debtOrder.setPaymentType("offline");
         //提交账款订单审核
         debtOrder.setCheckStatus("unaudited");//审核状态：unpaid-未支付 failed-已失效 paid-已支付 unaudited-未审核 agree-审核通过 reject-审核不通过
+        debtOrder.setOrderIds(searchDebtOrder.getOrderIds());
         String result=debtOrderService.updateDebtOrderByCode(debtOrder);
         if(StringUtils.isEmpty(result)){
             //修改账款订单状态
