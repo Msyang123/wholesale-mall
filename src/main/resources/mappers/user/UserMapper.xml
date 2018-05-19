@@ -17,6 +17,39 @@
         SELECT <include refid="userInfo" /> FROM T_WHS_USER WHERE open_id=#{0}
     </select>
 
+    <select id="searchUser"  parameterType="String" resultType="com.lhiot.mall.wholesale.user.domain.User">
+		select * from t_whs_user
+		<trim prefix="where" prefixOverrides="and">
+			<if test="id!=0 "> and id = #{id} </if>
+
+			<if test="sex!=null and sex!='null' and sex!=''"> and sex = #{sex} </if>
+
+			<if test="phone!=null and phone!='null' and phone!=''"> and phone = #{phone} </if>
+
+			<if test="city!=null and city!='null' and city!=''"> and city = #{city} </if>
+
+			<if test="registerTime!=null and registerTime!='null' and registerTime!=''"> and register_time = #{registerTime} </if>
+
+			<if test="nickname!=null and nickname!='null' and nickname!=''"> and nickname = #{nickname} </if>
+
+			<if test="openId!=null and openId!='null' and openId!=''"> and open_id = #{openId} </if>
+
+			<if test="balance!=0 "> and balance = #{balance} </if>
+
+			<if test="unionId!=null and unionId!='null' and unionId!=''"> and union_id = #{unionId} </if>
+
+			<if test="userStatus!=null and userStatus!='null' and userStatus!=''"> and user_status = #{userStatus} </if>
+
+			<if test="profilePhoto!=null and profilePhoto!='null' and profilePhoto!=''"> and profile_photo = #{profilePhoto} </if>
+
+			<if test="shopName!=null and shopName!='null' and shopName!=''"> and shop_name = #{shopName} </if>
+
+			<if test="userName!=null and userName!='null' and userName!=''"> and user_name = #{userName} </if>
+
+			<if test="addressDetail!=null and addressDetail!='null' and addressDetail!=''"> and address_detail = #{addressDetail} </if>
+		</trim>
+    </select>
+
     <!--微信用户关注后保存-->
     <insert id="save" parameterType="com.lhiot.mall.wholesale.user.domain.User" useGeneratedKeys="true">
         INSERT INTO t_whs_user (sex,city,register_time,nickname,open_id,union_id,user_status,
