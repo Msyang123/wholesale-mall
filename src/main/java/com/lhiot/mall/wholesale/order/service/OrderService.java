@@ -100,7 +100,9 @@ public class OrderService {
     public OrderDetail searchOrder(String orderCode) {
         OrderDetail orderDetail = orderMapper.searchOrder(orderCode);
         //商品信息
-        orderDetail.setOrderGoodsList(orderMapper.searchOrderGoods(orderDetail.getId()));
+        if(Objects.nonNull(orderDetail)){
+            orderDetail.setOrderGoodsList(orderMapper.searchOrderGoods(orderDetail.getId()));
+        }
         return orderDetail;
     }
 
@@ -110,7 +112,9 @@ public class OrderService {
     public OrderDetail searchOrderById(long id) {
         OrderDetail orderDetail = orderMapper.select(id);
         //商品信息
-        orderDetail.setOrderGoodsList(orderMapper.searchOrderGoods(orderDetail.getId()));
+        if(Objects.nonNull(orderDetail)) {
+            orderDetail.setOrderGoodsList(orderMapper.searchOrderGoods(orderDetail.getId()));
+        }
         return orderDetail;
     }
 

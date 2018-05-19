@@ -63,7 +63,7 @@ public class CurrencyPayApi {
 
         //余额支付订单 发送到总仓
         String payResult=payService.currencyPay(orderDetail);
-        if(StringUtils.isNotEmpty(payResult)){
+        if(StringUtils.isEmpty(payResult)){
             return ResponseEntity.ok(orderDetail);
         }
         return ResponseEntity.badRequest().body(payResult);
@@ -85,7 +85,7 @@ public class CurrencyPayApi {
         }
         //余额支付账款订单支付
         String payResult=payService.currencyPay(debtOrder);
-        if(StringUtils.isNotEmpty(payResult)){
+        if(StringUtils.isEmpty(payResult)){
             return ResponseEntity.ok(debtOrder);
         }
         return ResponseEntity.badRequest().body(payResult);
@@ -112,7 +112,7 @@ public class CurrencyPayApi {
         invoiceService.calculateTaxFee(invoice);
         invoice.setInvoiceCode(snowflakeId.stringId());
         String payResult=payService.currencyPay(invoice);
-        if(StringUtils.isNotEmpty(payResult)){
+        if(StringUtils.isEmpty(payResult)){
 
             return ResponseEntity.ok(invoice);
         }

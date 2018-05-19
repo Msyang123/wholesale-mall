@@ -458,7 +458,7 @@ public class OrderApi {
             return ResponseEntity.badRequest().body("订单未支付");
         }
         String cancelPayedOrderResult=orderService.cancelPayedOrder(orderDetail);
-        if(StringUtils.isNotEmpty(cancelPayedOrderResult)){
+        if(StringUtils.isEmpty(cancelPayedOrderResult)){
             return ResponseEntity.ok("1");
         }
         return ResponseEntity.badRequest().body(cancelPayedOrderResult);
