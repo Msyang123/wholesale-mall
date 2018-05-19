@@ -81,4 +81,6 @@ public interface UserMapper {
     List<UserResult> exportUsers(UserGridParam param);
     //后台管理用户数据详情
     UserResult searchById(Long userId);
+
+    List<User> searchUser(User user);
 }

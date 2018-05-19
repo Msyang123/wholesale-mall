@@ -50,6 +50,11 @@ public class OrderRefundApplicationApi {
     @PostMapping("/apply")
     @ApiOperation(value = "售后申请")
     public ResponseEntity apply(@RequestBody OrderRefundApplication orderRefundApplication) {
+        if (Objects.isNull(orderRefundApplication.getContactsPhone())||Objects.equals(orderRefundApplication.getContactsPhone(),"")
+                ||Objects.isNull(orderRefundApplication.getApplicationType())||Objects.equals(orderRefundApplication.getApplicationType(),"")
+                ||Objects.isNull(orderRefundApplication.getExistProblem())||Objects.equals(orderRefundApplication.getExistProblem(),"")){
+            return ResponseEntity.badRequest().body("请完善信息在提交");
+        }
         RMapCache<String,Object> cache=  redissonClient.getMapCache("afterSale");
         if(Objects.nonNull(cache.get("orderId"+orderRefundApplication.getOrderId()))){
             return ResponseEntity.badRequest().body("申请正在提交中，请不要重复操作");
