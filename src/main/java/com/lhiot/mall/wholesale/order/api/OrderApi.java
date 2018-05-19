@@ -100,6 +100,7 @@ public class OrderApi {
         orderDetail.setPage(page);
         orderDetail.setStart((page-1)*rows);
         orderDetail.setRows(rows);
+        orderDetail.setCheckStatus("agree");
         List<OrderDetail> orderDetailList = orderService.searchOrders(orderDetail);
         if (orderDetailList.isEmpty()){
             return ResponseEntity.ok(ArrayObject.of(new ArrayList<OrderDetail>()));
