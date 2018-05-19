@@ -14,7 +14,7 @@ import java.sql.Timestamp;
 @ApiModel
 @NoArgsConstructor
 public class Balance {
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @JsonProperty("createdTime")
     private Timestamp time;
 

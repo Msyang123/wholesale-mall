@@ -32,7 +32,7 @@ public class User {
     @JsonProperty("address")
     private String addressDetail;
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @JsonProperty("registerTime")
     private Timestamp registerTime;
 
@@ -88,4 +88,8 @@ public class User {
 
     @JsonProperty("verifCode")
     private String verifCode;//验证码
+
+    private String sidx;
+
+    private Integer page;
 }

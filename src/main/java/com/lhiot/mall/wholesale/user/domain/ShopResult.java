@@ -29,7 +29,7 @@ public class ShopResult {
     @JsonProperty("phone")
     private String phone;
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @JsonProperty("createTime")
     private Timestamp registerTime;
 
@@ -48,7 +48,7 @@ public class ShopResult {
     @JsonProperty("latestMoney")
     private Integer lateOrdersFee;
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @JsonProperty("latestTime")
     private Timestamp lateTime;
 
