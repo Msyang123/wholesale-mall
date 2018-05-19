@@ -26,6 +26,7 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="checkStatus != null and checkStatus !=''"> and check_status != #{checkStatus}</if>
         </trim>
         ORDER BY o.create_time desc
         <include refid="common.pager"></include>
@@ -63,7 +64,6 @@
         ,order_status orderStatus,create_time createTime,IFNULL(total_fee,0) totalFee,IFNULL(payable_fee,0) payableFee,remarks,
         hd_status,delivery_time,IFNULL(delivery_fee,0) deliveryFee,delivery_address,hd_code
         from t_whs_order o where o.order_code = #{orderCode}
-        <if test="checkStatus != null and checkStatus !=''"> and check_status != #{checkStatus}</if>
     </select>
 
     <select id="searchOrderGoods"  parameterType="long" resultType="com.lhiot.mall.wholesale.order.domain.OrderGoods">
