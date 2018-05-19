@@ -166,6 +166,7 @@
             <if test="userId!=null and userId!=0"> and user_id = #{userId} </if>
         </where>
         ORDER BY invoice_print_time desc
+        <include refid="common.pager"></include>
     </select>
 
     <!-- 后台管理 根据id查询开票信息详情 -->

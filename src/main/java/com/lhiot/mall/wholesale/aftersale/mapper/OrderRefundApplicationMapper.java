@@ -13,7 +13,7 @@ public interface OrderRefundApplicationMapper {
 
     Integer updateById(OrderRefundApplication orderRefundApplication);
 
-    List<OrderRefundApplication> orderRefundApplicationList(Long userId);
+    List<OrderRefundApplication> orderRefundApplicationList(OrderRefundApplication orderRefundApplication);
 
     List<OrderRefundApplication> list(OrderRefundApplication orderRefundApplication);
 
