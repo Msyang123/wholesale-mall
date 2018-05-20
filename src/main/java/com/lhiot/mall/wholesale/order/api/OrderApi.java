@@ -100,13 +100,14 @@ public class OrderApi {
         orderDetail.setPage(page);
         orderDetail.setStart((page-1)*rows);
         orderDetail.setRows(rows);
+        orderDetail.setCheckStatus("agree");
         List<OrderDetail> orderDetailList = orderService.searchOrders(orderDetail);
         if (orderDetailList.isEmpty()){
             return ResponseEntity.ok(ArrayObject.of(new ArrayList<OrderDetail>()));
         }else {
             for (OrderDetail order:orderDetailList){
-                String checkStatus = orderService.searchOutstandingAccountsOrder(order.getOrderCode());
-                order.setCheckStatus(checkStatus);
+/*                String checkStatus = orderService.searchOutstandingAccountsOrder(order.getOrderCode());
+                order.setCheckStatus(checkStatus);*/
                 List<OrderGoods> goods = orderService.searchOrderGoods(order.getId());
                 order.setOrderGoodsList(goods);
             }
