@@ -68,10 +68,14 @@ public class OrderApi {
     @GetMapping("/my-orders/{userId}")
     @ApiOperation(value = "我的订单列表")
     public ResponseEntity<ArrayObject> queryMyOrders(@PathVariable("userId") long userId, @RequestParam(required = false) String orderStatus,
+                                                     @RequestParam(required = false) String orderStatusIn,
                                                      @RequestParam(defaultValue="1") Integer page,@RequestParam(defaultValue="10") Integer rows){
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setUserId(userId);
         orderDetail.setOrderStatus(orderStatus);
+        if(StringUtils.isNotEmpty(orderStatusIn)){
+            orderDetail.setOrderStatusIn(orderStatusIn.split(","));
+        }
         orderDetail.setPage(page);
         orderDetail.setStart((page-1)*rows);
         orderDetail.setRows(rows);
