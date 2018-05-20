@@ -66,7 +66,7 @@ public class DebtOrder {
     @JsonProperty("deliveryFee")
     private Integer deliveryFee;
 
-    //账款订单支付总金额
-    @JsonProperty("payTotalFee")
-    private Integer payTotalFee;
+    @JsonProperty("underLinePay")
+    private Integer underLinePay;
+
 }
