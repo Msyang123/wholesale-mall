@@ -389,7 +389,7 @@
     </select>
 
     <!-- 后台管理系统 数据导出 -->
-    <select id="exportData" parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.DebtOrderGridParam"
+    <select id="exportData" parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam"
             resultType="map">
         select t1.order_code as orderCode,t1.hd_code as hdCode,DATE_FORMAT(t1.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
         FORMAT(t1.total_fee/100.0,2) as totalFee,FORMAT(t1.discount_fee/100.0,2) as discountFee,
@@ -413,6 +413,35 @@
             <if test="phone != null and phone != ''">and t2.phone  like CONCAT('%',  #{phone},'%')</if>
         </trim>
     </select>
+
+    <!-- 后台管理系统 数据导出 -->
+    <select id="exportDataOrderGoods" parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam"
+            resultType="map">
+        select t1.order_code as orderCode,t4.user_name as userName,t4.phone as phone,t4.shop_name as shopName,t3.goods_name as goodsName,t6.standard as standard,t2.standard_weight as standardWeight,t7.unit_name as unit_name,FORMAT(t2.goods_price/100.0,2) as goodsPrice,t2.quanity as quanity,
+        t1.delivery_address as deliverAddress,DATE_FORMAT(t1.delivery_time,'%Y-%m-%d %H:%i:%s') as deliveryTime,
+        FORMAT(t1.total_fee/100.0,2) as totalFee,FORMAT(t1.discount_fee/100.0,2) as discountFee,FORMAT(t1.delivery_fee/100.0,2) as deliveryFee,FORMAT(t1.payable_fee/100.0,2) as payableFee,
+        DATE_FORMAT(t1.create_time,'%Y-%m-%d %H:%i:%s') as createTime,DATE_FORMAT(t2.payment_time,'%Y-%m-%d %H:%i:%s') as paymentTime,FORMAT(t5.total_fee/100.0,2) as payTotalFee,t1.remarks as remarks,
+        case t1.settlement_type when 'balance' then '余额支付'  when 'wechat' then '微信支付' end as settlementType,
+        case t1.order_status when 'failed' then '已失效' when 'unpaid' then '待付款' when 'paying' then '支付中'  when 'undelivery' then '待发货' when 'delivery' then '配送中'  when 'unrefunded' then '退货中' when 'refunded' then '退货成功'  when 'received' then '已收货' end as orderStatus,
+        case t1.hd_status when 'success' then '成功' when 'failed' then '失败' end as hdStatus
+        from t_whs_order t1
+        LEFT JOIN t_whs_order_goods t2 on t1.id = t2.order_id
+        LEFT JOIN t_whs_goods t3 on t2.goods_id = t3.id
+        LEFT JOIN t_whs_user t4 on t1.user_id = t4.id
+        LEFT JOIN t_whs_payment_log t5 on t1.order_code = t5.order_code
+        LEFT JOIN t_whs_goods_standard t6 on t2.goods_standard_id = t6.id
+        LEFT JOIN t_whs_goods_unit t7 on t6.unit_code = t7.id
+        <trim prefix="where" prefixOverrides="and">
+            <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
+            <if test="createTimeEnd != null and createTimeEnd != ''">and t1.create_time &lt;= #{createTimeEnd}</if>
+            <if test="orderCode != null and orderCode != ''">and t1.order_code like CONCAT('%', #{orderCode},'%')</if>
+            <if test="orderStatus != null and orderStatus != ''">and t1.order_status = #{orderStatus}</if>
+            <if test="payStatus != null and payStatus != ''">and t1.pay_status = #{payStatus}</if>
+            <if test="settlementType != null and settlementType != ''">and t1.settlement_type = #{settlementType}</if>
+            <if test="phone != null and phone != ''">and t2.phone  like CONCAT('%',  #{phone},'%')</if>
+        </trim>
+    </select>
+
 </mapper>
 
 

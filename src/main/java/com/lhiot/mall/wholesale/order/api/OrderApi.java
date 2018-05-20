@@ -13,10 +13,7 @@ import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
 import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 import com.lhiot.mall.wholesale.goods.service.GoodsService;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
-import com.lhiot.mall.wholesale.order.domain.Distribution;
-import com.lhiot.mall.wholesale.order.domain.OrderDetail;
-import com.lhiot.mall.wholesale.order.domain.OrderGoods;
-import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
+import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
@@ -502,5 +499,11 @@ public class OrderApi {
     @ApiOperation(value = "后台管理系统新建一个查询，数据导出", response = Invoice.class,responseContainer="list")
     public ResponseEntity<List<Map<String, Object>>> exportData(@RequestBody(required = true) OrderGridParam param) {
         return ResponseEntity.ok(orderService.exportData(param));
+    }
+
+    @PostMapping("/exportgoods")
+    @ApiOperation(value = "后台管理系统新建一个查询，数据导出", response = Invoice.class,responseContainer="list")
+    public ResponseEntity<List<Map<String, Object>>> exportDataOrderGoods(@RequestBody(required = true) OrderGridParam param) {
+        return ResponseEntity.ok(orderService.exportDataOrderGoods(param));
     }
 }

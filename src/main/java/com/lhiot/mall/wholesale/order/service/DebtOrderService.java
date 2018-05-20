@@ -174,7 +174,6 @@ public class DebtOrderService {
         List<DebtOrder> debtOrderList = new ArrayList<>();
         List<User> userList = new ArrayList<>();
         List<OrderDetail> orderDetailList = new ArrayList<>();
-        List<PaymentLog> paymentLogList = new ArrayList<>();
         List<DebtOrderResult> debtOrderResults = new ArrayList<>();
         int count = 0;
         int page = param.getPage();
@@ -269,11 +268,6 @@ public class DebtOrderService {
                 debtOrderResult.setDiscountFee(orderDetail.getDiscountFee());
                 debtOrderResult.setTotalFee(orderDetail.getTotalFee());
             }
-           /* //支付信息
-            PaymentLog paymentLog = paymentLogService.countFee(debtOrderResult.getOrderIds());
-            if (Objects.nonNull(paymentLog)) {
-                debtOrderResult.setPayTotalFee(paymentLog.getTotalFee());
-            }*/
         }
         return debtOrderResult;
     }

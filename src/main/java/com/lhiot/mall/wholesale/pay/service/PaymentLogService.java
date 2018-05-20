@@ -10,8 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -63,6 +65,9 @@ public class PaymentLogService {
      * @return
      */
     public List<PaymentLog> getPaymentLogList(List<Long> orderIds){
+        if (Objects.isNull(orderIds)||orderIds.isEmpty()){
+            return new ArrayList<PaymentLog>();
+        }
         return paymentLogMapper.getPaymentLogList(orderIds);
     }
 
@@ -70,10 +75,10 @@ public class PaymentLogService {
      * 后台管理--根据订单查询订单实付金额之和
      * @return
      */
-    public PaymentLog countFee(String orderCode) {
+    public PaymentLog countFee(String orderIds) {
         //FIXME 应根据orderIds查询，后期统一修改
-        String[] orderCodes = orderCode.split(",");
-        List<String> list = Arrays.asList(orderCodes);
+        String[] orderId = orderIds.split(",");
+        List<String> list = Arrays.asList(orderId);
         return paymentLogMapper.countFee(list);
     }
 }
