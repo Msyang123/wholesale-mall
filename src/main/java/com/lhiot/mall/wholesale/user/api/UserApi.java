@@ -10,11 +10,8 @@ import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.util.ImmutableMap;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.base.QRCodeUtil;
-import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
-import com.lhiot.mall.wholesale.user.domain.User;
-import com.lhiot.mall.wholesale.user.domain.UserAddress;
-import com.lhiot.mall.wholesale.user.domain.UserGridParam;
-import com.lhiot.mall.wholesale.user.domain.UserResult;
+import com.lhiot.mall.wholesale.base.StringReplaceUtil;
+import com.lhiot.mall.wholesale.user.domain.*;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
 import com.lhiot.mall.wholesale.user.wechat.AccessToken;
@@ -394,6 +391,12 @@ public class UserApi {
         if(Objects.isNull(user)||Objects.isNull(user.getId())){
             return ResponseEntity.badRequest().body("用户信息错误");
         }
+
+        boolean isMoblieNo = StringReplaceUtil.isMobileNO(user.getPhone());
+        if (!isMoblieNo){
+            return ResponseEntity.badRequest().body("手机号码格式错误");
+        }
+        
         if (Objects.isNull(user.getPhone())||Objects.equals(user.getPhone(),"")
                 ||Objects.isNull(user.getUserName())||Objects.equals(user.getUserName(),"")
                 ||Objects.isNull(user.getShopName())||Objects.equals(user.getShopName(),"")
@@ -401,7 +404,10 @@ public class UserApi {
                 ||Objects.isNull(user.getCode())||Objects.equals(user.getCode(),"")){
             return ResponseEntity.badRequest().body("请完善用户信息再提交");
         }
-
+        SalesUser salesUser = salesUserService.findCode(user.getCode());
+        if (Objects.isNull(salesUser.getInviteCode())){
+            return ResponseEntity.badRequest().body("授权码错误");
+        }
         User u = userService.user(user.getId());
         if(Objects.isNull(u)){
             return ResponseEntity.badRequest().body("未找到用户相关信息");
@@ -412,6 +418,8 @@ public class UserApi {
         if (Objects.equals(u.getUserStatus(),"certified")){
             return ResponseEntity.badRequest().body("您审核已通过，不能重复操作");
         }
+
+
         //手机验证码
         RMapCache<String,String> cache =  redissonClient.getMapCache("userVerificationCode");
         if(Objects.isNull(cache.get("phone"+user.getPhone()))){
