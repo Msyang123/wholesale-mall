@@ -13,10 +13,7 @@ import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
 import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 import com.lhiot.mall.wholesale.goods.service.GoodsService;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
-import com.lhiot.mall.wholesale.order.domain.Distribution;
-import com.lhiot.mall.wholesale.order.domain.OrderDetail;
-import com.lhiot.mall.wholesale.order.domain.OrderGoods;
-import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
+import com.lhiot.mall.wholesale.order.domain.*;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
@@ -409,7 +406,7 @@ public class OrderApi {
         //验证实际计算订单金额+配送费-优惠金额=传递的订单应付金额+应付配送费
         if (needPay!=orderDetail.getPayableFee()+orderDetail.getDeliveryFee()){
             orderDetail.setCode(-1002);
-            orderDetail.setMsg("订单计算应付金额("+needPay+")与实际传递订单金额("+(orderDetail.getPayableFee()+orderDetail.getDeliveryFee())+")不一致");
+            orderDetail.setMsg("订单计算应付金额("+needPay+")与实际传递订单金额("+(orderDetail.getPayableFee()+orderDetail.getDeliveryFee())+")不一致，请刷新重试");
             return ResponseEntity.ok(orderDetail);
         }
         //总金额不需要计算
@@ -502,5 +499,11 @@ public class OrderApi {
     @ApiOperation(value = "后台管理系统新建一个查询，数据导出", response = Invoice.class,responseContainer="list")
     public ResponseEntity<List<Map<String, Object>>> exportData(@RequestBody(required = true) OrderGridParam param) {
         return ResponseEntity.ok(orderService.exportData(param));
+    }
+
+    @PostMapping("/exportgoods")
+    @ApiOperation(value = "后台管理系统新建一个查询，数据导出", response = Invoice.class,responseContainer="list")
+    public ResponseEntity<List<Map<String, Object>>> exportDataOrderGoods(@RequestBody(required = true) OrderGridParam param) {
+        return ResponseEntity.ok(orderService.exportDataOrderGoods(param));
     }
 }

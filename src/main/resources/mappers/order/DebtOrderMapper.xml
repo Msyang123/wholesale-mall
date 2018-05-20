@@ -4,7 +4,7 @@
     <sql id="debtOrderColumn">
        t1.id as id,t1.check_time as checkTime,t1.order_debt_code as orderDebtCode,t1.user_id as userId,t1.create_time as createTime,
     t1.debt_fee as debtFee,t1.check_status as checkStatus,t1.payment_type as paymentType,t1.payment_evidence as paymentEvidence,
-    t1.order_ids as orderIds,t1.remarks as remarks
+    t1.order_ids as orderIds,t1.under_line_pay as underLinePay,t1.remarks as remarks
     </sql>
 
     <insert id="save" parameterType="com.lhiot.mall.wholesale.order.domain.DebtOrder"  useGeneratedKeys="true"
@@ -39,6 +39,9 @@
             </if>
             <if test="remarks != null">
                 remarks=#{remarks},
+            </if>
+            <if test="underLinePay != null">
+                under_line_pay=#{underLinePay},
             </if>
         </set>
         where order_debt_code=#{orderDebtCode}
@@ -77,10 +80,10 @@
     <!-- 后台管理 分页查询账款订单记录 -->
     <select id="pageQuery" parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.DebtOrderGridParam"
             resultType="com.lhiot.mall.wholesale.order.domain.DebtOrder">
-        select <include refid="debtOrderColumn"/>,IFNULL(SUM(t2.total_fee),0) as totalFee,IFNULL(SUM(t2.discount_fee),0) as discountFee,IFNULL(SUM(t2.payable_fee),0) as payableFee,IFNULL(SUM(t4.total_fee),0) as payTotalFee
+        select <include refid="debtOrderColumn"/>,IFNULL(SUM(t2.total_fee),0) as totalFee,IFNULL(SUM(t2.discount_fee),0) as discountFee,IFNULL(SUM(t2.payable_fee),0) as payableFee,
+       IFNULL(SUM(t2.delivery_fee),0) as deliveryFee
         from t_whs_debt_order t1
         left join t_whs_order t2 on FIND_IN_SET(t2.order_code,t1.order_ids)
-        LEFT JOIN t_whs_payment_log t4 ON FIND_IN_SET(t4.order_code,t1.order_ids)
         <trim prefix="where" prefixOverrides="and">
             <if test="checkStatus != null and checkStatus != ''">and t1.check_status = #{checkStatus}</if>
             <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>
@@ -113,13 +116,12 @@
         case t1.check_status when 'unpaid' then '未支付' when 'failed' then '已失效' when 'paid' then '已支付' when 'unaudited' then '未审核' when 'agree' then '审核通过' when 'reject' then '审核不通过' end as checkStatus,
         IFNULL(FORMAT(SUM(t3.total_fee)/100.0,2),'0.00') AS totalFee,
         IFNULL(FORMAT(SUM(t3.discount_fee)/100.0,2),'0.00') AS discountFee,
+        IFNULL(FORMAT(SUM(t3.delivery_fee)/100.0,2),'0.00') AS deliveryFee,
         IFNULL(FORMAT(SUM(t3.payable_fee)/100.0,2),'0.00') AS payableFee,
-        IFNULL(FORMAT(SUM(t4.total_fee)/100.0,2),'0.00') AS payTotalFee,
-        IFNULL(FORMAT(SUM(t4.refund_fee)/100.0,2),'0.00') AS refundFee
+        IFNULL(FORMAT(SUM(t1.under_line_pay)/100.0,2),'0.00') AS underLinePay
         from t_whs_debt_order t1
         LEFT JOIN t_whs_user t2 on t1.user_id = t2.id
         LEFT JOIN t_whs_order t3 ON FIND_IN_SET(t3.order_code,t1.order_ids)
-        LEFT JOIN t_whs_payment_log t4 ON FIND_IN_SET(t4.order_code,t1.order_ids)
         <trim prefix="where" prefixOverrides="and">
             <if test="checkStatus != null and checkStatus != ''">and t1.check_status = #{checkStatus}</if>
             <if test="createTimeBegin != null and createTimeBegin != ''">and t1.create_time &gt;= #{createTimeBegin}</if>

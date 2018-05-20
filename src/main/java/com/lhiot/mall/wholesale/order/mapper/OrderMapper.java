@@ -99,8 +99,12 @@ public interface OrderMapper {
     Map<String,Object> countOverDue(Map<String, Object> param);
 
     //后台管理系统 查询订单应付、实付、优惠费用之和
-    OrderDetail countFee(List<String> orderCode);
+    OrderDetail countFee(List<String> orderId);
 
     //后台管理系统 导出订单
     List<Map<String, Object>> exportData(OrderGridParam param);
+
+    //后台管理系统 导出订单
+    List<Map<String, Object>> exportDataOrderGoods(OrderGridParam param);
+
 }

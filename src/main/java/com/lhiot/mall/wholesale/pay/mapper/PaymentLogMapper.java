@@ -21,5 +21,5 @@ public interface PaymentLogMapper {
 
     List<PaymentLog> getPaymentLogList(List<Long> userIds);
 
-    PaymentLog countFee(List<String> orderCode);
+    PaymentLog countFee(List<String> orderId);
 }

@@ -246,20 +246,6 @@ public class OrderService {
      */
     public String cancelPayedOrder(OrderDetail orderDetail) {
 
-        //退货到总仓
-        /**********批发单服务-作废**********************************/
-        Abolish abolish = new Abolish();
-        abolish.setId(orderDetail.getHdCode());
-        abolish.setSrcCls("批发商城");
-        abolish.setOper("退货管理员");
-        String cancelResult = warehouse.abolish(abolish);
-        log.info(cancelResult);
-        //修改为已退货
-        OrderDetail updateOrderDetail = new OrderDetail();
-        updateOrderDetail.setOrderCode(orderDetail.getOrderCode());
-        updateOrderDetail.setCurrentOrderStatus("undelivery");
-        updateOrderDetail.setOrderStatus("refunded");
-        updateOrderStatus(updateOrderDetail);
         //查询支付日志
         PaymentLog paymentLog = paymentLogService.getPaymentLog(orderDetail.getOrderCode());
         switch (orderDetail.getSettlementType()) {
@@ -295,7 +281,8 @@ public class OrderService {
                 }
                 //退款 如果微信支付就微信退款
                 String refundChatFee = weChatUtil.refund(paymentLog.getOrderCode(), paymentLog.getTotalFee());
-                if (StringUtils.isNotBlank(refundChatFee)) {
+                //检查为没有失败信息
+                if (StringUtils.isNotBlank(refundChatFee)&&refundChatFee.indexOf("FAIL")==-1) {
                     //写入退款记录  t_whs_refund_log
                     RefundLog refundLog = new RefundLog();
                     refundLog.setPaymentLogId(paymentLog.getId());
@@ -343,6 +330,20 @@ public class OrderService {
                 log.info("退款未找到类型");
                 break;
         }
+        //退货到总仓
+        /**********批发单服务-作废**********************************/
+        Abolish abolish = new Abolish();
+        abolish.setId(orderDetail.getHdCode());
+        abolish.setSrcCls("批发商城");
+        abolish.setOper("退货管理员");
+        String cancelResult = warehouse.abolish(abolish);
+        log.info(cancelResult);
+        //修改为已退货
+        OrderDetail updateOrderDetail = new OrderDetail();
+        updateOrderDetail.setOrderCode(orderDetail.getOrderCode());
+        updateOrderDetail.setCurrentOrderStatus("undelivery");
+        updateOrderDetail.setOrderStatus("refunded");
+        updateOrderStatus(updateOrderDetail);
         return null;
     }
 
@@ -411,7 +412,7 @@ public class OrderService {
                 }
             }
             userList = userService.search(userIds);//根据用户ID列表查询用户信息
-            paymentLogList = paymentLogService.getPaymentLogList(orderIds);//根据订单ID列表查询支付信息
+            //paymentLogList = paymentLogService.getPaymentLogList(orderIds);//根据订单ID列表查询支付信息
         } else {//传了手机号查询条件，先根据条件查询用户列表及用户ids，再根据ids和订单其他信息查询订单信息列表
             userList = userService.searchByPhoneOrName(userParam);
             List<Long> userIds = new ArrayList<Long>();
@@ -437,7 +438,7 @@ public class OrderService {
                         orderIds.add(orderGridResult.getId());
                     }
                 }
-                paymentLogList = paymentLogService.getPaymentLogList(orderIds);//根据订单ID列表查询支付信息
+                //paymentLogList = paymentLogService.getPaymentLogList(orderIds);//根据订单ID列表查询支付信息
             }
         }
         PageQueryObject result = new PageQueryObject();
@@ -532,9 +533,9 @@ public class OrderService {
      *
      * @return
      */
-    public OrderDetail countFee(String orderCode) {
-        String[] orderCodes = orderCode.split(",");
-        List<String> list = Arrays.asList(orderCodes);
+    public OrderDetail countFee(String orderIds) {
+        String[] orderId = orderIds.split(",");
+        List<String> list = Arrays.asList(orderId);
         return orderMapper.countFee(list);
     }
 
@@ -576,4 +577,14 @@ public class OrderService {
     public List<Map<String, Object>> exportData(OrderGridParam param){
         return orderMapper.exportData(param);
     }
+
+    /**
+     * 后台管理系统--导出订单商品信息
+     * @return
+     */
+    public List<Map<String, Object>> exportDataOrderGoods(OrderGridParam param){
+        return orderMapper.exportDataOrderGoods(param);
+    }
+
+
 }
