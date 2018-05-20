@@ -295,7 +295,8 @@ public class OrderService {
                 }
                 //退款 如果微信支付就微信退款
                 String refundChatFee = weChatUtil.refund(paymentLog.getOrderCode(), paymentLog.getTotalFee());
-                if (StringUtils.isNotBlank(refundChatFee)) {
+                //检查为没有失败信息
+                if (StringUtils.isNotBlank(refundChatFee)&&refundChatFee.indexOf("FAIL")!=-1) {
                     //写入退款记录  t_whs_refund_log
                     RefundLog refundLog = new RefundLog();
                     refundLog.setPaymentLogId(paymentLog.getId());
