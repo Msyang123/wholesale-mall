@@ -70,6 +70,7 @@ public class SalesUserPerformanceApi{
             @RequestParam(value="salesmanId", required = false) String salesmanId,
             @RequestParam(value="orderStatus", required = false)String orderStatus,
             @RequestParam(value="settementType", required = false)String settementType,
+            @RequestParam(value="payStatus", required = false)String payStatus,
             @RequestParam(value="createTimeBegin", required = false)String createTimeBegin,
             @RequestParam(value="createTimeEnd", required = false)String createTimeEnd,
             @RequestParam(value="rows", required = false, defaultValue="10") Integer rows,
@@ -81,6 +82,7 @@ public class SalesUserPerformanceApi{
         param.setSettlementType(settementType);
         param.setCreateTimeBegin(createTimeBegin);
         param.setCreateTimeEnd(createTimeEnd);
+        param.setPayStatus(payStatus);
         param.setPage(page);
         param.setSord(sord);
         param.setRows(rows);
