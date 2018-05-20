@@ -2,6 +2,7 @@ package com.lhiot.mall.wholesale.demand.api;
 
 import com.leon.microx.common.wrapper.ResultObject;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.base.StringReplaceUtil;
 import com.lhiot.mall.wholesale.demand.domain.DemandGoods;
 import com.lhiot.mall.wholesale.demand.domain.DemandGoodsResult;
 import com.lhiot.mall.wholesale.demand.domain.gridparam.DemandGoodsGridParam;
@@ -53,6 +54,12 @@ public class DemandGoodsApi {
                 ||Objects.isNull(demandGoods.getGoodsStandard())||Objects.equals(demandGoods.getGoodsStandard(),"")){
             return ResponseEntity.badRequest().body("请完善信息");
         }
+
+        boolean isMoblieNo = StringReplaceUtil.isMobileNO(demandGoods.getContactPhone());
+        if (!isMoblieNo){
+            return ResponseEntity.badRequest().body("手机号码格式错误");
+        }
+
         demandGoods.setCreateTime(new Timestamp(new Date().getTime()));
         if (demandGoodsService.insertDemandGoods(demandGoods)>0){
             return ResponseEntity.ok().body("提交成功");

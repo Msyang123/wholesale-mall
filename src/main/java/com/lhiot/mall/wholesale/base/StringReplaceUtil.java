@@ -41,4 +41,19 @@ public class StringReplaceUtil {
             return "";
         }
     }
+
+    public static boolean isMobileNO(String mobile){
+        if (mobile.length() != 11)
+        {
+            return false;
+        }else{
+            Pattern p = null;
+            Matcher m = null;
+            boolean b = false;
+            p = Pattern.compile("^[1-9][0-9][0-9]{9}$"); // 验证手机号 11位
+            m = p.matcher(mobile);
+            b = m.matches();
+            return b;
+        }
+    }
 }

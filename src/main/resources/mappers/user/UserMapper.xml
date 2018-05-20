@@ -50,7 +50,7 @@
 
     <!-- 用户欠款金额-->
     <select id="debtFee"  parameterType="long" resultType="Integer">
-        select IFNULL(SUM(payable_fee),0) debtFee from t_whs_order
+        select IFNULL(SUM(payable_fee),0)+IFNULL(SUM(delivery_fee),0) debtFee from t_whs_order
         where user_id=#{0} and order_status in
         ('undelivery','delivery','received','unrefunded','refundfailed')
         and settlement_type='offline' and pay_status='unpaid'
