@@ -246,20 +246,6 @@ public class OrderService {
      */
     public String cancelPayedOrder(OrderDetail orderDetail) {
 
-        //退货到总仓
-        /**********批发单服务-作废**********************************/
-        Abolish abolish = new Abolish();
-        abolish.setId(orderDetail.getHdCode());
-        abolish.setSrcCls("批发商城");
-        abolish.setOper("退货管理员");
-        String cancelResult = warehouse.abolish(abolish);
-        log.info(cancelResult);
-        //修改为已退货
-        OrderDetail updateOrderDetail = new OrderDetail();
-        updateOrderDetail.setOrderCode(orderDetail.getOrderCode());
-        updateOrderDetail.setCurrentOrderStatus("undelivery");
-        updateOrderDetail.setOrderStatus("refunded");
-        updateOrderStatus(updateOrderDetail);
         //查询支付日志
         PaymentLog paymentLog = paymentLogService.getPaymentLog(orderDetail.getOrderCode());
         switch (orderDetail.getSettlementType()) {
@@ -296,7 +282,7 @@ public class OrderService {
                 //退款 如果微信支付就微信退款
                 String refundChatFee = weChatUtil.refund(paymentLog.getOrderCode(), paymentLog.getTotalFee());
                 //检查为没有失败信息
-                if (StringUtils.isNotBlank(refundChatFee)&&refundChatFee.indexOf("FAIL")!=-1) {
+                if (StringUtils.isNotBlank(refundChatFee)&&refundChatFee.indexOf("FAIL")==-1) {
                     //写入退款记录  t_whs_refund_log
                     RefundLog refundLog = new RefundLog();
                     refundLog.setPaymentLogId(paymentLog.getId());
@@ -344,6 +330,20 @@ public class OrderService {
                 log.info("退款未找到类型");
                 break;
         }
+        //退货到总仓
+        /**********批发单服务-作废**********************************/
+        Abolish abolish = new Abolish();
+        abolish.setId(orderDetail.getHdCode());
+        abolish.setSrcCls("批发商城");
+        abolish.setOper("退货管理员");
+        String cancelResult = warehouse.abolish(abolish);
+        log.info(cancelResult);
+        //修改为已退货
+        OrderDetail updateOrderDetail = new OrderDetail();
+        updateOrderDetail.setOrderCode(orderDetail.getOrderCode());
+        updateOrderDetail.setCurrentOrderStatus("undelivery");
+        updateOrderDetail.setOrderStatus("refunded");
+        updateOrderStatus(updateOrderDetail);
         return null;
     }
 
