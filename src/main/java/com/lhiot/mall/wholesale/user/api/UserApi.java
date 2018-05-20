@@ -441,7 +441,7 @@ public class UserApi {
                 return response;
             }
             String result=userService.register(user, user.getCode());
-            if (StringUtils.isNotEmpty(result)) {
+            if (StringUtils.isEmpty(result)) {
                 return ResponseEntity.ok().body("提交成功");
             }
             return ResponseEntity.badRequest().body(result);
