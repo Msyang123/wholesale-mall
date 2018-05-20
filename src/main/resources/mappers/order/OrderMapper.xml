@@ -315,7 +315,7 @@
 
     <!-- 用户下单情况 -->
     <select id="userOrder" parameterType="com.lhiot.mall.wholesale.order.domain.OrderParam" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
-        select * from t_whs_order where user_id=#{id}
+        select * from t_whs_order where user_id=#{id} and order_status = 'received'
         <choose>
             <when test="dayNum!=null and dayNum!=1">
               and DATE_SUB(CURDATE(),INTERVAL #{dayNum} DAY) &lt;= create_time limit 1
