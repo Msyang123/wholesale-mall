@@ -102,6 +102,9 @@ public class OrderResult {
     @JsonProperty("paymentTime")
     private Timestamp paymentTime;
 
+    @JsonProperty("paymentType")
+    private Timestamp paymentType;
+
     @JsonProperty("salesmanName")
     private String salesmanName;
 
