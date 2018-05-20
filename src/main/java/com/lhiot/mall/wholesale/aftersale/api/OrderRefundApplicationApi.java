@@ -6,6 +6,7 @@ import com.lhiot.mall.wholesale.aftersale.domain.OrderResult;
 import com.lhiot.mall.wholesale.aftersale.service.OrderRefundApplicationService;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.base.StringReplaceUtil;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
@@ -54,6 +55,10 @@ public class OrderRefundApplicationApi {
                 ||Objects.isNull(orderRefundApplication.getApplicationType())||Objects.equals(orderRefundApplication.getApplicationType(),"")
                 ||Objects.isNull(orderRefundApplication.getExistProblem())||Objects.equals(orderRefundApplication.getExistProblem(),"")){
             return ResponseEntity.badRequest().body("请完善信息在提交");
+        }
+        boolean isMoblieNo = StringReplaceUtil.isMobileNO(orderRefundApplication.getContactsPhone());
+        if (!isMoblieNo){
+            return ResponseEntity.badRequest().body("手机号码格式错误");
         }
         RMapCache<String,Object> cache=  redissonClient.getMapCache("afterSale");
         if(Objects.nonNull(cache.get("orderId"+orderRefundApplication.getOrderId()))){
