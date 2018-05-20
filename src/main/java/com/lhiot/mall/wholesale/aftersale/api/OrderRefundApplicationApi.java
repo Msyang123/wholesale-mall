@@ -109,22 +109,6 @@ public class OrderRefundApplicationApi {
     @PostMapping("/grid")
     @ApiOperation(value = "后台管理-分页查询售后订单信息", response = PageQueryObject.class)
     public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) OrderGridParam param) throws IntrospectionException, InstantiationException, IllegalAccessException, InvocationTargetException {
-        OrderRefundApplication orderRefundApplication=new OrderRefundApplication();
-        List<OrderRefundApplication> orderRefundApplicationList = orderRefundApplicationService.list(orderRefundApplication);
-        List<String> orderDetailList = new ArrayList<String>();
-        List<Map> statuss = new ArrayList<Map>();
-        if (!orderRefundApplicationList.isEmpty()){
-            for (OrderRefundApplication item:orderRefundApplicationList) {
-                orderDetailList.add(item.getOrderId());
-                //statuss.add(item.getAuditStatus());
-                Map map = new HashMap();
-                map.put("orderCode",item.getOrderId());
-                map.put("status",item.getAuditStatus());
-                statuss.add(map);
-            }
-        }
-        param.setOrderIds(orderDetailList);
-        param.setAuditStatuss(statuss);
         return ResponseEntity.ok(orderRefundApplicationService.pageQuery(param));
     }
 
@@ -139,7 +123,7 @@ public class OrderRefundApplicationApi {
     public ResponseEntity updateOrderRefund(@PathVariable("id") Long id,@RequestBody OrderRefundApplication orderRefundApplication) {
         orderRefundApplication.setId(id);
         if (orderRefundApplicationService.updateById(orderRefundApplication)>0){
-            return ResponseEntity.ok().body("申请成功");
+            return ResponseEntity.ok().build();
         }
         return ResponseEntity.badRequest().body("申请失败");
     }
