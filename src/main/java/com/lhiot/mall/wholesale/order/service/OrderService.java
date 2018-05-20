@@ -412,7 +412,7 @@ public class OrderService {
                 }
             }
             userList = userService.search(userIds);//根据用户ID列表查询用户信息
-            paymentLogList = paymentLogService.getPaymentLogList(orderIds);//根据订单ID列表查询支付信息
+            //paymentLogList = paymentLogService.getPaymentLogList(orderIds);//根据订单ID列表查询支付信息
         } else {//传了手机号查询条件，先根据条件查询用户列表及用户ids，再根据ids和订单其他信息查询订单信息列表
             userList = userService.searchByPhoneOrName(userParam);
             List<Long> userIds = new ArrayList<Long>();
@@ -438,7 +438,7 @@ public class OrderService {
                         orderIds.add(orderGridResult.getId());
                     }
                 }
-                paymentLogList = paymentLogService.getPaymentLogList(orderIds);//根据订单ID列表查询支付信息
+                //paymentLogList = paymentLogService.getPaymentLogList(orderIds);//根据订单ID列表查询支付信息
             }
         }
         PageQueryObject result = new PageQueryObject();
@@ -533,9 +533,9 @@ public class OrderService {
      *
      * @return
      */
-    public OrderDetail countFee(String orderCode) {
-        String[] orderCodes = orderCode.split(",");
-        List<String> list = Arrays.asList(orderCodes);
+    public OrderDetail countFee(String orderIds) {
+        String[] orderId = orderIds.split(",");
+        List<String> list = Arrays.asList(orderId);
         return orderMapper.countFee(list);
     }
 
@@ -577,4 +577,14 @@ public class OrderService {
     public List<Map<String, Object>> exportData(OrderGridParam param){
         return orderMapper.exportData(param);
     }
+
+    /**
+     * 后台管理系统--导出订单商品信息
+     * @return
+     */
+    public List<Map<String, Object>> exportDataOrderGoods(OrderGridParam param){
+        return orderMapper.exportDataOrderGoods(param);
+    }
+
+
 }
