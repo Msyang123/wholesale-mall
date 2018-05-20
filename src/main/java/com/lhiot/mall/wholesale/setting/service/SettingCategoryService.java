@@ -96,11 +96,12 @@ public class SettingCategoryService {
 	
 	/**
 	 * 获取分类的树结构
+	 * @param paramType 参数类型
 	 * @return
 	 */
-	public List<ParamSettingTree> tree(){
+	public List<ParamSettingTree> tree(String paramType){
 		List<ParamSettingTree> result = new ArrayList<>();
-		List<ParamCategory> list = settinCategoryMapper.findTree();
+		List<ParamCategory> list = settinCategoryMapper.findTree(paramType);
 		ParamSettingTree tree = null;
 		for(ParamCategory p : list){
 			tree = new ParamSettingTree();
@@ -109,6 +110,7 @@ public class SettingCategoryService {
 			tree.setName(p.getParamCategoryName());
 			tree.setShowType(p.getShowType());
 			tree.setIsParent(p.getParentId().toString().equals("0")?true:false);
+			tree.setClassCode(p.getParamCategoryCode());
 			result.add(tree);
 		}
 		return result;

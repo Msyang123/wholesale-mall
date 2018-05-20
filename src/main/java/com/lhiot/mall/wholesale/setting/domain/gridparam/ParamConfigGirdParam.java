@@ -18,6 +18,9 @@ public class ParamConfigGirdParam extends PageObject {
 	
     @JsonProperty("configParamKey")
     private String configParamKey;
+    
+    @ApiModelProperty(notes="参数配置类型 system-系统参数，business - 业务参数",dataType="String")
+    private String paramType;
 
 	@ApiModelProperty(notes="商品单位名称",dataType="Integer")
 	private Integer start;

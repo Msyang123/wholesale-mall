@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.common.wrapper.ResultObject;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.goods.domain.CategoryTree;
 import com.lhiot.mall.wholesale.setting.domain.ParamCategory;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.setting.domain.ParamSettingTree;
@@ -80,10 +79,10 @@ public class SettingCategoryApi {
     }
     
     @SuppressWarnings("unchecked")
-	@GetMapping("/tree")
+	@GetMapping("/tree/{paramType}")
     @ApiOperation(value = "查询树结构", response = ArrayObject.class)
-    public ResponseEntity<ArrayObject<ParamSettingTree>> grid() {
-        return ResponseEntity.ok(ArrayObject.of(settingCategoryService.tree()));
+    public ResponseEntity<ArrayObject<ParamSettingTree>> grid(@PathVariable String paramType) {
+        return ResponseEntity.ok(ArrayObject.of(settingCategoryService.tree(paramType)));
     }
 
 }

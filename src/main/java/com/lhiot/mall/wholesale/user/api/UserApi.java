@@ -396,7 +396,7 @@ public class UserApi {
         if (!isMoblieNo){
             return ResponseEntity.badRequest().body("手机号码格式错误");
         }
-        
+
         if (Objects.isNull(user.getPhone())||Objects.equals(user.getPhone(),"")
                 ||Objects.isNull(user.getUserName())||Objects.equals(user.getUserName(),"")
                 ||Objects.isNull(user.getShopName())||Objects.equals(user.getShopName(),"")
@@ -404,17 +404,21 @@ public class UserApi {
                 ||Objects.isNull(user.getCode())||Objects.equals(user.getCode(),"")){
             return ResponseEntity.badRequest().body("请完善用户信息再提交");
         }
+
         SalesUser salesUser = salesUserService.findCode(user.getCode());
-        if (Objects.isNull(salesUser.getInviteCode())){
+        if (Objects.isNull(salesUser)){
             return ResponseEntity.badRequest().body("授权码错误");
         }
+
         User u = userService.user(user.getId());
         if(Objects.isNull(u)){
             return ResponseEntity.badRequest().body("未找到用户相关信息");
         }
+
         if (Objects.equals(u.getUserStatus(),"unaudited")){
             return ResponseEntity.badRequest().body("您审核申请已提交，不能重复操作");
         }
+
         if (Objects.equals(u.getUserStatus(),"certified")){
             return ResponseEntity.badRequest().body("您审核已通过，不能重复操作");
         }
@@ -425,6 +429,7 @@ public class UserApi {
         if(Objects.isNull(cache.get("phone"+user.getPhone()))){
             return ResponseEntity.badRequest().body("验证码已失效，请再次发送验证码");
         }
+
         try {
             //到远端验证手机验证码是否正确
             Map<String, Object> body = ImmutableMap.of("code",user.getVerifCode(),"key","code");
@@ -436,7 +441,7 @@ public class UserApi {
                 return response;
             }
             String result=userService.register(user, user.getCode());
-            if (StringUtils.isNotEmpty(result)) {
+            if (StringUtils.isEmpty(result)) {
                 return ResponseEntity.ok().body("提交成功");
             }
             return ResponseEntity.badRequest().body(result);

@@ -118,7 +118,7 @@ microx:
       stack-trace-package-prefix: "com.lhiot**, com.sgsl**, com.leon**"
   redisson:
     server-mode: single
-    addresses: 172.16.10.195:6379
+    addresses: ${REDISSON_HOST:172.16.10.195}:${REDISSON_PORT:6379}
 
 logging:
   file: ./logs/${spring.application.name}.log

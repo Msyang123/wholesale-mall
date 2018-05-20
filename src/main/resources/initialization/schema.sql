@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS T_WM_USER;
+DROP TABLE IF EXISTS t_wm_user;
 
-CREATE TABLE T_WM_USER (
+CREATE TABLE t_wm_user (
   `id` bigint(20) NOT NULL,
   `age` int(11) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,

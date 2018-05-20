@@ -17,7 +17,7 @@ public interface SettinCategoryMapper {
 
     ParamCategory select(long id);
     
-    List<ParamCategory> findTree();
+    List<ParamCategory> findTree(String paramType);
     
     //分页查询分类
     List<ParamCategory> pageQuery(ParamCategoryGirdParam param);

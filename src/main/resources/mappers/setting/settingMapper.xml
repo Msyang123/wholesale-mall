@@ -15,8 +15,8 @@
 	
 	<!-- lynn新增 -->
 	<insert id="insert" parameterType="com.lhiot.mall.wholesale.setting.domain.ParamConfig">
-		insert into t_whs_param_config(config_category_param_id,config_param_key,config_param_value,notes)
-		value(#{configCategoryParamId},#{configParamKey},#{configParamValue},#{notes})
+		insert into t_whs_param_config(config_category_param_id,config_param_key,config_param_value,notes,param_type)
+		value(#{configCategoryParamId},#{configParamKey},#{configParamValue},#{notes},#{paramType})
 	</insert>
 	
 	<!-- lynn修改 -->
@@ -59,6 +59,9 @@
 			<if test="configCategoryParamId != null and configCategoryParamId != ''">
 				and config_category_param_id = #{configCategoryParamId}
 			</if>
+			<if test="paramType != null and paramType != ''">
+				and param_type = #{paramType}
+			</if>
 		</trim>
 	</select>
 	
@@ -73,6 +76,9 @@
 			</if>
 			<if test="configCategoryParamId != null and configCategoryParamId != ''">
 				and config_category_param_id = #{configCategoryParamId}
+			</if>
+			<if test="paramType != null and paramType != ''">
+				and t1.param_type = #{paramType}
 			</if>
 		</trim>
 		<include refid="common.pager"/>
