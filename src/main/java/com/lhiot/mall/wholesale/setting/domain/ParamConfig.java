@@ -33,5 +33,8 @@ public class ParamConfig {
     @ApiModelProperty(notes="后台管理系统，使用字段",dataType="String")
     private String showType;
     
+    @ApiModelProperty(notes="后台管理系统,使用字段,分类编号",dataType="String")
+    private String paramCategoryCode;
+    
     private String notes;
 }
