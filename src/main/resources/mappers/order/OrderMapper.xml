@@ -12,7 +12,7 @@
     <!-- 查询订单信息 -->
     <select id="searchOrders"  parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
        select id,order_code orderCode,ifnull(discount_fee,0) discountFee,settlement_type settlementType,pay_status payStatus,user_id,
-        order_status orderStatus,create_time createTime,ifnull(total_fee,0) totalFee,ifnull(payable_fee,0) payableFee,
+        order_status orderStatus,create_time createTime,ifnull(total_fee,0) totalFee,ifnull(payable_fee,0) payableFee,ifnull(delivery_fee,0) deliveryFee,
         remarks,after_sale_time afterSaleTime,check_status
        from t_whs_order o
         <trim prefix="where" prefixOverrides="and">
