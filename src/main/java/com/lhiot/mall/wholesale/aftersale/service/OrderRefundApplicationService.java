@@ -51,18 +51,29 @@ public class OrderRefundApplicationService {
     }
 
     public Integer create(OrderRefundApplication orderRefundApplication){
+        OrderDetail order = new OrderDetail();
+        order.setOrderCode(orderRefundApplication.getOrderId());
+        OrderDetail orderDetail = orderMapper.order(order);
+        if (Objects.isNull(orderDetail)){
+            OrderDetail order1 = new OrderDetail();
+            order1.setId(orderDetail.getId());
+            order1.setAfterStatus("yes");
+           if (orderMapper.updateOrderById(order1)<=0){
+               return -1;
+           }
+        }
         return this.orderRefundApplicationMapper.create(orderRefundApplication);
     }
 
     public Integer updateById(OrderRefundApplication orderRefundApplication){
-        if (Objects.equals(orderRefundApplication.getAfterStatus(),"yes")){
+       // if (Objects.equals(orderRefundApplication.getAfterStatus(),"yes")){
             OrderDetail order = new OrderDetail();
             order.setOrderCode(orderRefundApplication.getOrderId());
-            order.setAfterStatus("yes");
+            order.setAfterStatus(orderRefundApplication.getAfterStatus());
             if (orderMapper.updateOrder(order)<=0){
                 return -1;
             }
-        }
+       // }
         return this.orderRefundApplicationMapper.updateById(orderRefundApplication);
     }
 
