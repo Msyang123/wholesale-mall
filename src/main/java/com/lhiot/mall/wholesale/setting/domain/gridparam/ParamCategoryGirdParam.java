@@ -15,8 +15,11 @@ public class ParamCategoryGirdParam extends PageObject {
 	@ApiModelProperty(notes="参数分类名称",dataType="String")
 	private String paramCategoryName;
 	
-	@ApiModelProperty(notes="父节点ID",dataType="String")
+	@ApiModelProperty(notes="父节点ID",dataType="Long")
 	private Long parentId;
+	
+	@ApiModelProperty(notes="参数配置 system-系统，business - 业务参数",dataType="String")
+	private String paramType;
 	
 	@ApiModelProperty(notes="分页查询起始页",dataType="Integer")
 	private Integer start;
