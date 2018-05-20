@@ -1,5 +1,7 @@
 package com.lhiot.mall.wholesale;
 
+import com.leon.microx.common.probe.annotation.Sniffer;
+import com.leon.microx.common.probe.event.MessageType;
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.coupon.domain.CouponEntity;
@@ -39,6 +41,7 @@ public class MqConsumer{
      * 处理订单超过三十分钟业务
      * @param getMessage 接收到的消息
      */
+    @Sniffer(type = MessageType.MQ_CONSUMER_EXCEPTION)
     @RabbitHandler
     @RabbitListener(queues = "order-repeat-queue")
     public void orderOutTime(String getMessage) {
@@ -72,6 +75,7 @@ public class MqConsumer{
      * 订单创建广播
      * @param getMessage
      */
+    @Sniffer(type = MessageType.MQ_CONSUMER_EXCEPTION)
     @RabbitHandler
     @RabbitListener(queues = "order-create-publisher")
     public void orderCreatePublisher(String getMessage){
@@ -88,6 +92,7 @@ public class MqConsumer{
      * 订单支付优惠券设置为失效
      * @param getMessage
      */
+    @Sniffer(type = MessageType.MQ_CONSUMER_EXCEPTION)
     @RabbitHandler
     @RabbitListener(queues = "coupon-publisher")
     public void couponPublisher(String getMessage){
@@ -109,6 +114,7 @@ public class MqConsumer{
      * 订单支付后限时抢购活动处理
      * @param getMessage
      */
+    @Sniffer(type = MessageType.MQ_CONSUMER_EXCEPTION)
     @RabbitHandler
     @RabbitListener(queues = "flasesale-publisher")
     public void flasesalePublisher(String getMessage){
