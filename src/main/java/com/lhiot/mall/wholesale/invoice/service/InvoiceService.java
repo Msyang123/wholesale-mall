@@ -48,6 +48,14 @@ public class InvoiceService {
         return invoiceTitle;
     }
 
+    public InvoiceTitle selectInvoiceTitleById(long id){
+        InvoiceTitle invoiceTitle = invoiceMapper.selectInvoiceTitleById(id);
+        if (invoiceTitle==null){
+            return new InvoiceTitle();
+        }
+        return invoiceTitle;
+    }
+
     public int saveOrUpdateInvoiceTitle(InvoiceTitle invoiceTitle){
         if (invoiceTitle.getId()>0){
             return invoiceMapper.updateInvoiceTitle(invoiceTitle);
@@ -64,7 +72,7 @@ public class InvoiceService {
      */
     public int applyInvoice(Invoice invoice,String paymentType,String bankType,String transactionId){
         //依据附加参数查询发票抬头信息
-        InvoiceTitle invoiceTitle= selectInvoiceTitle(invoice.getInvoiceTitleId());
+        InvoiceTitle invoiceTitle= selectInvoiceTitleById(invoice.getInvoiceTitleId());
         //构建发票信息
 
         invoice.setInvoiceTitleId(invoiceTitle.getId());
