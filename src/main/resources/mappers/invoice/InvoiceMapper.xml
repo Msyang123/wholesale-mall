@@ -45,6 +45,11 @@
        select * from t_whs_invoice_title where user_id=#{0} ORDER BY create_time desc limit 1
     </select>
 
+    <!-- 依据id查询发票抬头 -->
+    <select id="selectInvoiceTitleById"  parameterType="long" resultType="com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle">
+        select * from t_whs_invoice_title where id=#{0} ORDER BY create_time desc limit 1
+    </select>
+
     <update id="updateInvoiceTitle" parameterType="com.lhiot.mall.wholesale.invoice.domain.InvoiceTitle">
         UPDATE t_whs_invoice_title
         <trim prefix="set" prefixOverrides=",">

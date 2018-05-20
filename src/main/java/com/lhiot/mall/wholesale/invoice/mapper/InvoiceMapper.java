@@ -13,6 +13,8 @@ public interface InvoiceMapper {
 
     InvoiceTitle selectInvoiceTitle(long id);
 
+    InvoiceTitle selectInvoiceTitleById(long userId);
+
     int insertInvoiceTitle(InvoiceTitle invoiceTitle);
 
     int updateInvoiceTitle(InvoiceTitle invoiceTitle);
