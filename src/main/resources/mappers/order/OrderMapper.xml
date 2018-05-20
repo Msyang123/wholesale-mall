@@ -280,7 +280,7 @@
 
     <!--用户最近下单数据 下单金额和下单时间-->
     <select id="lateOneOrder" parameterType="long"  resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
-        select t.payable_fee,t.create_time from t_whs_order t where t.user_id=#{userId} ORDER BY t.create_time DESC LIMIT 1
+        select t.payable_fee,t.create_time from t_whs_order t where t.user_id=#{userId} and order_status = 'received' ORDER BY t.create_time DESC LIMIT 1
     </select>
 
     <!--用户最近下单数据 -->
