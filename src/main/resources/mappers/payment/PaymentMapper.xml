@@ -49,7 +49,7 @@
     </update>
 
     <select id="getPaymentLog" parameterType="String" resultType="com.lhiot.mall.wholesale.pay.domain.PaymentLog">
-        select * from t_whs_payment_log where order_code=#{0}
+        select * from t_whs_payment_log where order_code=#{0} limit 1
     </select>
 
 
