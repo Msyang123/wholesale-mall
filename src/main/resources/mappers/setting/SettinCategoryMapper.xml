@@ -9,6 +9,7 @@
 				<if test="paramCategoryCode != null and paramCategoryCode != ''">param_category_code,</if>
 				<if test="showType != null and showType != ''">show_type,</if>
 				<if test="parentId != null and parentId != ''">parent_id,</if>
+				<if test="paramType != null and paramType != ''">param_type,</if>
 			</trim>
 		)
 		values(
@@ -17,6 +18,7 @@
 				<if test="paramCategoryCode != null and paramCategoryCode != ''">#{paramCategoryCode},</if>
 				<if test="showType != null and showType != ''">#{showType},</if>
 				<if test="parentId != null and parentId != ''">#{parentId},</if>
+				<if test="paramType != null and paramType != ''">#{paramType},</if>
 			</trim>
 		)
 	</insert>
@@ -37,7 +39,7 @@
 				param_category_name = #{paramCategoryName},
 			</if>
 			<if test="paramCategoryCode != null and paramCategoryCode != ''">
-				param_category_name = #{paramCategoryCode},
+				param_category_code = #{paramCategoryCode},
 			</if>
 			<if test="showType != null and showType != ''">
 				show_type = #{showType},
@@ -55,7 +57,8 @@
 	</select>
 	
 	<!-- lynn后台管理 分页查询2018/4/19 -->
-	<select id="pageQueryCount" resultType="Integer">
+	<select id="pageQueryCount"  parameterType="com.lhiot.mall.wholesale.setting.domain.gridparam.ParamCategoryGirdParam"
+		resultType="Integer">
 		select count(id) from t_whs_param_category
 		<trim prefix="where" prefixOverrides="and">
 			<if test="paramCategoryName != null and paramCategoryName != ''">
@@ -63,6 +66,9 @@
 			</if>
 			<if test="parentId != null and parentId != ''">
 				and parent_id = #{parentId}
+			</if>
+			<if test="paramType != null and paramType != ''">
+				and param_type = #{paramType}
 			</if>
 		</trim>
 	</select>
@@ -79,12 +85,15 @@
 			<if test="parentId != null and parentId != ''">
 				and parent_id = #{parentId}
 			</if>
+			<if test="paramType != null and paramType != ''">
+				and param_type = #{paramType}
+			</if>
 		</trim>
 		<include refid="common.pager"></include>
 	</select>
 	
 	<!-- lynn查找商品分类数 -->
-	<select id="findTree" resultType="com.lhiot.mall.wholesale.setting.domain.ParamCategory">
+	<select id="findTree" parameterType="String" resultType="com.lhiot.mall.wholesale.setting.domain.ParamCategory">
 		SELECT 
 			id,
 			param_category_name as paramCategoryName,
@@ -102,6 +111,7 @@
 			SUBSTRING_INDEX( SUBSTRING_INDEX(@pathall,CONCAT('|',parent_id,':'),-1),'|',1),@pathnodes ) ,parent_id ) )paths,
 			@pathall:=CONCAT(@pathall,'|',param_category_name,':', @pathnodes ,'|') pathall 
 			FROM t_whs_param_category, (SELECT @le:=0,@pathlevel:='', @pathall:='',@pathnodes:='') vv
+			WHERE param_type = #{0}
 			ORDER BY parent_id,param_category_name
 		) src
 		ORDER BY parent_id

@@ -25,6 +25,9 @@ public class ParamCategory {
 
 	@ApiModelProperty(notes="后台管理展示样式，normal-常态 list-列表",dataType="String")
     private String showType;
+	
+	@ApiModelProperty(notes="参数配置类型 system-系统，business - 业务参数",dataType="String")
+    private String paramType;
     
 	@ApiModelProperty(notes="父节点id",dataType="Long")
     private Long parentId;
