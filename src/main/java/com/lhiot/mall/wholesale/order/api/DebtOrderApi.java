@@ -75,8 +75,8 @@ public class DebtOrderApi {
         if(Objects.isNull(searchDebtOrder)){
             return ResponseEntity.badRequest().body("未查找到相关账款订单");
         }
+        debtOrder.setOrderIds(searchDebtOrder.getOrderIds());
        if (Objects.equals(debtOrder.getCheckStatus(),"agree")){
-           debtOrder.setOrderIds(searchDebtOrder.getOrderIds());
            debtOrderService.passAuditing(debtOrder);
        }else if(Objects.equals(debtOrder.getCheckStatus(),"reject")){
            debtOrderService.unpassAuditing(debtOrder);
