@@ -32,11 +32,11 @@ public class Index {
 	private Advertise advBanner;
 	
 	@ApiModelProperty(notes="轮播图",dataType="java.util.List")
-	private List<Advertise> swiperSlides;
+	private List<Advertise> swiperSlides = new ArrayList<>();;
 	
 	@ApiModelProperty(notes="平铺排版的版块商品",dataType="HotPro")
 	private PlateCategory hotPro;
 	
-	@ApiModelProperty(notes="滚动排版的版块商品",dataType="HotPro")
-	private List<PlateCategory> channelList;
+	@ApiModelProperty(notes="滚动排版的版块商品",dataType="channelList")
+	private List<PlateCategory> channelList = new ArrayList<>();
 }

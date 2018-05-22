@@ -30,8 +30,8 @@ public class FlashsaleGoods {
 	@ApiModelProperty(notes="商品名称",dataType="String")
 	private String goodsName;
 	
-	@ApiModelProperty(notes="商品价格",dataType="String")
-	private String price;
+	@ApiModelProperty(notes="商品价格",dataType="Integer")
+	private Integer price;
 	
 	@JsonProperty("flashPrice")
 	@ApiModelProperty(notes="商品抢购价",dataType="Integer")

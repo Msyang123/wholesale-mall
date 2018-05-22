@@ -1,17 +1,17 @@
 package com.lhiot.mall.wholesale.setting.service;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 import com.leon.microx.util.StringUtils;
-import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.setting.domain.gridparam.ParamConfigGirdParam;
@@ -38,7 +38,14 @@ public class SettingService {
 	 * @return
 	 */
 	public boolean create(ParamConfig param){
-		return settingMapper.insert(param)>0;
+		boolean success = false;
+		//判断当前key是系统中是否存在，如果存在就进行再次添加
+		ParamConfig config = this.searchConfigParam(param.getConfigParamKey());
+		if(!Objects.isNull(config)){
+			return success;
+		}
+		success = settingMapper.insert(param)>0;
+		return success;
 	}
 
 	/**
@@ -60,7 +67,20 @@ public class SettingService {
 	 * @return
 	 */
 	public boolean update(ParamConfig param){
-		return settingMapper.update(param)>0;
+		boolean flag = false;
+		//不能修改成重名的key值
+		String key = param.getConfigParamKey();
+		ParamConfig config = this.searchConfigParam(key);
+		if(Objects.isNull(config)){
+			flag = true;
+		}else if(Objects.equals(param.getId(), config.getId())){
+			flag = true;
+		}
+		//key不重复的时候，才进行修改
+		if(flag){
+			return settingMapper.update(param)>0;
+		}
+		return false;
 	}
 
 	/**
