@@ -357,7 +357,7 @@ public class UserApi {
         List<User> userlist = userService.searchUser(user);
         if (!userlist.isEmpty()){
             for(User user1:userlist){
-                if("uncertified".equals(user1.getUserStatus()) || "certified".equals(user1.getUserStatus())){
+                if("unaudit".equals(user1.getUserStatus()) || "certified".equals(user1.getUserStatus())){
                     return ResponseEntity.badRequest().body("用户已存在");
                 }
             }
