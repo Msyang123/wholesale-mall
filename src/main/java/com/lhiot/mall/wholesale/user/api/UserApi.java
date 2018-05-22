@@ -356,7 +356,11 @@ public class UserApi {
         user.setPhone(phone);
         List<User> userlist = userService.searchUser(user);
         if (!userlist.isEmpty()){
-            return ResponseEntity.badRequest().body("用户已存在");
+            for(User user1:userlist){
+                if("uncertified".equals(user1.getUserStatus()) || "certified".equals(user1.getUserStatus())){
+                    return ResponseEntity.badRequest().body("用户已存在");
+                }
+            }
         }
         //手机验证码
         RMapCache<String,String> cache=  redissonClient.getMapCache("userVerificationCode");
