@@ -191,7 +191,7 @@ public class OrderApi {
         //最低订单金额限制
         ParamConfig orderMinFeeConfig = settingService.searchConfigParam("orderMinFee");
         if(Objects.nonNull(orderMinFeeConfig)&&Integer.valueOf(orderMinFeeConfig.getConfigParamValue())>fee){
-            return ResponseEntity.badRequest().body("未达到最低配送金额："+Integer.valueOf(orderMinFeeConfig.getConfigParamValue())/100.0);
+            return ResponseEntity.ok().body("{\"code\":-1,\"msg\":\"未达到最低配送金额："+Integer.valueOf(orderMinFeeConfig.getConfigParamValue())/100.0+"\"}");
         }
         ParamConfig paramConfig = settingService.searchConfigParam("distributionFeeSet");
         String distribution = paramConfig.getConfigParamValue();
