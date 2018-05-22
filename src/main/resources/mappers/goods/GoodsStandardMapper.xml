@@ -4,7 +4,7 @@
 
 	<sql id="goodsStandardColumn">
 		t1.id ,t1.goods_id as goodsId, t1.bar_code as barCode,t1.weight,t1.unit_code as unitCode,
-		t1.standard, t1.price,FORMAT(t1.price/100.0,2) as goodsPrice, t1.vaild ,t1.hd_sku_id as hdSkuId, 
+		t1.standard, t1.price,t1.price as goodsPrice, t1.vaild ,t1.hd_sku_id as hdSkuId,
 		t1.standard_desc as standardDesc,t1.purchase_price as purchasePrice,FORMAT(t1.purchase_price/100.0,2) as pprice
 	</sql>
 	

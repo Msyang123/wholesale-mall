@@ -238,7 +238,7 @@ public class WxPayApi {
             if(Objects.isNull(orderDetail)){
                 return ResponseEntity.badRequest().body("订单编号("+item+")不存在");
             }else if(Objects.nonNull(orderDetail)&&Objects.equals("yes",orderDetail.getInvoiceStatus())){
-                return ResponseEntity.badRequest().body("订单编号("+item+")已经开票，请勿重复开票");
+                return ResponseEntity.badRequest().body("该订单已经开票，请勿重复开票");
             }
         }
         //查询所有的订单计算税费
