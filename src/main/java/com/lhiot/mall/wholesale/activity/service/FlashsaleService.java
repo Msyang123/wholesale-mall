@@ -83,7 +83,7 @@ public class FlashsaleService {
 			activity.setLimitQuantity(1);//默认限购1份
 			activity.setRankNum(rank);
 			activity.setRemain(100);//默认设置100份
-			//默认商品价格区间的最大值,没有设置最大值则为原价的8.5折
+			//默认商品价格区间的最大值,没有设置最大值则为原价
 			activity.setSpecialPrice(this.specialPrice(id));
 			list.add(activity);
 			rank++;
@@ -192,7 +192,7 @@ public class FlashsaleService {
 					flg.setGoodsId(gs.getGoodsId());
 					flg.setGoodsImage(gs.getGoodsImage());
 					flg.setGoodsName(gs.getGoodsName());
-					flg.setPrice(gs.getGoodsPrice());
+					flg.setPrice(gs.getPrice());
 					flg.setGoodsUnit(gs.getGoodsUnit());
 				}
 			}
@@ -272,7 +272,7 @@ public class FlashsaleService {
 		if(Objects.equals(discount, 0)){
 			//获取商品的原价
 			GoodsStandard goodsStandard = goodsStandardService.goodsStandard(standardId);
-			BigDecimal b1 = new BigDecimal(0.90);//默认一个9.0折的折扣
+			BigDecimal b1 = new BigDecimal(1);//默认一个1.0折的折扣,暂时设置为原价
 			BigDecimal bp = new BigDecimal(goodsStandard.getPrice());
 			discount = b1.multiply(bp).intValue();
 		}

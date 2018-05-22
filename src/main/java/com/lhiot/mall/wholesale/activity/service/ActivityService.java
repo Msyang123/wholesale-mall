@@ -184,6 +184,9 @@ public class ActivityService {
 	 */
 	public FlashActivityGoods nextActivity(ActivityType type){
 		FlashActivityGoods curActivity = this.currentActivity(type);
+		if(Objects.isNull(curActivity)){
+			return null;
+		}
 		Map<String,Object> param = ImmutableMap.of("activityType", ActivityType.flashsale.toString(),
 				"time", curActivity.getEndTime());
 		return activityMapper.nextActivity(param);

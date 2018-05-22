@@ -56,6 +56,7 @@ public class IndexService {
 	 */
 	public Index index(){
 		Index index = new Index();
+		Advertise ad = new Advertise();
 		//查询新闻资讯列表
 		List<Information> infos = articleService.infomations();
 		index.setNewsList(infos);
@@ -67,18 +68,24 @@ public class IndexService {
 		List<Advertise> flashes = advertiseService.findByType(AdvertiseType.flashsale);
 		if(!flashes.isEmpty()){
 			index.setFlash(flashes.get(FIRST_INDEX));
+		}else {
+			index.setAdvBanner(ad);
 		}
 		
 		//获取底部Banner
 		List<Advertise> footerBanners = advertiseService.findByType(AdvertiseType.bottom);
 		if(!footerBanners.isEmpty()){
 			index.setFooterBanner(footerBanners.get(FIRST_INDEX));
+		}else {
+			index.setAdvBanner(ad);
 		}
 		
 		//获取首页弹窗广告
 		List<Advertise> popups = advertiseService.findByType(AdvertiseType.poppup);
 		if(!popups.isEmpty()){
 			index.setAdvBanner(popups.get(FIRST_INDEX));
+		}else {
+			index.setAdvBanner(ad);
 		}
 		
 		//获取轮播图广告
