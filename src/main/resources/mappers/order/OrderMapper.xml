@@ -375,7 +375,7 @@
     <select id="select" parameterType="long" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
         select id,order_code orderCode,IFNULL(discount_fee,0) discountFee,settlement_type settlementType,pay_status payStatus,user_id
         ,order_status orderStatus,create_time createTime,IFNULL(total_fee,0) totalFee,IFNULL(payable_fee,0) payableFee,remarks,
-        hd_status,delivery_time,IFNULL(delivery_fee,0) deliveryFee,delivery_address,hd_code
+        hd_status,delivery_time,IFNULL(delivery_fee,0) deliveryFee,delivery_address,hd_code,invoice_status
         from t_whs_order o where o.id = #{0}
     </select>
 
