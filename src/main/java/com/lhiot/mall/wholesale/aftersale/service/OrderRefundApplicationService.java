@@ -77,7 +77,7 @@ public class OrderRefundApplicationService {
                 return -1;
             }
        // }
-        return 1;//this.orderRefundApplicationMapper.updateById(orderRefundApplication);
+        return this.orderRefundApplicationMapper.updateById(orderRefundApplication);
     }
 
     public List<OrderRefundApplication> orderRefundApplicationList(OrderRefundApplication orderRefundApplication){
