@@ -36,7 +36,4 @@ public class FlashActivity {
 	
 	@ApiModelProperty(notes="逗号分割的规格id",dataType="String")
 	private String standardIds;
-	
-	@ApiModelProperty(notes="冗余字段，用于后台展示",dataType="String")
-	private String specialPriceDisplay;
 }

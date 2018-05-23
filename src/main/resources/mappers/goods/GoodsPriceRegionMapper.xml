@@ -3,7 +3,7 @@
 <mapper namespace="com.lhiot.mall.wholesale.goods.mapper.GoodsPriceRegionMapper">
 	<sql id="goodsPriceRegionColumn">
 		t1.id ,t1.goods_standard_id as goodsStandardId, t1.price, t1.standard_des as standardDes,
-		t1.min_quantity as minQuantity, t1.max_quantity as maxQuantity, t1.reorder,FORMAT(t1.price/100.0,2) as priceDisplay
+		t1.min_quantity as minQuantity, t1.max_quantity as maxQuantity, t1.reorder
 	</sql>
 	
 	<!-- lynn后台管理 新增2018/4/19 -->

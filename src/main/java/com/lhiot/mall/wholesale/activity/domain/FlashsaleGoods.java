@@ -37,9 +37,6 @@ public class FlashsaleGoods {
 	@ApiModelProperty(notes="商品抢购价",dataType="Integer")
 	private Integer specialPrice;
 	
-	@ApiModelProperty(notes="商品抢购价，冗余字段用于后天管理展示",dataType="String")
-	private String specialPriceDisplay;
-	
 	@ApiModelProperty(notes="基础单位",dataType="String")
 	private String baseUnit;
 	
