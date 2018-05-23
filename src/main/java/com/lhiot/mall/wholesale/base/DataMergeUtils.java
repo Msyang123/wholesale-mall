@@ -32,12 +32,22 @@ public class DataMergeUtils {
                 T instance = newInstanceFromMap(resultType, map1);
                 resultList.add(instance);
             } else {
-                list2.stream().map(BeanUtils::toMap).filter(map2 -> Objects.equals(mainIdValue, map2.get(subId))).forEach(map2 -> {
-                    Map<String, Object> mergeMap = new HashMap<>(map2);
-                    mergeMap.putAll(map1);
-                    T instance = newInstanceFromMap(resultType, mergeMap);
+                boolean subIsNull = true;
+                for (Object o : list2) {
+                    Map<String, Object> map2 = BeanUtils.toMap(o);
+                    if (Objects.equals(mainIdValue, map2.get(subId))) {
+                        Map<String, Object> mergeMap = new HashMap<>(map2);
+                        mergeMap.putAll(map1);
+                        T instance = newInstanceFromMap(resultType, mergeMap);
+                        resultList.add(instance);
+                        subIsNull = false;
+                        break;
+                    }
+                }
+                if(subIsNull){//主List元素在副List中找不到关联值时，返回主List元素
+                    T instance = newInstanceFromMap(resultType, map1);
                     resultList.add(instance);
-                });
+                }
             }
         });
         return resultList;
