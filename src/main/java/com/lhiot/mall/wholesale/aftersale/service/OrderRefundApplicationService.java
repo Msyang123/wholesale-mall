@@ -72,6 +72,7 @@ public class OrderRefundApplicationService {
             OrderDetail order = new OrderDetail();
             order.setOrderCode(orderRefundApplication.getOrderId());
             order.setAfterStatus(orderRefundApplication.getAfterStatus());
+            //修改订单的售后状态
             if (orderMapper.updateOrder(order)<=0){
                 return -1;
             }
