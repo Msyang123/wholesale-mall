@@ -34,7 +34,7 @@
 	<select id="search" resultType="com.lhiot.mall.wholesale.goods.domain.SearchHistory">
 		select <include refid="searchHistotyColumn"/> from t_whs_search_history
 		where user_id = #{0}
-		order by create_at limit 6
+		order by create_at DESC limit 6
 	</select>
 	
 	<!-- lynn 判断关键字是否存在 -->

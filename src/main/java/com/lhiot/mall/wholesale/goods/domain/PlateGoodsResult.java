@@ -63,9 +63,6 @@ public class PlateGoodsResult {
 	@ApiModelProperty(notes="商品基础单位名称",dataType="String")
 	private String baseUnitName;
 	
-	@ApiModelProperty(notes="商品规格单位名称",dataType="String")
-	private String goodsPrice;
-	
 	@ApiModelProperty(notes="版块商品排序",dataType="Integer")
 	private Integer rank;
 }

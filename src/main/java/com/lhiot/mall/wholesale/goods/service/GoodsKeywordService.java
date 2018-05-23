@@ -108,12 +108,12 @@ public class GoodsKeywordService {
 	public List<GoodsKeywords> keywords(String keyword,KeywordsType type,
 			Boolean hotSearch){
 		String kwType = null;
-		Integer hs = null;
+		String hs = "no";
 		if(!Objects.isNull(type)){
 			kwType = type.toString();
 		}
 		if(!Objects.isNull(hotSearch)){
-			hs = hotSearch ? 1 : 0;
+			hs = hotSearch ? "yes" : "no";
 		}
 		Map<String,Object> param = ImmutableMap.of("keyword", keyword, "kwType", kwType, 
 				"hotSearch", hs);

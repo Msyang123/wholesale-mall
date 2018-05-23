@@ -4,8 +4,7 @@
 	
 	<sql id="flashsaleColumn">
 		id,activity_id as activityId ,goods_standard_id as goodsStandardId,special_price as specialPrice,
-		goods_stock as goodsStock,limit_quantity as limitQuantity,rank_num as rankNum,remain,
-		FORMAT(special_price/100.0,2) as specialPriceDisplay
+		goods_stock as goodsStock,limit_quantity as limitQuantity,rank_num as rankNum,remain
 	</sql>
 	
 	<select id="select" parameterType="Long" resultType="com.lhiot.mall.wholesale.activity.domain.FlashActivity">
