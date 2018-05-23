@@ -54,7 +54,7 @@
 	</select>
 	
 	<!-- lynn后台管理 查询所有用作下拉框2018/4/19 -->
-	<select id="searchAll" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
+	<select id="searchAll" parameterType="Long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsCategory">
 		select <include refid="categoryColumn"/> from t_whs_goods_category
 		<trim prefix="where">
 			<if test="_parameter != null and _parameter !=''">

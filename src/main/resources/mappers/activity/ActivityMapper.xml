@@ -111,7 +111,7 @@
 		or (start_time &gt;= #{startTime} and start_time &lt; #{endTime} and end_time &lt; #{endTime})
 		or (start_time &lt;=#{startTime} and end_time &gt;= #{endTime})
 		or (start_time &gt;= #{startTime} and start_time &lt; #{endTime} and end_time &gt;= #{endTime}))
-		and vaild = '1' and activity_type = #{activityType}
+		and vaild = 'yes' and activity_type = #{activityType}
 	</select>
 	
 	<!-- 查询当前开启活动lynn -->

@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -14,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.activity.domain.ActivityPeriodsType;
 import com.lhiot.mall.wholesale.activity.domain.FlashActivityGoods;
@@ -25,6 +25,7 @@ import com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale;
 import com.lhiot.mall.wholesale.goods.domain.GoodsInfo;
 import com.lhiot.mall.wholesale.goods.domain.GoodsMinPrice;
 import com.lhiot.mall.wholesale.goods.domain.LayoutType;
+import com.lhiot.mall.wholesale.goods.domain.ModifyGoodsCategory;
 import com.lhiot.mall.wholesale.goods.domain.PlateCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsGirdParam;
 import com.lhiot.mall.wholesale.goods.mapper.GoodsMapper;
@@ -375,5 +376,23 @@ public class GoodsService {
 		}
 		degree = new BigDecimal(value);
 		return degree;
+	}
+	
+	/**
+	 * 修改商品的分类
+	 * @param param
+	 * @return
+	 */
+	public boolean updateCategory(ModifyGoodsCategory param){
+		Long categoryId = param.getCategoryId();
+		String goodsIds = param.getGoodsIds();
+		if(StringUtils.isBlank(goodsIds) || Objects.isNull(categoryId)){
+			return false;
+		}
+		List<Long> ids = Arrays.asList(param.getGoodsIds().split(",")).stream()
+							   .map(id -> Long.parseLong(id.trim()))
+							   .collect(Collectors.toList());
+		Map<String,Object> map = ImmutableMap.of("categoryId", categoryId, "goodsIds", ids);
+		return goodsMapper.updateCategory(map)>0;
 	}
 }
