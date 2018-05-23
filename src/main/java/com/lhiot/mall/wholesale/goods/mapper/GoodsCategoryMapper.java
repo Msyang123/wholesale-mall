@@ -3,7 +3,6 @@ package com.lhiot.mall.wholesale.goods.mapper;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import com.lhiot.mall.wholesale.goods.domain.GoodsCategory;
 import com.lhiot.mall.wholesale.goods.domain.girdparam.GoodsCategoryGirdParam;

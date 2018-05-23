@@ -100,10 +100,10 @@ public class GoodsCategoryApi {
         return ResponseEntity.ok(goodsCategoryService.allowOperation(goodsCategory));
     }
 	
-	@GetMapping("/goodscategory/parent")
+	@GetMapping("/goodscategory/parent/{id}")
     @ApiOperation(value = "查询商品某个分类下的子分类")
-    public ResponseEntity<List<GoodsCategory>> parentCategory() {
-        return ResponseEntity.ok(goodsCategoryService.findCategories(parentId));
+    public ResponseEntity<List<GoodsCategory>> parentCategory(@PathVariable String id) {
+        return ResponseEntity.ok(goodsCategoryService.findCategories(Long.valueOf(id)));
     }
 	
 	@GetMapping("/goodscategory/goods/{id}")

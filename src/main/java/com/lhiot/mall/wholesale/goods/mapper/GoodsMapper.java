@@ -46,5 +46,8 @@ public interface GoodsMapper {
     
     //根据版块id查询商品
     List<Goods> plateGoodses(Long plateId);
+    
+    //批量修改商品的分类
+    int updateCategory(Map<String,Object> param);
 
 }

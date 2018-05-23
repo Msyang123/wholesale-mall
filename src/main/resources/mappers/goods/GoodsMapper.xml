@@ -225,4 +225,22 @@
 		LEFT JOIN t_whs_goods_unit t5 ON t3.base_unit = t5.unit_code
 		where t2.vaild='yes' and t1.plate_id = #{0}
 	</select>
+	
+	<!-- lynn 批量修改商品的分类 -->
+	<update id="updateCategory" parameterType="map">
+		update t_whs_goods
+		<trim prefix="set">
+			<if test="categoryId != null and categoryId != 0">
+				category_id = #{categoryId}
+			</if>
+		</trim>
+		<trim prefix="where">
+			<if test="goodsIds != null">
+				id in
+				<foreach collection="goodsIds" item = "item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</trim>
+	</update>
 </mapper>
