@@ -51,7 +51,6 @@ public class PaymentLogService {
      * @return
      */
     public int updatePaymentLog(PaymentLog paymentLog){
-        paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));
         return paymentLogMapper.updatePaymentLog(paymentLog);
     }
 

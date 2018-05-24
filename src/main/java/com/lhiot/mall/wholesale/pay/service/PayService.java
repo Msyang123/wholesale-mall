@@ -36,6 +36,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -481,6 +482,7 @@ public class PayService {
             paymentLog.setBankType(bankType);//银行类型
             paymentLog.setTransactionId(transactionId);//微信流水
             paymentLog.setTotalFee(totalFee);//支付金额
+            paymentLog.setPaymentTime(new Timestamp(System.currentTimeMillis()));//支付时间
             paymentLogService.updatePaymentLog(paymentLog);
         }
 

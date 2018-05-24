@@ -86,19 +86,6 @@ public class OrderRefundApplicationService {
         return this.orderRefundApplicationMapper.create(orderRefundApplication);
     }
 
-/*    public Integer updateById(OrderRefundApplication orderRefundApplication){
-       // if (Objects.equals(orderRefundApplication.getAfterStatus(),"yes")){
-            OrderDetail order = new OrderDetail();
-            order.setOrderCode(orderRefundApplication.getOrderId());
-            order.setAfterStatus(orderRefundApplication.getAfterStatus());
-            //修改订单的售后状态
-            if (orderMapper.updateOrder(order)<=0){
-                return -1;
-            }
-       // }
-        return this.orderRefundApplicationMapper.updateById(orderRefundApplication);
-    }*/
-    
     /**
      * 审核售后订单
      * @param orderRefundApplication
@@ -157,6 +144,11 @@ public class OrderRefundApplicationService {
             page = 1;
             param.setPage(page);
             param.setStart(0);
+        }
+        //设置默认排序,创建时间倒序
+        if(StringUtils.isBlank(param.getSidx())){
+        	param.setSidx("a.audit_status desc,a.create_at");
+        	param.setSord("desc");
         }
         List<OrderRefundPage> goods = orderRefundApplicationMapper.page(param);
         PageQueryObject result = new PageQueryObject();
@@ -332,8 +324,8 @@ public class OrderRefundApplicationService {
      * @return
      */
     public boolean hasApply(String orderCode){
-    	OrderResult orderResult = orderRefundApplicationMapper.searchOrderById(orderCode);
-    	if(Objects.isNull(orderResult)){
+    	OrderRefundApplication orderRefundApplication = orderRefundApplicationMapper.select(orderCode);
+    	if(!Objects.isNull(orderRefundApplication)){
     		return true;
     	}
     	return false;

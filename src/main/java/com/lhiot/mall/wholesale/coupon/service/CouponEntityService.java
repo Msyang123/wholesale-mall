@@ -198,7 +198,8 @@ public class CouponEntityService {
 		List<CouponEntity> availables = new ArrayList<>();
 		for(CouponEntity couponEntity : list){
 			int fullFee = couponEntity.getFullFee();
-			if(orderFee >= fullFee){
+			int couponFee = couponEntity.getCouponFee(); 
+			if(orderFee >= fullFee && orderFee >= couponFee){
 				couponEntity.setIsValidate(true);
 				availables.add(couponEntity);
 			}
