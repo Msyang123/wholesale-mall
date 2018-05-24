@@ -87,9 +87,9 @@ public class OrderRefundApplicationService {
            }
         }
         //判断是否在售后时间范围内
-        if(!this.withinTheTime(orderDetail.getReceiveTime())){
+/*        if(!this.withinTheTime(orderDetail.getReceiveTime())){
         	return -1;
-        }
+        }*/
         return this.orderRefundApplicationMapper.create(orderRefundApplication);
     }
 
