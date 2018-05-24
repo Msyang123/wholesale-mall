@@ -214,6 +214,7 @@ public class OrderService {
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setOrderCode(orderCode);
         orderDetail.setOrderStatus("received");
+        orderDetail.setReceiveTime(new Timestamp(System.currentTimeMillis()));
         return orderMapper.updateOrder(orderDetail);
     }
 

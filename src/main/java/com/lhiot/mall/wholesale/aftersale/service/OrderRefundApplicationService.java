@@ -1,34 +1,45 @@
 package com.lhiot.mall.wholesale.aftersale.service;
 
+import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Objects;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication;
 import com.lhiot.mall.wholesale.aftersale.domain.OrderRefundPage;
 import com.lhiot.mall.wholesale.aftersale.domain.OrderResult;
 import com.lhiot.mall.wholesale.aftersale.mapper.OrderRefundApplicationMapper;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.goods.domain.Goods;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
-import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
+import com.lhiot.mall.wholesale.pay.domain.RefundLog;
+import com.lhiot.mall.wholesale.pay.mapper.RefundLogMapper;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
+import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
+import com.lhiot.mall.wholesale.setting.mapper.SettingMapper;
 import com.lhiot.mall.wholesale.user.domain.SalesUser;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.service.SalesUserService;
 import com.lhiot.mall.wholesale.user.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
+import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
 
-import java.beans.IntrospectionException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional
 public class OrderRefundApplicationService {
@@ -38,18 +49,29 @@ public class OrderRefundApplicationService {
     private final OrderMapper orderMapper;
 
     private final UserService userService;
-
+    private final SettingMapper settingMapper;
+    
     private final PaymentLogService paymentLogService;
 
+    private final RefundLogMapper refundLogMapper;
     private final SalesUserService salesUserService;
+    private final WeChatUtil weChatUtil;
 
     @Autowired
-    public OrderRefundApplicationService(OrderRefundApplicationMapper orderRefundApplicationMapper, OrderMapper orderMapper, UserService userService, PaymentLogService paymentLogService, SalesUserService salesUserService) {
+    public OrderRefundApplicationService(OrderRefundApplicationMapper orderRefundApplicationMapper, 
+    		OrderMapper orderMapper, UserService userService, PaymentLogService paymentLogService, 
+    		SalesUserService salesUserService,
+    		PaymentProperties paymentProperties,
+    		RefundLogMapper refundLogMapper,
+    		SettingMapper settingMapper) {
         this.orderRefundApplicationMapper = orderRefundApplicationMapper;
         this.orderMapper = orderMapper;
         this.userService = userService;
         this.paymentLogService = paymentLogService;
         this.salesUserService = salesUserService;
+        this.refundLogMapper = refundLogMapper;
+        this.settingMapper = settingMapper;
+        this.weChatUtil = new WeChatUtil(paymentProperties);
     }
 
     public Integer create(OrderRefundApplication orderRefundApplication){
@@ -64,10 +86,14 @@ public class OrderRefundApplicationService {
                return -1;
            }
         }
+        //判断是否在售后时间范围内
+        if(!this.withinTheTime(orderDetail.getReceiveTime())){
+        	return -1;
+        }
         return this.orderRefundApplicationMapper.create(orderRefundApplication);
     }
 
-    public Integer updateById(OrderRefundApplication orderRefundApplication){
+/*    public Integer updateById(OrderRefundApplication orderRefundApplication){
        // if (Objects.equals(orderRefundApplication.getAfterStatus(),"yes")){
             OrderDetail order = new OrderDetail();
             order.setOrderCode(orderRefundApplication.getOrderId());
@@ -77,6 +103,39 @@ public class OrderRefundApplicationService {
                 return -1;
             }
        // }
+        return this.orderRefundApplicationMapper.updateById(orderRefundApplication);
+    }*/
+    
+    /**
+     * 审核售后订单
+     * @param orderRefundApplication
+     * @return
+     */
+    public Integer updateById(OrderRefundApplication orderRefundApplication){
+    	String orderCode = orderRefundApplication.getOrderId();
+    	OrderDetail orderDetail = orderMapper.searchOrder(orderCode);
+    	if(Objects.isNull(orderDetail)){
+    		return -1;
+    	}
+    	//判断订单是否已经售后
+    	if("yes".equals(orderDetail.getAfterStatus())){
+    		return -1;
+    	}
+    	//判断用户的实际支付金额和退款金额
+    	int refundFee = this.vaildOrder(orderDetail, orderRefundApplication);
+    	if(refundFee < 0){
+    		return -1;
+    	}
+    	//调用退款接口
+    	this.aftersaleRefund(orderDetail, refundFee);
+    	//修改订单的售后状态
+        OrderDetail param = new OrderDetail();
+        param.setOrderCode(orderRefundApplication.getOrderId());
+        param.setAfterStatus(orderRefundApplication.getAfterStatus());
+        //修改订单的售后状态
+        if (orderMapper.updateOrder(param)<=0){
+            return -1;
+        }
         return this.orderRefundApplicationMapper.updateById(orderRefundApplication);
     }
 
@@ -160,4 +219,117 @@ public class OrderRefundApplicationService {
         return order1;
     }
 
+    /**
+     * 部分退款验证订单信息
+     * @param orderDetail
+     * @return
+     */
+    public int vaildOrder(OrderDetail orderDetail,OrderRefundApplication refundApplication){
+    	int fee = -1;
+    	//获取退款申请中的金额,实际退换给用户的金额
+    	int returnFee = refundApplication.getOrderDiscountFee() - refundApplication.getDeliveryFee();
+    	//获取订单的实付金额
+    	Integer payableFee = orderDetail.getPayableFee();
+    	Integer deliveryFee = Objects.isNull(orderDetail.getDeliveryFee()) ? 0:orderDetail.getDeliveryFee();
+    	//用户购买时，实际花费的金额
+    	Integer actualFee = payableFee + deliveryFee;
+    	if(returnFee < actualFee){
+    		fee = returnFee;
+    	}
+    	return fee;
+    }
+    
+
+    /**
+     * 售后退款
+     * @param orderDetail 订单详情
+     * @param refundFee 退款金额
+     * @return
+     */
+    public String aftersaleRefund(OrderDetail orderDetail,Integer refundFee){
+    	PaymentLog paymentLog = paymentLogService.getPaymentLog(orderDetail.getOrderCode());
+    	if(Objects.isNull(refundFee)){
+    		return "退款金额错误";
+    	}
+    	
+        //写入退款记录  t_whs_refund_log
+        RefundLog refundLog = new RefundLog();
+        refundLog.setPaymentLogId(paymentLog.getId());
+        refundLog.setRefundFee(refundFee);
+        refundLog.setRefundReason("售后退款");
+        refundLog.setRefundTime(new Timestamp(System.currentTimeMillis()));
+        refundLog.setTransactionId(paymentLog.getTransactionId());
+        refundLog.setUserId(orderDetail.getUserId());
+        
+        //修改支付日志
+        PaymentLog updatePaymentLog = new PaymentLog();
+        updatePaymentLog.setOrderCode(orderDetail.getOrderCode());
+        updatePaymentLog.setRefundFee(refundFee);
+        
+        //构建修改用户余额的参数
+        User updateUser = new User();
+        updateUser.setId(orderDetail.getUserId());
+        updateUser.setBalance(refundFee);
+        
+        switch (orderDetail.getSettlementType()) {
+        //货到付款
+        case "offline":
+            //退还余额
+            userService.updateBalance(updateUser);
+            refundLog.setRefundType("balanceRefund");
+            break;
+        //微信支付
+        case "wechat":
+            //退款 如果微信支付就微信退款
+            String refundChatFee = weChatUtil.refund(paymentLog.getOrderCode(), refundFee);
+            //检查为没有失败信息
+            if (StringUtils.isNotBlank(refundChatFee)&&refundChatFee.indexOf("FAIL")==-1) {
+            	refundLog.setRefundType("wechatRefund");
+            } else {
+                return "微信退款失败，请联系客服";
+            }
+            break;
+        //余额支付
+        case "balance":
+            userService.updateBalance(updateUser);
+            //写退款记录和修改支付日志
+            refundLog.setRefundType("balanceRefund");
+            break;
+        default:
+            log.info("退款未找到类型");
+            break;
+        }
+	    //写退款日志和修改支付记录
+	    refundLogMapper.insertRefundLog(refundLog);
+	    paymentLogService.updatePaymentLog(updatePaymentLog);
+    	return null;
+    }
+    
+    /**
+     * 判断售后申请是否在售后时间范围内
+     * @param timestamp
+     * @return
+     */
+    public boolean withinTheTime(Timestamp timestamp){
+    	boolean success = false;
+    	ParamConfig config = settingMapper.searchConfigParam("afterSalePeriod");
+    	String deadLine = config.getConfigParamValue();
+    	if(StringUtils.isBlank(deadLine) || Objects.isNull(timestamp)){
+    		return success;
+    	}
+    	//售后期限
+    	int day = Integer.valueOf(deadLine);
+    	//计算售后期限
+    	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyy-MM-dd HH:mm:ss");
+    	DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String t = format.format(timestamp);
+		LocalDateTime deadLineDay = LocalDateTime.parse(t,formatter).plusDays(day);
+		
+		//分当前时间比较
+		LocalDateTime curTime = LocalDateTime.now();
+		if(curTime.isAfter(deadLineDay)){
+			success = true;
+		}
+    	return success;
+    }
 }
