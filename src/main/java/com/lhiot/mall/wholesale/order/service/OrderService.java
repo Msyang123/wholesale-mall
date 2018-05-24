@@ -587,5 +587,12 @@ public class OrderService {
         return orderMapper.exportDataOrderGoods(param);
     }
 
-
+    /**
+     * 根据订单查询编码查询订单
+     * @param orderCode
+     * @return
+     */
+    public OrderDetail findOrderByCode(String orderCode){
+    	return orderMapper.searchOrder(orderCode);
+    }
 }

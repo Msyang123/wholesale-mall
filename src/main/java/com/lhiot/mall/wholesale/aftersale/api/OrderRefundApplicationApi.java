@@ -56,6 +56,20 @@ public class OrderRefundApplicationApi {
                 ||Objects.isNull(orderRefundApplication.getExistProblem())||Objects.equals(orderRefundApplication.getExistProblem(),"")){
             return ResponseEntity.badRequest().body("请完善信息在提交");
         }
+        String orderCode = orderRefundApplication.getOrderId();
+        //判断订单是否存在
+        OrderDetail orderDetail = orderService.findOrderByCode(orderCode);
+        if(Objects.isNull(orderDetail)){
+        	return ResponseEntity.badRequest().body("订单不存在");
+        }
+        //判断是否已经过了售后期
+        if(!orderRefundApplicationService.withinTheTime(orderDetail.getReceiveTime())){
+        	return ResponseEntity.badRequest().body("您好上帝，订单已过售后期限");
+        }
+        //判断当前订单是已经售后
+        if(!orderRefundApplicationService.hasApply(orderCode)){
+        	return ResponseEntity.badRequest().body("已经申请过售后，请勿重复申请");
+        }
         boolean isMoblieNo = StringReplaceUtil.isMobileNO(orderRefundApplication.getContactsPhone());
         if (!isMoblieNo){
             return ResponseEntity.badRequest().body("手机号码格式错误");

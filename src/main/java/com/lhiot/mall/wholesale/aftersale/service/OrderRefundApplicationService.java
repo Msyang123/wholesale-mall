@@ -7,6 +7,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -77,19 +78,12 @@ public class OrderRefundApplicationService {
     public Integer create(OrderRefundApplication orderRefundApplication){
         OrderDetail order = new OrderDetail();
         order.setOrderCode(orderRefundApplication.getOrderId());
-        OrderDetail orderDetail = orderMapper.order(order);
-        if (Objects.isNull(orderDetail)){
-            OrderDetail order1 = new OrderDetail();
-            order1.setId(orderDetail.getId());
-            order1.setAfterStatus("yes");
-           if (orderMapper.updateOrderById(order1)<=0){
-               return -1;
-           }
+        order.setAfterStatus("yes");
+        order.setCheckStatus("auditeding");
+        //修改订单的售后状态
+        if (orderMapper.updateOrder(order)<=0){
+           return -1;
         }
-        //判断是否在售后时间范围内
-/*        if(!this.withinTheTime(orderDetail.getReceiveTime())){
-        	return -1;
-        }*/
         return this.orderRefundApplicationMapper.create(orderRefundApplication);
     }
 
@@ -318,7 +312,7 @@ public class OrderRefundApplicationService {
     		return success;
     	}
     	//售后期限
-    	int day = Integer.valueOf(deadLine);
+    	int day = Integer.valueOf(deadLine.trim());
     	//计算售后期限
     	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyy-MM-dd HH:mm:ss");
     	DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -331,5 +325,18 @@ public class OrderRefundApplicationService {
 			success = true;
 		}
     	return success;
+    }
+    
+    /**
+     * 判断当前订单是已经售后
+     * @param orderCode
+     * @return
+     */
+    public boolean hasApply(String orderCode){
+    	OrderResult orderResult = orderRefundApplicationMapper.searchOrderById(orderCode);
+    	if(Objects.isNull(orderResult)){
+    		return true;
+    	}
+    	return false;
     }
 }
