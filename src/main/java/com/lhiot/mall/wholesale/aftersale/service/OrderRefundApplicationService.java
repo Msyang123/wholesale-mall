@@ -332,8 +332,8 @@ public class OrderRefundApplicationService {
      * @return
      */
     public boolean hasApply(String orderCode){
-    	OrderResult orderResult = orderRefundApplicationMapper.searchOrderById(orderCode);
-    	if(Objects.isNull(orderResult)){
+    	OrderRefundApplication orderRefundApplication = orderRefundApplicationMapper.select(orderCode);
+    	if(!Objects.isNull(orderRefundApplication)){
     		return true;
     	}
     	return false;

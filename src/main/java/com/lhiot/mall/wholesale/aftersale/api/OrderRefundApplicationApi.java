@@ -67,7 +67,7 @@ public class OrderRefundApplicationApi {
         	return ResponseEntity.badRequest().body("您好上帝，订单已过售后期限");
         }
         //判断当前订单是已经售后
-        if(!orderRefundApplicationService.hasApply(orderCode)){
+        if(orderRefundApplicationService.hasApply(orderCode)){
         	return ResponseEntity.badRequest().body("已经申请过售后，请勿重复申请");
         }
         boolean isMoblieNo = StringReplaceUtil.isMobileNO(orderRefundApplication.getContactsPhone());
@@ -140,5 +140,11 @@ public class OrderRefundApplicationApi {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.badRequest().body("申请失败");
+    }
+    
+    @GetMapping("/test/detail/{orderCode}")
+    @ApiOperation(value = "后台管理-根据订单id查看售后订单详情",response = OrderGridResult.class)
+    public  ResponseEntity<Boolean> demand(@PathVariable("orderCode") String orderCode){
+        return ResponseEntity.ok(orderRefundApplicationService.hasApply(orderCode));
     }
 }
