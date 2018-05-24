@@ -152,7 +152,7 @@
         from t_whs_goods_standard s
         LEFT JOIN t_whs_goods g on g.id=s.goods_id
         LEFT JOIN t_whs_goods_unit u on u.unit_code=s.unit_code
-        where s.id in
+        where s.vaild = 'yes' and s.id in
 		<foreach collection="list" item="plateId" open="(" separator="," close=")">
 			#{plateId}
 		</foreach>

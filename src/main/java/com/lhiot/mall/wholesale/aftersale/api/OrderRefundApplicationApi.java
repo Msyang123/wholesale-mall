@@ -64,7 +64,7 @@ public class OrderRefundApplicationApi {
         }
         //判断是否已经过了售后期
         if(!orderRefundApplicationService.withinTheTime(orderDetail.getReceiveTime())){
-        	return ResponseEntity.badRequest().body("您好上帝，订单已过售后期限");
+        	return ResponseEntity.badRequest().body("订单已过售后期限");
         }
         //判断当前订单是已经售后
         if(orderRefundApplicationService.hasApply(orderCode)){
