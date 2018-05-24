@@ -92,26 +92,29 @@ public class OrderRefundApplicationService {
      * @return
      */
     public Integer updateById(OrderRefundApplication orderRefundApplication){
+    	String auditStatus = orderRefundApplication.getAuditStatus();
     	String orderCode = orderRefundApplication.getOrderId();
     	OrderDetail orderDetail = orderMapper.searchOrder(orderCode);
     	if(Objects.isNull(orderDetail)){
     		return -1;
     	}
-    	//判断订单是否已经售后
-    	if("yes".equals(orderDetail.getAfterStatus())){
-    		return -1;
+    	if("agree".equals(auditStatus)){
+        	if("yes".equals(orderDetail.getAfterStatus())){
+        		return -1;
+        	}
+        	//判断用户的实际支付金额和退款金额
+        	int refundFee = this.vaildOrder(orderDetail, orderRefundApplication);
+        	if(refundFee < 0){
+        		return -1;
+        	}
+        	//调用退款接口
+        	this.aftersaleRefund(orderDetail, refundFee);
     	}
-    	//判断用户的实际支付金额和退款金额
-    	int refundFee = this.vaildOrder(orderDetail, orderRefundApplication);
-    	if(refundFee < 0){
-    		return -1;
-    	}
-    	//调用退款接口
-    	this.aftersaleRefund(orderDetail, refundFee);
     	//修改订单的售后状态
         OrderDetail param = new OrderDetail();
         param.setOrderCode(orderRefundApplication.getOrderId());
-        param.setAfterStatus(orderRefundApplication.getAfterStatus());
+        param.setAfterStatus("yes");
+        param.setCheckStatus(auditStatus);
         //修改订单的售后状态
         if (orderMapper.updateOrder(param)<=0){
             return -1;

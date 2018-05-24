@@ -18,7 +18,7 @@ public class PlateCategory {
 	@ApiModelProperty(notes="id",dataType="Long")
 	private Long id;
 	
-	@ApiModelProperty(notes="商品规格id",dataType="Long")
+	@ApiModelProperty(notes="父节点id",dataType="Long")
 	private Long parentId;
 	
 	@JsonProperty("name")
