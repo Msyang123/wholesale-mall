@@ -62,7 +62,7 @@
     <select id="searchOrder"  parameterType="String" resultType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
         select id,order_code orderCode,IFNULL(discount_fee,0) discountFee,settlement_type settlementType,pay_status payStatus,user_id
         ,order_status orderStatus,create_time createTime,IFNULL(total_fee,0) totalFee,IFNULL(payable_fee,0) payableFee,remarks,
-        hd_status,delivery_time,IFNULL(delivery_fee,0) deliveryFee,delivery_address,hd_code
+        hd_status,delivery_time,IFNULL(delivery_fee,0) deliveryFee,delivery_address,hd_code,receive_time as receiveTime
         from t_whs_order o where o.order_code = #{orderCode}
     </select>
 
@@ -132,7 +132,7 @@
     <!--依据订单编码修改订单信息-->
     <update id="updateOrder" parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
         UPDATE t_whs_order
-        <set>
+        <trim prefix="set" suffixOverrides=",">
             <if test="hdCode!=null and hdCode!=''">
                 hd_code=#{hdCode},
             </if>
@@ -163,14 +163,14 @@
             <if test="checkStatus!=null and checkStatus!=''">
                 check_status=#{checkStatus},
             </if>
-        </set>
+        </trim>
          where order_code=#{orderCode}
     </update>
 
     <!--依据订单编号修改订单信息-->
     <update id="updateOrderById" parameterType="com.lhiot.mall.wholesale.order.domain.OrderDetail">
         UPDATE t_whs_order
-        <set>
+        <trim prefix="set" suffixOverrides=",">
             <if test="hdCode!=null and hdCode!=''">
                 hd_code=#{hdCode},
             </if>
@@ -195,10 +195,12 @@
             <if test="invoiceStatus!=null and invoiceStatus!=''">
                 invoice_status=#{invoiceStatus},
             </if>
-        </set>
+            <if test="checkStatus!=null and checkStatus''">
+                check_status=#{checkStatus},
+            </if>
+        </trim>
         where id=#{id}
     </update>
-
 
     <!-- 统计商品的售卖数量 -->
     <select id="soldQuantity" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.order.domain.SoldQuantity">
