@@ -1,9 +1,8 @@
 package com.lhiot.mall.wholesale.setting.mapper;
 
-import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
-import org.apache.ibatis.annotations.Mapper;
-
 import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
 
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.setting.domain.gridparam.ParamConfigGirdParam;

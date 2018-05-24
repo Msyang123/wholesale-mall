@@ -286,6 +286,8 @@ public class GoodsService {
 		}
 		//组装商品的销售数量
 		for(Goods goods : goodses){
+			//默认设置销售数量为0
+			goods.setSoldQuantity(0);
 			for(SoldQuantity soldQuantity : soldQuantities){
 				if(Objects.equals(goods.getId(), 
 						soldQuantity.getGoodsId())){
@@ -293,7 +295,6 @@ public class GoodsService {
 				}
 			}
 		}
-		
 		//获取订单的最低售价
 		List<GoodsMinPrice> minPrices = priceRegionService.minPrices(ids);
 		for(Goods goods : goodses){
