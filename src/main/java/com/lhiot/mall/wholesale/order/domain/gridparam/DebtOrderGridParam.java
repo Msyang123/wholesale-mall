@@ -17,6 +17,9 @@ import java.util.List;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 public class DebtOrderGridParam extends PageObject{
+    @JsonProperty("orderDebtCode")
+    private String orderDebtCode;
+
     @JsonProperty("phone")
     private String phone;
 

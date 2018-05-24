@@ -386,7 +386,7 @@ public class OrderService {
         int rows = param.getRows();
         //总记录数
         int totalPages = 0;
-        if (phone == null) {//未传手机号查询条件,先根据条件查询分页的订单列表及用户ids，再根据ids查询用户信息列表
+        if (Objects.equals(phone,"") || Objects.isNull(phone) ) {//未传手机号查询条件,先根据条件查询分页的订单列表及用户ids，再根据ids查询用户信息列表
             count = orderMapper.pageQueryCount(param);
             //起始行
             param.setStart((page - 1) * rows);
