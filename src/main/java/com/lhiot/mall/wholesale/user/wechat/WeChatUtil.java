@@ -112,7 +112,10 @@ public class WeChatUtil {
 		return refund(tradeNo, tradeNo, totalFee, totalFee);
 	}
 
-
+	public  String refund(final String tradeNo, final int totalFee,final int refundFee){
+		return refund(tradeNo, tradeNo, totalFee, refundFee);
+	}
+	
 	/**
 	 * 申请退款（分多次退款）
 	 * 

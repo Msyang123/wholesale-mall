@@ -7,7 +7,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -275,7 +274,7 @@ public class OrderRefundApplicationService {
         //微信支付
         case "wechat":
             //退款 如果微信支付就微信退款
-            String refundChatFee = weChatUtil.refund(paymentLog.getOrderCode(), refundFee);
+            String refundChatFee = weChatUtil.refund(paymentLog.getOrderCode(),paymentLog.getTotalFee(), refundFee);
             //检查为没有失败信息
             if (StringUtils.isNotBlank(refundChatFee)&&refundChatFee.indexOf("FAIL")==-1) {
             	refundLog.setRefundType("wechatRefund");
@@ -321,7 +320,7 @@ public class OrderRefundApplicationService {
 		
 		//分当前时间比较
 		LocalDateTime curTime = LocalDateTime.now();
-		if(curTime.isAfter(deadLineDay)){
+		if(curTime.isBefore(deadLineDay)){
 			success = true;
 		}
     	return success;
