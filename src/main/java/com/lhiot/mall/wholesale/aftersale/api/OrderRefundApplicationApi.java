@@ -106,6 +106,10 @@ public class OrderRefundApplicationApi {
         orderRefundApplication.setPage(page);
         orderRefundApplication.setRows(rows);
         orderRefundApplication.setStart((page-1)*rows);
+        //设置默认排序方式，未审核的并时间倒序
+        orderRefundApplication.setSidx("audit_status desc,create_at");
+        orderRefundApplication.setSord("desc");
+        
         List<OrderRefundApplication> orderRefundApplicationList = orderRefundApplicationService.orderRefundApplicationList(orderRefundApplication);
         if (orderRefundApplicationList.isEmpty()){
             ResponseEntity.ok(ArrayObject.of(new ArrayList<OrderRefundApplication>()));

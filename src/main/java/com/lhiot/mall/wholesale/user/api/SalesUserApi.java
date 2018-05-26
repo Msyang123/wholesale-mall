@@ -164,6 +164,11 @@ public class SalesUserApi {
         if (salesUser==null){
             return ResponseEntity.badRequest().body("账号不存在");
         }
+        //判断业务员账号是否已经禁用
+        String salesStatus = salesUser.getSalesStatus();
+        if(!"normal".equals(salesStatus)){
+        	return ResponseEntity.badRequest().body("账号被禁用");
+        }
         if (psw.equals(salesUser.getSalesmanPassword())){
             return ResponseEntity.ok().body(salesUser);
         }

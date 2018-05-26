@@ -32,6 +32,8 @@ import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 import com.lhiot.mall.wholesale.goods.service.GoodsService;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
@@ -90,7 +92,7 @@ public class GoodsApi {
         return ResponseEntity.ok(goodsService.pageQuery(param));
     }
 
-    @GetMapping("/goods-detail/{id}")
+/*  @GetMapping("/goods-detail/{id}")
     @ApiOperation(value = "商品详情页面")
     public  ResponseEntity<GoodsDetailResult> goodsDetail(@PathVariable("id") Long id,@RequestParam Long userId){
         //商品详情信息
@@ -104,6 +106,26 @@ public class GoodsApi {
         GoodsDetailResult goodsDetailResult = new GoodsDetailResult();
         goodsDetailResult.setGoodsInfo(goodsInfo);
         goodsDetailResult.setGoodsFlashsale(flashsaleService.goodsFlashsale(goodsInfo.getGoodsStandardId(), userId));
+        return ResponseEntity.ok(goodsDetailResult);
+    }*/
+    
+    @GetMapping("/goods-detail/{id}")
+    @ApiOperation(value = "商品详情页面")
+	@ApiImplicitParams({
+		@ApiImplicitParam(paramType = "path", name = "id", value = "商品规格id", required = true, dataType = "long") ,
+		@ApiImplicitParam(paramType = "query", name = "userId", value = "用户id", required = true, dataType = "long")})
+    public  ResponseEntity<GoodsDetailResult> goodsDetail(@PathVariable("id") Long id,@RequestParam Long userId){
+        //根据规格id查询商品详情
+        GoodsInfo goodsInfo = goodsService.findGoodsByStandardId(id);
+        //商品价格区间信息
+        List<GoodsPriceRegion> goodsPriceRegions =goodsPriceRegionService.selectPriceRegion(id);
+        goodsInfo.setGoodsPriceRegionList(goodsPriceRegions);
+        //设置销售数量
+        goodsInfo.setSaleCount(goodsService.soldCount(id));
+        
+        GoodsDetailResult goodsDetailResult = new GoodsDetailResult();
+        goodsDetailResult.setGoodsInfo(goodsInfo);
+        goodsDetailResult.setGoodsFlashsale(flashsaleService.goodsFlashsale(id, userId));
         return ResponseEntity.ok(goodsDetailResult);
     }
 

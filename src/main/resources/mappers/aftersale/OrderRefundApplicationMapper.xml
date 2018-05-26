@@ -195,6 +195,6 @@
 	<!-- 根据订单编号查询售后订单 -->
 	<select id="select" parameterType="String"
 		resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
-		select * from t_whs_order_refund_application where order_id = #{0}
+		select * from t_whs_order_refund_application where order_id = #{0} and audit_status = 'reject'
 	</select>
 </mapper>

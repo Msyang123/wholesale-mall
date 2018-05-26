@@ -74,6 +74,8 @@ public class OrderRefundApplication {
     private Integer rows;
 
     private String sidx;
+    
+    private String sord;
 
     private Integer page;
 

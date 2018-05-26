@@ -2,7 +2,6 @@ package com.lhiot.mall.wholesale.goods.domain;
 
 import java.math.BigDecimal;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModel;
@@ -17,6 +16,9 @@ public class Goods {
 
 	@ApiModelProperty(notes="商品单位ID",dataType="Long")
 	private Long id;
+	
+	@ApiModelProperty(notes="商品规格ID",dataType="Long")
+	private Long standardId;
 	
 	@ApiModelProperty(notes="商品编码",dataType="String")
 	private String goodsCode;

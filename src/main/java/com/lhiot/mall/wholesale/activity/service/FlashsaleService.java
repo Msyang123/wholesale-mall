@@ -179,8 +179,8 @@ public class FlashsaleService {
 		List<Long> standardIds = new ArrayList<>();
 		//获取活动商品的规格id
 		flashsales.forEach(fs -> {
-			Long id = fs.getGoodsStandardId();
-			standardIds.add(id);
+			Long standardId = fs.getGoodsStandardId();
+			standardIds.add(standardId);
 		});
 		List<GoodsStandard> goodsStandards = goodsStandardService.goodsStandards(standardIds);
 		for(FlashsaleGoods flg : flashsales){
@@ -249,7 +249,7 @@ public class FlashsaleService {
 	}
 
 	/**
-	 * 给一个默认8.5折的抢购价
+	 * 给一个默认抢购价为原价
 	 * @param standardId
 	 * @return
 	 */
@@ -259,7 +259,7 @@ public class FlashsaleService {
 		List<Long> list = new ArrayList<>();
 		list.add(standardId);
 		if(!list.isEmpty()){
-			List<GoodsMinPrice> goodsMinPrices = goodsPriceRegionService.minPrices(list);
+			List<GoodsMinPrice> goodsMinPrices = goodsPriceRegionService.minAndMaxPrices(list);
 			if(!goodsMinPrices.isEmpty()){
 				GoodsMinPrice goodsMinPrice = goodsMinPrices.get(0);
 				Integer maxPrice = goodsMinPrice.getMaxPrice();
@@ -268,7 +268,7 @@ public class FlashsaleService {
 				}
 			}
 		}
-		//如果没有设置价格区间，则为原价的9折
+		//如果没有设置价格区间，则为原价
 		if(Objects.equals(discount, 0)){
 			//获取商品的原价
 			GoodsStandard goodsStandard = goodsStandardService.goodsStandard(standardId);

@@ -76,8 +76,8 @@ public interface OrderMapper {
     Integer updateOrderById(OrderDetail orderDetail);
 
 
-    //统计商品的售卖数量，根据商品ids
-    List<SoldQuantity> soldQuantity(List<Long> goodsIds);
+    //统计商品的售卖数量，根据商品规格ids
+    List<SoldQuantity> soldQuantity(List<Long> standardIds);
 
     OrderDetail order(OrderDetail orderDetail);
 
