@@ -50,6 +50,7 @@ public class GoodsService {
 	private final FlashsaleService flashsaleService;
 	private final SettingService settingService;
 	private static final String SOLD_COUNT = "soldDegree";//销售数量的配置系数
+	private static final Integer ZERO = 0;//定义个默认值，如销售数量或折价格等
 	@Autowired
 	public GoodsService(GoodsMapper goodsMapper,OrderMapper orderMapper,
 			GoodsPriceRegionService priceRegionService,
@@ -274,8 +275,8 @@ public class GoodsService {
 		}
 		List<Long> ids = new ArrayList<>();
 		goodses.forEach(goods -> {
-			Long goodsId = goods.getId();
-			ids.add(goodsId);
+			Long standardId = goods.getStandardId();
+			ids.add(standardId);
 		});
 		//订单中心获取商品销售数量
 		List<SoldQuantity> soldQuantities = orderMapper.soldQuantity(ids);
@@ -287,22 +288,25 @@ public class GoodsService {
 		//组装商品的销售数量
 		for(Goods goods : goodses){
 			//默认设置销售数量为0
-			goods.setSoldQuantity(0);
+			goods.setSoldQuantity(ZERO);
 			for(SoldQuantity soldQuantity : soldQuantities){
-				if(Objects.equals(goods.getId(), 
-						soldQuantity.getGoodsId())){
+				if(Objects.equals(goods.getStandardId(), 
+						soldQuantity.getStandardId())){
 					goods.setSoldQuantity(soldQuantity.getSoldQuantity());
 				}
 			}
 		}
-		//获取订单的最低售价
-		List<GoodsMinPrice> minPrices = priceRegionService.minPrices(ids);
+		//获取商品的最低售价和最高价格
+		List<GoodsMinPrice> minAndMaxPrices = priceRegionService.minAndMaxPrices(ids);
 		for(Goods goods : goodses){
-			for(GoodsMinPrice minPrice : minPrices){
-				if(Objects.equals(goods.getId(), 
-						minPrice.getGoodsId())){
-					goods.setMinPrice(minPrice.getMinPrice());
-					goods.setMaxPrice(minPrice.getMaxPrice());
+			//设置默认价格
+			goods.setMaxPrice(goods.getPrice());
+			goods.setMinPrice(goods.getPrice());
+			for(GoodsMinPrice prices : minAndMaxPrices){
+				if(Objects.equals(goods.getStandardId(), 
+						prices.getStandardId())){
+					goods.setMinPrice(prices.getMinPrice());
+					goods.setMaxPrice(prices.getMaxPrice());
 				}
 			}
 		}
@@ -316,7 +320,7 @@ public class GoodsService {
 		//匹配抢购商品价格及标识为抢购商品
 		for(Goods goods : goodses){
 			for(FlashsaleGoods flashsaleGoods : flGoods){
-				if(Objects.equals(goods.getId(), flashsaleGoods.getGoodsId())){
+				if(Objects.equals(goods.getStandardId(), flashsaleGoods.getGoodsStandardId())){
 					goods.setIsFlash(true);
 					goods.setMinPrice(flashsaleGoods.getSpecialPrice());
 				}
@@ -329,7 +333,7 @@ public class GoodsService {
 	 * @param goodsIds
 	 * @return
 	 */
-	public int soldCount(Long goodsId){
+/*	public int soldCount(Long goodsId){
 		int defaultValue = 0;
 		if(!Objects.isNull(goodsId)){
 			List<Long> ids = new ArrayList<>();
@@ -337,6 +341,25 @@ public class GoodsService {
 			List<SoldQuantity> soldCounts = orderMapper.soldQuantity(ids);
 			if(!soldCounts.isEmpty()){
 				SoldQuantity soldQuantity = soldCounts.get(0);
+				defaultValue = soldQuantity.getSoldQuantity();
+			}
+		}
+		return this.calSoldCount(defaultValue);
+	}*/
+	
+	/**
+	 * 获取商品某个规格的销售数量
+	 * @param goodsIds
+	 * @return
+	 */
+	public int soldCount(Long standardId){
+		int defaultValue = ZERO;
+		if(!Objects.isNull(standardId)){
+			List<Long> ids = new ArrayList<>();
+			ids.add(standardId);
+			List<SoldQuantity> soldCounts = orderMapper.soldQuantity(ids);
+			if(!soldCounts.isEmpty()){
+				SoldQuantity soldQuantity = soldCounts.get(ZERO);
 				defaultValue = soldQuantity.getSoldQuantity();
 			}
 		}
@@ -395,5 +418,14 @@ public class GoodsService {
 							   .collect(Collectors.toList());
 		Map<String,Object> map = ImmutableMap.of("categoryId", categoryId, "goodsIds", ids);
 		return goodsMapper.updateCategory(map)>0;
+	}
+	
+	/**
+	 * 根据规格id查询商品详情
+	 * @param standardId
+	 * @return
+	 */
+	public GoodsInfo findGoodsByStandardId(Long standardId){
+		return goodsMapper.searchByStandardId(standardId);
 	}
 }

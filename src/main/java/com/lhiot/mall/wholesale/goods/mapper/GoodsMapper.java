@@ -35,7 +35,7 @@ public interface GoodsMapper {
 
     GoodsFlashsale goodsFlashsale(Map param);
 
-    List<GoodsInfo> inventoryList(long userId);
+    List<GoodsInfo> inventoryList(Long userId);
 
     List<GoodsInfo> recommendList(List<Long> plateIds);
     
@@ -50,4 +50,5 @@ public interface GoodsMapper {
     //批量修改商品的分类
     int updateCategory(Map<String,Object> param);
 
+    GoodsInfo searchByStandardId(Long standardId);
 }

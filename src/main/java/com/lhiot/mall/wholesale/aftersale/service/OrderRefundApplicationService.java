@@ -113,7 +113,7 @@ public class OrderRefundApplicationService {
     	//修改订单的售后状态
         OrderDetail param = new OrderDetail();
         param.setOrderCode(orderRefundApplication.getOrderId());
-        param.setAfterStatus("yes");
+        param.setAfterStatus(orderRefundApplication.getAfterStatus());
         param.setCheckStatus(auditStatus);
         //修改订单的售后状态
         if (orderMapper.updateOrder(param)<=0){
@@ -168,8 +168,6 @@ public class OrderRefundApplicationService {
      * @return
      */
     public OrderResult detail(Long id) {
-        OrderResult order = new OrderResult();
-        //账款订单详情信息
         //售后订单详细信息
         OrderRefundApplication orderRefund=new OrderRefundApplication();
         orderRefund.setId(id);
@@ -322,7 +320,7 @@ public class OrderRefundApplicationService {
     }
     
     /**
-     * 判断当前订单是已经售后
+     * 判断当前订单是已经售后(只能是审核不通过的)
      * @param orderCode
      * @return
      */

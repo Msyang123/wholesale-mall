@@ -5,6 +5,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -16,9 +17,12 @@ public class GoodsInfo {
     @JsonProperty("id")
     private Long id;
 
+    @ApiModelProperty(notes = "商品规格id", dataType = "Long")
+    private Long standardId;
+    
     @JsonProperty("name")
     private String goodsName;
-
+    
     @JsonProperty("price")
     private Integer price;
 

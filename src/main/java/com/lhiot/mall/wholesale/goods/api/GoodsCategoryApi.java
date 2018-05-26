@@ -90,13 +90,13 @@ public class GoodsCategoryApi {
     
 	@GetMapping("/goodscategory/trydelete/{ids}")
     @ApiOperation(value = "查询商品分类是否可以被删除")
-    public ResponseEntity<String> tryOperation(@PathVariable("ids") String ids) {
+    public ResponseEntity<String> tryDelete(@PathVariable("ids") String ids) {
         return ResponseEntity.ok(goodsCategoryService.canDelete(ids));
     }
 	
 	@PostMapping("/goodscategory/tryoperation")
     @ApiOperation(value = "查询商品分类是否可以被修改或新增")
-    public ResponseEntity<Boolean> tryoperation(@RequestBody(required = true) GoodsCategory goodsCategory) {
+    public ResponseEntity<Boolean> tryOperation(@RequestBody(required = true) GoodsCategory goodsCategory) {
         return ResponseEntity.ok(goodsCategoryService.allowOperation(goodsCategory));
     }
 	

@@ -19,6 +19,7 @@ public class FlashsaleGoods {
 	@ApiModelProperty(notes="活动id",dataType="Long")
 	private Long activityId;
 	
+	@JsonProperty("standardId")
 	@ApiModelProperty(notes="商品规格id",dataType="Long")
 	private Long goodsStandardId;
 	

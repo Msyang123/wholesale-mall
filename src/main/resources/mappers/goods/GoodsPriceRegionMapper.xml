@@ -78,16 +78,15 @@
 
 	<!-- lynn 根据商品id查询价格区间中最低的价格 -->
 	<select id="priceRegion" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsMinPrice">
-		select min(t1.price) as minPrice,MAX(t1.price)as maxPrice,t3.id as goodsId
+		select min(t1.price) as minPrice,MAX(t1.price)as maxPrice,t2.id as standardId
 		from  t_whs_goods_price_region t1
 		left join t_whs_goods_standard t2 on t1.goods_standard_id = t2.id
-		left join t_whs_goods t3 on t2.goods_id = t3.id
 		<trim prefix="where">
-			t3.id in
+			t2.id in
 			<foreach collection="list" item = "item" open="(" separator="," close=")">
 				#{item}
 			</foreach>
-			group by t3.id
+			group by t2.id
 		</trim>
 	</select>
 </mapper>

@@ -102,11 +102,11 @@ public class GoodsPriceRegionService {
 	}
 	
 	/**
-	 * 根据商品id查询价格区间中的最低价格
+	 * 根据商品id查询价格区间中的最低价格和最高价格
 	 * @param goodsIds
 	 * @return
 	 */
-	public List<GoodsMinPrice> minPrices(List<Long> goodsIds){
-		return goodsPriceRegionMapper.priceRegion(goodsIds);
+	public List<GoodsMinPrice> minAndMaxPrices(List<Long> standardIds){
+		return goodsPriceRegionMapper.priceRegion(standardIds);
 	}
 }
