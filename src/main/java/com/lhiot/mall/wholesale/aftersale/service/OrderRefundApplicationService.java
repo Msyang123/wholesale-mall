@@ -168,8 +168,6 @@ public class OrderRefundApplicationService {
      * @return
      */
     public OrderResult detail(Long id) {
-        OrderResult order = new OrderResult();
-        //账款订单详情信息
         //售后订单详细信息
         OrderRefundApplication orderRefund=new OrderRefundApplication();
         orderRefund.setId(id);
