@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
@@ -412,7 +413,9 @@ public class OrderService {
                     }
                 }
             }
-            userList = userService.search(userIds);//根据用户ID列表查询用户信息
+            if(!CollectionUtils.isEmpty(userIds)){
+                userList = userService.search(userIds);//根据用户ID列表查询用户信息
+            }
             //paymentLogList = paymentLogService.getPaymentLogList(orderIds);//根据订单ID列表查询支付信息
         } else {//传了手机号查询条件，先根据条件查询用户列表及用户ids，再根据ids和订单其他信息查询订单信息列表
             userList = userService.searchByPhoneOrName(userParam);
