@@ -542,7 +542,7 @@ public class PayService {
             wholeSaleDtl.setBusinessDiscount(new BigDecimal((item.getGoodsPrice()-item.getDiscountGoodsPrice())/100.0));
             wholeSaleDtl.setPlatformDiscount(new BigDecimal(0));
             wholeSaleDtl.setQpc(item.getStandardWeight());
-            wholeSaleDtl.setQpcStr(goodsStandard.getStandard());
+            wholeSaleDtl.setQpcStr(goodsStandard.getGoodsName());
 
             wholeSaleDtlList.add(wholeSaleDtl);
         });
