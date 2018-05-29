@@ -149,7 +149,7 @@
         from t_whs_goods_standard s
         LEFT JOIN t_whs_goods g on g.id=s.goods_id
         LEFT JOIN t_whs_goods_unit u on u.unit_code=s.unit_code
-        where s.id in(SELECT DISTINCT t.goods_standard_id FROM t_whs_order_goods t where t.user_id=#{0}) LIMIT 10
+        where s.vaild='yes' and s.id in(SELECT DISTINCT t.goods_standard_id FROM t_whs_order_goods t where t.user_id=#{0}) LIMIT 10
     </select>
 
     <!--<select id="" parameterType="long" resultType="com.lhiot.mall.wholesale.goods.domain.GoodsFlashsale">
