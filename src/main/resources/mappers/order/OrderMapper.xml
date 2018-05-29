@@ -72,7 +72,7 @@
         from t_whs_order_goods t
         LEFT JOIN t_whs_goods_standard s on t.goods_standard_id=s.id
         LEFT JOIN t_whs_goods g on g.id=s.goods_id
-        LEFT JOIN t_whs_goods_unit u on u.unit_code=s.unit_code
+        LEFT JOIN t_whs_goods_unit u on u.unit_code=g.base_unit
         where t.order_id=#{orderId}
     </select>
 
