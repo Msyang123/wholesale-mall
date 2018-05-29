@@ -325,8 +325,8 @@ public class OrderRefundApplicationService {
      * @return
      */
     public boolean hasApply(String orderCode){
-    	OrderRefundApplication orderRefundApplication = orderRefundApplicationMapper.select(orderCode);
-    	if(!Objects.isNull(orderRefundApplication)){
+    	List<OrderRefundApplication> orderRefundApplications = orderRefundApplicationMapper.select(orderCode);
+    	if(!orderRefundApplications.isEmpty()){
     		return true;
     	}
     	return false;
