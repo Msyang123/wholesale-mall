@@ -47,6 +47,7 @@ public class Inventory {
         private String	platformDiscountInfo;//平台优惠信息	否	（255）		平台优惠
         private BigDecimal	qpc;//规格数量	否		比如：1*20，则等于20。	20
         private String	qpcStr;//规格 否	（255）		1*20
+        private String note;
     }
     @Data
     public class Pay{
