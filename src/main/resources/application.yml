@@ -11,9 +11,9 @@ spring:
    name: test
    type: com.zaxxer.hikari.HikariDataSource
    driver-class-name: com.mysql.jdbc.Driver
-   url: jdbc:mysql://172.16.10.195:3306/wholesale_mall_pre?useSSL=false
+   url: jdbc:mysql://172.16.10.192:3306/wholesale_mall?useSSL=false
    username: wholesale
-   password: wholesale2018
+   password: lhqgg2018
    schema: classpath:initialization/schema.sql  # 此操作会导致重启时重新初始化数据库，慎用！
    hikari:
      connection-init-sql: set names utf8mb4;
@@ -39,10 +39,10 @@ wholesale-mall:
   payment:
     charset: UTF-8
     send-sms:
-      url: http://dev.food-see.com/3rd-party-services/sms-captcha/{0}/{1}/sms
+      url: http://www.food-see.com/3rd-party-services/sms-captcha/{0}/{1}/sms
 #      version: v1-5-0
     validate-sms:
-      url: http://dev.food-see.com/3rd-party-services/sms-captcha/{0}/{1}/sms/validate
+      url: http://www.food-see.com/3rd-party-services/sms-captcha/{0}/{1}/sms/validate
 #      version: v1-5-0
 #    send-message-url: http://172.16.10.196:5111/sms-captcha/{0}/{1}/sms
 #    validate-message-url: http://172.16.10.196:5111/sms-captcha/{0}/{1}/sms/validate
@@ -105,7 +105,8 @@ hd:
     hd-card: http://172.16.10.108:8180/hdcard-services/api
     authentication-username: guest
     authentication-password: guest
-    h4rest: http://172.16.10.109:7280/h4rest-server/rest/h5rest-server/core/
+    h4rest: http://172.16.10.106:7280/h4rest-server/rest/h5rest-server/core/
+#测试库http://172.16.10.109:7280/h4rest-server/rest/h5rest-server/core/    
 #正式库http://172.16.10.106:7280/h4rest-server/rest/h5rest-server/core/
 
 microx:
