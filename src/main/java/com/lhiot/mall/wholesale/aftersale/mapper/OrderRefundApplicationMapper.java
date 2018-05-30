@@ -28,6 +28,6 @@ public interface OrderRefundApplicationMapper {
 
     List<OrderRefundPage> page(OrderGridParam param);
     
-    OrderRefundApplication select(String orderCode);
+    List<OrderRefundApplication> select(String orderCode);
 
 }

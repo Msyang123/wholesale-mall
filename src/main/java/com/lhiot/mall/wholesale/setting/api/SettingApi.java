@@ -1,5 +1,6 @@
 package com.lhiot.mall.wholesale.setting.api;
 
+import java.io.IOException;
 import java.net.URI;
 
 import javax.validation.constraints.NotNull;
@@ -80,7 +81,7 @@ public class SettingApi {
     
     @PostMapping("/paramconfig/gird")
     @ApiOperation(value = "新建一个查询，分页查询", response = ArrayObject.class)
-    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) ParamConfigGirdParam param) {
+    public ResponseEntity<PageQueryObject> grid(@RequestBody(required = true) ParamConfigGirdParam param) throws IOException {
         return ResponseEntity.ok(settingService.pageQuery(param));
     }
 

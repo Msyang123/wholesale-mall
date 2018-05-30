@@ -1,9 +1,11 @@
 package com.lhiot.mall.wholesale.setting.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.setting.domain.gridparam.ParamConfigGirdParam;
@@ -96,7 +99,8 @@ public class SettingService {
 	 * 分页查询
 	 * @return
 	 */
-	public PageQueryObject pageQuery(ParamConfigGirdParam param){
+	@SuppressWarnings("unchecked")
+	public PageQueryObject pageQuery(ParamConfigGirdParam param) throws IOException{
 		int count = settingMapper.pageQueryCount(param);
 		int page = param.getPage();
 		int rows = param.getRows();
@@ -110,6 +114,28 @@ public class SettingService {
 			param.setStart(0);
 		}
 		List<ParamConfig> plateCategorys = settingMapper.pageQuery(param);
+		//最少订单金额，这只为元
+		plateCategorys.forEach(p -> {
+			if(p.getConfigParamKey().equals("orderMinFee")){
+				p.setConfigParamValue(this.fenToYuan(p.getConfigParamValue()));
+			}
+		});
+		
+		//修改配送金额为元
+		for(ParamConfig p : plateCategorys){
+			if(p.getConfigParamKey().equals("distributionFeeSet")){
+				String value = p.getConfigParamValue();
+				List<Map<String,String>> list = JacksonUtils.fromJson(value, List.class);
+				List<Map<String,String>> tl = new ArrayList<>();
+				for(Map<String,String> map : list){
+					for(String key : map.keySet()){
+						map.put(key, this.fenToYuan(map.get(key)));
+					}
+					tl.add(map);
+				}
+				p.setConfigParamValue(JacksonUtils.toJson(tl));
+			}
+		}
 		PageQueryObject result = new PageQueryObject();
 		result.setRows(plateCategorys);
 		result.setPage(page);
@@ -139,4 +165,21 @@ public class SettingService {
 
 		return date.after(date1)&&date.before(date2);
 	}
+	
+    public <T> String fenToYuan(T data){
+    	String result = "0.00";
+    	if(Objects.isNull(data)){
+    		return result;
+    	}
+    	int fen = 0;
+    	if(data instanceof String){
+    		fen = Integer.valueOf((String)data);
+    	}else if(data instanceof Integer){
+    		fen = (Integer)data;
+    	}else{
+    		return result;
+    	}
+    	result = String.format("%.2f", fen/100.0);
+    	return result;
+    }
 }

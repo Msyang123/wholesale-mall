@@ -228,8 +228,8 @@
 		t3.id,t3.goods_code as goodsCode,t3.goods_name as goodsName,t3.category_id as categoryId,
 		t3.goods_image as goodsImage,t3.base_bar as baseBar,t3.base_unit as baseUnit,t3.stock_limit as stockLimit,
 		t3.goods_des as goodsDes,t3.goods_images as goodsImages,t3.other_image as otherImage,
-		t2.weight,t2.standard,t2.price,t4.unit_name as baseUnitName,t2.id as standardId,
-		t5.unit_name as goodsUnit
+		t2.weight,t2.standard,t2.price,t4.unit_name as goodsUnit ,t2.id as standardId,
+		t5.unit_name as baseUnitName
 		FROM t_whs_plate_goods t1
 		LEFT JOIN t_whs_goods_standard t2 ON t1.goods_standard_id = t2.id
 		LEFT JOIN t_whs_goods t3 ON t2.goods_id = t3.id
