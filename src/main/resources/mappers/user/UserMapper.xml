@@ -261,7 +261,7 @@
 		LEFT JOIN (
 			SELECT user_id, CONCAT('￥',CONVERT(FORMAT(SUM(payable_fee)/100.0,2),CHAR),'/',CONVERT(COUNT(id),CHAR),'次') as arrears
 			FROM t_whs_order
-			WHERE settlement_type = 'offline' and pay_status = 'unpaid'
+			WHERE settlement_type = 'offline' and pay_status = 'unpaid' and order_status in ('undelivery','delivery','received')
 			GROUP BY user_id 
 		) as t4 ON u.id = t4.user_id
 		LEFT JOIN t_whs_salesuser_relation sr ON u.id = sr.user_id
@@ -303,7 +303,7 @@
 		LEFT JOIN (
 			SELECT user_id, CONCAT('￥',CONVERT(FORMAT((SUM(payable_fee)+SUM(delivery_fee))/100.0,2),CHAR),'/',CONVERT(COUNT(id),CHAR),'次') as arrears
 			FROM t_whs_order
-			WHERE settlement_type = 'offline' and pay_status = 'unpaid'
+			WHERE settlement_type = 'offline' and pay_status = 'unpaid' and order_status in ('undelivery','delivery','received')
 			GROUP BY user_id 
 		) as t4 ON u.id = t4.user_id
 		LEFT JOIN(
@@ -404,7 +404,7 @@
 		LEFT JOIN (
 			SELECT user_id, CONCAT('￥',CONVERT(FORMAT((SUM(payable_fee)+SUM(delivery_fee))/100.0,2),CHAR),'/',CONVERT(COUNT(id),CHAR),'次') as arrears
 			FROM t_whs_order
-			WHERE settlement_type = 'offline' and pay_status = 'unpaid'
+			WHERE settlement_type = 'offline' and pay_status = 'unpaid' and order_status in ('undelivery','delivery','received')
 			GROUP BY user_id 
 		) as t4 ON u.id = t4.user_id
 		LEFT JOIN(
