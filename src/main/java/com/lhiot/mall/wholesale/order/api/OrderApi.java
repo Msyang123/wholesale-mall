@@ -323,7 +323,7 @@ public class OrderApi {
                 List<GoodsPriceRegion> goodsPriceRegions=priceRegionService.selectPriceRegion(item.getGoodsStandardId());
                 for (GoodsPriceRegion goodsPriceRegion:goodsPriceRegions){
                     //依据购买数量计算所在价格区间
-                    if(item.getQuanity()>=goodsPriceRegion.getMinQuantity()&&item.getQuanity()<=goodsPriceRegion.getMaxQuantity()){
+                    if(item.getQuanity()>=goodsPriceRegion.getMinQuantity()&&item.getQuanity()<goodsPriceRegion.getMaxQuantity()){
                         needPay+=goodsPriceRegion.getPrice()*item.getQuanity();
                         gooddNeedPay+=goodsPriceRegion.getPrice()*item.getQuanity();
                         item.setDiscountGoodsPrice((int)(disPre*goodsPriceRegion.getPrice()*item.getQuanity()));//优惠后价格
