@@ -195,7 +195,7 @@
             <if test="invoiceStatus!=null and invoiceStatus!=''">
                 invoice_status=#{invoiceStatus},
             </if>
-            <if test="checkStatus!=null and checkStatus''">
+            <if test="checkStatus!=null and checkStatus !=''">
                 check_status=#{checkStatus},
             </if>
         </trim>
