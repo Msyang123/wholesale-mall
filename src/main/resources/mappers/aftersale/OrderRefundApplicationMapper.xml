@@ -196,6 +196,6 @@
 	<select id="select" parameterType="String"
 		resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
 		select * from t_whs_order_refund_application where order_id = #{0} 
-		and and audit_status IN ('unaudited','agree')
+		and audit_status IN ('unaudited','agree')
 	</select>
 </mapper>
