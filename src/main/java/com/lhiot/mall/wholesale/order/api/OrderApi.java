@@ -3,6 +3,7 @@ package com.lhiot.mall.wholesale.order.api;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
+import com.lhiot.mall.wholesale.base.CalculateUtil;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
@@ -322,7 +323,7 @@ public class OrderApi {
                 List<GoodsPriceRegion> goodsPriceRegions=priceRegionService.selectPriceRegion(item.getGoodsStandardId());
                 for (GoodsPriceRegion goodsPriceRegion:goodsPriceRegions){
                     //依据购买数量计算所在价格区间
-                    if(item.getQuanity()>=goodsPriceRegion.getMinQuantity()&&item.getQuanity()<=goodsPriceRegion.getMaxQuantity()){
+                    if(item.getQuanity()>=goodsPriceRegion.getMinQuantity()&&item.getQuanity()<goodsPriceRegion.getMaxQuantity()){
                         needPay+=goodsPriceRegion.getPrice()*item.getQuanity();
                         gooddNeedPay+=goodsPriceRegion.getPrice()*item.getQuanity();
                         item.setDiscountGoodsPrice((int)(disPre*goodsPriceRegion.getPrice()*item.getQuanity()));//优惠后价格
@@ -397,9 +398,10 @@ public class OrderApi {
         }
         //最低订单金额限制
         ParamConfig orderMinFeeConfig = settingService.searchConfigParam("orderMinFee");
-        if(Objects.nonNull(orderMinFeeConfig)&&Integer.valueOf(orderMinFeeConfig.getConfigParamValue())>needPay){
+        if(Objects.nonNull(orderMinFeeConfig)&&
+        		CalculateUtil.compare(orderMinFeeConfig.getConfigParamValue(), needPay) > 0){
             orderDetail.setCode(-1002);
-            orderDetail.setMsg("未达到最低配送金额："+orderMinFeeConfig.getConfigParamValue());
+            orderDetail.setMsg("未达到最低配送金额："+CalculateUtil.division(orderMinFeeConfig.getConfigParamValue(), 100, 2));
             return ResponseEntity.ok(orderDetail);
         }
         needPay =needPay+distributionFee;
