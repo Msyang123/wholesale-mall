@@ -47,19 +47,19 @@ wholesale-mall:
 #    send-message-url: http://172.16.10.196:5111/sms-captcha/{0}/{1}/sms
 #    validate-message-url: http://172.16.10.196:5111/sms-captcha/{0}/{1}/sms/validate
     we-chat-oauth:
-      app-id: wx8521acbe400f89e3
-      app-secret: 5176ebed12516da3cabb3a4d0e6d3ad6
-      app-redirect-uri: https://online.food-see.com/user/wechat/authorize
-      app-front-uri: https://online.food-see.com/weixin/
+      app-id: wx03256e1fd0575796
+      app-secret: 09db900868f565e4e65ee36eb4f87f3a
+      app-redirect-uri: https://onlinetest.food-see.com/user/wechat/authorize
+      app-front-uri: https://onlinetest.food-see.com/weixin/
     we-chat-pay:
       partner-id: 1497940112
       partner-key: aZ2J68OrUnvkNtTdSasGLBnGRjceHRS2
       pkcs12: classpath:apiclient_cert.p12
       timeout-express: 6
-      recharge-notify-url: https://online.food-see.com/wechat/recharge/notify
-      order-notify-url: https://online.food-see.com/wechat/order/notify
-      invoice-notify-url: https://online.food-see.com/wechat/invoice/notify
-      order-offline-notify-url: https://online.food-see.com/wechat/offline/notify
+      recharge-notify-url: https://onlinetest.food-see.com/wechat/recharge/notify
+      order-notify-url: https://onlinetest.food-see.com/wechat/order/notify
+      invoice-notify-url: https://onlinetest.food-see.com/wechat/invoice/notify
+      order-offline-notify-url: https://onlinetest.food-see.com/wechat/offline/notify
       payunit: 100
       proxy: nonginx
   rabbitmq:
