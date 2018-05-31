@@ -500,7 +500,7 @@ public class PayService {
         inventory.setUuid(UUID.randomUUID().toString());
         inventory.setSenderCode("9646");
         inventory.setSenderWrh("07310101");
-        inventory.setReceiverCode(null);
+        inventory.setReceiverCode("00889");
         String deliveryAddress=orderDetail.getDeliveryAddress();
         try {
             Map<String,Object> addressInfo= JacksonUtils.fromJson(deliveryAddress,Map.class);
