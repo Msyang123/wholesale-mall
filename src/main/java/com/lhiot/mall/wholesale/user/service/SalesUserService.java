@@ -225,4 +225,8 @@ public class SalesUserService {
         }
         return result;
     }
+
+    public int updateSalesmanIdByUserId(Map<String, Object> param){
+        return salesUserMapper.updateSalesmanIdByUserId(param);
+    }
 }
