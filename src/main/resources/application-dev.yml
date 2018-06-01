@@ -11,9 +11,9 @@ spring:
    name: test
    type: com.zaxxer.hikari.HikariDataSource
    driver-class-name: com.mysql.jdbc.Driver
-   url: jdbc:mysql://172.16.10.195:3306/wholesale_mall_pre?useSSL=false
-   username: wholesale
-   password: wholesale2018
+   url: jdbc:mysql://172.16.10.196:3306/wholesale_mall?useSSL=false
+   username: root
+   password: root
 #   schema: classpath:initialization/schema.sql  # 此操作会导致重启时重新初始化数据库，慎用！
    hikari:
      connection-init-sql: set names utf8mb4;
