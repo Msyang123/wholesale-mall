@@ -110,7 +110,7 @@ public class SalesUserService {
                     userAddress.setIsDefault("yes");
                     userAddress.setContactsName(user.getUserName());
                     userAddress.setAddressArea(user.getCity());
-                    userAddress.setAddressDetail(user.getAddressDetail());
+                    userAddress.setAddressDetail(user.getAddressDetail()+"-"+user.getShopName());
                     userAddress.setUserId(user.getId());
                     userAddress.setSex(user.getSex());
                     userMapper.insertAddress(userAddress);
@@ -228,5 +228,9 @@ public class SalesUserService {
 
     public int updateSalesmanIdByUserId(Map<String, Object> param){
         return salesUserMapper.updateSalesmanIdByUserId(param);
+    }
+
+    public int updateRe(Map<String, Object> param){
+        return salesUserMapper.updateRe(param);
     }
 }

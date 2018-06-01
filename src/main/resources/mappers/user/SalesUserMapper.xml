@@ -249,4 +249,8 @@
     <update id="updateSalesmanIdByUserId" parameterType="map">
         UPDATE t_whs_salesuser_relation set  salesman_id = #{salesmanId} where user_id = #{userId}
     </update>
+
+    <update id="updateRe" parameterType="map">
+        UPDATE t_whs_salesuser_relation set  salesman_id = #{salesmanId}, audit_status= #{auditStatus} where user_id = #{userId}
+    </update>
 </mapper>

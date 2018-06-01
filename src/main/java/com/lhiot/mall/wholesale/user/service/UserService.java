@@ -106,7 +106,6 @@ public class UserService {
         String time = DateFormatUtil.format1(new java.util.Date());
         user.setRegisterTime(Timestamp.valueOf(time));
         user.setUserStatus("unaudited");//审核认证中
-        user.setAddressDetail(user.getAddressDetail()+user.getShopName());
         SalesUser salesUser = salesUserService.findCode(code);
         if (Objects.isNull(salesUser)) {
             return "不是有效的业务员";
@@ -125,8 +124,8 @@ public class UserService {
                     return "注册审核提交失败";
                 }
             }else{
-                Map<String, Object> body = ImmutableMap.of("salesmanId",salesUser.getId(),"userId",user.getId());
-                if (salesUserService.updateSalesmanIdByUserId(body) < 1){
+                Map<String, Object> body = ImmutableMap.of("salesmanId",salesUser.getId(),"userId",user.getId(),"auditStatus","unaudited");
+                if (salesUserService.updateRe(body) < 1){
                     return "注册审核提交失败";
                 }
             }
