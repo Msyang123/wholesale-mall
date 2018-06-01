@@ -59,6 +59,8 @@ public interface SalesUserMapper {
 
     Integer updateSalesmanIdByUserId(Map<String, Object> param);
 
+    Integer updateRe(Map<String, Object> param);
+
     Integer updateSalesmanIdBySalesmanId(Map<String, Object> param);
 
     Integer deleteRelation(Long id);
