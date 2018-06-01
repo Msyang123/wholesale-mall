@@ -18,11 +18,14 @@ import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication;
 import com.lhiot.mall.wholesale.aftersale.domain.OrderRefundPage;
 import com.lhiot.mall.wholesale.aftersale.domain.OrderResult;
+import com.lhiot.mall.wholesale.aftersale.domain.PaymentType;
 import com.lhiot.mall.wholesale.aftersale.mapper.OrderRefundApplicationMapper;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.order.domain.DebtOrderResult;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
+import com.lhiot.mall.wholesale.order.mapper.DebtOrderMapper;
 import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
 import com.lhiot.mall.wholesale.pay.domain.PaymentLog;
 import com.lhiot.mall.wholesale.pay.domain.RefundLog;
@@ -56,6 +59,7 @@ public class OrderRefundApplicationService {
     private final RefundLogMapper refundLogMapper;
     private final SalesUserService salesUserService;
     private final WeChatUtil weChatUtil;
+    private final DebtOrderMapper debtOrderMapper;
 
     @Autowired
     public OrderRefundApplicationService(OrderRefundApplicationMapper orderRefundApplicationMapper, 
@@ -63,7 +67,8 @@ public class OrderRefundApplicationService {
     		SalesUserService salesUserService,
     		PaymentProperties paymentProperties,
     		RefundLogMapper refundLogMapper,
-    		SettingMapper settingMapper) {
+    		SettingMapper settingMapper,
+    		DebtOrderMapper debtOrderMapper) {
         this.orderRefundApplicationMapper = orderRefundApplicationMapper;
         this.orderMapper = orderMapper;
         this.userService = userService;
@@ -71,6 +76,7 @@ public class OrderRefundApplicationService {
         this.salesUserService = salesUserService;
         this.refundLogMapper = refundLogMapper;
         this.settingMapper = settingMapper;
+        this.debtOrderMapper = debtOrderMapper;
         this.weChatUtil = new WeChatUtil(paymentProperties);
     }
 
@@ -237,7 +243,7 @@ public class OrderRefundApplicationService {
     	if(Objects.isNull(refundFee)){
     		return "退款金额错误";
     	}
-    	
+    	String orderCode = orderDetail.getOrderCode();
         //写入退款记录  t_whs_refund_log
         RefundLog refundLog = new RefundLog();
         refundLog.setPaymentLogId(paymentLog.getId());
@@ -257,20 +263,39 @@ public class OrderRefundApplicationService {
         updateUser.setId(orderDetail.getUserId());
         updateUser.setBalance(refundFee);
         
+        String refundType = "balanceRefund";
         switch (orderDetail.getSettlementType()) {
         //货到付款
         case "offline":
-            //退还余额
-            userService.updateBalance(updateUser);
-            refundLog.setRefundType("balanceRefund");
-            break;
+        	// 查询查询账款订单信息
+        	DebtOrderResult debtOrder = debtOrderMapper.findByOrderCode(orderCode);
+        	if(Objects.isNull(debtOrder)){
+        		return "没有相应订单，请联系客服人员";
+        	}
+        	String paymentType = debtOrder.getPaymentType();//支付类型
+        	//非微信支付(余额/现金/银行卡等支付方式)--返回余额
+        	if(!PaymentType.wechat.toString().equals(paymentType)){
+        		userService.updateBalance(updateUser);
+        	}else {
+        		//微信支付--原路返回
+        		String debtOrderCode = debtOrder.getOrderDebtCode();//账款订单编号
+                //退款 如果微信支付就微信退款
+                String refundChatFee = weChatUtil.refund(debtOrderCode,debtOrder.getDebtFee(), refundFee);
+                //检查为没有失败信息
+                if (StringUtils.isNotBlank(refundChatFee)&&refundChatFee.indexOf("FAIL")==-1) {
+                	refundType = "wechatRefund";
+                } else {
+                    return "微信退款失败，请联系客服";
+                }
+        	}
+        	break;
         //微信支付
         case "wechat":
             //退款 如果微信支付就微信退款
             String refundChatFee = weChatUtil.refund(paymentLog.getOrderCode(),paymentLog.getTotalFee(), refundFee);
             //检查为没有失败信息
             if (StringUtils.isNotBlank(refundChatFee)&&refundChatFee.indexOf("FAIL")==-1) {
-            	refundLog.setRefundType("wechatRefund");
+            	refundType = "wechatRefund";
             } else {
                 return "微信退款失败，请联系客服";
             }
@@ -278,14 +303,13 @@ public class OrderRefundApplicationService {
         //余额支付
         case "balance":
             userService.updateBalance(updateUser);
-            //写退款记录和修改支付日志
-            refundLog.setRefundType("balanceRefund");
             break;
         default:
             log.info("退款未找到类型");
             break;
         }
 	    //写退款日志和修改支付记录
+        refundLog.setRefundType(refundType);
 	    refundLogMapper.insertRefundLog(refundLog);
 	    paymentLogService.updatePaymentLog(updatePaymentLog);
     	return null;

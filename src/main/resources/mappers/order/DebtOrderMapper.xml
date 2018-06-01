@@ -135,4 +135,11 @@
         </trim>
         GROUP BY t1.id
     </select>
+    
+    <!-- 通过订单号查询账款订单信息 -->
+    <select id="findByOrderCode" parameterType="String" resultType="com.lhiot.mall.wholesale.order.domain.DebtOrderResult">
+    	SELECT <include refid="debtOrderColumn"/> FROM t_whs_debt_order 
+		WHERE FIND_IN_SET(#{0},order_ids) 
+		AND check_status = 'paid'
+    </select>
 </mapper>
