@@ -106,6 +106,7 @@ public class UserService {
         String time = DateFormatUtil.format1(new java.util.Date());
         user.setRegisterTime(Timestamp.valueOf(time));
         user.setUserStatus("unaudited");//审核认证中
+        user.setAddressDetail(user.getAddressDetail()+user.getShopName());
         SalesUser salesUser = salesUserService.findCode(code);
         if (Objects.isNull(salesUser)) {
             return "不是有效的业务员";
