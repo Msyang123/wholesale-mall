@@ -155,10 +155,4 @@ public class OrderRefundApplicationApi {
         }
         return ResponseEntity.badRequest().body("申请失败");
     }
-    
-    @GetMapping("/test/detail/{orderCode}")
-    @ApiOperation(value = "后台管理-根据订单id查看售后订单详情",response = OrderGridResult.class)
-    public  ResponseEntity<Boolean> demand(@PathVariable("orderCode") String orderCode){
-        return ResponseEntity.ok(orderRefundApplicationService.hasApply(orderCode));
-    }
 }

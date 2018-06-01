@@ -71,4 +71,11 @@ public interface DebtOrderMapper {
      * @return
      */
     List<Map<String, Object>> exportData(DebtOrderGridParam param);
+    
+    /**
+     * 根据orderCode查询账款订单信息
+     * @param orderCode
+     * @return
+     */
+    DebtOrderResult findByOrderCode(String orderCode);
 }
