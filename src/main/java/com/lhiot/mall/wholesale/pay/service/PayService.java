@@ -27,6 +27,7 @@ import org.springframework.util.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leon.microx.common.exception.ServiceException;
+import com.leon.microx.util.Calculator;
 import com.lhiot.mall.wholesale.ApplicationConfiguration;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
@@ -536,6 +537,7 @@ public class PayService {
         inventory.setSeller("批发销售员");
         inventory.setSouceOrderCls("批发商城");
         inventory.setNegInvFlag("1");
+        inventory.setFreight(new BigDecimal(Calculator.div(orderDetail.getDeliveryFee(),100.0,2)));
         inventory.setMemberCode(null);
 
         //清单
