@@ -335,7 +335,7 @@ public class OrderApi {
                 }
                 needPay+=flashsaleGoods.getSpecialPrice()*item.getQuanity();
                 item.setDiscountGoodsPrice(orderService.discountPrice(totalFee, 
-                		payableFee, flashsaleGoods.getSpecialPrice(), item.getQuanity()));
+                		payableFee, flashsaleGoods.getSpecialPrice()));
                 gooddNeedPay+=flashsaleGoods.getSpecialPrice()*item.getQuanity();
                 haveFlashGoods=true;//拥有限时抢购商品
             }else{
@@ -347,7 +347,7 @@ public class OrderApi {
                         needPay+=goodsPriceRegion.getPrice()*item.getQuanity();
                         gooddNeedPay+=goodsPriceRegion.getPrice()*item.getQuanity();
                         item.setDiscountGoodsPrice(orderService.discountPrice(totalFee, payableFee, 
-                        		goodsPriceRegion.getPrice(), item.getQuanity()));//优惠后价格
+                        		goodsPriceRegion.getPrice()));//优惠后价格
                         break;
                     }
                 }
