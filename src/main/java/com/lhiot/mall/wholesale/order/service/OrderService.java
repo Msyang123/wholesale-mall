@@ -35,6 +35,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -597,5 +598,25 @@ public class OrderService {
      */
     public OrderDetail findOrderByCode(String orderCode){
     	return orderMapper.searchOrder(orderCode);
+    }
+    
+    /**
+     * 计算商品的折扣价格
+     * @param totalFee 订单总金额
+     * @param payableFee 应付金额
+     * @param goodsPrice 商品的价格
+     * @param quantity 购买数量
+     * @return
+     */
+    public int discountPrice(int totalFee,int payableFee,int goodsPrice,int quantity){
+    	BigDecimal totalFeeBig = new BigDecimal(String.valueOf(totalFee));
+    	BigDecimal payableFeeBig = new BigDecimal(String.valueOf(payableFee));
+    	
+    	BigDecimal goodsPriceBig = new BigDecimal(String.valueOf(goodsPrice));
+    	BigDecimal quantityBig = new BigDecimal(String.valueOf(quantity));
+    	
+    	BigDecimal dividend = payableFeeBig.multiply(goodsPriceBig).multiply(quantityBig);
+    	BigDecimal result = dividend.divide(totalFeeBig, BigDecimal.ROUND_DOWN);
+    	return result.intValue();
     }
 }

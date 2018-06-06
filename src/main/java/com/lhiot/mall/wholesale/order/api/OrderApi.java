@@ -1,5 +1,28 @@
 package com.lhiot.mall.wholesale.order.api;
 
+import java.beans.IntrospectionException;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import javax.validation.constraints.NotNull;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
@@ -14,25 +37,19 @@ import com.lhiot.mall.wholesale.goods.domain.GoodsPriceRegion;
 import com.lhiot.mall.wholesale.goods.service.GoodsPriceRegionService;
 import com.lhiot.mall.wholesale.goods.service.GoodsService;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
-import com.lhiot.mall.wholesale.order.domain.*;
+import com.lhiot.mall.wholesale.order.domain.Distribution;
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
+import com.lhiot.mall.wholesale.order.domain.OrderGoods;
+import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
 import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.setting.domain.ParamConfig;
 import com.lhiot.mall.wholesale.setting.service.SettingService;
 import com.sgsl.util.StringUtils;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.constraints.NotNull;
-import java.beans.IntrospectionException;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.sql.Timestamp;
-import java.util.*;
 
 @Api(description ="订单接口")
 @Slf4j
@@ -202,7 +219,8 @@ public class OrderApi {
         // {"minPrice": 300,"maxPrice": 500,"distributionFee": 15},
         // {"minPrice":500,"maxPrice": 1000,"distributionFee": 0}]
         //先排序
-        Collections.sort(distributionsList, new Comparator() {
+        distributionsList.sort((o1,o2) -> o1.getMaxPrice() - o2.getMaxPrice());
+/*        Collections.sort(distributionsList, new Comparator() {
             @Override
             public int compare(Object o1, Object o2) {
                 Distribution distribution1 = (Distribution) o1;
@@ -215,7 +233,7 @@ public class OrderApi {
                     return -1;
                 }
             }
-        });
+        });*/
         for (Distribution item:distributionsList){
             //只限定查询最大值
             if (fee<item.getMaxPrice()){
@@ -269,12 +287,12 @@ public class OrderApi {
         //验证前端应付金额
         int needPay=0;//需要支付金额
         int gooddNeedPay=0;//商品金额
-        int totalFee=orderDetail.getPayableFee()+orderDetail.getDiscountFee();//总金额
-        double disPre=orderDetail.getPayableFee()/totalFee;//优惠比例
+        Integer totalFee=orderDetail.getPayableFee()+orderDetail.getDiscountFee();//总金额
+        Integer payableFee = orderDetail.getPayableFee();
         boolean haveFlashGoods=false;
         if(Objects.isNull(orderDetail.getTotalFee())
                 ||Objects.isNull(orderDetail.getDeliveryFee())
-                ||Objects.isNull(orderDetail.getPayableFee())){
+                ||Objects.isNull(payableFee)){
             orderDetail.setCode(-1002);
             orderDetail.setMsg("订单金额传递为空");
             return ResponseEntity.ok(orderDetail);
@@ -287,7 +305,8 @@ public class OrderApi {
         for(OrderGoods item: orderDetail.getOrderGoodsList()){
             Goods goods=goodsService.goods(item.getGoodsId());
             Integer stockLimit=goods.getStockLimit();
-            if(stockLimit!=null&&stockLimit-item.getQuanity()<0){
+            Integer quanity = item.getQuanity();
+            if(Objects.nonNull(stockLimit)&&stockLimit-quanity<0){
                 orderDetail.setCode(-1002);
                 orderDetail.setMsg(item.getGoodsName()+"库存不足");
                 return ResponseEntity.ok(orderDetail);
@@ -315,7 +334,8 @@ public class OrderApi {
                     return ResponseEntity.ok(orderDetail);
                 }
                 needPay+=flashsaleGoods.getSpecialPrice()*item.getQuanity();
-                item.setDiscountGoodsPrice((int)(disPre*flashsaleGoods.getSpecialPrice()*item.getQuanity()));//优惠后价格
+                item.setDiscountGoodsPrice(orderService.discountPrice(totalFee, 
+                		payableFee, flashsaleGoods.getSpecialPrice(), item.getQuanity()));
                 gooddNeedPay+=flashsaleGoods.getSpecialPrice()*item.getQuanity();
                 haveFlashGoods=true;//拥有限时抢购商品
             }else{
@@ -326,7 +346,8 @@ public class OrderApi {
                     if(item.getQuanity()>=goodsPriceRegion.getMinQuantity()&&item.getQuanity()<goodsPriceRegion.getMaxQuantity()){
                         needPay+=goodsPriceRegion.getPrice()*item.getQuanity();
                         gooddNeedPay+=goodsPriceRegion.getPrice()*item.getQuanity();
-                        item.setDiscountGoodsPrice((int)(disPre*goodsPriceRegion.getPrice()*item.getQuanity()));//优惠后价格
+                        item.setDiscountGoodsPrice(orderService.discountPrice(totalFee, payableFee, 
+                        		goodsPriceRegion.getPrice(), item.getQuanity()));//优惠后价格
                         break;
                     }
                 }
@@ -376,20 +397,7 @@ public class OrderApi {
         int distributionFee=0;//配送费
         List<Distribution> distributionsList=Arrays.asList(distributionsJson);
         //先排序
-        Collections.sort(distributionsList, new Comparator() {
-            @Override
-            public int compare(Object o1, Object o2) {
-                Distribution distribution1 = (Distribution) o1;
-                Distribution distribution2 = (Distribution) o2;
-                if (distribution1.getMaxPrice() > distribution2.getMaxPrice()) {
-                    return 1;
-                } else if (distribution1.getMaxPrice() == distribution2.getMaxPrice()) {
-                    return 0;
-                } else {
-                    return -1;
-                }
-            }
-        });
+        distributionsList.sort((o1,o2) -> o1.getMaxPrice() - o2.getMaxPrice());
         for (Distribution item:distributionsList){
             if (needPay<item.getMaxPrice()){
                 distributionFee = item.getDistributionFee();

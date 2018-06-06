@@ -29,6 +29,6 @@ public class CalculateUtil {
 		BigDecimal b1 = new BigDecimal(n1);
 		BigDecimal b2 = new BigDecimal(n2);
 		
-		return b1.divide(b2, scale, BigDecimal.ROUND_DOWN).toString();
+		return b1.divide(b2, scale, BigDecimal.ROUND_UP).toString();
 	}
 }
