@@ -608,14 +608,13 @@ public class OrderService {
      * @param quantity 购买数量
      * @return
      */
-    public int discountPrice(int totalFee,int payableFee,int goodsPrice,int quantity){
+    public int discountPrice(int totalFee,int payableFee,int goodsPrice){
     	BigDecimal totalFeeBig = new BigDecimal(String.valueOf(totalFee));
     	BigDecimal payableFeeBig = new BigDecimal(String.valueOf(payableFee));
     	
     	BigDecimal goodsPriceBig = new BigDecimal(String.valueOf(goodsPrice));
-    	BigDecimal quantityBig = new BigDecimal(String.valueOf(quantity));
     	
-    	BigDecimal dividend = payableFeeBig.multiply(goodsPriceBig).multiply(quantityBig);
+    	BigDecimal dividend = payableFeeBig.multiply(goodsPriceBig);
     	BigDecimal result = dividend.divide(totalFeeBig, BigDecimal.ROUND_DOWN);
     	return result.intValue();
     }
