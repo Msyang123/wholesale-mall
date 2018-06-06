@@ -17,8 +17,8 @@ import java.util.List;
 @ConfigurationProperties(prefix = "wholesale-mall.rest-template")
 public class RestClientAutoConfigure {
 	
-	private Integer readTimeout = 5000;
-	private Integer connectTimeout = 5000;
+	private Integer readTimeout = 10000;
+	private Integer connectTimeout = 10000;
 	private String stringHttpMessageConverterDefaultCharset = "UTF-8";
 
     @Bean
