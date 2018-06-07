@@ -48,10 +48,11 @@ public class DuplicateSubmitAspect {
                     log.info("token-key="+key);
                     log.info("token-value="+uuid.toString());
                 }else {
-                    throw new DuplicateSubmitException("支付中...");
+                	request.getSession().setAttribute(key.toString(),"inPayment");
+                    return; //throw new DuplicateSubmitException("支付中...");
                 }
             }else{
-            	throw new DuplicateSubmitException("支付中...");
+            	throw new DuplicateSubmitException("重复提交...");
             }
 
         }
@@ -73,7 +74,6 @@ public class DuplicateSubmitAspect {
     
     @AfterReturning("execute() && @annotation(token)")
     public void doAfterReturning(JoinPoint joinPoint,DuplicateSubmitToken token) throws InterruptedException {
-        // 处理完请求，返回内容
         if (Objects.nonNull(token)){
             RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
             HttpServletRequest request = 
@@ -83,8 +83,6 @@ public class DuplicateSubmitAspect {
                 String key = getDuplicateTokenKey(joinPoint);
                 Object t = request.getSession().getAttribute(key);
                 if (Objects.nonNull(t)){
-                    //方法执行完毕移除请求重复标记
-                	Thread.sleep(5000);
                     request.getSession(false).removeAttribute(key);
                     log.info("方法执行完毕移除请求重复标记！");
                 }

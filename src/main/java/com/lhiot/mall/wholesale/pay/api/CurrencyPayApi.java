@@ -2,7 +2,6 @@ package com.lhiot.mall.wholesale.pay.api;
 
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.util.SnowflakeId;
-import com.lhiot.mall.wholesale.base.duplicateaop.DuplicateSubmitException;
 import com.lhiot.mall.wholesale.base.duplicateaop.DuplicateSubmitToken;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
@@ -20,7 +19,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.http.HttpRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,16 +27,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 @Slf4j
 @Api(description = "余额支付接口")
 @RestController
 @RequestMapping("/currency")
 public class CurrencyPayApi {
-
+	//作为session的主键
+	private static final String DUPLICATE_TOKEN_KEY="duplicate_token_key_orderPay";
 	private final PayService payService;
-
+	
     private final DebtOrderService debtOrderService;
     private final OrderService orderService;
     private final InvoiceService invoiceService;
@@ -61,14 +60,15 @@ public class CurrencyPayApi {
 	@DuplicateSubmitToken
     @PutMapping("/orderpay/{orderCode}")
     @ApiOperation(value = "余额支付订单", response = String.class)
-    public ResponseEntity orderPay(@PathVariable("orderCode") String orderCode) throws Exception {
-		System.out.println("begin....");
-		System.out.println("end....");
-/*        OrderDetail orderDetail = orderService.searchOrder(orderCode);
+    public ResponseEntity orderPay(@PathVariable("orderCode") String orderCode,HttpSession session) throws Exception {
+        if(this.inPayment(orderCode, session)){
+        	return ResponseEntity.badRequest().body("支付中...");
+        }
+		OrderDetail orderDetail = orderService.searchOrder(orderCode);
         if (Objects.isNull(orderDetail)){
             return ResponseEntity.badRequest().body("没有该订单信息");
-        }*/
-/*        if(!"unpaid".equals(orderDetail.getOrderStatus())){
+        }
+        if(!"unpaid".equals(orderDetail.getOrderStatus())){
             return ResponseEntity.badRequest().body("订单状态异常，请检查订单状态");
         }
 
@@ -76,8 +76,8 @@ public class CurrencyPayApi {
         String payResult=payService.currencyPay(orderDetail);
         if(StringUtils.isEmpty(payResult)){
             return ResponseEntity.ok(orderDetail);
-        }*/
-        return null;//ResponseEntity.badRequest().body(payResult);
+        }
+        return ResponseEntity.badRequest().body(payResult);
     }
 
     @PutMapping("/debtorderpay/{orderDebtCode}")
@@ -148,5 +148,22 @@ public class CurrencyPayApi {
         user.setStart((page-1)*rows);
         List<Balance> paymentLogList = paymentLogService.getBalanceRecord(user);
         return ResponseEntity.ok(ArrayObject.of(paymentLogList));
+    }
+    
+    /**
+     * 判断是否为重复提交
+     * @param orderCode
+     * @param session
+     * @return
+     */
+    public boolean inPayment(String orderCode,HttpSession session){
+    	String key = DUPLICATE_TOKEN_KEY+"_"+orderCode;
+    	Object obj = session.getAttribute(key);
+    	log.info("=====>token-key="+key);
+    	log.info("=====>token-value="+obj);
+    	if(Objects.equals(obj.toString(), "inPayment")){
+    		return true;
+    	}
+    	return false;
     }
 }
