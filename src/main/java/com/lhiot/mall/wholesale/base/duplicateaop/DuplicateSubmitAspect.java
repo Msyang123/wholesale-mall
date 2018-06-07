@@ -1,9 +1,9 @@
 package com.lhiot.mall.wholesale.base.duplicateaop;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -12,6 +12,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,24 +34,15 @@ public class DuplicateSubmitAspect {
 
     @Before("execute() && @annotation(token)")
     public void before(final JoinPoint joinPoint, DuplicateSubmitToken token){
-        if (token!=null){
-            Object[]args=joinPoint.getArgs();
-            HttpServletRequest request=null;
-            HttpServletResponse response=null;
-            for(int i = 0; i < args.length; i++) {
-                if (args[i] instanceof HttpServletRequest){
-                    request= (HttpServletRequest) args[i];
-                }
-                if (args[i] instanceof HttpServletResponse){
-                    response= (HttpServletResponse) args[i];
-                }
-            }
-
+        if (Objects.nonNull(token)){
+            RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+            HttpServletRequest request = 
+            		(HttpServletRequest) requestAttributes.resolveReference(RequestAttributes.REFERENCE_REQUEST);
             boolean isSaveSession=token.save();
             if (isSaveSession){
                 String key = getDuplicateTokenKey(joinPoint);
                 Object t = request.getSession().getAttribute(key);
-                if (null==t){
+                if (Objects.isNull(t)){
                     String uuid= UUID.randomUUID().toString();
                     request.getSession().setAttribute(key.toString(),uuid);
                     log.info("token-key="+key);
@@ -57,6 +50,8 @@ public class DuplicateSubmitAspect {
                 }else {
                     throw new DuplicateSubmitException("支付中...");
                 }
+            }else{
+            	throw new DuplicateSubmitException("支付中...");
             }
 
         }
@@ -69,28 +64,27 @@ public class DuplicateSubmitAspect {
      */
     public String getDuplicateTokenKey(JoinPoint joinPoint) {
         String methodName = joinPoint.getSignature().getName();
+        Object[] args = joinPoint.getArgs();
+        Object flagValue = args[0];
         StringBuilder key=new StringBuilder(DUPLICATE_TOKEN_KEY);
-        key.append(",").append(methodName);
+        key.append("_"+methodName).append("_"+flagValue);
         return key.toString();
     }
-
+    
     @AfterReturning("execute() && @annotation(token)")
-    public void doAfterReturning(JoinPoint joinPoint,DuplicateSubmitToken token) {
+    public void doAfterReturning(JoinPoint joinPoint,DuplicateSubmitToken token) throws InterruptedException {
         // 处理完请求，返回内容
-        if (token!=null){
-            Object[]args=joinPoint.getArgs();
-            HttpServletRequest request=null;
-            for (int i = 0; i < args.length; i++) {
-                if (args[i] instanceof HttpServletRequest){
-                    request= (HttpServletRequest) args[i];
-                }
-            }
+        if (Objects.nonNull(token)){
+            RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+            HttpServletRequest request = 
+            		(HttpServletRequest) requestAttributes.resolveReference(RequestAttributes.REFERENCE_REQUEST);
             boolean isSaveSession=token.save();
             if (isSaveSession){
                 String key = getDuplicateTokenKey(joinPoint);
                 Object t = request.getSession().getAttribute(key);
-                if (null!=t){
+                if (Objects.nonNull(t)){
                     //方法执行完毕移除请求重复标记
+                	Thread.sleep(5000);
                     request.getSession(false).removeAttribute(key);
                     log.info("方法执行完毕移除请求重复标记！");
                 }
@@ -105,22 +99,18 @@ public class DuplicateSubmitAspect {
      */
     @AfterThrowing(pointcut = "execute()&& @annotation(token)", throwing = "e")
     public void doAfterThrowing(JoinPoint joinPoint, Throwable e, DuplicateSubmitToken token) {
-        if (null!=token
+        if (Objects.nonNull(token)
                 && e instanceof DuplicateSubmitException==false){
             //处理处理重复提交本身之外的异常
-            Object[]args=joinPoint.getArgs();
-            HttpServletRequest request=null;
-            for (int i = 0; i < args.length; i++) {
-                if (args[i] instanceof HttpServletRequest){
-                    request= (HttpServletRequest) args[i];
-                }
-            }
+            RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+            HttpServletRequest request = 
+            		(HttpServletRequest) requestAttributes.resolveReference(RequestAttributes.REFERENCE_REQUEST);
             boolean isSaveSession=token.save();
             //获得方法名称
             if (isSaveSession){
                 String key=getDuplicateTokenKey(joinPoint);
                 Object t = request.getSession().getAttribute(key);
-                if (null!=t){
+                if (Objects.nonNull(t)){
                     //方法执行完毕移除请求重复标记
                     request.getSession(false).removeAttribute(key);
                     log.info("异常情况--移除请求重复标记！");
