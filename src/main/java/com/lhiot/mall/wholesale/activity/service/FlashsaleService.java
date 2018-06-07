@@ -331,7 +331,7 @@ public class FlashsaleService {
 		//订单商品
 		List<OrderGoods> list = orderDetail.getOrderGoodsList();
 		boolean success = false;
-		if(list.isEmpty()){
+		if(Objects.isNull(list) || list.isEmpty()){
 			return success;
 		}
 		//获取当前的抢购活动及商品
