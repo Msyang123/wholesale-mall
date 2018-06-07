@@ -61,12 +61,14 @@ public class CurrencyPayApi {
 	@DuplicateSubmitToken
     @PutMapping("/orderpay/{orderCode}")
     @ApiOperation(value = "余额支付订单", response = String.class)
-    public ResponseEntity orderPay(@PathVariable("orderCode") String orderCode,HttpServletRequest request) throws Exception {
-        OrderDetail orderDetail = orderService.searchOrder(orderCode);
+    public ResponseEntity orderPay(@PathVariable("orderCode") String orderCode) throws Exception {
+		System.out.println("begin....");
+		System.out.println("end....");
+/*        OrderDetail orderDetail = orderService.searchOrder(orderCode);
         if (Objects.isNull(orderDetail)){
             return ResponseEntity.badRequest().body("没有该订单信息");
-        }
-        if(!Objects.equals(orderDetail.getOrderStatus(),"unpaid")){
+        }*/
+/*        if(!"unpaid".equals(orderDetail.getOrderStatus())){
             return ResponseEntity.badRequest().body("订单状态异常，请检查订单状态");
         }
 
@@ -74,8 +76,8 @@ public class CurrencyPayApi {
         String payResult=payService.currencyPay(orderDetail);
         if(StringUtils.isEmpty(payResult)){
             return ResponseEntity.ok(orderDetail);
-        }
-        return ResponseEntity.badRequest().body(payResult);
+        }*/
+        return null;//ResponseEntity.badRequest().body(payResult);
     }
 
     @PutMapping("/debtorderpay/{orderDebtCode}")
