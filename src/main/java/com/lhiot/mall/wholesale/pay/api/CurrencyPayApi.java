@@ -2,6 +2,8 @@ package com.lhiot.mall.wholesale.pay.api;
 
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.base.duplicateaop.DuplicateSubmitException;
+import com.lhiot.mall.wholesale.base.duplicateaop.DuplicateSubmitToken;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
@@ -17,6 +19,8 @@ import com.sgsl.util.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.http.HttpRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +28,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Slf4j
 @Api(description = "余额支付接口")
@@ -52,9 +58,10 @@ public class CurrencyPayApi {
         this.snowflakeId = snowflakeId;
     }
 	
+	@DuplicateSubmitToken
     @PutMapping("/orderpay/{orderCode}")
     @ApiOperation(value = "余额支付订单", response = String.class)
-    public ResponseEntity orderPay(@PathVariable("orderCode") String orderCode) throws Exception {
+    public ResponseEntity orderPay(@PathVariable("orderCode") String orderCode,HttpServletRequest request) throws Exception {
         OrderDetail orderDetail = orderService.searchOrder(orderCode);
         if (Objects.isNull(orderDetail)){
             return ResponseEntity.badRequest().body("没有该订单信息");
