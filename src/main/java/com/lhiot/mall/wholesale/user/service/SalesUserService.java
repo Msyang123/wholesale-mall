@@ -120,7 +120,11 @@ public class SalesUserService {
                     Map<String, Object> body = ImmutableMap.of("phone",user.getPhone());
                     HttpEntity<Map<String, Object>> request = properties.getSendSms().createRequest(body);
                     String messageUrl= MessageFormat.format(properties.getSendSms().getUrl(),"regist-pass", user.getPhone());
-                    String result = restTemplate.postForObject(messageUrl, request, String.class);
+                    try{
+                        String result = restTemplate.postForObject(messageUrl, request, String.class);
+                    }catch(Exception e){
+                        e.printStackTrace();
+                    }
                 }
             }else {
                /* List<SalesUserRelation> relationList = salesUserMapper.selectUserRelation(salesUserRelation.getUserId());
@@ -138,7 +142,11 @@ public class SalesUserService {
                     Map<String, Object> body = ImmutableMap.of("phone",user.getPhone());
                     HttpEntity<Map<String, Object>> request = properties.getSendSms().createRequest(body);
                     String messageUrl= MessageFormat.format(properties.getSendSms().getUrl(),"regist-unpass",user.getPhone());
-                    String result=restTemplate.postForObject(messageUrl, request, String.class);
+                    try{
+                        String result=restTemplate.postForObject(messageUrl, request, String.class);
+                    }catch(Exception e){
+                        e.printStackTrace();
+                    }
                 }
             }
         }
