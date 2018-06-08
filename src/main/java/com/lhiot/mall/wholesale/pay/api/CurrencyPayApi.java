@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.base.duplicateaop.DuplicateSubmitToken;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
@@ -52,12 +53,11 @@ public class CurrencyPayApi {
     private final InvoiceService invoiceService;
     private final PaymentLogService paymentLogService;
     private final SnowflakeId snowflakeId;
-	private final RedissonClient redissonClient;
 	
 	@Autowired
 	public CurrencyPayApi(PayService payService, DebtOrderService debtOrderService, 
 			OrderService orderService,InvoiceService invoiceService, PaymentLogService paymentLogService, 
-			SnowflakeId snowflakeId,RedissonClient redissonClient){
+			SnowflakeId snowflakeId){
 
         this.payService = payService;
         this.debtOrderService=debtOrderService;
@@ -65,38 +65,29 @@ public class CurrencyPayApi {
         this.invoiceService=invoiceService;
         this.paymentLogService=paymentLogService;
         this.snowflakeId = snowflakeId;
-        this.redissonClient = redissonClient;
     }
 	
+	@DuplicateSubmitToken
     @PutMapping("/orderpay/{orderCode}")
     @ApiOperation(value = "余额支付订单", response = String.class)
     public ResponseEntity orderPay(@PathVariable("orderCode") String orderCode,HttpSession session) throws Exception {
-    	//获取订单锁
-		String lock_point = "LOCK_ORDERPAY_" + orderCode;
-		RLock lock = redissonClient.getLock(lock_point);
-		boolean islock = lock.isLocked();
-		if(islock){
-			return ResponseEntity.badRequest().body("支付中...");
-		}
-		try{
-			lock.lock();
-			OrderDetail orderDetail = orderService.searchOrder(orderCode);
-	        if (Objects.isNull(orderDetail)){
-	            return ResponseEntity.badRequest().body("没有该订单信息");
-	        }
-	        if(!"unpaid".equals(orderDetail.getOrderStatus())){
-	            return ResponseEntity.badRequest().body("订单状态异常，请检查订单状态");
-	        }
-	        //余额支付订单 发送到总仓
-	        String payResult=payService.currencyPay(orderDetail);
-	        if(StringUtils.isEmpty(payResult)){
-	            return ResponseEntity.ok(orderDetail);
-	        }else{
-	        	return ResponseEntity.badRequest().body(payResult);
-	        }
-		}finally {
-			lock.unlock();// 解锁
-		}
+        if(this.inPayment(orderCode, session)){
+        	return ResponseEntity.badRequest().body("支付中...");
+        }
+		OrderDetail orderDetail = orderService.searchOrder(orderCode);
+        if (Objects.isNull(orderDetail)){
+            return ResponseEntity.badRequest().body("没有该订单信息");
+        }
+        if(!"unpaid".equals(orderDetail.getOrderStatus())){
+            return ResponseEntity.badRequest().body("订单状态异常，请检查订单状态");
+        }
+
+        //余额支付订单 发送到总仓
+        String payResult=payService.currencyPay(orderDetail);
+        if(StringUtils.isEmpty(payResult)){
+            return ResponseEntity.ok(orderDetail);
+        }
+        return ResponseEntity.badRequest().body(payResult);
     }
 
     @PutMapping("/debtorderpay/{orderDebtCode}")
