@@ -1,5 +1,22 @@
 package com.lhiot.mall.wholesale.pay.api;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.util.SnowflakeId;
 import com.lhiot.mall.wholesale.base.duplicateaop.DuplicateSubmitToken;
@@ -15,19 +32,10 @@ import com.lhiot.mall.wholesale.pay.service.PayService;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.sgsl.util.StringUtils;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-
-import javax.servlet.http.HttpSession;
 
 @Slf4j
 @Api(description = "余额支付接口")
@@ -43,11 +51,11 @@ public class CurrencyPayApi {
     private final InvoiceService invoiceService;
     private final PaymentLogService paymentLogService;
     private final SnowflakeId snowflakeId;
-
-
+	
 	@Autowired
-	public CurrencyPayApi(PayService payService, DebtOrderService debtOrderService, OrderService orderService,
-                          InvoiceService invoiceService, PaymentLogService paymentLogService, SnowflakeId snowflakeId){
+	public CurrencyPayApi(PayService payService, DebtOrderService debtOrderService, 
+			OrderService orderService,InvoiceService invoiceService, PaymentLogService paymentLogService, 
+			SnowflakeId snowflakeId){
 
         this.payService = payService;
         this.debtOrderService=debtOrderService;
