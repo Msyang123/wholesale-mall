@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leon.microx.common.exception.ServiceException;
 import com.leon.microx.util.Calculator;
 import com.lhiot.mall.wholesale.ApplicationConfiguration;
+import com.lhiot.mall.wholesale.base.CalculateUtil;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.StringReplaceUtil;
@@ -524,7 +525,8 @@ public class PayService {
         String deliveryAddress=orderDetail.getDeliveryAddress();
         try {
             Map<String,Object> addressInfo= JacksonUtils.fromJson(deliveryAddress,Map.class);
-            inventory.setContactor(String.valueOf(addressInfo.get("name")));
+            String contactor = this.obtainContactor(String.valueOf(addressInfo.get("name")), orderDetail);
+            inventory.setContactor(contactor);
             inventory.setPhoneNumber(String.valueOf(addressInfo.get("phone")));
             inventory.setDeliverAddress(String.valueOf(addressInfo.get("city"))+String.valueOf(addressInfo.get("address")));
         } catch (IOException e) {
@@ -704,5 +706,18 @@ public class PayService {
             returnData.getProductsData().add(productsData);
         }
         return returnData;
+    }
+    
+    /**
+     * 获取收货人信息
+     * @param userName 收货人名称
+     * @param orderDetail 订单详情
+     * @return
+     */
+    public String obtainContactor(String userName,OrderDetail orderDetail){
+    	String hundred = "100";
+    	String discountFee = CalculateUtil.division(orderDetail.getDiscountFee(), hundred, 2);
+    	String deliveryFee = CalculateUtil.division(orderDetail.getDeliveryFee(), hundred, 2);
+    	return userName+"|"+deliveryFee+"|"+discountFee;
     }
 }

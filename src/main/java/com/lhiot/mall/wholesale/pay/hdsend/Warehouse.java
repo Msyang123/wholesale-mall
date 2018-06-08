@@ -48,8 +48,9 @@ public class Warehouse {
     public String savenew2state(Inventory inventory){
         try {
             //{"echoCode":"0","uuid":"96461805060001"}
-            String result=this.h4Request("post","/wholesaleservice/wholesale/savenew2state/1700",om.writeValueAsString(inventory));
-            Map resultMap=om.readValue(result, Map.class);
+            //String result=this.h4Request("post","/wholesaleservice/wholesale/savenew2state/1700",om.writeValueAsString(inventory));
+        	String result=this.h4Request("post","/wholesaleservice/wholesale/savenew2state/0",om.writeValueAsString(inventory));
+        	Map resultMap=om.readValue(result, Map.class);
             if(!Objects.equals(resultMap.get("echoCode"),"0")){
                 throw new ServiceException("发送海鼎总仓批发单错误"+result);
             }
