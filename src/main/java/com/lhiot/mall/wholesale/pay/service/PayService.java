@@ -1,29 +1,5 @@
 package com.lhiot.mall.wholesale.pay.service;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.UUID;
-
-import org.json.JSONObject;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leon.microx.common.exception.ServiceException;
@@ -73,10 +49,10 @@ public class PayService {
     private final RabbitTemplate rabbit;
     private final ApplicationConfiguration config;
     @Autowired
-    public PayService(PaymentLogService paymentLogService, 
-    		UserService userService, OrderService orderService, 
-    		DebtOrderService debtOrderService, InvoiceService invoiceService, 
-    		Warehouse warehouse, GoodsService goodsService, 
+    public PayService(PaymentLogService paymentLogService,
+    		UserService userService, OrderService orderService,
+    		DebtOrderService debtOrderService, InvoiceService invoiceService,
+    		Warehouse warehouse, GoodsService goodsService,
     		GoodsStandardService goodsStandardService, RabbitTemplate rabbit,
     		ApplicationConfiguration config){
         this.paymentLogService=paymentLogService;
@@ -521,12 +497,11 @@ public class PayService {
         inventory.setUuid(UUID.randomUUID().toString());
         inventory.setSenderCode("9646");
         inventory.setSenderWrh("07310101");
-        inventory.setReceiverCode(config.getReceiverCode());
+        inventory.setReceiverCode(null);
         String deliveryAddress=orderDetail.getDeliveryAddress();
         try {
             Map<String,Object> addressInfo= JacksonUtils.fromJson(deliveryAddress,Map.class);
-            String contactor = this.obtainContactor(String.valueOf(addressInfo.get("name")), orderDetail);
-            inventory.setContactor(contactor);
+            inventory.setContactor(String.valueOf(addressInfo.get("name")));
             inventory.setPhoneNumber(String.valueOf(addressInfo.get("phone")));
             inventory.setDeliverAddress(String.valueOf(addressInfo.get("city"))+String.valueOf(addressInfo.get("address")));
         } catch (IOException e) {
@@ -539,7 +514,6 @@ public class PayService {
         inventory.setSeller("批发销售员");
         inventory.setSouceOrderCls("批发商城");
         inventory.setNegInvFlag("1");
-        inventory.setFreight(new BigDecimal(Calculator.div(orderDetail.getDeliveryFee(),100.0,2)));
         inventory.setMemberCode(null);
 
         //清单
@@ -707,7 +681,7 @@ public class PayService {
         }
         return returnData;
     }
-    
+
     /**
      * 获取收货人信息
      * @param userName 收货人名称
