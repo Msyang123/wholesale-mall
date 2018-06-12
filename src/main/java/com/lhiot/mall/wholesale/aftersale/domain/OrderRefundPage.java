@@ -51,6 +51,12 @@ public class OrderRefundPage {
     @JsonProperty("hdStatus")
     private String hdStatus;
 
+    @JsonProperty("applicationType")
+    private String applicationType;//售后类型
+
+    @JsonProperty("orderDiscountFee")
+    private Integer orderDiscountFee;//优惠金额(退款金额)or补收差额
+
     @JsonProperty("auditStatus")
     private String auditStatus;
 

@@ -93,7 +93,7 @@
     <select parameterType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication" id="refundInfo" resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
         select id,application_type applicationType,exist_problem existProblem,other_problem otherProblem,
         refund_evidence refundEvidence,audit_status auditStatus,order_discount_fee orderDiscountFee,
-        delivery_fee deliveryFee,comments comments,order_id orderId,user_id userId,contacts_phone contactsPhone
+        delivery_fee deliveryFee,comments comments,order_id orderId,user_id userId,contacts_phone contactsPhone,create_at createAt
         from t_whs_order_refund_application
         <trim prefix="where" prefixOverrides="and">
             <if test="id!=null and id!=''">
@@ -132,7 +132,7 @@
     <select parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam" id="page" resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundPage">
         select a.id,a.order_id,o.create_time,o.total_fee,o.discount_fee,o.payable_fee,
         l.payment_type,l.payment_time,o.pay_status,
-        u.shop_name,u.user_name,u.phone,o.order_status,o.hd_status,a.audit_status
+        u.shop_name,u.user_name,u.phone,o.order_status,o.hd_status,a.application_type,a.order_discount_fee,a.audit_status
         from t_whs_order_refund_application a 
         LEFT JOIN t_whs_order o on a.order_id=o.order_code
         LEFT JOIN t_whs_payment_log l on l.order_code=o.order_code
@@ -147,6 +147,9 @@
         	<if test="orderStatus !=null and orderStatus != ''">
         		and o.order_status = #{orderStatus}
         	</if>
+            <if test="applicationType !=null and applicationType != ''">
+                and a.application_type = #{applicationType}
+            </if>
         	<if test="settlementType !=null and settlementType != ''">
         		and o.settlement_type = #{settlementType}
         	</if>
@@ -195,4 +198,45 @@
 		select * from t_whs_order_refund_application where order_id = #{0} 
 		and audit_status IN ('unaudited','agree')
 	</select>
+
+    <!-- 后台管理系统 售后订单数据导出 -->
+    <select id="exportData" parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam"
+            resultType="map">
+        select a.order_id as orderId,DATE_FORMAT(o.create_time,'%Y-%m-%d %H:%i:%s') as createTime,IFNULL(FORMAT(o.total_fee/100.0,2),'0.00') AS totalFee,IFNULL(FORMAT(o.discount_fee/100.0,2),'0.00') AS discountFee,
+        IFNULL(FORMAT(o.payable_fee/100.0,2),'0.00') AS payableFee,
+        case l.payment_type when 'balance' then '余额支付' when 'wechat' then '微信支付' when 'offline' then '线下支付' end as paymentType,DATE_FORMAT(l.payment_time,'%Y-%m-%d %H:%i:%s') as paymentTime,
+        case o.pay_status when 'paid' then '已支付'  when 'unpaid' then '未支付' end as payStatus,u.shop_name as shopName,u.user_name as userName,u.phone as phone,
+        case o.order_status when 'failed' then '已失效' when 'unpaid' then '待付款' when 'paying' then '支付中'  when 'undelivery' then '待发货' when 'delivery' then '配送中'  when 'unrefunded' then '退货中' when 'refunded' then '退货成功'  when 'received' then '已收货' end as orderStatus,
+        case o.hd_status when 'success' then '成功' when 'failed' then '失败' end as hdStatus,
+        case a.application_type when 'consult' then '协调处理' when 'refund' then '退货' when 'supplement' then '补差价'end as applicationType,
+        IFNULL(FORMAT(a.order_discount_fee/100.0,2),'0.00') AS orderDiscountFee,case a.audit_status when 'unaudited' then '待审核' when 'agree' then '审核通过' when 'reject' then '审核不通过'end as auditStatus
+        from t_whs_order_refund_application a
+        LEFT JOIN t_whs_order o on a.order_id=o.order_code
+        LEFT JOIN t_whs_payment_log l on l.order_code=o.order_code
+        LEFT JOIN t_whs_user u on u.id=o.user_id
+        <trim prefix="where" prefixOverrides="and">
+            <if test="createTimeBegin !=null and createTimeBegin != ''">
+                and date_format(a.create_at,'%Y-%m-%d') &gt;= #{createTimeBegin}
+            </if>
+            <if test="createTimeEnd !=null and createTimeEnd != ''">
+                and date_format(a.create_at,'%Y-%m-%d') &lt;= #{createTimeEnd}
+            </if>
+            <if test="orderStatus !=null and orderStatus != ''">
+                and o.order_status = #{orderStatus}
+            </if>
+            <if test="applicationType !=null and applicationType != ''">
+                and a.application_type = #{applicationType}
+            </if>
+            <if test="settlementType !=null and settlementType != ''">
+                and o.settlement_type = #{settlementType}
+            </if>
+            <if test="orderCode !=null and orderCode != ''">
+                and o.order_code like CONCAT('%',#{orderCode},'%')
+            </if>
+            <if test="phone !=null and phone != ''">
+                and u.phone like CONCAT('%',#{phone},'%')
+            </if>
+            and l.payment_step = 'paid'
+        </trim>
+    </select>
 </mapper>
