@@ -8,8 +8,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -28,6 +26,9 @@ public class OrderGridParam extends PageObject{
 
     @JsonProperty("phone")
     private String phone;
+
+    @JsonProperty("applicationType")
+    private String applicationType;
 
     @JsonProperty("orderStatus")
     private String orderStatus;

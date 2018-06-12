@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.aftersale.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
@@ -29,5 +30,7 @@ public interface OrderRefundApplicationMapper {
     List<OrderRefundPage> page(OrderGridParam param);
     
     List<OrderRefundApplication> select(String orderCode);
+
+    List<Map<String, Object>> exportData(OrderGridParam param);
 
 }
