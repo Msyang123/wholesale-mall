@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.setting.service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -166,20 +167,23 @@ public class SettingService {
 		return date.after(date1)&&date.before(date2);
 	}
 	
-    public <T> String fenToYuan(T data){
+	/**
+	 * 分转元
+	 * @param data
+	 * @return
+	 */
+    public static <T> String fenToYuan(T data){
     	String result = "0.00";
     	if(Objects.isNull(data)){
     		return result;
     	}
-    	int fen = 0;
-    	if(data instanceof String){
-    		fen = Integer.valueOf((String)data);
-    	}else if(data instanceof Integer){
-    		fen = (Integer)data;
-    	}else{
+    	String d = data.toString();
+    	if(StringUtils.isBlank(d)){
     		return result;
     	}
-    	result = String.format("%.2f", fen/100.0);
-    	return result;
+    	BigDecimal fen = new BigDecimal(d);
+    	BigDecimal hundred = new BigDecimal("100");
+    	BigDecimal yuan = fen.divide(hundred, 2, BigDecimal.ROUND_UP);
+    	return yuan.toString();
     }
 }

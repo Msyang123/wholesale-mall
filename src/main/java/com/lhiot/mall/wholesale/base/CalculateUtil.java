@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.base;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class CalculateUtil {
 
@@ -23,12 +24,15 @@ public class CalculateUtil {
 	 * @return
 	 */
 	public static <T> String division(T dividend,T divisor,Integer scale){
+		if(Objects.isNull(dividend)){
+			return "0.00";
+		}
 		String n1 = String.valueOf(dividend);
 		String n2 = String.valueOf(divisor);
 		
 		BigDecimal b1 = new BigDecimal(n1);
 		BigDecimal b2 = new BigDecimal(n2);
 		
-		return b1.divide(b2, scale, BigDecimal.ROUND_DOWN).toString();
+		return b1.divide(b2, scale, BigDecimal.ROUND_UP).toString();
 	}
 }

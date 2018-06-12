@@ -130,7 +130,8 @@
 
     <!--分页查询售后订单-->
     <select parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam" id="page" resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundPage">
-        select a.id,a.order_id,o.create_time,o.total_fee,o.discount_fee,o.payable_fee,l.payment_type,l.payment_time,o.pay_status,
+        select a.id,a.order_id,o.create_time,o.total_fee,o.discount_fee,o.payable_fee,
+        l.payment_type,l.payment_time,o.pay_status,
         u.shop_name,u.user_name,u.phone,o.order_status,o.hd_status,a.audit_status
         from t_whs_order_refund_application a 
         LEFT JOIN t_whs_order o on a.order_id=o.order_code
@@ -146,9 +147,6 @@
         	<if test="orderStatus !=null and orderStatus != ''">
         		and o.order_status = #{orderStatus}
         	</if>
-        	<if test="payStatus !=null and payStatus != ''">
-        		and o.pay_status = #{payStatus}
-        	</if>
         	<if test="settlementType !=null and settlementType != ''">
         		and o.settlement_type = #{settlementType}
         	</if>
@@ -158,6 +156,7 @@
         	<if test="phone !=null and phone != ''">
         		and u.phone like CONCAT('%',#{phone},'%')
         	</if>
+        	and l.payment_step = 'paid'
         </trim>
         <include refid="common.pager"/>
     </select>
@@ -177,9 +176,6 @@
         	<if test="orderStatus !=null and orderStatus != ''">
         		and o.order_status = #{orderStatus}
         	</if>
-        	<if test="payStatus !=null and payStatus != ''">
-        		and o.pay_status = #{payStatus}
-        	</if>
         	<if test="settlementType !=null and settlementType != ''">
         		and o.settlement_type = #{settlementType}
         	</if>
@@ -189,6 +185,7 @@
         	<if test="phone !=null and phone != ''">
         		and u.phone like CONCAT('%',#{phone},'%')
         	</if>
+        	and l.payment_step = 'paid'
         </trim>
     </select>
 

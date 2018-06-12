@@ -111,13 +111,23 @@ public class UserService {
             return "不是有效的业务员";
         }
         if (this.updateUser(user)) {
-
-            SalesUserRelation salesUserRelation = new SalesUserRelation();
-            salesUserRelation.setUserId(user.getId());
-            salesUserRelation.setSalesmanId(salesUser.getId());
-            salesUserRelation.setAuditStatus("unaudited");//待审核
-            if (salesUserService.insertRelation(salesUserRelation) < 1) {
-                return "注册审核提交失败";
+            SalesUserRelation relation = new SalesUserRelation();
+            relation.setUserId(user.getId());
+            //查询商户是否已有关联表中的数据，有就修改没有就添加
+            SalesUserRelation ship = salesUserService.searchSaleRelationship(relation);
+            if (Objects.isNull(ship)){
+                SalesUserRelation salesUserRelation = new SalesUserRelation();
+                salesUserRelation.setUserId(user.getId());
+                salesUserRelation.setSalesmanId(salesUser.getId());
+                salesUserRelation.setAuditStatus("unaudited");//待审核
+                if (salesUserService.insertRelation(salesUserRelation) < 1) {
+                    return "注册审核提交失败";
+                }
+            }else{
+                Map<String, Object> body = ImmutableMap.of("salesmanId",salesUser.getId(),"userId",user.getId(),"auditStatus","unaudited");
+                if (salesUserService.updateRe(body) < 1){
+                    return "注册审核提交失败";
+                }
             }
             //发送短信
             Map<String, Object> body = ImmutableMap.of("phone",salesUser.getSalesmanPhone());

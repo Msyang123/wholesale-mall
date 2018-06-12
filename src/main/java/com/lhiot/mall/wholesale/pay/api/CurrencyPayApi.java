@@ -1,7 +1,25 @@
 package com.lhiot.mall.wholesale.pay.api;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.leon.microx.util.SnowflakeId;
+import com.lhiot.mall.wholesale.base.duplicateaop.DuplicateSubmitToken;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
 import com.lhiot.mall.wholesale.order.domain.DebtOrder;
@@ -14,35 +32,30 @@ import com.lhiot.mall.wholesale.pay.service.PayService;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.sgsl.util.StringUtils;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @Api(description = "余额支付接口")
 @RestController
 @RequestMapping("/currency")
 public class CurrencyPayApi {
-
+	//作为session的主键
+	private static final String DUPLICATE_TOKEN_KEY="duplicate_token_key_orderPay";
 	private final PayService payService;
-
+	
     private final DebtOrderService debtOrderService;
     private final OrderService orderService;
     private final InvoiceService invoiceService;
     private final PaymentLogService paymentLogService;
     private final SnowflakeId snowflakeId;
-
-
+	
 	@Autowired
-	public CurrencyPayApi(PayService payService, DebtOrderService debtOrderService, OrderService orderService,
-                          InvoiceService invoiceService, PaymentLogService paymentLogService, SnowflakeId snowflakeId){
+	public CurrencyPayApi(PayService payService, DebtOrderService debtOrderService, 
+			OrderService orderService,InvoiceService invoiceService, PaymentLogService paymentLogService, 
+			SnowflakeId snowflakeId){
 
         this.payService = payService;
         this.debtOrderService=debtOrderService;
@@ -52,14 +65,18 @@ public class CurrencyPayApi {
         this.snowflakeId = snowflakeId;
     }
 	
+	@DuplicateSubmitToken
     @PutMapping("/orderpay/{orderCode}")
     @ApiOperation(value = "余额支付订单", response = String.class)
-    public ResponseEntity orderPay(@PathVariable("orderCode") String orderCode) throws Exception {
-        OrderDetail orderDetail = orderService.searchOrder(orderCode);
+    public ResponseEntity orderPay(@PathVariable("orderCode") String orderCode,HttpSession session) throws Exception {
+        if(this.inPayment(orderCode, session)){
+        	return ResponseEntity.badRequest().body("支付中...");
+        }
+		OrderDetail orderDetail = orderService.searchOrder(orderCode);
         if (Objects.isNull(orderDetail)){
             return ResponseEntity.badRequest().body("没有该订单信息");
         }
-        if(!Objects.equals(orderDetail.getOrderStatus(),"unpaid")){
+        if(!"unpaid".equals(orderDetail.getOrderStatus())){
             return ResponseEntity.badRequest().body("订单状态异常，请检查订单状态");
         }
 
@@ -139,5 +156,22 @@ public class CurrencyPayApi {
         user.setStart((page-1)*rows);
         List<Balance> paymentLogList = paymentLogService.getBalanceRecord(user);
         return ResponseEntity.ok(ArrayObject.of(paymentLogList));
+    }
+    
+    /**
+     * 判断是否为重复提交
+     * @param orderCode
+     * @param session
+     * @return
+     */
+    public boolean inPayment(String orderCode,HttpSession session){
+    	String key = DUPLICATE_TOKEN_KEY+"_"+orderCode;
+    	Object obj = session.getAttribute(key);
+    	log.info("=====>token-key="+key);
+    	log.info("=====>token-value="+obj);
+    	if(Objects.equals(obj.toString(), "inPayment")){
+    		return true;
+    	}
+    	return false;
     }
 }

@@ -3,6 +3,9 @@ package com.lhiot.mall.wholesale.pay.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leon.microx.common.exception.ServiceException;
+import com.leon.microx.util.Calculator;
+import com.lhiot.mall.wholesale.ApplicationConfiguration;
+import com.lhiot.mall.wholesale.base.CalculateUtil;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.StringReplaceUtil;
@@ -26,20 +29,8 @@ import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
 import com.sgsl.auditing.MD5;
 import com.sgsl.hd.client.vo.OrderReduceData;
 import com.sgsl.hd.client.vo.ProductsData;
-import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
@@ -56,9 +47,14 @@ public class PayService {
     private final GoodsService goodsService;
     private final GoodsStandardService goodsStandardService;
     private final RabbitTemplate rabbit;
-
+    private final ApplicationConfiguration config;
     @Autowired
-    public PayService(PaymentLogService paymentLogService, UserService userService, OrderService orderService, DebtOrderService debtOrderService, InvoiceService invoiceService, Warehouse warehouse, GoodsService goodsService, GoodsStandardService goodsStandardService, RabbitTemplate rabbit){
+    public PayService(PaymentLogService paymentLogService,
+    		UserService userService, OrderService orderService,
+    		DebtOrderService debtOrderService, InvoiceService invoiceService,
+    		Warehouse warehouse, GoodsService goodsService,
+    		GoodsStandardService goodsStandardService, RabbitTemplate rabbit,
+    		ApplicationConfiguration config){
         this.paymentLogService=paymentLogService;
         this.userService=userService;
         this.orderService=orderService;
@@ -68,6 +64,7 @@ public class PayService {
         this.goodsService = goodsService;
         this.goodsStandardService = goodsStandardService;
         this.rabbit = rabbit;
+        this.config = config;
     }
     /**
      * 微信充值支付签名
@@ -500,7 +497,7 @@ public class PayService {
         inventory.setUuid(UUID.randomUUID().toString());
         inventory.setSenderCode("9646");
         inventory.setSenderWrh("07310101");
-        inventory.setReceiverCode("00889");
+        inventory.setReceiverCode(null);
         String deliveryAddress=orderDetail.getDeliveryAddress();
         try {
             Map<String,Object> addressInfo= JacksonUtils.fromJson(deliveryAddress,Map.class);
@@ -685,4 +682,16 @@ public class PayService {
         return returnData;
     }
 
+    /**
+     * 获取收货人信息
+     * @param userName 收货人名称
+     * @param orderDetail 订单详情
+     * @return
+     */
+    public String obtainContactor(String userName,OrderDetail orderDetail){
+    	String hundred = "100";
+    	String discountFee = CalculateUtil.division(orderDetail.getDiscountFee(), hundred, 2);
+    	String deliveryFee = CalculateUtil.division(orderDetail.getDeliveryFee(), hundred, 2);
+    	return userName+"|"+deliveryFee+"|"+discountFee;
+    }
 }
