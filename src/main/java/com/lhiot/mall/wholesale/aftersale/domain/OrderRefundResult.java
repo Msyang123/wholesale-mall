@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
@@ -40,6 +41,7 @@ public class OrderRefundResult {
 	@ApiModelProperty(notes="优惠金额",dataType="Integer")
 	private Integer orderDiscountFee;
 	
+	@JsonProperty("refundDeliveryFee")
 	@ApiModelProperty(notes="售后需要扣除的配送费用",dataType="Integer")
 	private Integer deliveryFee;
 	
@@ -67,6 +69,7 @@ public class OrderRefundResult {
 	@ApiModelProperty(notes="应付金额",dataType="Integer")
 	private Integer payableFee;
 	
+	@JsonProperty("deliveryFee")
 	@ApiModelProperty(notes="订单运送费金额",dataType="Integer")
 	private Integer orderDeliveryFee;
 }
