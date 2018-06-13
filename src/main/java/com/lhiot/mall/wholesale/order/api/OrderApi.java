@@ -151,6 +151,7 @@ public class OrderApi {
         if (Objects.isNull(orderDetail)){
            return ResponseEntity.badRequest().body("没有该订单信息");
         }
+    	orderDetail.setSupplements(orderRefundApplicationService.supplements(orderCode,ApplicationType.supplement));
         List<OrderGoods> goods = orderService.searchOrderGoods(orderDetail.getId());
         if (goods.isEmpty()){
             orderDetail.setOrderGoodsList(new ArrayList<OrderGoods>());
