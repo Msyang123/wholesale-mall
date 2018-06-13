@@ -72,6 +72,7 @@
            <if test="userId!=null and userId!=0">
               and user_id=#{userId}
            </if>
+           and application_type != 'supplement'
         </trim>
         <include refid="common.pager"></include>
     </select>
@@ -86,6 +87,7 @@
             <if test="userId!=null and userId!=0">
                 and user_id=#{userId}
             </if>
+            and application_type != 'supplement'
         </trim>
     </select>
 
@@ -99,6 +101,7 @@
             <if test="id!=null and id!=''">
                 and id=#{id}
             </if>
+            and application_type != 'supplement'
         </trim>
     </select>
 
@@ -106,7 +109,7 @@
     <select id="searchOrderById" parameterType="String" resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderResult">
         SELECT <include refid="orderColumn"/>
         FROM t_whs_order t1
-        WHERE t1.order_code = #{0}
+        WHERE t1.order_code = #{0} and t1.application_type != 'supplement'
     </select>
 
     <!--修改售后申请表-->
@@ -156,7 +159,7 @@
         	<if test="phone !=null and phone != ''">
         		and u.phone like CONCAT('%',#{phone},'%')
         	</if>
-        	and l.payment_step = 'paid'
+        	and l.payment_step = 'paid' and application_type != 'supplement'
         </trim>
         <include refid="common.pager"/>
     </select>
@@ -185,7 +188,7 @@
         	<if test="phone !=null and phone != ''">
         		and u.phone like CONCAT('%',#{phone},'%')
         	</if>
-        	and l.payment_step = 'paid'
+        	and l.payment_step = 'paid' and application_type != 'supplement'
         </trim>
     </select>
 
@@ -193,6 +196,23 @@
 	<select id="select" parameterType="String"
 		resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication">
 		select * from t_whs_order_refund_application where order_id = #{0} 
-		and audit_status IN ('unaudited','agree')
+		and audit_status IN ('unaudited','agree') 
+		and (application_type = 'consult' or application_type = 'refund')
+	</select>
+	
+	<!-- 查询补差额或者售后 -->
+	<select id="supplements" parameterType="map" 
+		resultType="com.lhiot.mall.wholesale.aftersale.domain.SupplementRecords">
+		select * from t_whs_order_refund_application 
+		where order_id = #{orderCode} 
+		and application_type = #{applicationType}
+	</select>
+	
+	<!-- 查询售后订单详情 -->
+	<select id="orderRefundResult" parameterType="map"
+		resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundResult">
+		select * from t_whs_order_refund_application where order_id = #{orderCode} and user_id = #{userId}
+		and (application_type = 'consult' or application_type = 'refund')
+		and audit_status = 'agree'
 	</select>
 </mapper>

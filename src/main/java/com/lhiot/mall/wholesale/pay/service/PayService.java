@@ -599,6 +599,93 @@ public class PayService {
         }
         return result;
     }
+    
+    //XXX 微信补差额
+
+    /**
+     * 微信补差额支付签名
+     * @param ipAddress
+     * @param openId
+     * @param supplement 需要补的差额
+     * @param userAgent
+     * @param payCode
+     * @param orderCode 补差额的当前订单
+     * @param weChatUtil
+     * @return
+     * @throws Exception
+     */
+    public String wxSupplementPay(String ipAddress,String openId,int supplement,String userAgent,
+    		String payCode,String orderCode,WeChatUtil weChatUtil) throws Exception {
+        Map<String, Object> ret = new HashMap<>();
+        ret.put("state", "failure");
+        if (StringUtils.isEmpty(openId)) {
+            ret.put("msg", "用户信息为空！");
+            return om.writeValueAsString(ret);
+        }
+        User user= userService.searchUserByOpenid(openId);
+        if(Objects.isNull(user)){
+            ret.put("msg", "未找到用户信息！");
+            return om.writeValueAsString(ret);
+        }
+
+        if (supplement < 1) {
+            ret.put("msg", "您输入的金额不正确！");
+            return om.writeValueAsString(ret);
+        }
+
+        String currTime = DateFormatUtil.format3(new Date());
+        String strTime = currTime.substring(8, currTime.length());
+        String nonce = strTime + weChatUtil.buildRandom(4);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.add(Calendar.MINUTE, weChatUtil.getProperties().getWeChatPay().getTimeoutExpress());// 设置6分钟过期
+        String timeExpire = DateFormatUtil.format3(cal.getTime());
+        log.info("=================开始微信签名===============");
+        SortedMap<Object, Object> packageParams = new TreeMap<Object, Object>();
+        packageParams.put("appid", weChatUtil.getProperties().getWeChatOauth().getAppId());
+        packageParams.put("mch_id", weChatUtil.getProperties().getWeChatPay().getPartnerId());
+        packageParams.put("nonce_str", nonce);// 随机串
+        packageParams.put("body", "水果熟了 - 订单"+orderCode+"补差额");// 商品描述
+        packageParams.put("attach", user.getId()+"-orderCode:"+orderCode);// 附加数据 用户id和订单号
+        packageParams.put("out_trade_no", payCode);// 商户订单号
+        packageParams.put("total_fee", supplement);// 微信支付金额单位为（分）
+        packageParams.put("time_expire", timeExpire);
+        packageParams.put("spbill_create_ip", ipAddress);// 订单生成的机器ip
+        // IP
+        packageParams.put("notify_url", weChatUtil.getProperties().getWeChatPay().getSupplementNotifyUrl());// 支付完成后微信发给该链接信息，可以判断会员是否支付成功，改变订单状态等。
+        packageParams.put("trade_type", "JSAPI");
+        packageParams.put("openid", openId);
+        String sign = weChatUtil.createSign(weChatUtil.getProperties().getWeChatPay().getPartnerKey(), packageParams); // 获取签名
+        packageParams.put("sign", sign);
+        log.info("=================获取预支付ID===============");
+        String xml = weChatUtil.getRequestXml(packageParams); // 获取请求微信的XML
+        String prepayId = weChatUtil.sendWeChatGetPrepayId(xml);
+        if (StringUtils.isEmpty(prepayId)) {
+            throw new RuntimeException("微信预支付出错");
+        }
+        log.info("=================微信预支付成功，响应到JSAPI完成微信支付===============");
+        SortedMap<Object, Object> finalpackage = new TreeMap<Object, Object>();
+        finalpackage.put("appId", weChatUtil.getProperties().getWeChatOauth().getAppId());
+        String timestamp = Long.toString(System.currentTimeMillis() / 1000);
+        finalpackage.put("timeStamp", timestamp);
+        finalpackage.put("nonceStr", nonce);
+        String packages = "prepay_id=" + prepayId;
+        finalpackage.put("package", packages);
+        finalpackage.put("signType", "MD5");
+        String finalsign = weChatUtil.createSign(weChatUtil.getProperties().getWeChatPay().getPartnerKey(), finalpackage);
+
+        Map<String,String> rechargeSisgn = new HashMap<>();
+        rechargeSisgn.put("appid", weChatUtil.getProperties().getWeChatOauth().getAppId());
+        rechargeSisgn.put("timeStamp", timestamp);
+        rechargeSisgn.put("nonceStr", nonce);
+        rechargeSisgn.put("packageValue", packages);
+        rechargeSisgn.put("sign", finalsign);
+        rechargeSisgn.put("orderId", payCode);
+        char agent = userAgent.charAt(userAgent.indexOf("MicroMessager") + 15);
+        rechargeSisgn.put("agent", new String(new char[] { agent }));
+        return om.writeValueAsString(rechargeSisgn);
+    }
+    
     /**
      * 余额支付发票
      * @return

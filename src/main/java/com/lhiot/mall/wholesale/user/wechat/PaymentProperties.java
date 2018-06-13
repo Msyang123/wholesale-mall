@@ -108,6 +108,10 @@ public class PaymentProperties {
         private String orderOfflineNotifyUrl;
 
         /**
+         * 异步补差额回调地址
+         */
+        private String supplementNotifyUrl;
+        /**
          * 支付换算
          * # 1：1倍，单位还是分； 100：100倍，单位就变成元了
          */

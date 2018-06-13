@@ -60,6 +60,7 @@ wholesale-mall:
       order-notify-url: https://online.food-see.com/wechat/order/notify
       invoice-notify-url: https://online.food-see.com/wechat/invoice/notify
       order-offline-notify-url: https://online.food-see.com/wechat/offline/notify
+      supplement-notify-url: https://onlinetest.food-see.com/wechat/supplement/notify
       payunit: 100
       proxy: nonginx
   rabbitmq:
