@@ -104,6 +104,7 @@ public class OrderRefundApplicationService {
             }
     	}else if(ApplicationType.supplement.equals(applicationType)){
     		orderRefundApplication.setAuditStatus("agree");
+    		orderRefundApplication.setApplicationType("supplement");
     	}
         return this.orderRefundApplicationMapper.create(orderRefundApplication);
     }
