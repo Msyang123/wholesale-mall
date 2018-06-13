@@ -5,9 +5,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import com.lhiot.mall.wholesale.aftersale.domain.OrderRefundPage;
 import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -176,5 +178,11 @@ public class OrderRefundApplicationApi {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.badRequest().body("申请失败");
+    }
+
+    @PostMapping("/export")
+    @ApiOperation(value = "后台管理系统新建一个查询，数据导出", response = OrderRefundPage.class,responseContainer="list")
+    public ResponseEntity<List<Map<String, Object>>> exportData(@RequestBody(required = true) OrderGridParam param) {
+        return ResponseEntity.ok(orderRefundApplicationService.exportData(param));
     }
 }

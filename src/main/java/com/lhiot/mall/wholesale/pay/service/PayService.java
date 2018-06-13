@@ -73,10 +73,10 @@ public class PayService {
     private final RabbitTemplate rabbit;
     private final ApplicationConfiguration config;
     @Autowired
-    public PayService(PaymentLogService paymentLogService, 
-    		UserService userService, OrderService orderService, 
-    		DebtOrderService debtOrderService, InvoiceService invoiceService, 
-    		Warehouse warehouse, GoodsService goodsService, 
+    public PayService(PaymentLogService paymentLogService,
+    		UserService userService, OrderService orderService,
+    		DebtOrderService debtOrderService, InvoiceService invoiceService,
+    		Warehouse warehouse, GoodsService goodsService,
     		GoodsStandardService goodsStandardService, RabbitTemplate rabbit,
     		ApplicationConfiguration config){
         this.paymentLogService=paymentLogService;
@@ -521,12 +521,11 @@ public class PayService {
         inventory.setUuid(UUID.randomUUID().toString());
         inventory.setSenderCode("9646");
         inventory.setSenderWrh("07310101");
-        inventory.setReceiverCode(config.getReceiverCode());
+        inventory.setReceiverCode(null);
         String deliveryAddress=orderDetail.getDeliveryAddress();
         try {
             Map<String,Object> addressInfo= JacksonUtils.fromJson(deliveryAddress,Map.class);
-            String contactor = this.obtainContactor(String.valueOf(addressInfo.get("name")), orderDetail);
-            inventory.setContactor(contactor);
+            inventory.setContactor(String.valueOf(addressInfo.get("name")));
             inventory.setPhoneNumber(String.valueOf(addressInfo.get("phone")));
             inventory.setDeliverAddress(String.valueOf(addressInfo.get("city"))+String.valueOf(addressInfo.get("address")));
         } catch (IOException e) {
@@ -539,7 +538,6 @@ public class PayService {
         inventory.setSeller("批发销售员");
         inventory.setSouceOrderCls("批发商城");
         inventory.setNegInvFlag("1");
-        inventory.setFreight(new BigDecimal(Calculator.div(orderDetail.getDeliveryFee(),100.0,2)));
         inventory.setMemberCode(null);
 
         //清单
@@ -600,8 +598,6 @@ public class PayService {
         return result;
     }
     
-    //XXX 微信补差额
-
     /**
      * 微信补差额支付签名
      * @param ipAddress
@@ -794,7 +790,7 @@ public class PayService {
         }
         return returnData;
     }
-    
+
     /**
      * 获取收货人信息
      * @param userName 收货人名称

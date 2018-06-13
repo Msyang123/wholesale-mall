@@ -38,4 +38,7 @@ public interface OrderRefundApplicationMapper {
     
     //查询售后订单详情，根据订单id
     OrderRefundResult orderRefundResult(Map<String,Object> map);
+    
+    List<Map<String, Object>> exportData(OrderGridParam param);
+
 }
