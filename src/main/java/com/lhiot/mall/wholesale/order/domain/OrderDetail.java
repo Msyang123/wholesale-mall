@@ -2,13 +2,18 @@ package com.lhiot.mall.wholesale.order.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication;
+import com.lhiot.mall.wholesale.aftersale.domain.SupplementRecords;
+
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -123,6 +128,9 @@ public class OrderDetail {
     @JsonProperty("afterStatus")
     private String afterStatus;//是否已售后 no-未售后 yes 已售后
 
+	@ApiModelProperty(notes="订单补差额记录",dataType="java.util.List")
+	private List<SupplementRecords> supplements = new ArrayList<>();
+    
     @JsonProperty("start")
     private Integer start;
 

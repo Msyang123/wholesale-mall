@@ -103,6 +103,20 @@ public class OrderRefundApplicationApi {
         return ResponseEntity.badRequest().body("提交失败");
     }
 
+    @PostMapping("/apply/supplement")
+    @ApiOperation(value = "新增补差价记录")
+    public ResponseEntity<?> applySupplement(@RequestBody OrderRefundApplication orderRefundApplication){
+    	int supplement = orderRefundApplication.getOrderDiscountFee();
+    	if(supplement < 0){
+    		return ResponseEntity.badRequest().body("金额错误");
+    	}
+    	boolean success = orderRefundApplicationService.create(orderRefundApplication) > 0;
+    	if(success){
+    		 return ResponseEntity.ok().body("提交成功");
+    	}
+    	return ResponseEntity.badRequest().body("提交失败");
+    }
+    
     @PutMapping("/verify")
     @ApiOperation(value = "售后审核")
     public ResponseEntity verify(@RequestBody OrderRefundApplication orderRefundApplication) {
@@ -128,13 +142,21 @@ public class OrderRefundApplicationApi {
         }
         for (OrderRefundApplication orderRefund : orderRefundApplicationList) {
             OrderDetail orderDetail = orderService.searchOrder(orderRefund.getOrderId());
-             List<OrderGoods> orderGoodsList =orderService.searchOrderGoods(orderDetail.getId());
-           // orderRefund.setOrderCreateTime(orderDetail.getCreateTime());
+            List<OrderGoods> orderGoodsList =orderService.searchOrderGoods(orderDetail.getId());
+            // orderRefund.setOrderCreateTime(orderDetail.getCreateTime());
+            Integer payableFee = Objects.isNull(orderDetail.getPayableFee())?0:orderDetail.getPayableFee();
+            Integer deliveryFee = Objects.isNull(orderDetail.getDeliveryFee())?0:orderDetail.getDeliveryFee();
             orderRefund.setOrderGoodsList(orderGoodsList);
+            orderRefund.setNeedPay(payableFee + deliveryFee);
         }
         return ResponseEntity.ok(ArrayObject.of(orderRefundApplicationList));
     }
 
+    @GetMapping("/detail/{orderCode}/{userId}")
+    @ApiOperation(value = "售后订单详情接口")
+    public ResponseEntity orderRefundResult(@PathVariable("orderCode") String orderCode,@PathVariable("userId") Long userId) {
+        return ResponseEntity.ok(orderRefundApplicationService.orderRefundResult(orderCode.trim(),userId));
+    }
     /***************************************后台管理系统*************************************************/
     @PostMapping("/grid")
     @ApiOperation(value = "后台管理-分页查询售后订单信息", response = PageQueryObject.class)
