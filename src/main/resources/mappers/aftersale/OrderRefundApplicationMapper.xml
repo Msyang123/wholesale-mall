@@ -134,7 +134,7 @@
     <select parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam" id="page" resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundPage">
         select a.id,a.order_id,o.create_time,o.total_fee,o.discount_fee,o.payable_fee,
         l.payment_type,l.payment_time,o.pay_status,
-        u.shop_name,u.user_name,u.phone,o.order_status,o.hd_status,a.application_type,a.order_discount_fee,a.audit_status
+        u.shop_name,u.user_name,u.phone,o.order_status,o.hd_status,a.application_type,a.order_discount_fee,a.delivery_fee,a.audit_status
         from t_whs_order_refund_application a 
         LEFT JOIN t_whs_order o on a.order_id=o.order_code
         LEFT JOIN t_whs_payment_log l on l.order_code=o.order_code
@@ -228,7 +228,7 @@
         case o.order_status when 'failed' then '已失效' when 'unpaid' then '待付款' when 'paying' then '支付中'  when 'undelivery' then '待发货' when 'delivery' then '配送中'  when 'unrefunded' then '退货中' when 'refunded' then '退货成功'  when 'received' then '已收货' end as orderStatus,
         case o.hd_status when 'success' then '成功' when 'failed' then '失败' end as hdStatus,
         case a.application_type when 'consult' then '协调处理' when 'refund' then '退货' when 'supplement' then '补差价'end as applicationType,
-        IFNULL(FORMAT(a.order_discount_fee/100.0,2),'0.00') AS orderDiscountFee,case a.audit_status when 'unaudited' then '待审核' when 'agree' then '审核通过' when 'reject' then '审核不通过'end as auditStatus
+        IFNULL(FORMAT(a.order_discount_fee/100.0,2),'0.00') AS orderDiscountFee,IFNULL(FORMAT(a.delivery_fee/100.0,2),'0.00') AS deliveryFee,case a.audit_status when 'unaudited' then '待审核' when 'agree' then '审核通过' when 'reject' then '审核不通过'end as auditStatus
         from t_whs_order_refund_application a
         LEFT JOIN t_whs_order o on a.order_id=o.order_code
         LEFT JOIN t_whs_payment_log l on l.order_code=o.order_code
