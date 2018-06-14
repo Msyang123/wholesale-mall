@@ -417,7 +417,7 @@ public class PayService {
         packageParams.put("mch_id", weChatUtil.getProperties().getWeChatPay().getPartnerId());
         packageParams.put("nonce_str", nonce);// 随机串
         packageParams.put("body", "水果熟了 - 订单"+orderCode+"补差额");// 商品描述
-        packageParams.put("attach", user.getId()+"-orderCode:"+orderCode);// 附加数据 用户id和订单号
+        packageParams.put("attach", user.getId()+","+orderCode);// 附加数据 用户id和订单号
         packageParams.put("out_trade_no", payCode);// 商户订单号
         packageParams.put("total_fee", supplement);// 微信支付金额单位为（分）
         packageParams.put("time_expire", timeExpire);
@@ -804,4 +804,5 @@ public class PayService {
     	String deliveryFee = CalculateUtil.division(orderDetail.getDeliveryFee(), hundred, 2);
     	return userName+"|"+deliveryFee+"|"+discountFee;
     }
+    
 }

@@ -437,7 +437,7 @@ public class WxPayApi {
         log.info("urlsign:"+wrap.get("sign"));
         if ("SUCCESS".equalsIgnoreCase(resultCode)&&Objects.equals(signResult,wrap.get("sign"))) {
             String attach = wrap.get("attach");
-            String[] str = attach.split("-orderCode:");
+            String[] str = attach.split(",");
             String userId = str[0];
             
             String totalFee = wrap.get("total_fee");
