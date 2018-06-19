@@ -60,5 +60,10 @@ public class OrderRefundPage {
     @JsonProperty("auditStatus")
     private String auditStatus;
 
-
+    @JsonProperty("deliveryFee")
+    private Integer deliveryFee;//订单的配送费
+    
+    @JsonProperty("refundDeliveryFee")
+    private Integer refundDeliveryFee;//售后退款的时候需要扣除的配送费
+    
 }
