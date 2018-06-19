@@ -213,6 +213,7 @@ public class OrderRefundApplicationService {
             PaymentLog paymentLog = paymentLogService.getPaymentLog(order1.getOrderCode());
             if (Objects.nonNull(paymentLog)) {
                 order1.setPaymentTime(paymentLog.getPaymentTime());
+                order1.setPaymentType(paymentLog.getPaymentType());
             }
             //业务员信息
             SalesUser salesUser = salesUserService.findById(order1.getSalesmanId());

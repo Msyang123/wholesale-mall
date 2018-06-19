@@ -133,8 +133,8 @@
     <!--分页查询售后订单-->
     <select parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam" id="page" resultType="com.lhiot.mall.wholesale.aftersale.domain.OrderRefundPage">
         select a.id,a.order_id,o.create_time,o.total_fee,o.discount_fee,o.payable_fee,
-        l.payment_type,l.payment_time,o.pay_status,
-        u.shop_name,u.user_name,u.phone,o.order_status,o.hd_status,a.application_type,a.order_discount_fee,a.delivery_fee,a.audit_status
+        l.payment_type,l.payment_time,o.pay_status,o.delivery_fee,
+        u.shop_name,u.user_name,u.phone,o.order_status,o.hd_status,a.application_type,a.order_discount_fee,a.audit_status,a.delivery_fee as refundDeliveryFee
         from t_whs_order_refund_application a 
         LEFT JOIN t_whs_order o on a.order_id=o.order_code
         LEFT JOIN t_whs_payment_log l on l.order_code=o.order_code
@@ -221,14 +221,24 @@
     <!-- 后台管理系统 售后订单数据导出 -->
     <select id="exportData" parameterType="com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam"
             resultType="map">
-        select a.order_id as orderId,DATE_FORMAT(o.create_time,'%Y-%m-%d %H:%i:%s') as createTime,IFNULL(FORMAT(o.total_fee/100.0,2),'0.00') AS totalFee,IFNULL(FORMAT(o.discount_fee/100.0,2),'0.00') AS discountFee,
+        select a.order_id as orderId,DATE_FORMAT(o.create_time,'%Y-%m-%d %H:%i:%s') as createTime,
+		IFNULL(FORMAT(o.total_fee/100.0,2),'0.00') AS totalFee,
+		IFNULL(FORMAT(o.discount_fee/100.0,2),'0.00') AS discountFee,
         IFNULL(FORMAT(o.payable_fee/100.0,2),'0.00') AS payableFee,
+		IFNULL(FORMAT(o.delivery_fee/100.0,2),'0.00') AS deliveryFee,
+        IFNULL(FORMAT((o.payable_fee+o.delivery_fee)/100.0,2),'0.00') as actualSettlement,
         case l.payment_type when 'balance' then '余额支付' when 'wechat' then '微信支付' when 'offline' then '线下支付' end as paymentType,DATE_FORMAT(l.payment_time,'%Y-%m-%d %H:%i:%s') as paymentTime,
         case o.pay_status when 'paid' then '已支付'  when 'unpaid' then '未支付' end as payStatus,u.shop_name as shopName,u.user_name as userName,u.phone as phone,
         case o.order_status when 'failed' then '已失效' when 'unpaid' then '待付款' when 'paying' then '支付中'  when 'undelivery' then '待发货' when 'delivery' then '配送中'  when 'unrefunded' then '退货中' when 'refunded' then '退货成功'  when 'received' then '已收货' end as orderStatus,
         case o.hd_status when 'success' then '成功' when 'failed' then '失败' end as hdStatus,
         case a.application_type when 'consult' then '协调处理' when 'refund' then '退货' when 'supplement' then '补差价'end as applicationType,
-        IFNULL(FORMAT(a.order_discount_fee/100.0,2),'0.00') AS orderDiscountFee,IFNULL(FORMAT(a.delivery_fee/100.0,2),'0.00') AS deliveryFee,case a.audit_status when 'unaudited' then '待审核' when 'agree' then '审核通过' when 'reject' then '审核不通过'end as auditStatus
+		CASE a.application_type when 'supplement' THEN (
+					IFNULL(FORMAT(a.order_discount_fee/100.0,2),'0.00')
+				)else(
+					IFNULL(FORMAT((a.order_discount_fee-a.delivery_fee)/100.0,2),'0.00')
+				)
+        end AS orderDiscountFee,
+		case a.audit_status when 'unaudited' then '待审核' when 'agree' then '审核通过' when 'reject' then '审核不通过'end as auditStatus
         from t_whs_order_refund_application a
         LEFT JOIN t_whs_order o on a.order_id=o.order_code
         LEFT JOIN t_whs_payment_log l on l.order_code=o.order_code
