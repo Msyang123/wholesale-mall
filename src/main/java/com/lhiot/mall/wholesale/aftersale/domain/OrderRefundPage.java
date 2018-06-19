@@ -57,9 +57,6 @@ public class OrderRefundPage {
     @JsonProperty("orderDiscountFee")
     private Integer orderDiscountFee;//优惠金额(退款金额)or补收差额
 
-    @JsonProperty("deliveryFee")
-    private Integer deliveryFee;
-
     @JsonProperty("auditStatus")
     private String auditStatus;
 
