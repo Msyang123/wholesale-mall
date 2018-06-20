@@ -80,4 +80,16 @@ public class PaymentLogService {
         List<String> list = Arrays.asList(orderId);
         return paymentLogMapper.countFee(list);
     }
+    
+    /**
+     * 查询已支付订单的支付记录
+     * @param ids
+     * @return
+     */
+    public List<PaymentLog> paymentLogs(List<Long> ids){
+        if (ids.isEmpty()){
+            return new ArrayList<PaymentLog>();
+        }
+        return paymentLogMapper.paylogs(ids);
+    }
 }

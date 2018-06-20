@@ -22,4 +22,7 @@ public interface PaymentLogMapper {
     List<PaymentLog> getPaymentLogList(List<Long> userIds);
 
     PaymentLog countFee(List<String> orderId);
+    
+    //根据订单id查询已支付订单支付记录
+    List<PaymentLog> paylogs(List<Long> orderId);
 }

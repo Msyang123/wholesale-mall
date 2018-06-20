@@ -81,4 +81,18 @@
             #{item}
         </foreach>
     </select>
+    
+    <!-- 查询已支付订单的支付记录 -->
+    <select id="paylogs" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.pay.domain.PaymentLog">
+		select * from t_whs_payment_log
+		<trim prefix="where" prefixOverrides="and">
+		    <if test="list != null and list.size()>0">
+                order_id IN
+                <foreach collection="list" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            and payment_step = 'paid'
+		</trim> 
+	</select>
 </mapper>
