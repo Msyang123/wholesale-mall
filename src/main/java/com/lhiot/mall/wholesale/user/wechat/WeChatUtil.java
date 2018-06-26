@@ -360,10 +360,29 @@ public class WeChatUtil {
 	 * @param code
 	 * @return
 	 */
-	public  AccessToken getAccessTokenByCode(final String appid, final String appsecrect, final String code) throws IOException{
+	public  AccessToken getAccessTokenByCode(final String appid, final String appsecrect, final String code) throws IOException {
 		String requestUrl = MessageFormat.format(OPEN_ID_URL, appid, appsecrect, code);
-		String result = httpsRequest(requestUrl, "GET", null);
-		Map<String, Object> amapMap = om.readValue(result, Map.class);
+		String result = null;
+		Map<String, Object> amapMap = null;
+		try{
+			log.info("获取accessToken:url="+requestUrl);
+			result = httpsRequest(requestUrl, "GET", null);
+			amapMap = om.readValue(result, Map.class);
+		}catch (Exception e){
+			e.printStackTrace();
+			log.info("获取accessToken失败,重试第一次:url="+requestUrl);
+			try {
+				result = httpsRequest(requestUrl, "GET", null);
+				amapMap = om.readValue(result, Map.class);
+				e.printStackTrace();;
+			}catch (Exception e2){
+				e2.printStackTrace();
+				log.info("获取accessToken失败,重试第二次:url="+requestUrl);
+				result = httpsRequest(requestUrl, "GET", null);
+				amapMap = om.readValue(result, Map.class);
+				e2.printStackTrace();
+			}
+		}
 		log.info("WeChatUtil getToken"+result);
 		AccessToken accessToken = new AccessToken();
 		accessToken.setAccessToken(String.valueOf(amapMap.get("access_token")));
@@ -449,7 +468,7 @@ public class WeChatUtil {
 		token.setExpiresIn(expiresIn);
 		token.setRefreshToken(String.valueOf(amapMap.get("refresh_token")));
 		return token;
-	}
+ 	}
 
 	/**
 	 * 通过refreshAccessToken获取AccessToken
@@ -461,8 +480,23 @@ public class WeChatUtil {
 		if(StringUtils.isEmpty(refreshAccessToken))
 			return null;
 		String requestUrl = MessageFormat.format(OAUTH2_REFRESH_ACCESS_TOKEN, this.getProperties().getWeChatOauth().getAppId(), refreshAccessToken);
-		String result = httpsRequest(requestUrl, "GET", null);
-		Map<String, Object> amapMap = om.readValue(result, Map.class);
+		String result = null;
+		Map<String, Object> amapMap = null;
+		try{
+			result = httpsRequest(requestUrl, "GET", null);
+			amapMap = om.readValue(result, Map.class);
+		}catch (Exception e){
+			e.printStackTrace();
+			try{
+				result = httpsRequest(requestUrl, "GET", null);
+				amapMap = om.readValue(result, Map.class);
+			}catch (Exception e2){
+				e2.printStackTrace();
+				result = httpsRequest(requestUrl, "GET", null);
+				amapMap = om.readValue(result, Map.class);
+			}
+
+		}
 		log.info("WeChatUtil getToken"+result);
 		AccessToken accessToken = new AccessToken();
 		accessToken.setAccessToken(String.valueOf(amapMap.get("access_token")));
