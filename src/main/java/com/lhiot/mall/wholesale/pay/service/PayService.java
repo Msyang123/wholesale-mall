@@ -30,7 +30,21 @@ import com.sgsl.auditing.MD5;
 import com.sgsl.hd.client.vo.OrderReduceData;
 import com.sgsl.hd.client.vo.ProductsData;
 
+import com.sgsl.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Objects;
 
 @Service
 @Transactional
