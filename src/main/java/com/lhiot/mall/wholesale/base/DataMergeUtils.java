@@ -37,7 +37,16 @@ public class DataMergeUtils {
                     Map<String, Object> map2 = BeanUtils.toMap(o);
                     if (Objects.equals(mainIdValue, map2.get(subId))) {
                         Map<String, Object> mergeMap = new HashMap<>(map2);
-                        mergeMap.putAll(map1);
+                        //mergeMap.putAll(map1);
+                        //合并两个集合的元素
+                        for (Map.Entry<String, Object> entry : map1.entrySet()) {
+                            String key = entry.getKey();
+                            Object value = entry.getValue();
+                            //如果主集合中元素的键不存在或值为空时，将副集合元素中的键值插入或覆盖
+                            if(!mergeMap.containsKey(key) || (mergeMap.containsKey(key) && Objects.isNull(mergeMap.get(key)))){
+                                mergeMap.put(key,value);
+                            }
+                        }
                         T instance = newInstanceFromMap(resultType, mergeMap);
                         resultList.add(instance);
                         subIsNull = false;
