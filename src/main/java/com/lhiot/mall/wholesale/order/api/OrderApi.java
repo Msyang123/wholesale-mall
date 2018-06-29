@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.leon.microx.common.wrapper.ArrayObject;
 import com.lhiot.mall.wholesale.activity.domain.FlashsaleGoods;
 import com.lhiot.mall.wholesale.activity.service.FlashsaleService;
+import com.lhiot.mall.wholesale.aftersale.domain.ApplicationType;
+import com.lhiot.mall.wholesale.aftersale.service.OrderRefundApplicationService;
 import com.lhiot.mall.wholesale.base.CalculateUtil;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
@@ -69,8 +71,12 @@ public class OrderApi {
 
     private final GoodsPriceRegionService priceRegionService;
 
+    private final OrderRefundApplicationService orderRefundApplicationService;
     @Autowired
-    public OrderApi(OrderService orderService, SettingService settingService,  GoodsService goodsService, CouponEntityService couponEntityService, FlashsaleService flashsaleService, GoodsPriceRegionService priceRegionService) {
+    public OrderApi(OrderService orderService, SettingService settingService,  
+    		GoodsService goodsService, CouponEntityService couponEntityService, 
+    		FlashsaleService flashsaleService, GoodsPriceRegionService priceRegionService,
+    		OrderRefundApplicationService orderRefundApplicationService) {
 
         this.orderService = orderService;
         this.settingService = settingService;
@@ -78,6 +84,7 @@ public class OrderApi {
         this.couponEntityService = couponEntityService;
         this.flashsaleService = flashsaleService;
         this.priceRegionService = priceRegionService;
+        this.orderRefundApplicationService = orderRefundApplicationService;
     }
 
     @GetMapping("/my-orders/{userId}")
@@ -144,6 +151,7 @@ public class OrderApi {
         if (Objects.isNull(orderDetail)){
            return ResponseEntity.badRequest().body("没有该订单信息");
         }
+    	orderDetail.setSupplements(orderRefundApplicationService.supplements(orderCode,ApplicationType.supplement));
         List<OrderGoods> goods = orderService.searchOrderGoods(orderDetail.getId());
         if (goods.isEmpty()){
             orderDetail.setOrderGoodsList(new ArrayList<OrderGoods>());
@@ -502,7 +510,12 @@ public class OrderApi {
     @GetMapping("/detail/{id}")
     @ApiOperation(value = "后台管理-根据订单id查看订单详情",response = OrderGridResult.class)
     public  ResponseEntity<OrderDetail> orderDetail(@PathVariable("id") Long id){
-        return ResponseEntity.ok(orderService.detail(id));
+    	OrderDetail orderDetail = orderService.detail(id);
+    	if(Objects.nonNull(orderDetail)){
+        	orderDetail.setSupplements(orderRefundApplicationService.supplements(orderDetail.getOrderCode(), 
+        			ApplicationType.supplement));
+    	}
+        return ResponseEntity.ok(orderDetail);
     }
 
     @PostMapping("/export")

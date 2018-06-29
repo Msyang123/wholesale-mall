@@ -103,7 +103,7 @@ public class OrderResult {
     private Timestamp paymentTime;
 
     @JsonProperty("paymentType")
-    private Timestamp paymentType;
+    private String paymentType;
 
     @JsonProperty("salesmanName")
     private String salesmanName;

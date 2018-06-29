@@ -8,17 +8,22 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.aftersale.domain.ApplicationType;
 import com.lhiot.mall.wholesale.aftersale.domain.OrderRefundApplication;
 import com.lhiot.mall.wholesale.aftersale.domain.OrderRefundPage;
+import com.lhiot.mall.wholesale.aftersale.domain.OrderRefundResult;
 import com.lhiot.mall.wholesale.aftersale.domain.OrderResult;
 import com.lhiot.mall.wholesale.aftersale.domain.PaymentType;
+import com.lhiot.mall.wholesale.aftersale.domain.SupplementRecords;
 import com.lhiot.mall.wholesale.aftersale.mapper.OrderRefundApplicationMapper;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.order.domain.DebtOrderResult;
@@ -80,15 +85,27 @@ public class OrderRefundApplicationService {
         this.weChatUtil = new WeChatUtil(paymentProperties);
     }
 
+    /**
+     * 新增售后记录
+     * @param orderRefundApplication
+     * @return
+     */
     public Integer create(OrderRefundApplication orderRefundApplication){
-        OrderDetail order = new OrderDetail();
-        order.setOrderCode(orderRefundApplication.getOrderId());
-        order.setAfterStatus("yes");
-        order.setCheckStatus("auditeding");
-        //修改订单的售后状态
-        if (orderMapper.updateOrder(order)<=0){
-           return -1;
-        }
+    	String applicationType = orderRefundApplication.getApplicationType();
+    	if(ApplicationType.refund.toString().equals(applicationType) || 
+    			ApplicationType.consult.toString().equals(applicationType)){
+            OrderDetail order = new OrderDetail();
+            order.setOrderCode(orderRefundApplication.getOrderId());
+            order.setAfterStatus("yes");
+            order.setCheckStatus("auditeding");
+            //修改订单的售后状态
+            if (orderMapper.updateOrder(order)<=0){
+               return -1;
+            }
+    	}else if(ApplicationType.supplement.equals(applicationType)){
+    		orderRefundApplication.setAuditStatus("agree");
+    		orderRefundApplication.setApplicationType("supplement");
+    	}
         return this.orderRefundApplicationMapper.create(orderRefundApplication);
     }
 
@@ -196,6 +213,7 @@ public class OrderRefundApplicationService {
             PaymentLog paymentLog = paymentLogService.getPaymentLog(order1.getOrderCode());
             if (Objects.nonNull(paymentLog)) {
                 order1.setPaymentTime(paymentLog.getPaymentTime());
+                order1.setPaymentType(paymentLog.getPaymentType());
             }
             //业务员信息
             SalesUser salesUser = salesUserService.findById(order1.getSalesmanId());
@@ -354,5 +372,78 @@ public class OrderRefundApplicationService {
     		return true;
     	}
     	return false;
+    }
+    
+    /**
+     * 查询各种类型的售后
+     * @param orderCode 订单编号
+     * @param applicationType 申请售后类型
+     * @return
+     */
+    public List<SupplementRecords> supplements(String orderCode,ApplicationType applicationType){
+    	Map<String,Object> map = ImmutableMap.of("orderCode", orderCode, 
+    			"applicationType", applicationType.toString());
+    	return orderRefundApplicationMapper.supplements(map);
+    }
+
+    /**
+     * 售后请求详情
+     * @param orderCode
+     * @param userId
+     * @return
+     */
+    public OrderRefundResult orderRefundResult(String orderCode,Long userId){
+    	Map<String,Object> param = ImmutableMap.of("orderCode", orderCode, "userId", userId);
+    	OrderRefundResult orderRefundResult = orderRefundApplicationMapper.orderRefundResult(param);
+    	if(Objects.isNull(orderRefundResult)){
+    		return new OrderRefundResult();
+    	}
+    	//查询申请差额记录
+    	List<SupplementRecords> sr = this.supplements(orderCode, ApplicationType.supplement);
+    	if(Objects.nonNull(sr)){
+    		orderRefundResult.setSupplements(sr);
+    	}
+    	//获取订单的实付金额
+    	orderRefundResult.setPayableFee(0);
+    	orderRefundResult.setOrderDeliveryFee(0);
+    	OrderDetail orderDetail = orderMapper.searchOrder(orderCode);
+    	if(Objects.nonNull(orderDetail)){
+    		orderRefundResult.setPayableFee(orderDetail.getPayableFee());
+    		orderRefundResult.setOrderDeliveryFee(orderDetail.getDeliveryFee());
+    	}
+    	return orderRefundResult;
+    }
+    
+    /**
+     * 判断是否可以补差额
+     * @param orderCode 订单编号
+     * @param receiveTime 售后时间
+     * @return
+     */
+    public String trySupplement(String orderCode,Timestamp receiveTime){
+    	String result = null;
+    	if(StringUtils.isBlank(orderCode)){
+    		result = "订单编号错误";
+    		return result;
+    	}
+    	//售后期限判断
+    	if(!this.withinTheTime(receiveTime)){
+    		result = "超出售后期限，请联系客服";
+    		return result;
+    	}
+    	//判断是否已经申请售后(未审批或者审批通过的)
+    	List<OrderRefundApplication> ora = orderRefundApplicationMapper.select(orderCode);
+    	if(Objects.nonNull(ora) && !ora.isEmpty()){
+    		result = "存在售后申请，请联系客服";
+    		return result;
+    	}
+    	return result;
+    }
+    /**
+     * 导出售后订单
+     * @return
+     */
+    public List<Map<String, Object>> exportData(OrderGridParam param){
+        return orderRefundApplicationMapper.exportData(param);
     }
 }

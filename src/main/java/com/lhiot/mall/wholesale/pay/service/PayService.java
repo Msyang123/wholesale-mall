@@ -1,5 +1,29 @@
 package com.lhiot.mall.wholesale.pay.service;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.UUID;
+
+import org.json.JSONObject;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.leon.microx.common.exception.ServiceException;
@@ -63,10 +87,10 @@ public class PayService {
     private final RabbitTemplate rabbit;
     private final ApplicationConfiguration config;
     @Autowired
-    public PayService(PaymentLogService paymentLogService,
-    		UserService userService, OrderService orderService,
-    		DebtOrderService debtOrderService, InvoiceService invoiceService,
-    		Warehouse warehouse, GoodsService goodsService,
+    public PayService(PaymentLogService paymentLogService, 
+    		UserService userService, OrderService orderService, 
+    		DebtOrderService debtOrderService, InvoiceService invoiceService, 
+    		Warehouse warehouse, GoodsService goodsService, 
     		GoodsStandardService goodsStandardService, RabbitTemplate rabbit,
     		ApplicationConfiguration config){
         this.paymentLogService=paymentLogService;
@@ -364,6 +388,90 @@ public class PayService {
     }
 
     /**
+     * 微信补差额支付签名
+     * @param ipAddress
+     * @param openId
+     * @param supplement 需要补的差额
+     * @param userAgent
+     * @param payCode
+     * @param orderCode 补差额的当前订单
+     * @param weChatUtil
+     * @return
+     * @throws Exception
+     */
+    public String wxSupplementPay(String ipAddress,String openId,int supplement,String userAgent,
+    		String payCode,String orderCode,WeChatUtil weChatUtil) throws Exception {
+        Map<String, Object> ret = new HashMap<>();
+        ret.put("state", "failure");
+        if (StringUtils.isEmpty(openId)) {
+            ret.put("msg", "用户信息为空！");
+            return om.writeValueAsString(ret);
+        }
+        User user= userService.searchUserByOpenid(openId);
+        if(Objects.isNull(user)){
+            ret.put("msg", "未找到用户信息！");
+            return om.writeValueAsString(ret);
+        }
+
+        if (supplement < 1) {
+            ret.put("msg", "您输入的金额不正确！");
+            return om.writeValueAsString(ret);
+        }
+
+        String currTime = DateFormatUtil.format3(new Date());
+        String strTime = currTime.substring(8, currTime.length());
+        String nonce = strTime + weChatUtil.buildRandom(4);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.add(Calendar.MINUTE, weChatUtil.getProperties().getWeChatPay().getTimeoutExpress());// 设置6分钟过期
+        String timeExpire = DateFormatUtil.format3(cal.getTime());
+        log.info("=================开始微信签名===============");
+        SortedMap<Object, Object> packageParams = new TreeMap<Object, Object>();
+        packageParams.put("appid", weChatUtil.getProperties().getWeChatOauth().getAppId());
+        packageParams.put("mch_id", weChatUtil.getProperties().getWeChatPay().getPartnerId());
+        packageParams.put("nonce_str", nonce);// 随机串
+        packageParams.put("body", "水果熟了 - 订单"+orderCode+"补差额");// 商品描述
+        packageParams.put("attach", user.getId()+","+orderCode);// 附加数据 用户id和订单号
+        packageParams.put("out_trade_no", payCode);// 商户订单号
+        packageParams.put("total_fee", supplement);// 微信支付金额单位为（分）
+        packageParams.put("time_expire", timeExpire);
+        packageParams.put("spbill_create_ip", ipAddress);// 订单生成的机器ip
+        // IP
+        packageParams.put("notify_url", weChatUtil.getProperties().getWeChatPay().getSupplementNotifyUrl());// 支付完成后微信发给该链接信息，可以判断会员是否支付成功，改变订单状态等。
+        packageParams.put("trade_type", "JSAPI");
+        packageParams.put("openid", openId);
+        String sign = weChatUtil.createSign(weChatUtil.getProperties().getWeChatPay().getPartnerKey(), packageParams); // 获取签名
+        packageParams.put("sign", sign);
+        log.info("=================获取预支付ID===============");
+        String xml = weChatUtil.getRequestXml(packageParams); // 获取请求微信的XML
+        String prepayId = weChatUtil.sendWeChatGetPrepayId(xml);
+        if (StringUtils.isEmpty(prepayId)) {
+            throw new RuntimeException("微信预支付出错");
+        }
+        log.info("=================微信预支付成功，响应到JSAPI完成微信支付===============");
+        SortedMap<Object, Object> finalpackage = new TreeMap<Object, Object>();
+        finalpackage.put("appId", weChatUtil.getProperties().getWeChatOauth().getAppId());
+        String timestamp = Long.toString(System.currentTimeMillis() / 1000);
+        finalpackage.put("timeStamp", timestamp);
+        finalpackage.put("nonceStr", nonce);
+        String packages = "prepay_id=" + prepayId;
+        finalpackage.put("package", packages);
+        finalpackage.put("signType", "MD5");
+        String finalsign = weChatUtil.createSign(weChatUtil.getProperties().getWeChatPay().getPartnerKey(), finalpackage);
+
+        Map<String,String> rechargeSisgn = new HashMap<>();
+        rechargeSisgn.put("appid", weChatUtil.getProperties().getWeChatOauth().getAppId());
+        rechargeSisgn.put("timeStamp", timestamp);
+        rechargeSisgn.put("nonceStr", nonce);
+        rechargeSisgn.put("packageValue", packages);
+        rechargeSisgn.put("sign", finalsign);
+        rechargeSisgn.put("orderId", payCode);
+        char agent = userAgent.charAt(userAgent.indexOf("MicroMessager") + 15);
+        rechargeSisgn.put("agent", new String(new char[] { agent }));
+        return om.writeValueAsString(rechargeSisgn);
+    }
+    
+    /**
      * 余额支付订单
      * @return
      */
@@ -511,11 +619,12 @@ public class PayService {
         inventory.setUuid(UUID.randomUUID().toString());
         inventory.setSenderCode("9646");
         inventory.setSenderWrh("07310101");
-        inventory.setReceiverCode(null);
+        inventory.setReceiverCode(config.getReceiverCode());
         String deliveryAddress=orderDetail.getDeliveryAddress();
         try {
             Map<String,Object> addressInfo= JacksonUtils.fromJson(deliveryAddress,Map.class);
-            inventory.setContactor(String.valueOf(addressInfo.get("name")));
+            String contactor = this.obtainContactor(String.valueOf(addressInfo.get("name")), orderDetail);
+            inventory.setContactor(contactor);
             inventory.setPhoneNumber(String.valueOf(addressInfo.get("phone")));
             inventory.setDeliverAddress(String.valueOf(addressInfo.get("city"))+String.valueOf(addressInfo.get("address")));
         } catch (IOException e) {
@@ -528,6 +637,7 @@ public class PayService {
         inventory.setSeller("批发销售员");
         inventory.setSouceOrderCls("批发商城");
         inventory.setNegInvFlag("1");
+        inventory.setFreight(new BigDecimal(Calculator.div(orderDetail.getDeliveryFee(),100.0,2)));
         inventory.setMemberCode(null);
 
         //清单
@@ -708,4 +818,5 @@ public class PayService {
     	String deliveryFee = CalculateUtil.division(orderDetail.getDeliveryFee(), hundred, 2);
     	return userName+"|"+deliveryFee+"|"+discountFee;
     }
+    
 }

@@ -1,6 +1,24 @@
 package com.lhiot.mall.wholesale.pay.api;
 
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Objects;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.leon.microx.util.SnowflakeId;
+import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.aftersale.service.OrderRefundApplicationService;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.invoice.domain.Invoice;
 import com.lhiot.mall.wholesale.invoice.service.InvoiceService;
@@ -13,20 +31,15 @@ import com.lhiot.mall.wholesale.pay.service.PayService;
 import com.lhiot.mall.wholesale.pay.service.PaymentLogService;
 import com.lhiot.mall.wholesale.user.domain.User;
 import com.lhiot.mall.wholesale.user.service.UserService;
-import com.lhiot.mall.wholesale.user.wechat.*;
+import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
+import com.lhiot.mall.wholesale.user.wechat.WeChatUtil;
+import com.lhiot.mall.wholesale.user.wechat.XNode;
+import com.lhiot.mall.wholesale.user.wechat.XPathParser;
+import com.lhiot.mall.wholesale.user.wechat.XPathWrapper;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.text.MessageFormat;
-import java.util.*;
 
 @Slf4j
 @Api(description = "微信支付接口")
@@ -46,12 +59,15 @@ public class WxPayApi {
     private final SnowflakeId snowflakeId;
     
     private final UserService userService;
+    private final OrderRefundApplicationService orderRefundApplicationService;
 
 
 
 	@Autowired
-	public WxPayApi(PayService payService,PaymentLogService paymentLogService,OrderService orderService,DebtOrderService debtOrderService,InvoiceService invoiceService, PaymentProperties properties,SnowflakeId snowflakeId,
-                    UserService userService){
+	public WxPayApi(PayService payService,PaymentLogService paymentLogService,
+			OrderService orderService,DebtOrderService debtOrderService,
+			InvoiceService invoiceService, PaymentProperties properties,SnowflakeId snowflakeId,
+            UserService userService,OrderRefundApplicationService orderRefundApplicationService){
 
         this.payService = payService;
         this.paymentLogService=paymentLogService;
@@ -61,6 +77,7 @@ public class WxPayApi {
         this.weChatUtil = new WeChatUtil(properties);
         this.snowflakeId=snowflakeId;
         this.userService= userService;
+        this.orderRefundApplicationService = orderRefundApplicationService;
 	}
 	
     @GetMapping("/orderpay/sign")
@@ -161,7 +178,7 @@ public class WxPayApi {
         paymentLogService.insertPaymentLog(paymentLog);
         return ResponseEntity.ok(wxRechargeSignStr);
     }
-
+    
     @PostMapping("/recharge/notify")
     @ApiOperation(value = "微信充值支付回调", response = String.class)
     public ResponseEntity<String> rechargeNotify(HttpServletRequest request) throws Exception {
@@ -361,11 +378,100 @@ public class WxPayApi {
         }
         return ResponseEntity.ok().build();
     }
+    
+    //XXX 补差额签名
+    @GetMapping("/supplement/sign")
+    @ApiOperation(value = "微信补差额支付签名", response = String.class)
+    public ResponseEntity<String> supplementpaySign(HttpServletRequest request,@RequestParam("openId") String openId,
+    		@RequestParam("supplement") int supplement,@RequestParam("orderCode") String orderCode) throws Exception {
+	    User user= userService.searchUserByOpenid(openId);
+	    if (Objects.isNull(user)){
+	        return ResponseEntity.badRequest().body("微信("+openId+")用户不存在");
+        }
+	    OrderDetail orderDetail= orderService.searchOrder(orderCode);
+	    if(Objects.isNull(orderDetail)){
+	    	return ResponseEntity.badRequest().body("订单号("+orderCode+")用户不存在");
+	    }
+	    //判断是否可以进行补差额申请
+	    String supplementApplication = orderRefundApplicationService.trySupplement(orderCode, 
+	    		orderDetail.getReceiveTime());
+	    if(StringUtils.isNotBlank(supplementApplication)){
+	    	return ResponseEntity.badRequest().body(supplementApplication);
+	    }
+	    //获取签名
+	    String payCode=snowflakeId.stringId();
+        String wxRechargeSignStr=payService.wxSupplementPay(getRemoteAddr(request),openId,supplement,
+        		getUserAgent(request),payCode,orderCode,weChatUtil);
+        
+        //写充值签名日志
+        PaymentLog paymentLog=new PaymentLog();
+        paymentLog.setPaymentType("wechat");//balance-余额支付 wechat-微信 offline-线下支付
+        paymentLog.setPaymentStep("sign");//sign-签名成功 paid-支付成功
+        paymentLog.setOrderCode(payCode);
+        paymentLog.setUserId(user.getId());
+        paymentLog.setPaymentFrom("supplement");//支付来源于 order-订单 debt-账款 invoice-发票 recharge-充值 supplement-补差额
+        paymentLog.setTotalFee(supplement);
+        paymentLogService.insertPaymentLog(paymentLog);
+        return ResponseEntity.ok(wxRechargeSignStr);
+    }
 
+    //XXX 补差额回调
+    @PostMapping("/supplement/notify")
+    @ApiOperation(value = "微信补差额支付回调", response = String.class)
+    public ResponseEntity<String> supplementNotify(HttpServletRequest request) throws Exception {
+        log.info("========支付成功，后台回调=======");
+        boolean myDoIsOk=true;//我们处理的业务
+        XPathParser xpath = weChatUtil.getParametersByWeChatCallback(request);
+        XPathWrapper wrap = new XPathWrapper(xpath);
+        String resultCode = wrap.get("result_code");
+        //获取签名的单号
+        String orderId = wrap.get("out_trade_no");
+        List<XNode> nodes=xpath.evalNodes("//xml/*");
+        SortedMap<Object,Object> parameters=new TreeMap<>();
+        for (XNode node:nodes){
+            parameters.put(node.name(),node.body());
+        }
+        //计算签名
+        String signResult=payService.createSign(parameters,weChatUtil.getProperties().getWeChatPay().getPartnerKey());
+        log.info("signResult:"+signResult);
+        log.info("urlsign:"+wrap.get("sign"));
+        if ("SUCCESS".equalsIgnoreCase(resultCode)&&Objects.equals(signResult,wrap.get("sign"))) {
+            String attach = wrap.get("attach");
+            String[] str = attach.split(",");
+            String userId = str[0];
+            
+            String totalFee = wrap.get("total_fee");
+            int fee = Integer.parseInt(totalFee);
+            
+            //获取传达的附加参数获取用户信息
+            log.info("userId:"+userId+"fee:"+fee);
+            User user= userService.user(Long.valueOf(userId));
+            log.info("user:"+user);
+            PaymentLog paymentLog =paymentLogService.getPaymentLog(orderId);
+            log.info("paymentLog:"+paymentLog);
+
+            myDoIsOk=myDoIsOk&&Objects.nonNull(user)&&Objects.nonNull(paymentLog);
+            if (myDoIsOk) {
+
+                paymentLog.setPaymentStep("paid");//支付步骤：sign-签名成功 paid-支付成功
+                paymentLog.setBankType(wrap.get("bank_type"));//银行类型
+                paymentLog.setTransactionId(wrap.get("transaction_id"));//微信流水
+                paymentLog.setTotalFee(Integer.valueOf(wrap.get("total_fee")));//支付金额
+                paymentLogService.updatePaymentLog(paymentLog);
+
+                return ResponseEntity.ok("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                        + "<xml><return_code><![CDATA[SUCCESS]]></return_code>"
+                        + "<return_msg><![CDATA[OK]]></return_msg></xml>");
+            }
+        }
+        return ResponseEntity.ok().build();
+    }
+    
     private String getUserAgent(HttpServletRequest request){
         return request.getHeader("user-agent");
     }
-    private   String getRemoteAddr(HttpServletRequest request) {
+    
+    private String getRemoteAddr(HttpServletRequest request) {
 		if ("nginx".equals(weChatUtil.getProperties().getWeChatPay().getProxy())) {
 			return request.getHeader("X-Real-IP");
 		}

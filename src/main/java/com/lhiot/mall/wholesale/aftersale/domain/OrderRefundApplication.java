@@ -1,13 +1,17 @@
 package com.lhiot.mall.wholesale.aftersale.domain;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lhiot.mall.wholesale.order.domain.OrderGoods;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -24,6 +28,7 @@ public class OrderRefundApplication {
     private Long id;
 
     @JsonProperty("applicationType")
+    @NotNull
     private String applicationType;
 
     @JsonProperty("existProblem")
@@ -33,6 +38,7 @@ public class OrderRefundApplication {
     private String otherProblem;
 
     @JsonProperty("refundEvidence")
+    @NotNull
     private String refundEvidence;
 
     @JsonProperty("orderDiscountFee")
@@ -45,10 +51,15 @@ public class OrderRefundApplication {
     private String comments;
 
     @JsonProperty("orderId")
+    @NotNull
     private String orderId;
 
     @JsonProperty("userId")
     private Long userId;
+
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    @JsonProperty("createAt")
+    private Timestamp createAt;
 
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     @JsonProperty("createTime")
@@ -67,6 +78,9 @@ public class OrderRefundApplication {
     @JsonProperty("contactsPhone")
     private String contactsPhone;
 
+    @ApiModelProperty(notes="售后订单id",dataType="Long")
+    private Integer needPay;
+    
     @JsonProperty("start")
     private Integer start;
 
