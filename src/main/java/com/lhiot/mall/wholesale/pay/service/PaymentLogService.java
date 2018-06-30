@@ -59,26 +59,15 @@ public class PaymentLogService {
     }
 
     /**
-     * 依据订单id集合查询支付日志
-     * @param orderIds
+     * 依据orderCode集合查询支付日志
+     * @param orderCodes
      * @return
      */
-    public List<PaymentLog> getPaymentLogList(List<Long> orderIds){
-        if (Objects.isNull(orderIds)||orderIds.isEmpty()){
+    public List<PaymentLog> getPaymentLogList(List<String> orderCodes){
+        if (Objects.isNull(orderCodes)||orderCodes.isEmpty()){
             return new ArrayList<PaymentLog>();
         }
-        return paymentLogMapper.getPaymentLogList(orderIds);
-    }
-
-    /**
-     * 后台管理--根据订单查询订单实付金额之和
-     * @return
-     */
-    public PaymentLog countFee(String orderIds) {
-        //FIXME 应根据orderIds查询，后期统一修改
-        String[] orderId = orderIds.split(",");
-        List<String> list = Arrays.asList(orderId);
-        return paymentLogMapper.countFee(list);
+        return paymentLogMapper.getPaymentLogList(orderCodes);
     }
     
     /**

@@ -140,8 +140,8 @@ public class CurrencyPayApi {
 
     @GetMapping("/orderpay/payment")
     @ApiOperation(value = "根据订单Ids查询支付记录",response = PaymentLog.class)
-    public  ResponseEntity<List<PaymentLog>> paymentList(@PathVariable("orderIds") Long[] orderIds){
-        List<Long> orderIdList =  Arrays.asList(orderIds);
+    public  ResponseEntity<List<PaymentLog>> paymentList(@PathVariable("orderCodes") String[] orderCodes){
+        List<String> orderIdList =  Arrays.asList(orderCodes);
         return ResponseEntity.ok(paymentLogService.getPaymentLogList(orderIdList));
     }
 

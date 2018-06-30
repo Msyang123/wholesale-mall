@@ -3,6 +3,7 @@ package com.lhiot.mall.wholesale.order.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.leon.microx.util.SnowflakeId;
 import com.leon.microx.util.StringUtils;
+import com.lhiot.mall.wholesale.base.DataMergeUtils;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.goods.domain.GoodsStandard;
@@ -377,106 +378,69 @@ public class OrderService {
      */
     public PageQueryObject pageQuery(OrderGridParam param) throws InvocationTargetException, IntrospectionException, InstantiationException, IllegalAccessException {
         String phone = param.getPhone();
-        User userParam = new User();
-        userParam.setPhone(phone);
-        List<OrderGridResult> orderGridResultList = new ArrayList<>();
-        List<OrderGridResult> orderGridResults = new ArrayList<>();
+        List<OrderGridResult> orderList = new ArrayList<>();
         List<User> userList = new ArrayList<>();
         List<PaymentLog> paymentLogList = new ArrayList<>();
+        List<OrderGridResult> orderGridResults = new ArrayList<>();
+        List<Long> userIds = new ArrayList<Long>();
+        List<String> orderCodes = new ArrayList<String>();
         int count = 0;
         int page = param.getPage();
         int rows = param.getRows();
         //总记录数
         int totalPages = 0;
-        if (Objects.equals(phone,"") || Objects.isNull(phone) ) {//未传手机号查询条件,先根据条件查询分页的订单列表及用户ids，再根据ids查询用户信息列表
-            count = orderMapper.pageQueryCount(param);
-            //起始行
-            param.setStart((page - 1) * rows);
-            //总记录数
-            totalPages = (count % rows == 0 ? count / rows : count / rows + 1);
-            if (totalPages < page) {
-                page = 1;
-                param.setPage(page);
-                param.setStart(0);
-            }
-            orderGridResultList = orderMapper.pageQuery(param);
-            List<Long> userIds = new ArrayList<Long>();
-            List<Long> orderIds = new ArrayList<Long>();
-            if (orderGridResultList != null && orderGridResultList.size() > 0) {//查询订单对应的用户ID列表与订单ID列表
-                for (OrderGridResult orderGridResult : orderGridResultList) {
-                    long userId = orderGridResult.getUserId();
-                    long orderId = orderGridResult.getId();
-                    if (!userIds.contains(userId)) {//用户id去重
-                        userIds.add(userId);
-                    }
-                    if (!orderIds.contains(orderId)) {
-                        orderIds.add(orderId);
-                    }
-                }
-            }
-            if(!CollectionUtils.isEmpty(userIds)){
-                userList = userService.search(userIds);//根据用户ID列表查询用户信息
-            }
-            paymentLogList = paymentLogService.paymentLogs(orderIds);//根据订单ID列表查询支付信息
-        } else {//传了手机号查询条件，先根据条件查询用户列表及用户ids，再根据ids和订单其他信息查询订单信息列表
+        //查询条件中有手机号码，查询userId集合和用户信息
+        if (Objects.nonNull(phone)) {
+            User userParam = new User();
+            userParam.setPhone(phone);
             userList = userService.searchByPhoneOrName(userParam);
-            List<Long> userIds = new ArrayList<Long>();
             if (userList != null && userList.size() > 0) {
                 for (User user : userList) {
                     userIds.add(user.getId());
                 }
                 param.setUserIds(userIds);
-                count = orderMapper.pageQueryCount(param);
-                //起始行
-                param.setStart((page - 1) * rows);
-                //总记录数
-                totalPages = (count % rows == 0 ? count / rows : count / rows + 1);
-                if (totalPages < page) {
-                    page = 1;
-                    param.setPage(page);
-                    param.setStart(0);
-                }
-                orderGridResultList = orderMapper.pageQuery(param);//根据用户ID列表及其他查询条件查询用户信息
-                List<Long> orderIds = new ArrayList<Long>();
-                if (orderGridResultList != null && orderGridResultList.size() > 0) {
-                    for (OrderGridResult orderGridResult : orderGridResultList) {
-                        orderIds.add(orderGridResult.getId());
-                    }
-                }
-                paymentLogList = paymentLogService.paymentLogs(orderIds);//根据订单ID列表查询支付信息
             }
         }
+        count = orderMapper.pageQueryCount(param);
+        //起始行
+        param.setStart((page - 1) * rows);
+        //总记录数
+        totalPages = (count % rows == 0 ? count / rows : count / rows + 1);
+        if (totalPages < page) {
+            page = 1;
+            param.setPage(page);
+            param.setStart(0);
+        }
+        orderList = orderMapper.pageQuery(param);
+        //封装查询结果
         PageQueryObject result = new PageQueryObject();
-        if (orderGridResultList != null && orderGridResultList.size() > 0) {//如果订单信息不为空,将订单列表与用户信息列表进行行数据组装
-            //根据用户id与订单中的用户id匹配
-            for (OrderGridResult orderGridResult : orderGridResultList) {
-                Long orderUserId = orderGridResult.getUserId();
-                for (User user : userList) {
-                    Long uId = user.getId();
-                    if (Objects.equals(orderUserId, uId)) {
-                        orderGridResult.setPhone(user.getPhone());
-                        orderGridResult.setShopName(user.getShopName());
-                        orderGridResult.setUserName(user.getUserName());
-                        break;
-                    }
+        if (orderList != null && orderList.size() > 0) {
+            //查询订单集合中去重的userId集合和订orderCode集合
+            for (OrderGridResult order : orderList) {
+                if (!userIds.contains(order.getUserId())) {//用户id去重
+                    userIds.add(order.getUserId());
+                }
+                if (!orderCodes.contains(order.getOrderCode())) {
+                    orderCodes.add(order.getOrderCode());
                 }
             }
-            //根据订单id和支付记录orderId进行信息匹配
-            for (OrderGridResult orderGridResult : orderGridResultList) {
-                Long orderId = orderGridResult.getId();
-                for (PaymentLog paymentLog : paymentLogList) {
-                    Long pOrderId = paymentLog.getOrderId();
-                    if (Objects.equals(orderId, pOrderId)) {
-                        orderGridResult.setPaymentTime(paymentLog.getPaymentTime());
-                        break;
-                    }
-                }
+            if (userList != null && userList.size() > 0 && !CollectionUtils.isEmpty(orderCodes)) {
+                //用户信息不为空(已查询)，orderCode集合不为空，查询支付信息
+                paymentLogList = paymentLogService.getPaymentLogList(orderCodes);
+            } else if (userList == null && !CollectionUtils.isEmpty(userIds) && !CollectionUtils.isEmpty(orderCodes)){
+                //用户信息为空（未查询），userIds集合不为空，orderCode集合不为空，查询用户信息和支付信息
+                userList = userService.search(userIds);
+                paymentLogList = paymentLogService.getPaymentLogList(orderCodes);
             }
+            //订单信息与用户信息合并(不管userList和paymentLogList是否为空都执行--可优化判空)
+            List<OrderGridResult> orderGridResults1 = DataMergeUtils.dataMerge(orderList, userList, "userId", "id", OrderGridResult.class);
+            //合并结果与支付信息合并
+            orderGridResults = DataMergeUtils.dataMerge(orderGridResults1,paymentLogList,"orderCode","orderCode",OrderGridResult.class);
         }
         result.setPage(page);
         result.setRecords(rows);
         result.setTotal(totalPages);
-        result.setRows(orderGridResultList);//将查询记录放入返回参数中
+        result.setRows(orderGridResults);//将查询记录放入返回参数中
         return result;
     }
 

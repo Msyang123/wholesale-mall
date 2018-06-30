@@ -245,8 +245,21 @@ public class UserApi {
         //获取缓存中的js ticket (2小时) 缓存
         JsapiTicket ticket=(JsapiTicket)cache.get("ticket");
         if(Objects.isNull(ticket)){
-            ticket = weChatUtil.getJsapiTicket(token.getAccessToken());
-            cache.put("ticket",ticket,2, TimeUnit.HOURS);//缓存2小时
+            try{
+                ticket = weChatUtil.getJsapiTicket(token.getAccessToken());
+                cache.put("ticket",ticket,2, TimeUnit.HOURS);//缓存2小时
+            }catch (Exception e){
+                //重试
+                try{
+                    e.printStackTrace();
+                    ticket = weChatUtil.getJsapiTicket(token.getAccessToken());
+                    cache.put("ticket",ticket,2, TimeUnit.HOURS);//缓存2小时
+                }catch (Exception e2){
+                    e2.printStackTrace();
+                    ticket = weChatUtil.getJsapiTicket(token.getAccessToken());
+                    cache.put("ticket",ticket,2, TimeUnit.HOURS);//缓存2小时
+                }
+            }
         }
 
         String timestamp = Long.toString(System.currentTimeMillis() / 1000);

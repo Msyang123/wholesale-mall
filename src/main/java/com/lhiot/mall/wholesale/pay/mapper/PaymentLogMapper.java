@@ -19,7 +19,7 @@ public interface PaymentLogMapper {
 
     PaymentLog getPaymentLog(String orderCode);
 
-    List<PaymentLog> getPaymentLogList(List<Long> userIds);
+    List<PaymentLog> getPaymentLogList(List<String> orderCodes);
 
     PaymentLog countFee(List<String> orderId);
     
