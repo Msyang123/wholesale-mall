@@ -73,4 +73,26 @@
         <include refid="common.pager"></include>
     </select>
 
+    <!-- 后台管理系统 计算订单实付总金额之和-->
+    <select id="countFee" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.pay.domain.PaymentLog">
+        select IFNULL(SUM(total_fee),0) as totalFee
+        from t_whs_payment_log where order_code in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    
+    <!-- 查询已支付订单的支付记录 -->
+    <select id="paylogs" parameterType="java.util.List" resultType="com.lhiot.mall.wholesale.pay.domain.PaymentLog">
+		select * from t_whs_payment_log
+		<trim prefix="where" prefixOverrides="and">
+		    <if test="list != null and list.size()>0">
+                order_id IN
+                <foreach collection="list" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            and payment_step = 'paid'
+		</trim> 
+	</select>
 </mapper>
