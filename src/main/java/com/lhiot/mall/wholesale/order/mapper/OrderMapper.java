@@ -107,4 +107,7 @@ public interface OrderMapper {
     //后台管理系统 导出订单
     List<Map<String, Object>> exportDataOrderGoods(OrderGridParam param);
 
+    //今日，昨日，本周，上周，本月，上月，近多少天 业务员业绩数据统计
+    OrderParam salesCount(Map<String,Object> param);
+
 }
