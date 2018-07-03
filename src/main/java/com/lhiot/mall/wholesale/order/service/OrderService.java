@@ -1,6 +1,7 @@
 package com.lhiot.mall.wholesale.order.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.leon.microx.util.ImmutableMap;
 import com.leon.microx.util.SnowflakeId;
 import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.JacksonUtils;
@@ -197,6 +198,23 @@ public class OrderService {
         orderDetail.setOrderStatus("failed");
         orderDetail.setCurrentOrderStatus("unpaid");
         return orderMapper.updateOrderStatusByCode(orderDetail);
+    }
+
+    /**
+     * 今日，昨日，本周，上周，本月，上月，近多少天 业务员业绩数据统计
+     * @param salesmanId
+     * @param param
+     * @return
+     */
+    public OrderParam salesCount(long salesmanId,String param){
+        List<Long> userIds = new ArrayList();
+        List<SalesUserRelation> salesUserRelations = salesUserService.salesUser(salesmanId);
+        if (Objects.nonNull(salesUserRelations)){
+            for (SalesUserRelation item : salesUserRelations ) {
+                userIds.add(item.getUserId());
+            }
+        }
+        return orderMapper.salesCount(ImmutableMap.of("userIds",userIds,"param",param));
     }
 
     /**
@@ -495,6 +513,8 @@ public class OrderService {
     public Integer lateOrdersFee(OrderParam orderParam) {
         return orderMapper.lateOrdersFee(orderParam);
     }
+
+
 
     /**
      * 后台管理--查询订单详情
