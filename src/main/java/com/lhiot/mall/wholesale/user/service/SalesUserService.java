@@ -85,6 +85,10 @@ public class SalesUserService {
         return salesUserMapper.searchShopInfo(salesId);
     }
 
+    public List<SalesUserRelation> salesUser(long salesmanId){
+        return salesUserMapper.salesUser(salesmanId);
+    }
+
     /**
      * 门店审核
      * @param salesUserRelation

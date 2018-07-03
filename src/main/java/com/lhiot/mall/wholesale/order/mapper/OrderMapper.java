@@ -122,4 +122,7 @@ public interface OrderMapper {
 	
 	//统计退单数
 	Long refundedCount(SaleStatisticsParam param);
+   
+	//今日，昨日，本周，上周，本月，上月，近多少天 业务员业绩数据统计
+    OrderParam salesCount(Map<String,Object> param);
 }
