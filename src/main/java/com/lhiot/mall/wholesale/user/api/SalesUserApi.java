@@ -92,6 +92,17 @@ public class SalesUserApi {
         return ResponseEntity.ok(ArrayObject.of(sellers));
     }
 
+    @GetMapping("/static/achievement/today/{salesmanId}")
+    @ApiOperation(value = "业务员今日业绩")
+    public ResponseEntity<OrderParam> achievementOfToday(@PathVariable @NotNull long salesmanId) {
+        OrderParam salesCount = orderService.salesCount(salesmanId,"today");
+        if (Objects.nonNull(salesCount)){
+            return ResponseEntity.ok(salesCount);
+        }else {
+            return ResponseEntity.ok(new OrderParam());
+        }
+    }
+
 
     @GetMapping("/{id}")
     @ApiOperation(value = "查询业务员信息")

@@ -51,6 +51,11 @@
         select * from t_whs_salesuser_relation where user_id=#{id}
     </select>
 
+    <!--查询该业务员下的商户-->
+    <select id="salesUser" parameterType="long" resultType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation" >
+        select * from t_whs_salesuser_relation where salesman_id=#{salesmanId} and audit_status='agree'
+    </select>
+
     <select id="searchSaleRelationship" parameterType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation" resultType="com.lhiot.mall.wholesale.user.domain.SalesUserRelation">
         select * from t_whs_salesuser_relation
         <trim prefix="where" prefixOverrides="and">

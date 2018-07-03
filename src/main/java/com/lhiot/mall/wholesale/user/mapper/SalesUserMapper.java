@@ -31,6 +31,9 @@ public interface SalesUserMapper {
 
     List<SalesUserRelation> selectUserRelation(Long userId);
 
+    //查询业务员下的商户
+    List<SalesUserRelation> salesUser(Long salesmanId);
+
 /********************后台管理系统接口***********************/
 
     Integer create(SalesUser salesUser);
