@@ -446,6 +446,77 @@
         </trim>
     </select>
 
+	<!-- 统计业务员业绩 -->
+	<select id="salseAmount" parameterType="com.lhiot.mall.wholesale.user.domain.SaleStatisticsParam" resultType="Long">
+	SELECT out1.salesAmount - out2.refundAmount as salesAmount FROM(
+			SELECT SUM(payable_fee+delivery_fee)AS salesAmount FROM t_whs_order 
+			<trim prefix="where" prefixOverrides="and">
+				<if test="firstPeriod != null and firstPeriod != ''">
+					and ${firstPeriod}
+				</if>
+				<if test="salesmanId != null and salesmanId != ''">
+					AND salesman_id = #{salesmanId}
+				</if>
+				AND (order_status in ('undelivery','delivery','received') OR settlement_type = 'offline')
+			</trim>
+		) as out1,
+		(
+			SELECT SUM(t1.order_discount_fee - t1.delivery_fee) as refundAmount FROM t_whs_order_refund_application t1
+			LEFT JOIN t_whs_order t2 ON t1.order_id = t2.order_code
+			<trim prefix="where" prefixOverrides="and">
+				<if test="secondPeriod != null and secondPeriod != ''">
+					and ${secondPeriod}
+				</if>
+				<if test="salesmanId != null and salesmanId != ''">
+					AND t2.salesman_id = #{salesmanId}
+				</if>
+				AND t1.application_type = 'refund' AND t1.audit_status = 'agree'
+			</trim>
+		) as out2
+	</select>
+	
+	<!-- lynn统计业务员订单数和下单用户数 -->
+	<select id="orderAndUserCount" parameterType="com.lhiot.mall.wholesale.user.domain.SaleStatisticsParam"
+		resultType="com.lhiot.mall.wholesale.user.domain.Achievement">
+		SELECT COUNT(id) AS orderCount,COUNT(DISTINCT user_id) as userCount FROM t_whs_order
+		<trim prefix="where" prefixOverrides="and">
+			<if test="firstPeriod != null and firstPeriod != ''">
+				and ${firstPeriod}
+			</if>
+			<if test="salesmanId != null and salesmanId != ''">
+				AND salesman_id = #{salesmanId}
+			</if>
+			AND order_status in ('undelivery','delivery','unrefunded','refunded','refundfailed','received')
+		</trim>
+	</select>
+	
+	<!-- lynn 统计退单数 -->
+	<select id="refundedCount" parameterType="com.lhiot.mall.wholesale.user.domain.SaleStatisticsParam"
+		resultType="Long">
+		SELECT out1.refundedCount1 + out2.refundedCount2 as refundedCount FROM(
+			SELECT COUNT(id) AS refundedCount1 FROM t_whs_order 
+			<trim prefix="where" prefixOverrides="and">
+				<if test="firstPeriod != null and firstPeriod != ''">
+					and ${firstPeriod}
+				</if>
+				<if test="salesmanId != null and salesmanId != ''">
+					AND salesman_id = #{salesmanId}
+				</if>
+				and order_status = 'refunded'
+			</trim>
+		) AS out1,
+		(
+			SELECT COUNT(t1.id) as refundedCount2 FROM t_whs_order_refund_application t1
+			LEFT JOIN t_whs_order t2 ON t1.order_id = t2.order_code
+			<trim prefix="where" prefixOverrides="and">
+				<if test="secondPeriod != null and secondPeriod != ''">
+					and ${secondPeriod}
+				</if>
+				<if test="salesmanId != null and salesmanId != ''">
+					AND t2.salesman_id = #{salesmanId}
+				</if>
+				and t1.application_type = 'refund' AND t1.audit_status = 'agree'
+			</trim>
+		) AS out2
+	</select>
 </mapper>
-
-
