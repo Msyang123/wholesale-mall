@@ -1,10 +1,19 @@
 package com.lhiot.mall.wholesale.user.service;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.apache.ibatis.session.SqlSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import com.leon.microx.util.SnowflakeId;
-import com.leon.microx.util.StringUtils;
 import com.lhiot.mall.wholesale.base.DateFormatUtil;
 import com.lhiot.mall.wholesale.base.PageQueryObject;
 import com.lhiot.mall.wholesale.order.domain.OrderDetail;
@@ -13,16 +22,11 @@ import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
 import com.lhiot.mall.wholesale.order.mapper.OrderMapper;
 import com.lhiot.mall.wholesale.order.service.OrderService;
 import com.lhiot.mall.wholesale.user.domain.SalesUserPerformance;
+import com.lhiot.mall.wholesale.user.domain.SalesUserPerformanceDetail;
 import com.lhiot.mall.wholesale.user.domain.ShopResult;
 import com.lhiot.mall.wholesale.user.domain.User;
-import com.lhiot.mall.wholesale.user.domain.SalesUserPerformanceDetail;
 import com.lhiot.mall.wholesale.user.domain.gridparam.UserPerformanceGridParam;
 import com.lhiot.mall.wholesale.user.mapper.SalesUserMapper;
-import org.apache.ibatis.session.SqlSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 /**
  * @author zhangs on 2018/5/5.
  */
