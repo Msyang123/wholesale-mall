@@ -357,6 +357,42 @@
             and o.order_status = 'received' and pay_status = 'unpaid' and settlement_type = 'cod'
         </trim>
     </select>
+
+    <!--今日，昨日，本周，上周，本月，上月，近多少天 业务员业绩数据统计-->
+    <select id="salesCount" parameterType="map" resultType="com.lhiot.mall.wholesale.order.domain.OrderParam">
+        select IFNULL(SUM(total_fee),0) salesAmount from t_whs_order
+        <trim prefix="where" prefixOverrides="and">
+            <if test="userIds != null and userIds.size()>0">
+                and user_id in
+                <foreach collection="userIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="param != null and param != '' and param=='today' ">
+                and to_days(create_time) = to_days(now())
+            </if>
+            <if test="param != null and param != '' and param=='yesterday' ">
+                and to_days(now()) - to_days(create_time) = 1
+            </if>
+            <if test="param != null and param != '' and param=='week' ">
+                and YEARWEEK(date_format(create_time,'%Y-%m-%d')) = YEARWEEK(now())
+            </if>
+            <if test="param != null and param != '' and param=='lastWeek' ">
+                and YEARWEEK(date_format(create_time,'%Y-%m-%d')) = YEARWEEK(now())-1
+            </if>
+            <if test="param != null and param != '' and param=='month' ">
+                and DATE_FORMAT(create_time, '%Y%m') = DATE_FORMAT(CURDATE(), '%Y%m')
+            </if>
+            <if test="param != null and param != '' and param=='lastMonth' ">
+                and PERIOD_DIFF(date_format(now(),'%Y%m'),date_format(create_time,'%Y%m'))=1
+            </if>
+            <!--<if test="param != null and param != '' ">
+                and DATE_SUB(CURDATE(),INTERVAL #{param} DAY) &lt; create_time
+            </if>-->
+
+        </trim>
+    </select>
+
     <!-- 根据门店id,开始时间,结束时间统计应付金额-->
     <select id="countPayAbleFee" parameterType="map" resultType="map">
         select IFNULL(SUM(payable_fee),0) ordersTotalFee,count(o.id) totalNum
