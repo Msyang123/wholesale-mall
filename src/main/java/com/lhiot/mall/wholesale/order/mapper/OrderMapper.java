@@ -1,11 +1,18 @@
 package com.lhiot.mall.wholesale.order.mapper;
 
-import com.lhiot.mall.wholesale.order.domain.*;
-import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
-import org.apache.ibatis.annotations.Mapper;
-
 import java.util.List;
 import java.util.Map;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import com.lhiot.mall.wholesale.order.domain.OrderDetail;
+import com.lhiot.mall.wholesale.order.domain.OrderGoods;
+import com.lhiot.mall.wholesale.order.domain.OrderGridResult;
+import com.lhiot.mall.wholesale.order.domain.OrderParam;
+import com.lhiot.mall.wholesale.order.domain.SoldQuantity;
+import com.lhiot.mall.wholesale.order.domain.gridparam.OrderGridParam;
+import com.lhiot.mall.wholesale.user.domain.Achievement;
+import com.lhiot.mall.wholesale.user.domain.SaleStatisticsParam;
 
 
 @Mapper
@@ -107,4 +114,12 @@ public interface OrderMapper {
     //后台管理系统 导出订单
     List<Map<String, Object>> exportDataOrderGoods(OrderGridParam param);
 
+	//统计业务员销售总金额
+	Long salseAmount(SaleStatisticsParam param);
+
+	//统计业务员订单数和下单用户数
+	Achievement orderAndUserCount(SaleStatisticsParam param);
+	
+	//统计退单数
+	Long refundedCount(SaleStatisticsParam param);
 }
