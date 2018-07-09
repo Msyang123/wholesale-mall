@@ -1,26 +1,32 @@
 package com.lhiot.mall.wholesale.user.service;
 
-import com.leon.microx.util.ImmutableMap;
-import com.leon.microx.util.SnowflakeId;
-import com.lhiot.mall.wholesale.base.PageQueryObject;
-import com.lhiot.mall.wholesale.user.domain.*;
-import com.lhiot.mall.wholesale.user.mapper.SalesUserMapper;
-import com.lhiot.mall.wholesale.user.mapper.UserMapper;
-import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
-import com.sgsl.util.StringUtils;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.session.SqlSession;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.text.MessageFormat;
-import java.util.*;
+import com.leon.microx.util.ImmutableMap;
+import com.lhiot.mall.wholesale.base.PageQueryObject;
+import com.lhiot.mall.wholesale.user.domain.SalesUser;
+import com.lhiot.mall.wholesale.user.domain.SalesUserRelation;
+import com.lhiot.mall.wholesale.user.domain.ShopResult;
+import com.lhiot.mall.wholesale.user.domain.User;
+import com.lhiot.mall.wholesale.user.domain.UserAddress;
+import com.lhiot.mall.wholesale.user.mapper.SalesUserMapper;
+import com.lhiot.mall.wholesale.user.mapper.UserMapper;
+import com.lhiot.mall.wholesale.user.wechat.PaymentProperties;
+import com.sgsl.util.StringUtils;
+
+import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @Transactional
